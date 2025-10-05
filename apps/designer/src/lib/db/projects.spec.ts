@@ -17,7 +17,8 @@ describe('ProjectsRepository (SQLite + Drizzle)', () => {
 
   function expectIsoString(value: unknown): asserts value is string {
     expect(typeof value).toBe('string')
-    // Basic ISO-8601 shape check
+    // Validate ISO-8601 format with T separator and Z timezone
+    expect(value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/)
     expect(() => new Date(value as string)).not.toThrow()
   }
 

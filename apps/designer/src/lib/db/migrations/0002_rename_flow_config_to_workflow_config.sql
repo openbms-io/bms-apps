@@ -10,8 +10,8 @@ CREATE TABLE projects_new (
   name TEXT NOT NULL,
   description TEXT,
   workflow_config TEXT DEFAULT '{}' NOT NULL,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+  created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
+  updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL
 );
 --> statement-breakpoint
 
