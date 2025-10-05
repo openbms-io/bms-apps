@@ -1027,6 +1027,8 @@ The implementation follows a phased approach, focusing on **read behavior first*
 
 **Goal:** Implement `get_config` request/response to retrieve device configuration
 
+Detailed Spec: ./2025-10-02-get-config-implementation.md
+
 **Deliverables:**
 
 1. Verify `get_config` command in MqttBus.request()
