@@ -10,10 +10,10 @@ export const projects = sqliteTable(
     workflow_config: text('workflow_config').notNull().default('{}'),
     created_at: text('created_at')
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
     updated_at: text('updated_at')
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
   },
   (table) => [
     index('idx_projects_created_at').on(table.created_at),

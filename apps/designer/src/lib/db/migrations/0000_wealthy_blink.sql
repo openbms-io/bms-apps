@@ -3,8 +3,8 @@ CREATE TABLE `projects` (
 	`name` text NOT NULL,
 	`description` text,
 	`flow_config` text DEFAULT '{}' NOT NULL,
-	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
+	`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
+	`updated_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL
 );
 --> statement-breakpoint
 CREATE INDEX `idx_projects_created_at` ON `projects` (`created_at`);--> statement-breakpoint
