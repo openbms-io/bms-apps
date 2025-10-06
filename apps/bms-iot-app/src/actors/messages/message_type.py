@@ -8,6 +8,7 @@ from src.models.device_status_enums import MonitoringStatusEnum, ConnectionStatu
 
 class ConfigUploadResponsePayload(BaseModel):
     success: bool
+    correlationData: Optional[bytes] = None
 
 
 class BacnetReaderConfig(BaseModel):
@@ -26,6 +27,7 @@ class ConfigUploadPayload(BaseModel):
     jwtToken: str
     iotDeviceControllers: list[dict]
     bacnetReaders: Optional[list[BacnetReaderConfig]] = []
+    correlationData: Optional[bytes] = None
     # devicePointIPAddresses: list[str]
 
 

@@ -38,11 +38,11 @@ class TestMessageSerialization:
 
         # Test model_dump (Pydantic v2 method)
         json_dict = payload.model_dump()
-        assert json_dict == {"success": True}
+        assert json_dict == {"success": True, "correlationData": None}
 
         # Test JSON serialization
         json_str = json.dumps(json_dict)
-        assert json_str == '{"success": true}'
+        assert json_str == '{"success": true, "correlationData": null}'
 
     def test_bacnet_reader_config_serialization(self):
         """Test: BacnetReaderConfig serialization"""

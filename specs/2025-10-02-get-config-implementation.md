@@ -142,19 +142,28 @@ interface ControllerConfig {
 
 ```typescript
 interface DiscoveredPoint {
-  id: number; // Database ID
+  id: string; // UUID (TEXT in DB)
   controller_ip_address: string; // "192.168.1.101"
   controller_port: number; // 47808
   bacnet_object_type: string; // "analog-input"
   point_id: number; // BACnet object instance (e.g., 0)
-  iot_device_point_id: string; // "ai_0"
-  controller_id: string; // "bacnet_device_1001"
+  controller_id: string; // FK to iot_device_controllers
   controller_device_id: string; // "bacnet_device_1001"
   units?: string; // "degrees-fahrenheit"
   present_value?: string; // "72.5"
-  status_flags?: string[]; // ["in-alarm"]
-  out_of_service?: boolean; // false
-  reliability?: string; // "no-fault-detected"
+  metadata?: {
+    // All health and optional BACnet properties stored as JSON
+    status_flags?: string[];
+    event_state?: string;
+    out_of_service?: boolean;
+    reliability?: string;
+    min_pres_value?: number;
+    max_pres_value?: number;
+    high_limit?: number;
+    low_limit?: number;
+    // ... other optional BACnet properties
+  };
+  is_deleted: boolean;
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
 }
@@ -170,13 +179,18 @@ interface DiscoveredPoint {
 CREATE TABLE bacnet_readers (
   id TEXT PRIMARY KEY,
   project_id TEXT NOT NULL,
+  iot_device_id TEXT,              -- For future Supabase sync
+  organization_id TEXT,             -- For future Supabase sync
+  site_id TEXT,                     -- For future Supabase sync
   ip_address TEXT NOT NULL,
-  subnet_mask INTEGER NOT NULL,
+  subnet_mask INTEGER NOT NULL DEFAULT 24,
   bacnet_device_id INTEGER NOT NULL,
   port INTEGER NOT NULL DEFAULT 47808,
   bbmd_enabled BOOLEAN DEFAULT FALSE,
   bbmd_server_ip TEXT,
   is_active BOOLEAN DEFAULT TRUE,
+  connection_status TEXT,           -- Supabase: connection_status_enum
+  is_deleted BOOLEAN DEFAULT FALSE, -- Supabase soft delete pattern
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -185,19 +199,25 @@ CREATE TABLE bacnet_readers (
 
 CREATE INDEX idx_readers_project ON bacnet_readers(project_id);
 CREATE INDEX idx_readers_active ON bacnet_readers(is_active);
+CREATE INDEX idx_readers_deleted ON bacnet_readers(is_deleted);
 ```
 
 #### Table: `iot_device_controllers`
 
 ```sql
 CREATE TABLE iot_device_controllers (
-  id TEXT PRIMARY KEY,
+  id TEXT PRIMARY KEY,                  -- UUID (Supabase compatible)
   project_id TEXT NOT NULL,
+  iot_device_id TEXT,                   -- For future Supabase sync
+  organization_id TEXT,                 -- For future Supabase sync
+  site_id TEXT,                         -- For future Supabase sync
   ip_address TEXT NOT NULL,
   bacnet_device_id INTEGER,
-  name TEXT,
-  is_active BOOLEAN DEFAULT TRUE,
+  controller_name TEXT,                 -- Supabase field name
+  controller_device_id TEXT,            -- Supabase field
   metadata JSON,
+  is_active BOOLEAN DEFAULT TRUE,       -- Keep for compatibility
+  deleted_at TIMESTAMP,                 -- Supabase soft delete pattern
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -206,26 +226,28 @@ CREATE TABLE iot_device_controllers (
 
 CREATE INDEX idx_controllers_project ON iot_device_controllers(project_id);
 CREATE INDEX idx_controllers_active ON iot_device_controllers(is_active);
+CREATE INDEX idx_controllers_deleted ON iot_device_controllers(deleted_at);
 ```
 
 #### Table: `controller_points`
 
 ```sql
 CREATE TABLE controller_points (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,                  -- UUID (Supabase: iot_device_point_id)
   project_id TEXT NOT NULL,
+  iot_device_id TEXT,                   -- For future Supabase sync
+  organization_id TEXT,                 -- For future Supabase sync
+  site_id TEXT,                         -- For future Supabase sync
   controller_id TEXT NOT NULL,
   controller_ip_address TEXT NOT NULL,
   controller_port INTEGER NOT NULL DEFAULT 47808,
   bacnet_object_type TEXT NOT NULL,
   point_id INTEGER NOT NULL,
-  iot_device_point_id TEXT NOT NULL,
   controller_device_id TEXT NOT NULL,
   units TEXT,
   present_value TEXT,
-  status_flags TEXT,
-  out_of_service BOOLEAN,
-  reliability TEXT,
+  metadata JSON,                        -- All health/optional properties as JSON
+  is_deleted BOOLEAN DEFAULT FALSE,     -- Supabase soft delete pattern
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -235,6 +257,7 @@ CREATE TABLE controller_points (
 
 CREATE INDEX idx_points_project ON controller_points(project_id);
 CREATE INDEX idx_points_controller ON controller_points(controller_id);
+CREATE INDEX idx_points_deleted ON controller_points(is_deleted);
 CREATE UNIQUE INDEX idx_points_unique ON controller_points(
   controller_ip_address,
   bacnet_object_type,
@@ -262,13 +285,26 @@ CREATE INDEX idx_configs_project ON iot_device_configs(project_id);
 CREATE INDEX idx_configs_uploaded ON iot_device_configs(uploaded_at DESC);
 ```
 
+#### Table: `projects`
+
+```sql
+CREATE TABLE projects (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  organization_id TEXT,  -- For future Supabase sync/migration
+  site_id TEXT,         -- For future Supabase sync/migration
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ### IoT Device Database (SQLite)
 
 **Same tables as Designer** for dual persistence:
 
-- `bacnet_readers`
-- `iot_device_controllers`
-- `controller_points` (already exists)
+- `bacnet_readers` (same structure with org/site/device fields)
+- `iot_device_controllers` (same structure with Supabase fields)
+- `controller_points` (already exists, update with metadata JSON)
 
 ## API Endpoints
 
@@ -524,40 +560,57 @@ export interface MQTTSlice {
 
 ## Implementation Phases
 
-### Phase 2a: Database & API
+### Phase 2a: MQTT 5.0 Request/Response (bms-iot-app)
 
-1. Database migrations (Designer + IoT app)
-2. Repository layer (bacnet_readers, iot_device_controllers, controller_points)
-3. API endpoints (CRUD for readers, controllers, points)
-4. Presigned URL generation/validation
+1. Extract correlationData from MQTT message properties in `mqtt_controller.py:on_get_config_request`
+2. Update `mqtt_command_dispatcher.py:publish_response` to include correlation_data parameter
+3. Set MQTT 5 properties when publishing responses
+4. Unit tests for correlation handling
 
-### Phase 2b: UI Components
+### Phase 2b: Database & API (Designer)
 
-1. ControllersModal component
-2. BacnetReadersModal component
-3. Update SupervisorsTab with config sections
-4. Update ControllersTab to use real data
+**Database migrations (Supabase-aligned):**
 
-### Phase 2c: MQTT Integration
+1. Update `bacnet_readers`: Add organization_id, site_id, iot_device_id (nullable), connection_status, is_deleted
+2. Update `iot_device_controllers`: Change id to TEXT UUID, add organization_id, site_id, iot_device_id (nullable), controller_name, controller_device_id, deleted_at
+3. Update `controller_points`: Change id to TEXT UUID, add organization_id, site_id, iot_device_id (nullable), metadata JSON (replace individual health columns), is_deleted
+4. Update `projects`: Add organization_id, site_id (nullable for future migration)
 
-1. Update IoT app MQTT handler
-2. Add correlation data support
-3. Implement BACnet discovery flow
-4. Config upload to presigned URL
+**Repository layer:**
 
-### Phase 2d: Store & Flow Integration
+- CRUD for bacnet_readers, iot_device_controllers, controller_points with new Supabase-aligned fields
+- Handle metadata JSON for health properties (not 30+ individual columns)
 
-1. Update MQTT slice with getConfig action
-2. Wire up UI buttons to store actions
-3. Handle loading/error states
-4. Replace mock data in ControllersTab
+**API endpoints:**
 
-### Phase 2e: Testing
+- GET/POST/PUT/DELETE `/api/projects/{projectId}/bacnet-readers`
+- GET/POST/DELETE `/api/projects/{projectId}/controllers`
+- GET `/api/projects/{projectId}/controller-points`
+- POST `/api/projects/{projectId}/config/upload-url` (presigned URL generation)
+- PUT `/api/config-uploads/{configId}` (config upload endpoint with JWT auth)
+- GET `/api/projects/{projectId}/config/latest` (fetch uploaded config)
 
-1. Unit tests (all layers)
-2. Integration tests (full flow)
-3. E2E validation
-4. Error handling
+### Phase 2c: Store & Business Logic (Designer)
+
+1. Update mqtt-slice with getConfig action
+2. Implement flow: Generate presigned URL → Send MQTT request → Match response via correlationData → Fetch config → Persist to DB
+3. Error handling and loading states
+4. Handle metadata JSON when storing/retrieving points
+
+### Phase 2d: UI Components (Designer)
+
+1. ControllersModal (IP address form)
+2. BacnetReadersModal (reader config form with all Supabase fields)
+3. Update SupervisorsTab (config sections + Get Config button)
+4. Update ControllersTab (replace mock data with real API data, display metadata properties)
+
+### Phase 2e: Integration & Testing (Both apps)
+
+1. End-to-end flow validation
+2. MQTT correlation verification
+3. Error scenarios testing (timeout, upload failure, discovery errors)
+4. Verify metadata JSON storage/retrieval
+5. Verify Supabase-compatible field handling
 
 ## Success Criteria
 
@@ -569,6 +622,8 @@ export interface MQTTSlice {
 - [ ] Controllers Tab displays real points (mock data replaced)
 - [ ] MQTT 5.0 correlation data working correctly
 - [ ] Config persisted in both Designer and IoT device databases
+- [ ] Metadata JSON properly stores all health/optional BACnet properties
+- [ ] Database structure aligns with Supabase (nullable org/site/device fields present)
 - [ ] All tests passing
 
 ## Breaking Changes
@@ -576,6 +631,20 @@ export interface MQTTSlice {
 This is in development - breaking changes are acceptable:
 
 - Controllers Tab mock data will be removed
-- New database tables required
+- Database schema changes:
+  - `controller_points.id`: INTEGER → TEXT UUID
+  - Individual health columns → metadata JSON
+  - Added nullable org/site/device hierarchy fields
+  - Added Supabase compatibility fields (connection_status, is_deleted, deleted_at, etc.)
 - New API endpoints
 - SupervisorsTab UI significantly changed
+
+## Migration Path to Supabase
+
+The nullable fields (organization_id, site_id, iot_device_id) in Designer database enable future migration:
+
+1. **Current state**: project_id-based flow, org/site/device fields are NULL
+2. **Migration**: Populate org/site/device fields, update FKs to use them instead of project_id
+3. **Future state**: Full org → site → project → device hierarchy, sync with Supabase
+
+Database structure already matches Supabase schema for seamless future integration.

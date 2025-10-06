@@ -161,17 +161,35 @@ class MqttCommandDispatcher:
         self.mqtt_client.set_on_message(_on_message)
 
     # --- Publish helpers ---
-    def publish_response(self, command: CommandNameEnum, payload: Dict[str, Any]):
+    def publish_response(
+        self,
+        command: CommandNameEnum,
+        payload: Dict[str, Any],
+        correlation_data: Optional[bytes] = None,
+    ):
         entry = self._command_map.get(command)
         if not entry:
             raise ValueError(f"No response topic for command: {command}")
         topic_config = entry.response
-        self.mqtt_client.publish(
-            topic_config.topic,
-            payload,
-            retain=topic_config.retain,
-            qos=topic_config.qos,
-        )
+
+        # Publish with MQTT 5.0 properties if correlation_data provided
+        if correlation_data:
+            logger.info(f"Publishing response with correlationData: {correlation_data}")
+            self.mqtt_client.publish(
+                topic_config.topic,
+                payload,
+                retain=topic_config.retain,
+                qos=topic_config.qos,
+                properties={"correlation_data": correlation_data},
+            )
+        else:
+            # Fallback without correlation data (backward compatibility)
+            self.mqtt_client.publish(
+                topic_config.topic,
+                payload,
+                retain=topic_config.retain,
+                qos=topic_config.qos,
+            )
 
     def publish_heartbeat(self, payload: Dict[str, Any]):
         if self.status_heartbeat_topic:

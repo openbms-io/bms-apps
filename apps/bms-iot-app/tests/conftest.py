@@ -9,6 +9,11 @@ import pytest
 import pytest_asyncio
 import asyncio
 from unittest.mock import Mock, AsyncMock
+from sqlmodel import SQLModel
+from src.network.sqlmodel_client import get_engine
+from src.network.sqlmodel_client import initialize_database
+
+# Import all models to ensure they're registered with SQLModel before create_all()
 
 
 @pytest.fixture
@@ -155,15 +160,9 @@ async def setup_database():
         sys.path.insert(0, project_root)
 
     try:
-        # Import all models to ensure they're registered with SQLModel
-        from src.network.sqlmodel_client import initialize_database
-
         # For tests, use SQLModel.metadata.create_all() for simplicity
         # This creates all tables based on the current model definitions
         print("🔄 Creating test database tables with SQLModel.metadata.create_all()...")
-
-        from sqlmodel import SQLModel
-        from src.network.sqlmodel_client import get_engine
 
         engine = get_engine()
         print(f"Test database URL: {engine.url}")
