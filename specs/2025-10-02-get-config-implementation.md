@@ -560,7 +560,7 @@ export interface MQTTSlice {
 
 ## Implementation Phases
 
-### Phase 2a: MQTT 5.0 Request/Response (bms-iot-app)
+### Phase 2a: MQTT 5.0 Request/Response (bms-iot-app) [Done]
 
 1. Extract correlationData from MQTT message properties in `mqtt_controller.py:on_get_config_request`
 2. Update `mqtt_command_dispatcher.py:publish_response` to include correlation_data parameter
@@ -569,26 +569,97 @@ export interface MQTTSlice {
 
 ### Phase 2b: Database & API (Designer)
 
-**Database migrations (Supabase-aligned):**
+**Database Schema - Hierarchical Structure:**
 
-1. Update `bacnet_readers`: Add organization_id, site_id, iot_device_id (nullable), connection_status, is_deleted
-2. Update `iot_device_controllers`: Change id to TEXT UUID, add organization_id, site_id, iot_device_id (nullable), controller_name, controller_device_id, deleted_at
-3. Update `controller_points`: Change id to TEXT UUID, add organization_id, site_id, iot_device_id (nullable), metadata JSON (replace individual health columns), is_deleted
-4. Update `projects`: Add organization_id, site_id (nullable for future migration)
+Create proper hierarchy: Organization → Site → Project → IoT Device → BACnet Resources
 
-**Repository layer:**
+1. **New Tables using Drizzle ORM:**
 
-- CRUD for bacnet_readers, iot_device_controllers, controller_points with new Supabase-aligned fields
-- Handle metadata JSON for health properties (not 30+ individual columns)
+   - `organizations` table with auto-generated `org_<uuid>` ID
+   - `sites` table with UUID ID and FK to organizations
+   - Update `projects` table with FK to sites (remove flat org/site fields)
+   - `bacnet_readers` table scoped to org/site/iot_device
+   - `iot_device_controllers` table scoped to org/site/iot_device
+   - `controller_points` table with FK to controllers, scoped to org/site/iot_device
+   - `iot_device_configs` table scoped to org/site/iot_device
 
-**API endpoints:**
+2. **Idempotent Hierarchy Generation:**
 
-- GET/POST/PUT/DELETE `/api/projects/{projectId}/bacnet-readers`
-- GET/POST/DELETE `/api/projects/{projectId}/controllers`
-- GET `/api/projects/{projectId}/controller-points`
-- POST `/api/projects/{projectId}/config/upload-url` (presigned URL generation)
-- PUT `/api/config-uploads/{configId}` (config upload endpoint with JWT auth)
-- GET `/api/projects/{projectId}/config/latest` (fetch uploaded config)
+   - Create `hierarchy-init.ts` utility for transaction-based org/site generation
+   - Auto-generate on root page load if not exists
+   - Format: `org_<uuid>` for organization, `uuid()` for site
+   - Ensure single generation (idempotent within transaction)
+
+3. **Migration Workflow:**
+   - Define schemas in `apps/designer/src/lib/db/schema/`
+   - Generate migration: `pnpm db:generate`
+   - Apply migration: `pnpm db:migrate`
+   - Clean DB approach (no data migration needed)
+
+**Repository Layer:**
+
+- `bacnet-readers-repository.ts` - CRUD scoped to org/site/iot_device
+- `controllers-repository.ts` - CRUD scoped to org/site/iot_device
+- `controller-points-repository.ts` - CRUD scoped to controller
+- `iot-device-configs-repository.ts` - CRUD scoped to org/site/iot_device
+
+**API Endpoints - Hierarchical Paths:**
+
+All endpoints follow DB hierarchy pattern:
+`/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/{resource}`
+
+**Design Decision: Why Hierarchical URLs?**
+
+While this seems verbose for a local SQLite app, we chose the full hierarchical path structure for future cloud deployment:
+
+1. **Multi-Tenant Security**: Explicit org/site scoping prevents accidental data leakage across organizations
+2. **RBAC-Friendly**: Site/org-level permissions can be enforced in middleware before DB queries
+3. **Clerk.com Integration**: Matches their organization-scoping pattern where `auth.orgId` validates against URL `[orgId]`
+4. **Explicit > Implicit**: Better to be verbose and safe than rely on inferred context from joins
+5. **Database Alignment**: API structure mirrors the hierarchical data model exactly
+
+Alternative considered: Project-scoped APIs (`/api/projects/[projectId]/bacnet-readers`) would be simpler but require complex join-based validation for every request in multi-tenant scenarios, increasing security risk.
+
+**BACnet Readers:**
+
+- GET/POST `/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/bacnet-readers`
+- GET/PUT/DELETE `/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/bacnet-readers/[readerId]`
+
+**Controllers:**
+
+- GET/POST `/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/controllers`
+- GET/PUT/DELETE `/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/controllers/[controllerId]`
+
+**Controller Points:**
+
+- GET/POST `/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/controllers/[controllerId]/points`
+- GET/PUT/DELETE `/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/controllers/[controllerId]/points/[pointId]`
+
+**Device Configs:**
+
+- GET/POST `/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/configs`
+- GET/PUT `/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/configs/[configId]`
+
+**Page Structure:**
+
+```
+app/
+├── page.tsx                           # Root - calls ensureHierarchyExists()
+├── organizations/
+│   └── [orgId]/
+│       └── sites/
+│           └── [siteId]/
+│               └── projects/
+│                   └── [projectId]/
+│                       ├── page.tsx   # Project (existing)
+│                       └── iot-devices/
+│                           └── [iotDeviceId]/
+│                               ├── bacnet-readers/page.tsx
+│                               ├── controllers/
+│                               │   ├── page.tsx
+│                               │   └── [controllerId]/points/page.tsx
+│                               └── configs/page.tsx
+```
 
 ### Phase 2c: Store & Business Logic (Designer)
 

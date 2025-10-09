@@ -9,18 +9,38 @@ import {
   useOptimisticUpdateProject,
   usePrefetchProject,
 } from './use-projects'
-import type { Project, ProjectListResponse } from '@/app/api/projects/schemas'
+import type {
+  Project,
+  ProjectListResponse,
+} from '@/app/api/organizations/[orgId]/sites/[siteId]/projects/schemas'
 
 describe('useProjects hooks', () => {
   const mockFetch = jest.spyOn(global, 'fetch')
 
+  const orgId = 'org-123'
+  const siteId = 'site-456'
+
   const mockProject: Project = {
     id: '550e8400-e29b-41d4-a716-446655440000',
+    siteId: 'site-456',
     name: 'Test Project',
     description: 'Test Description',
-    workflow_config: '{}',
-    created_at: '2025-01-01T00:00:00.000Z',
-    updated_at: '2025-01-01T00:00:00.000Z',
+    workflowConfig: {
+      schema_info: {
+        version: '1.0.0',
+        compatibility: '>=1.0.0',
+        schema_name: 'WorkflowConfig',
+      },
+      data: {
+        nodes: [],
+        edges: [],
+        metadata: {
+          lastModified: '2025-01-01T00:00:00.000Z',
+        },
+      },
+    },
+    createdAt: '2025-01-01T00:00:00.000Z',
+    updatedAt: '2025-01-01T00:00:00.000Z',
   }
 
   const mockProjectsList: ProjectListResponse = {
@@ -49,24 +69,47 @@ describe('useProjects hooks', () => {
         }),
       } as Response)
 
-      const { result } = renderHook(() => useProjects(), {
-        wrapper: createHookWrapper(),
-      })
+      const { result } = renderHook(
+        () =>
+          useProjects({
+            orgId,
+            siteId,
+            page: 1,
+            limit: 10,
+            sort: 'name',
+            order: 'asc',
+            search: '',
+          }),
+        {
+          wrapper: createHookWrapper(),
+        }
+      )
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true)
       })
 
       expect(result.current.data).toEqual(mockProjectsList)
-      expect(mockFetch).toHaveBeenCalledWith('/api/projects')
     })
 
     it('should handle loading state', () => {
       mockFetch.mockImplementation(() => new Promise(() => {}))
 
-      const { result } = renderHook(() => useProjects(), {
-        wrapper: createHookWrapper(),
-      })
+      const { result } = renderHook(
+        () =>
+          useProjects({
+            orgId,
+            siteId,
+            page: 1,
+            limit: 10,
+            sort: 'name',
+            order: 'asc',
+            search: '',
+          }),
+        {
+          wrapper: createHookWrapper(),
+        }
+      )
 
       expect(result.current.isLoading).toBe(true)
       expect(result.current.data).toBeUndefined()
@@ -79,9 +122,21 @@ describe('useProjects hooks', () => {
         text: async () => 'Internal Server Error',
       } as Response)
 
-      const { result } = renderHook(() => useProjects(), {
-        wrapper: createHookWrapper(),
-      })
+      const { result } = renderHook(
+        () =>
+          useProjects({
+            orgId,
+            siteId,
+            page: 1,
+            limit: 10,
+            sort: 'name',
+            order: 'asc',
+            search: '',
+          }),
+        {
+          wrapper: createHookWrapper(),
+        }
+      )
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true)
@@ -93,9 +148,21 @@ describe('useProjects hooks', () => {
     it('should handle network error', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'))
 
-      const { result } = renderHook(() => useProjects(), {
-        wrapper: createHookWrapper(),
-      })
+      const { result } = renderHook(
+        () =>
+          useProjects({
+            orgId,
+            siteId,
+            page: 1,
+            limit: 10,
+            sort: 'name',
+            order: 'asc',
+            search: '',
+          }),
+        {
+          wrapper: createHookWrapper(),
+        }
+      )
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true)
@@ -114,7 +181,19 @@ describe('useProjects hooks', () => {
       } as Response)
 
       const { result } = renderHook(
-        () => useProjects(undefined, { enabled: false }),
+        () =>
+          useProjects(
+            {
+              orgId,
+              siteId,
+              page: 1,
+              limit: 10,
+              sort: 'name',
+              order: 'asc',
+              search: '',
+            },
+            { enabled: false }
+          ),
         {
           wrapper: createHookWrapper(),
         }
@@ -133,7 +212,15 @@ describe('useProjects hooks', () => {
         }),
       } as Response)
 
-      const query = { page: 2, limit: 10, search: 'test' }
+      const query = {
+        orgId,
+        siteId,
+        page: 2,
+        limit: 10,
+        sort: 'name',
+        order: 'asc',
+        search: 'test',
+      }
       const { result } = renderHook(() => useProjects(query), {
         wrapper: createHookWrapper(),
       })
@@ -143,7 +230,7 @@ describe('useProjects hooks', () => {
       })
 
       expect(mockFetch).toHaveBeenCalledWith(
-        '/api/projects?page=2&limit=10&search=test'
+        `/api/organizations/${orgId}/sites/${siteId}/projects?page=2&limit=10&search=test&sort=name&order=asc`
       )
     })
   })
@@ -158,33 +245,44 @@ describe('useProjects hooks', () => {
         }),
       } as Response)
 
-      const { result } = renderHook(() => useProject(mockProject.id), {
-        wrapper: createHookWrapper(),
-      })
+      const { result } = renderHook(
+        () => useProject({ orgId, siteId, projectId: mockProject.id }),
+        {
+          wrapper: createHookWrapper(),
+        }
+      )
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true)
       })
 
       expect(result.current.data).toEqual(mockProject)
-      expect(mockFetch).toHaveBeenCalledWith(`/api/projects/${mockProject.id}`)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `/api/organizations/${orgId}/sites/${siteId}/projects/${mockProject.id}`
+      )
     })
 
     it('should handle loading state', () => {
       mockFetch.mockImplementation(() => new Promise(() => {}))
 
-      const { result } = renderHook(() => useProject(mockProject.id), {
-        wrapper: createHookWrapper(),
-      })
+      const { result } = renderHook(
+        () => useProject({ orgId, siteId, projectId: mockProject.id }),
+        {
+          wrapper: createHookWrapper(),
+        }
+      )
 
       expect(result.current.isLoading).toBe(true)
       expect(result.current.data).toBeUndefined()
     })
 
     it('should not fetch when id is empty', () => {
-      const { result } = renderHook(() => useProject(''), {
-        wrapper: createHookWrapper(),
-      })
+      const { result } = renderHook(
+        () => useProject({ orgId, siteId, projectId: '' }),
+        {
+          wrapper: createHookWrapper(),
+        }
+      )
 
       expect(result.current.isFetching).toBe(false)
       expect(mockFetch).not.toHaveBeenCalled()
@@ -197,9 +295,12 @@ describe('useProjects hooks', () => {
         text: async () => 'Not Found',
       } as Response)
 
-      const { result } = renderHook(() => useProject(mockProject.id), {
-        wrapper: createHookWrapper(),
-      })
+      const { result } = renderHook(
+        () => useProject({ orgId, siteId, projectId: mockProject.id }),
+        {
+          wrapper: createHookWrapper(),
+        }
+      )
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true)
@@ -218,7 +319,11 @@ describe('useProjects hooks', () => {
       } as Response)
 
       const { result } = renderHook(
-        () => useProject(mockProject.id, { enabled: false }),
+        () =>
+          useProject(
+            { orgId, siteId, projectId: mockProject.id },
+            { enabled: false }
+          ),
         {
           wrapper: createHookWrapper(),
         }
@@ -245,7 +350,13 @@ describe('useProjects hooks', () => {
         wrapper: createHookWrapper(),
       })
 
-      const createData = { name: 'New Project', description: 'New Description' }
+      const createData = {
+        orgId,
+        siteId,
+        name: 'New Project',
+        description: 'New Description',
+        site_id: siteId,
+      }
       result.current.mutate(createData)
 
       await waitFor(() => {
@@ -253,11 +364,18 @@ describe('useProjects hooks', () => {
       })
 
       expect(result.current.data).toEqual(newProject)
-      expect(mockFetch).toHaveBeenCalledWith('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(createData),
-      })
+      expect(mockFetch).toHaveBeenCalledWith(
+        `/api/organizations/${orgId}/sites/${siteId}/projects`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'New Project',
+            description: 'New Description',
+            site_id: siteId,
+          }),
+        }
+      )
     })
 
     it('should handle creation error', async () => {
@@ -271,7 +389,7 @@ describe('useProjects hooks', () => {
         wrapper: createHookWrapper(),
       })
 
-      result.current.mutate({ name: 'Invalid' })
+      result.current.mutate({ orgId, siteId, name: 'Invalid', site_id: siteId })
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true)
@@ -296,7 +414,12 @@ describe('useProjects hooks', () => {
         wrapper: createHookWrapper(),
       })
 
-      const createData = { name: 'Callback Project' }
+      const createData = {
+        orgId,
+        siteId,
+        name: 'Callback Project',
+        site_id: siteId,
+      }
       result.current.mutate(createData)
 
       await waitFor(() => {
@@ -324,7 +447,10 @@ describe('useProjects hooks', () => {
       })
 
       const updateData = {
-        params: { id: mockProject.id, data: { name: 'Updated Project' } },
+        orgId,
+        siteId,
+        projectId: mockProject.id,
+        name: 'Updated Project',
       }
       result.current.mutate(updateData)
 
@@ -334,7 +460,7 @@ describe('useProjects hooks', () => {
 
       expect(result.current.data).toEqual(updatedProject)
       expect(mockFetch).toHaveBeenCalledWith(
-        `/api/projects/${mockProject.id}`,
+        `/api/organizations/${orgId}/sites/${siteId}/projects/${mockProject.id}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -355,7 +481,10 @@ describe('useProjects hooks', () => {
       })
 
       result.current.mutate({
-        params: { id: mockProject.id, data: { name: 'Invalid' } },
+        orgId,
+        siteId,
+        projectId: mockProject.id,
+        name: 'Invalid',
       })
 
       await waitFor(() => {
@@ -382,7 +511,10 @@ describe('useProjects hooks', () => {
       })
 
       const updateData = {
-        params: { id: mockProject.id, data: { name: 'Callback Project' } },
+        orgId,
+        siteId,
+        projectId: mockProject.id,
+        name: 'Callback Project',
       }
       result.current.mutate(updateData)
 
@@ -411,14 +543,14 @@ describe('useProjects hooks', () => {
         wrapper: createHookWrapper(),
       })
 
-      result.current.mutate(mockProject.id)
+      result.current.mutate({ orgId, siteId, projectId: mockProject.id })
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true)
       })
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `/api/projects/${mockProject.id}`,
+        `/api/organizations/${orgId}/sites/${siteId}/projects/${mockProject.id}`,
         {
           method: 'DELETE',
         }
@@ -436,7 +568,7 @@ describe('useProjects hooks', () => {
         wrapper: createHookWrapper(),
       })
 
-      result.current.mutate(mockProject.id)
+      result.current.mutate({ orgId, siteId, projectId: mockProject.id })
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true)
@@ -459,7 +591,7 @@ describe('useProjects hooks', () => {
       } as Response)
 
       const { result: queryResult } = renderHook(
-        () => useProject(mockProject.id),
+        () => useProject({ orgId, siteId, projectId: mockProject.id }),
         {
           wrapper: createHookWrapper(queryClient),
         }
@@ -494,7 +626,10 @@ describe('useProjects hooks', () => {
       )
 
       mutationResult.current.mutate({
-        params: { id: mockProject.id, data: { name: 'Optimistic Project' } },
+        orgId,
+        siteId,
+        projectId: mockProject.id,
+        name: 'Optimistic Project',
       })
 
       await new Promise((resolve) => setTimeout(resolve, 0))
@@ -524,7 +659,7 @@ describe('useProjects hooks', () => {
       } as Response)
 
       const { result: queryResult } = renderHook(
-        () => useProject(mockProject.id),
+        () => useProject({ orgId, siteId, projectId: mockProject.id }),
         {
           wrapper: createHookWrapper(queryClient),
         }
@@ -548,7 +683,10 @@ describe('useProjects hooks', () => {
       )
 
       mutationResult.current.mutate({
-        params: { id: mockProject.id, data: { name: 'Will Fail' } },
+        orgId,
+        siteId,
+        projectId: mockProject.id,
+        name: 'Will Fail',
       })
 
       await waitFor(() => {
@@ -576,7 +714,7 @@ describe('useProjects hooks', () => {
       } as Response)
 
       const { result: queryResult } = renderHook(
-        () => useProject(mockProject.id),
+        () => useProject({ orgId, siteId, projectId: mockProject.id }),
         {
           wrapper: createHookWrapper(queryClient),
         }
@@ -602,10 +740,10 @@ describe('useProjects hooks', () => {
       )
 
       mutationResult.current.mutate({
-        params: {
-          id: mockProject.id,
-          data: { description: 'New Description' },
-        },
+        orgId,
+        siteId,
+        projectId: mockProject.id,
+        description: 'New Description',
       })
 
       await new Promise((resolve) => setTimeout(resolve, 0))
@@ -618,7 +756,9 @@ describe('useProjects hooks', () => {
 
       expect(optimisticData.description).toBe('New Description')
       expect(optimisticData.name).toBe(mockProject.name)
-      expect(optimisticData.workflow_config).toBe(mockProject.workflow_config)
+      expect(optimisticData.workflowConfig).toStrictEqual(
+        mockProject.workflowConfig
+      )
     })
 
     it('should handle workflow_config serialization', async () => {
@@ -633,7 +773,7 @@ describe('useProjects hooks', () => {
       } as Response)
 
       const { result: queryResult } = renderHook(
-        () => useProject(mockProject.id),
+        () => useProject({ orgId, siteId, projectId: mockProject.id }),
         {
           wrapper: createHookWrapper(queryClient),
         }
@@ -643,10 +783,22 @@ describe('useProjects hooks', () => {
         expect(queryResult.current.isSuccess).toBe(true)
       })
 
-      const workflowConfig = { nodes: [], edges: [] }
+      const workflowConfig = {
+        nodes: [],
+        edges: [],
+        metadata: { lastModified: '2025-01-01T00:00:00.000Z' },
+      }
+      const updatedWorkflowConfig = {
+        schema_info: {
+          version: '1.0.0',
+          compatibility: '>=1.0.0',
+          schema_name: 'WorkflowConfig',
+        },
+        data: workflowConfig,
+      }
       const updatedProject = {
         ...mockProject,
-        workflow_config: JSON.stringify(workflowConfig),
+        workflowConfig: updatedWorkflowConfig,
       }
 
       mockFetch.mockResolvedValueOnce({
@@ -665,10 +817,10 @@ describe('useProjects hooks', () => {
       )
 
       mutationResult.current.mutate({
-        params: {
-          id: mockProject.id,
-          data: { workflow_config: workflowConfig },
-        },
+        orgId,
+        siteId,
+        projectId: mockProject.id,
+        workflowConfig: updatedWorkflowConfig,
       })
 
       await new Promise((resolve) => setTimeout(resolve, 0))
@@ -679,9 +831,7 @@ describe('useProjects hooks', () => {
         mockProject.id,
       ]) as Project
 
-      expect(optimisticData.workflow_config).toBe(
-        JSON.stringify(workflowConfig)
-      )
+      expect(optimisticData.workflowConfig).toEqual(updatedWorkflowConfig)
     })
   })
 
@@ -700,7 +850,7 @@ describe('useProjects hooks', () => {
         wrapper: createHookWrapper(queryClient),
       })
 
-      result.current({ id: mockProject.id })
+      result.current({ orgId, siteId, projectId: mockProject.id })
 
       await waitFor(() => {
         const cachedData = queryClient.getQueryData([
@@ -711,7 +861,9 @@ describe('useProjects hooks', () => {
         expect(cachedData).toEqual(mockProject)
       })
 
-      expect(mockFetch).toHaveBeenCalledWith(`/api/projects/${mockProject.id}`)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `/api/organizations/${orgId}/sites/${siteId}/projects/${mockProject.id}`
+      )
     })
   })
 })

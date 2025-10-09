@@ -183,8 +183,24 @@ export interface FlowSlice {
   executeWithMessages: () => Promise<void>
 
   // Save/load projects
-  saveProject: ({ projectId }: { projectId: string }) => Promise<void>
-  loadProject: ({ projectId }: { projectId: string }) => Promise<void>
+  saveProject: ({
+    orgId,
+    siteId,
+    projectId,
+  }: {
+    orgId: string
+    siteId: string
+    projectId: string
+  }) => Promise<void>
+  loadWorkflowIntoCanvas: ({
+    orgId,
+    siteId,
+    projectId,
+  }: {
+    orgId: string
+    siteId: string
+    projectId: string
+  }) => Promise<void>
 }
 
 // This will be imported from factory once we create it
@@ -586,7 +602,15 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
   },
 
   // Save/load projects
-  saveProject: async ({ projectId }: { projectId: string }): Promise<void> => {
+  saveProject: async ({
+    orgId,
+    siteId,
+    projectId,
+  }: {
+    orgId: string
+    siteId: string
+    projectId: string
+  }): Promise<void> => {
     try {
       set({ saveStatus: 'saving' })
 
@@ -608,7 +632,12 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
 
       console.log('🚀 [FlowStore] Saving project:', versionedConfig)
       // Update project via API (retry handled in API layer)
-      await projectsApi.update(projectId, { workflow_config: versionedConfig })
+      await projectsApi.update({
+        orgId,
+        siteId,
+        projectId,
+        workflowConfig: versionedConfig,
+      })
 
       set({ saveStatus: 'saved' })
       const { showSuccess } = get()
@@ -625,15 +654,21 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
     }
   },
 
-  loadProject: async ({ projectId }: { projectId: string }): Promise<void> => {
+  loadWorkflowIntoCanvas: async ({
+    orgId,
+    siteId,
+    projectId,
+  }: {
+    orgId: string
+    siteId: string
+    projectId: string
+  }): Promise<void> => {
     try {
-      const project = await projectsApi.get(projectId)
+      const project = await projectsApi.get({ orgId, siteId, projectId })
 
       console.log('🚀 [FlowStore] Loaded project:', project)
-      if (project.workflow_config && project.workflow_config !== '{}') {
-        const versionedConfig = JSON.parse(
-          project.workflow_config
-        ) as VersionedWorkflowConfig
+      if (project.workflowConfig) {
+        const versionedConfig = project.workflowConfig
         const nodeFactory = createNodeFactory()
 
         const { nodes, edges } = deserializeWorkflow({

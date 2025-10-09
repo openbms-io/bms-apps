@@ -36,7 +36,15 @@ const edgeTypes = {
 
 import { SaveProjectButton } from './save-project-button'
 
-export function FlowCanvas({ projectId }: { projectId: string }) {
+export function FlowCanvas({
+  orgId,
+  siteId,
+  projectId,
+}: {
+  orgId: string
+  siteId: string
+  projectId: string
+}) {
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null)
 
   // Get handlers
@@ -197,7 +205,11 @@ export function FlowCanvas({ projectId }: { projectId: string }) {
               Run
             </Button>
 
-            <SaveProjectButton projectId={projectId} />
+            <SaveProjectButton
+              orgId={orgId}
+              siteId={siteId}
+              projectId={projectId}
+            />
           </div>
         </Panel>
         <Controls

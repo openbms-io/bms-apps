@@ -9,7 +9,7 @@ CREATE TABLE projects_new (
   id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
-  workflow_config TEXT DEFAULT '{}' NOT NULL,
+  workflow_config TEXT,
   created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
   updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL
 );

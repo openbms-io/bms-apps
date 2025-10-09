@@ -22,6 +22,14 @@ export function createQueryClient(): QueryClient {
 type QueryParams = Record<string, string | number | boolean | undefined | null>
 
 export const queryKeys = {
+  organizations: {
+    all: ['organizations'] as const,
+    lists: () => [...queryKeys.organizations.all, 'list'] as const,
+  },
+  sites: {
+    all: ['sites'] as const,
+    byOrg: (orgId: string) => [...queryKeys.sites.all, 'org', orgId] as const,
+  },
   projects: {
     all: ['projects'] as const,
     lists: () => [...queryKeys.projects.all, 'list'] as const,
@@ -30,9 +38,9 @@ export const queryKeys = {
     details: () => [...queryKeys.projects.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.projects.details(), id] as const,
   },
-  deploymentConfig: {
-    all: ['deploymentConfig'] as const,
-    detail: (projectId: string) =>
-      [...queryKeys.deploymentConfig.all, 'detail', projectId] as const,
+  iotDevices: {
+    all: ['iotDevices'] as const,
+    details: () => [...queryKeys.iotDevices.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.iotDevices.details(), id] as const,
   },
 } as const

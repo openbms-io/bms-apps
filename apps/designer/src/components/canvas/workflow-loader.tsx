@@ -4,16 +4,33 @@ import { useEffect, useState, useCallback } from 'react'
 import { Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useFlowStore } from '@/store/use-flow-store'
-import { useDeploymentConfig } from '@/hooks/use-deployment-config'
+import { useProject } from '@/hooks/use-projects'
+import { useIotDevice } from '@/hooks/use-iot-device'
 
 interface WorkflowLoaderProps {
+  orgId: string
+  siteId: string
   projectId: string
 }
 
-export function WorkflowLoader({ projectId }: WorkflowLoaderProps) {
-  const { data: deploymentConfig } = useDeploymentConfig(projectId)
+export function WorkflowLoader({
+  orgId,
+  siteId,
+  projectId,
+}: WorkflowLoaderProps) {
+  const { data: project, isLoading: isLoadingProject } = useProject({
+    orgId,
+    siteId,
+    projectId,
+  })
+  const { data: iotDevice } = useIotDevice(
+    orgId,
+    siteId,
+    projectId,
+    project?.iotDeviceId ?? undefined
+  )
 
-  const loadProject = useFlowStore((s) => s.loadProject)
+  const loadWorkflowIntoCanvas = useFlowStore((s) => s.loadWorkflowIntoCanvas)
   const showError = useFlowStore((s) => s.showError)
   const startMqtt = useFlowStore((s) => s.startMqtt)
   const stopMqtt = useFlowStore((s) => s.stopMqtt)
@@ -23,15 +40,14 @@ export function WorkflowLoader({ projectId }: WorkflowLoaderProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // MQTT lifecycle management - stop/start when deployment config changes
+  // MQTT lifecycle management - stop/start when iot device changes
   useEffect(() => {
-    if (!deploymentConfig) return
+    if (!iotDevice) return
 
-    clearAllNodes()
     startMqtt({
-      organizationId: deploymentConfig.organization_id,
-      siteId: deploymentConfig.site_id,
-      iotDeviceId: deploymentConfig.iot_device_id,
+      organizationId: iotDevice.organization_id,
+      siteId: iotDevice.site_id,
+      iotDeviceId: iotDevice.id,
     })
 
     return () => {
@@ -39,31 +55,25 @@ export function WorkflowLoader({ projectId }: WorkflowLoaderProps) {
       stopMqtt()
     }
   }, [
-    deploymentConfig?.organization_id,
-    deploymentConfig?.site_id,
-    deploymentConfig?.iot_device_id,
+    iotDevice?.organization_id,
+    iotDevice?.site_id,
+    iotDevice?.id,
     startMqtt,
     stopMqtt,
     clearAllNodes,
-    deploymentConfig,
+    iotDevice,
   ])
 
   const doLoad = useCallback(async () => {
-    if (!deploymentConfig) {
-      setIsLoading(false)
-      return
-    }
-
-    // Wait for MQTT connection before loading workflow
-    if (connectionStatus !== 'connected') {
+    if (isLoadingProject) {
       setIsLoading(true)
-      return // Don't load yet, wait for connection
+      return
     }
 
     setIsLoading(true)
     setError(null)
     try {
-      await loadProject({ projectId })
+      await loadWorkflowIntoCanvas({ orgId, siteId, projectId })
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to load workflow'
       setError(msg)
@@ -71,11 +81,18 @@ export function WorkflowLoader({ projectId }: WorkflowLoaderProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [loadProject, projectId, showError, deploymentConfig, connectionStatus])
+  }, [
+    loadWorkflowIntoCanvas,
+    orgId,
+    siteId,
+    projectId,
+    showError,
+    isLoadingProject,
+  ])
 
-  // Load workflow after MQTT is connected
+  // Load workflow when project is ready
   useEffect(() => {
-    void doLoad()
+    doLoad()
   }, [doLoad])
 
   return (

@@ -1,10 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import mqtt from 'mqtt'
 import { SupervisorsTab } from '@/components/sidebar/supervisors-tab'
-import {
-  useDeploymentConfig,
-  useUpdateDeploymentConfig,
-} from '@/hooks/use-deployment-config'
+import { useProject } from '@/hooks/use-projects'
+import { useIotDevice } from '@/hooks/use-iot-device'
 import { useFlowStore } from '@/store/use-flow-store'
 import { getMqttBus } from '@/lib/mqtt/mqtt-bus'
 
@@ -19,25 +17,32 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => 'test-correlation-id'),
 }))
 
-jest.mock('@/hooks/use-deployment-config')
+jest.mock('@/hooks/use-projects')
+jest.mock('@/hooks/use-iot-device')
 
-const mockUseDeploymentConfig = useDeploymentConfig as jest.MockedFunction<
-  typeof useDeploymentConfig
+const mockUseProject = useProject as jest.MockedFunction<typeof useProject>
+const mockUseIotDevice = useIotDevice as jest.MockedFunction<
+  typeof useIotDevice
 >
-const mockUseUpdateDeploymentConfig =
-  useUpdateDeploymentConfig as jest.MockedFunction<
-    typeof useUpdateDeploymentConfig
-  >
 
 describe('MQTT Integration - Full Lifecycle', () => {
   let mockClient: any
 
-  const mockDeploymentConfig = {
-    id: 'config-1',
-    project_id: 'project-123',
-    organization_id: 'org_test',
+  const mockProject = {
+    id: 'project-123',
     site_id: 'site-123',
     iot_device_id: 'device-456',
+    name: 'Test Project',
+    workflow_config: '{}',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  }
+
+  const mockIotDevice = {
+    id: 'device-456',
+    organization_id: 'org_test',
+    site_id: 'site-123',
+    name: 'Test IoT Device',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
   }
@@ -54,14 +59,14 @@ describe('MQTT Integration - Full Lifecycle', () => {
     }
     ;(mqtt.connect as jest.Mock).mockReturnValue(mockClient)
 
-    mockUseDeploymentConfig.mockReturnValue({
-      data: mockDeploymentConfig,
+    mockUseProject.mockReturnValue({
+      data: mockProject,
       isLoading: false,
     } as any)
 
-    mockUseUpdateDeploymentConfig.mockReturnValue({
-      mutateAsync: jest.fn(),
-      isPending: false,
+    mockUseIotDevice.mockReturnValue({
+      data: mockIotDevice,
+      isLoading: false,
     } as any)
   })
 
@@ -77,7 +82,7 @@ describe('MQTT Integration - Full Lifecycle', () => {
       render(<SupervisorsTab projectId="project-123" />)
 
       // Step 1: Verify initial state
-      expect(screen.getByText('Supervisor Configured')).toBeInTheDocument()
+      expect(screen.getByText('Test IoT Device')).toBeInTheDocument()
       expect(screen.getByText('org_test')).toBeInTheDocument()
 
       // Step 2: Start MQTT connection using the actual store

@@ -3,7 +3,7 @@
 import { randomUUID } from 'crypto'
 
 import { getDatabase, closeDatabase } from './client'
-import { projects } from './schema'
+import { projects, sites, organizations } from './schema'
 import { eq } from 'drizzle-orm'
 
 describe('Database Client (SQLite + Drizzle)', () => {
@@ -40,11 +40,37 @@ describe('Database Client (SQLite + Drizzle)', () => {
   it('supports insert and readback for projects', async () => {
     const db = getDatabase()
 
+    const org_id = randomUUID()
+    const site_id = randomUUID()
     const id = randomUUID()
     const name = 'Test Project'
+    const now = new Date().toISOString()
 
-    // Insert minimal row (defaults for workflow_config/created_at/updated_at)
-    await db.insert(projects).values({ id, name }).run()
+    // Set up required hierarchy
+    await db
+      .insert(organizations)
+      .values({
+        id: org_id,
+        name: 'Test Org',
+        created_at: now,
+        updated_at: now,
+      })
+      .run()
+
+    await db
+      .insert(sites)
+      .values({
+        id: site_id,
+        organization_id: org_id,
+        name: 'Test Site',
+        description: null,
+        created_at: now,
+        updated_at: now,
+      })
+      .run()
+
+    // Insert minimal row (defaults for created_at/updated_at, workflow_config is null)
+    await db.insert(projects).values({ id, name, site_id }).run()
 
     const fetched = await db
       .select()
@@ -55,9 +81,10 @@ describe('Database Client (SQLite + Drizzle)', () => {
     expect(fetched).toBeTruthy()
     expect(fetched?.id).toBe(id)
     expect(fetched?.name).toBe(name)
-    // Defaults are applied
+    // Defaults are applied for timestamps
     expect(typeof fetched?.created_at).toBe('string')
     expect(typeof fetched?.updated_at).toBe('string')
-    expect(typeof fetched?.workflow_config).toBe('string')
+    // workflow_config is null when not provided
+    expect(fetched?.workflow_config).toBeNull()
   })
 })

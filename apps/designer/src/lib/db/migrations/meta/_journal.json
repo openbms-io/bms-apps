@@ -36,6 +36,13 @@
       "when": 1759163822728,
       "tag": "0004_add_column_and_rename",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1759785153527,
+      "tag": "0005_add_hierarchical_org_site_structure",
+      "breakpoints": true
     }
   ]
 }

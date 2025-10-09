@@ -324,3 +324,4 @@ npm run test:integration
 - Why are we setting to null? Keep it undefined. I think we should consistently just use undefined, unless there is a special condition to use null.
 - Mock external libraries for integration and E2E tests. Unit test, you can mock designer modules. BUT DO NOT MOCK SYSTEM UNDER TEST.
 - Dont add unnecessary comments. Make method names clear enough
+- Remember the API layer SHOULD NOT HAVE or leak database relationship. The relationship should belong in Database layer.
