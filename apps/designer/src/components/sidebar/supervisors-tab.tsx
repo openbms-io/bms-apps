@@ -13,6 +13,7 @@ import {
   WifiOff,
   Clock,
   Plus,
+  Settings,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useProject, useUpdateProject } from '@/hooks/use-projects'
@@ -23,6 +24,9 @@ import {
 import { useFlowStore } from '@/store/use-flow-store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { useBacnetReaders } from '@/hooks/use-bacnet-readers'
+import { BacnetReadersModal } from '@/components/modals/bacnet-readers-modal'
 
 interface SupervisorsTabProps {
   orgId: string
@@ -52,6 +56,14 @@ export function SupervisorsTab({
   const [isCreating, setIsCreating] = useState(false)
   const [formName, setFormName] = useState('')
   const [formDescription, setFormDescription] = useState('')
+  const [readersModalOpen, setReadersModalOpen] = useState(false)
+
+  const { data: readers } = useBacnetReaders(
+    orgId,
+    siteId,
+    projectId,
+    project?.iotDeviceId
+  )
 
   const isLoading = isLoadingProject || isLoadingDevice
 
@@ -60,6 +72,7 @@ export function SupervisorsTab({
   const lastError = useFlowStore((s) => s.lastError)
 
   const hasConfig = !!iotDevice
+  const readersCount = readers?.length ?? 0
 
   const handleCreate = async () => {
     if (!formName.trim()) return
@@ -293,15 +306,13 @@ export function SupervisorsTab({
                   <span className="text-xs font-medium text-muted-foreground">
                     Organization:
                   </span>
-                  <span className="text-xs ml-2">
-                    {iotDevice.organization_id}
-                  </span>
+                  <span className="text-xs ml-2">{iotDevice.siteId}</span>
                 </div>
                 <div>
                   <span className="text-xs font-medium text-muted-foreground">
                     Site:
                   </span>
-                  <span className="text-xs ml-2">{iotDevice.site_id}</span>
+                  <span className="text-xs ml-2">{iotDevice.siteId}</span>
                 </div>
                 <div>
                   <span className="text-xs font-medium text-muted-foreground">
@@ -322,6 +333,38 @@ export function SupervisorsTab({
                 </span>
               </div>
             </div>
+
+            {/* BACnet Readers Configuration */}
+            {hasConfig && (
+              <div className="p-3 border rounded-lg bg-card">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    <div>
+                      <div className="text-sm font-medium">
+                        BACnet Reader Network Interface
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Configure Ethernet/WiFi interface settings
+                      </div>
+                    </div>
+                  </div>
+                  <Badge variant="secondary">{readersCount}</Badge>
+                </div>
+
+                <div className="mt-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setReadersModalOpen(true)}
+                    className="w-full"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configure Interfaces
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* MQTT Connection Status */}
             {hasConfig && (
@@ -465,6 +508,18 @@ export function SupervisorsTab({
           flows via MQTT.
         </div>
       </div>
+
+      {/* BACnet Readers Modal */}
+      {iotDevice && (
+        <BacnetReadersModal
+          open={readersModalOpen}
+          onOpenChange={setReadersModalOpen}
+          orgId={orgId}
+          siteId={siteId}
+          projectId={projectId}
+          iotDeviceId={iotDevice.id}
+        />
+      )}
     </div>
   )
 }

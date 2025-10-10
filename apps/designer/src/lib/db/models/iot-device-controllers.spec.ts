@@ -82,7 +82,7 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
       mac_address: 'AA:BB:CC:DD:EE:FF',
       name: 'HVAC Controller',
       description: 'Main HVAC system controller',
-      is_enabled: true,
+      is_active: true,
       metadata: {
         status_flags: ['out_of_service'],
         event_state: 'offnormal',
@@ -103,7 +103,7 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
     expect(created.mac_address).toBe('AA:BB:CC:DD:EE:FF')
     expect(created.name).toBe('HVAC Controller')
     expect(created.description).toBe('Main HVAC system controller')
-    expect(created.is_enabled).toBe(true)
+    expect(created.is_active).toBe(true)
     expect(created.metadata).toEqual({
       status_flags: ['out_of_service'],
       event_state: 'offnormal',
@@ -135,7 +135,7 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
     expect(created.network_number).toBeUndefined()
     expect(created.mac_address).toBeUndefined()
     expect(created.port).toBe(47808)
-    expect(created.is_enabled).toBe(true)
+    expect(created.is_active).toBe(true)
     expect(created.metadata).toEqual({})
 
     const fetched = await iotDeviceControllersRepository.findById(created.id)
@@ -153,7 +153,7 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
       device_id: 2003,
       name: 'Controller to Update',
       description: 'Original description',
-      is_enabled: true,
+      is_active: true,
       id: randomUUID(),
     })
 
@@ -162,7 +162,7 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
     const updated = await iotDeviceControllersRepository.update(created.id, {
       name: 'Updated Controller',
       description: null,
-      is_enabled: false,
+      is_active: false,
       metadata: {
         reliability: 'unreliable_other',
         high_limit: 85,
@@ -174,7 +174,7 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
     expect(updated!.id).toBe(created.id)
     expect(updated!.name).toBe('Updated Controller')
     expect(updated!.description).toBeUndefined()
-    expect(updated!.is_enabled).toBe(false)
+    expect(updated!.is_active).toBe(false)
     expect(updated!.metadata).toEqual({
       reliability: 'unreliable_other',
       high_limit: 85,

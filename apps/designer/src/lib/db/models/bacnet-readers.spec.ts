@@ -76,7 +76,7 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
       mac_address: '00:1A:2B:3C:4D:5E',
       name: 'Main Building Reader',
       description: 'Primary BACnet reader for main building',
-      is_enabled: true,
+      is_active: true,
       metadata: {
         status_flags: ['in_alarm'],
         event_state: 'normal',
@@ -95,7 +95,7 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
     expect(created.mac_address).toBe('00:1A:2B:3C:4D:5E')
     expect(created.name).toBe('Main Building Reader')
     expect(created.description).toBe('Primary BACnet reader for main building')
-    expect(created.is_enabled).toBe(true)
+    expect(created.is_active).toBe(true)
     expect(created.metadata).toEqual({
       status_flags: ['in_alarm'],
       event_state: 'normal',
@@ -126,7 +126,7 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
     expect(created.network_number).toBeUndefined()
     expect(created.mac_address).toBeUndefined()
     expect(created.port).toBe(47808) // default
-    expect(created.is_enabled).toBe(true) // default
+    expect(created.is_active).toBe(true) // default
     expect(created.metadata).toEqual({})
 
     const fetched = await bacnetReadersRepository.findById(created.id)
@@ -151,7 +151,7 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
     const updated = await bacnetReadersRepository.update(created.id, {
       name: 'Updated Reader',
       description: null,
-      is_enabled: false,
+      is_active: false,
       metadata: {
         out_of_service: true,
       },
@@ -161,7 +161,7 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
     expect(updated!.id).toBe(created.id)
     expect(updated!.name).toBe('Updated Reader')
     expect(updated!.description).toBeUndefined()
-    expect(updated!.is_enabled).toBe(false)
+    expect(updated!.is_active).toBe(false)
     expect(updated!.metadata).toEqual({ out_of_service: true })
     expect(new Date(updated!.updated_at).getTime()).toBeGreaterThan(
       new Date(created.updated_at).getTime()

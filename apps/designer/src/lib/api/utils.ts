@@ -44,3 +44,9 @@ export async function withRetry<T>(
   }
   throw lastErr instanceof Error ? lastErr : new Error('Request failed')
 }
+
+export interface ApiResponse<T> {
+  success: boolean
+  error?: string
+  data: T
+}

@@ -76,7 +76,7 @@ describe('ControllerPointsRepository (SQLite + Drizzle)', () => {
         mac_address: null,
         name: 'Test Controller',
         description: null,
-        is_enabled: true,
+        is_active: true,
         metadata: '{}',
         created_at: now,
         updated_at: now,

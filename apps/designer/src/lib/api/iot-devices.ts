@@ -1,9 +1,11 @@
-import { IotDevice } from '../db/schema'
+import { IotDevice } from '@/lib/domain/models/iot-device'
 
 interface ApiResponse<T> {
   success: boolean
   error?: string
-  iot_device?: T
+  data?: {
+    iotDevice: T
+  }
 }
 
 export const iotDevicesApi = {
@@ -22,11 +24,11 @@ export const iotDevicesApi = {
       throw new Error(json.error || 'Failed to fetch IoT device')
     }
 
-    if (!json.iot_device) {
+    if (!json.data?.iotDevice) {
       throw new Error('IoT device not found in response')
     }
 
-    return json.iot_device
+    return json.data.iotDevice
   },
 
   async createForProject(params: {
@@ -53,10 +55,10 @@ export const iotDevicesApi = {
       throw new Error(json.error || 'Failed to create IoT device')
     }
 
-    if (!json.iot_device) {
+    if (!json.data?.iotDevice) {
       throw new Error('IoT device not found in response')
     }
 
-    return json.iot_device
+    return json.data.iotDevice
   },
 }

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { bacnetReadersRepository } from '@/lib/db/models/bacnet-readers'
-import { type InsertBacnetReader } from '@/lib/db/schema'
 import {
   IotDeviceRouteParamsSchema,
   type IotDeviceRouteParams,
+  CreateBacnetReaderRequestSchema,
 } from './schemas'
 import { handleApiError } from '@/lib/api/error-handler'
 import { BacnetReaderMapper } from '@/lib/domain/mappers/bacnet-reader.mapper'
+import { randomUUID } from 'crypto'
 
 export async function GET(
   request: NextRequest,
@@ -47,17 +48,20 @@ export async function POST(
   try {
     const validatedParams = IotDeviceRouteParamsSchema.parse(await params)
     const { orgId, siteId, iotDeviceId } = validatedParams
-    const body: Omit<
-      InsertBacnetReader,
-      'organization_id' | 'site_id' | 'iot_device_id'
-    > = await request.json()
 
-    const dbReader = await bacnetReadersRepository.create({
-      ...body,
-      organization_id: orgId,
-      site_id: siteId,
-      iot_device_id: iotDeviceId,
-    })
+    const body = await request.json()
+    const dto = CreateBacnetReaderRequestSchema.parse(body)
+
+    const createDto = {
+      ...dto,
+      organizationId: orgId,
+      siteId: siteId,
+      iotDeviceId: iotDeviceId,
+    }
+
+    const dbInsert = BacnetReaderMapper.toDbInsert(createDto, randomUUID())
+
+    const dbReader = await bacnetReadersRepository.create(dbInsert)
 
     const data = {
       reader: BacnetReaderMapper.toDTO({

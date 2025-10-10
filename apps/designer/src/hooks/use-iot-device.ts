@@ -5,7 +5,7 @@ import {
   UseMutationOptions,
   useQueryClient,
 } from '@tanstack/react-query'
-import { IotDevice } from '@/lib/db/schema'
+import { IotDevice } from '@/lib/domain/models/iot-device'
 import { iotDevicesApi } from '@/lib/api/iot-devices'
 import { queryKeys } from '@/lib/query-client'
 

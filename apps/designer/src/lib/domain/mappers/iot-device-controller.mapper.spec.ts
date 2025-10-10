@@ -25,7 +25,7 @@ describe('IotDeviceControllerMapper', () => {
         mac_address: '00:11:22:33:44:55',
         name: 'Test Controller',
         description: 'A test controller',
-        is_enabled: true,
+        is_active: true,
         metadata,
         created_at: '2025-01-01T00:00:00Z',
         updated_at: '2025-01-02T00:00:00Z',
@@ -44,7 +44,7 @@ describe('IotDeviceControllerMapper', () => {
       expect(dto.macAddress).toBe('00:11:22:33:44:55')
       expect(dto.name).toBe('Test Controller')
       expect(dto.description).toBe('A test controller')
-      expect(dto.isEnabled).toBe(true)
+      expect(dto.isActive).toBe(true)
       expect(dto.metadata).toEqual(metadata)
       expect(dto.createdAt).toBe('2025-01-01T00:00:00Z')
       expect(dto.updatedAt).toBe('2025-01-02T00:00:00Z')
@@ -63,7 +63,7 @@ describe('IotDeviceControllerMapper', () => {
         mac_address: null,
         name: 'Test Controller',
         description: null,
-        is_enabled: true,
+        is_active: true,
         metadata: null,
         created_at: '2025-01-01T00:00:00Z',
         updated_at: '2025-01-02T00:00:00Z',
@@ -90,7 +90,7 @@ describe('IotDeviceControllerMapper', () => {
         mac_address: null,
         name: 'Test Controller',
         description: null,
-        is_enabled: true,
+        is_active: true,
         metadata: '{}' as const,
         created_at: '2025-01-01T00:00:00Z',
         updated_at: '2025-01-02T00:00:00Z',
@@ -120,7 +120,7 @@ describe('IotDeviceControllerMapper', () => {
         macAddress: '11:22:33:44:55:66',
         name: 'New Controller',
         description: 'Controller description',
-        isEnabled: false,
+        isActive: false,
         metadata,
       }
       const id = 'ctrl_456'
@@ -138,7 +138,7 @@ describe('IotDeviceControllerMapper', () => {
       expect(dbInsert.mac_address).toBe('11:22:33:44:55:66')
       expect(dbInsert.name).toBe('New Controller')
       expect(dbInsert.description).toBe('Controller description')
-      expect(dbInsert.is_enabled).toBe(false)
+      expect(dbInsert.is_active).toBe(false)
       expect(dbInsert.metadata).toEqual(metadata)
       expect(dbInsert.created_at).toMatch(
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
@@ -157,6 +157,7 @@ describe('IotDeviceControllerMapper', () => {
         port: 47808,
         deviceId: 1003,
         name: 'New Controller',
+        isActive: true,
       }
       const id = 'ctrl_789'
 
@@ -165,7 +166,7 @@ describe('IotDeviceControllerMapper', () => {
       expect(dbInsert.network_number).toBeUndefined()
       expect(dbInsert.mac_address).toBeUndefined()
       expect(dbInsert.description).toBeUndefined()
-      expect(dbInsert.is_enabled).toBe(true)
+      expect(dbInsert.is_active).toBe(true)
       expect(dbInsert.metadata).toBe('{}')
     })
 
@@ -202,7 +203,7 @@ describe('IotDeviceControllerMapper', () => {
         macAddress: '22:33:44:55:66:77',
         name: 'Updated Controller',
         description: 'Updated description',
-        isEnabled: true,
+        isActive: true,
         metadata,
       }
 
@@ -215,7 +216,7 @@ describe('IotDeviceControllerMapper', () => {
       expect(dbUpdate.mac_address).toBe('22:33:44:55:66:77')
       expect(dbUpdate.name).toBe('Updated Controller')
       expect(dbUpdate.description).toBe('Updated description')
-      expect(dbUpdate.is_enabled).toBe(true)
+      expect(dbUpdate.is_active).toBe(true)
       expect(dbUpdate.metadata).toEqual(metadata)
       expect(dbUpdate.updated_at).toMatch(
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
@@ -251,7 +252,7 @@ describe('IotDeviceControllerMapper', () => {
       expect('mac_address' in dbUpdate).toBe(false)
       expect('name' in dbUpdate).toBe(false)
       expect('description' in dbUpdate).toBe(false)
-      expect('is_enabled' in dbUpdate).toBe(false)
+      expect('is_active' in dbUpdate).toBe(false)
       expect('metadata' in dbUpdate).toBe(false)
       expect('updated_at' in dbUpdate).toBe(false)
     })

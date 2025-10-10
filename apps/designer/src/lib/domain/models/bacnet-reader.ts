@@ -12,7 +12,7 @@ export type BacnetReader = {
   macAddress?: string
   name: string
   description?: string
-  isEnabled: boolean
+  isActive: boolean
   metadata?: BacnetMetadata
   createdAt: string
   updatedAt: string
@@ -29,7 +29,7 @@ export type CreateBacnetReader = {
   macAddress?: string
   name: string
   description?: string
-  isEnabled?: boolean
+  isActive: boolean
   metadata?: BacnetMetadata
 }
 
@@ -41,6 +41,6 @@ export type UpdateBacnetReader = {
   macAddress?: string | null
   name?: string
   description?: string | null
-  isEnabled?: boolean
+  isActive?: boolean
   metadata?: BacnetMetadata | null
 }

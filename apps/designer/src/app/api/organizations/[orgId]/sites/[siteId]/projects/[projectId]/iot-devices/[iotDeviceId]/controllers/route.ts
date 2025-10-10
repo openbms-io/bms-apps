@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { iotDeviceControllersRepository } from '@/lib/db/models/iot-device-controllers'
-import { type InsertIotDeviceController } from '@/lib/db/schema'
 import {
   IotDeviceRouteParamsSchema,
   type IotDeviceRouteParams,
+  CreateIotDeviceControllerRequestSchema,
 } from './schemas'
 import { handleApiError } from '@/lib/api/error-handler'
 import { IotDeviceControllerMapper } from '@/lib/domain/mappers/iot-device-controller.mapper'
+import { randomUUID } from 'crypto'
 
 export async function GET(
   request: NextRequest,
@@ -47,17 +48,23 @@ export async function POST(
   try {
     const validatedParams = IotDeviceRouteParamsSchema.parse(await params)
     const { orgId, siteId, iotDeviceId } = validatedParams
-    const body: Omit<
-      InsertIotDeviceController,
-      'organization_id' | 'site_id' | 'iot_device_id'
-    > = await request.json()
 
-    const dbController = await iotDeviceControllersRepository.create({
-      ...body,
-      organization_id: orgId,
-      site_id: siteId,
-      iot_device_id: iotDeviceId,
-    })
+    const body = await request.json()
+    const dto = CreateIotDeviceControllerRequestSchema.parse(body)
+
+    const createDto = {
+      ...dto,
+      organizationId: orgId,
+      siteId: siteId,
+      iotDeviceId: iotDeviceId,
+    }
+
+    const dbInsert = IotDeviceControllerMapper.toDbInsert(
+      createDto,
+      randomUUID()
+    )
+
+    const dbController = await iotDeviceControllersRepository.create(dbInsert)
 
     const data = {
       controller: IotDeviceControllerMapper.toDTO({

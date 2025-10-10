@@ -12,7 +12,7 @@ export type IotDeviceController = {
   macAddress?: string
   name: string
   description?: string
-  isEnabled: boolean
+  isActive: boolean
   metadata?: BacnetMetadata
   createdAt: string
   updatedAt: string
@@ -29,7 +29,7 @@ export type CreateIotDeviceController = {
   macAddress?: string
   name: string
   description?: string
-  isEnabled?: boolean
+  isActive: boolean
   metadata?: BacnetMetadata
 }
 
@@ -41,6 +41,6 @@ export type UpdateIotDeviceController = {
   macAddress?: string | null
   name?: string
   description?: string | null
-  isEnabled?: boolean
+  isActive?: boolean
   metadata?: BacnetMetadata | null
 }

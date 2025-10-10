@@ -25,7 +25,7 @@ describe('BacnetReaderMapper', () => {
         mac_address: '00:11:22:33:44:55',
         name: 'Test Reader',
         description: 'A test reader',
-        is_enabled: true,
+        is_active: true,
         metadata,
         created_at: '2025-01-01T00:00:00Z',
         updated_at: '2025-01-02T00:00:00Z',
@@ -44,7 +44,7 @@ describe('BacnetReaderMapper', () => {
       expect(dto.macAddress).toBe('00:11:22:33:44:55')
       expect(dto.name).toBe('Test Reader')
       expect(dto.description).toBe('A test reader')
-      expect(dto.isEnabled).toBe(true)
+      expect(dto.isActive).toBe(true)
       expect(dto.metadata).toEqual(metadata)
       expect(dto.createdAt).toBe('2025-01-01T00:00:00Z')
       expect(dto.updatedAt).toBe('2025-01-02T00:00:00Z')
@@ -63,7 +63,7 @@ describe('BacnetReaderMapper', () => {
         mac_address: null,
         name: 'Test Reader',
         description: null,
-        is_enabled: true,
+        is_active: true,
         metadata: null,
         created_at: '2025-01-01T00:00:00Z',
         updated_at: '2025-01-02T00:00:00Z',
@@ -90,7 +90,7 @@ describe('BacnetReaderMapper', () => {
         mac_address: null,
         name: 'Test Reader',
         description: null,
-        is_enabled: true,
+        is_active: true,
         metadata: '{}' as const,
         created_at: '2025-01-01T00:00:00Z',
         updated_at: '2025-01-02T00:00:00Z',
@@ -120,7 +120,7 @@ describe('BacnetReaderMapper', () => {
         macAddress: '11:22:33:44:55:66',
         name: 'New Reader',
         description: 'Reader description',
-        isEnabled: false,
+        isActive: false,
         metadata,
       }
       const id = 'reader_456'
@@ -138,7 +138,7 @@ describe('BacnetReaderMapper', () => {
       expect(dbInsert.mac_address).toBe('11:22:33:44:55:66')
       expect(dbInsert.name).toBe('New Reader')
       expect(dbInsert.description).toBe('Reader description')
-      expect(dbInsert.is_enabled).toBe(false)
+      expect(dbInsert.is_active).toBe(false)
       expect(dbInsert.metadata).toEqual(metadata)
       expect(dbInsert.created_at).toMatch(
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
@@ -157,6 +157,7 @@ describe('BacnetReaderMapper', () => {
         port: 47808,
         deviceId: 1003,
         name: 'New Reader',
+        isActive: true,
       }
       const id = 'reader_789'
 
@@ -165,7 +166,7 @@ describe('BacnetReaderMapper', () => {
       expect(dbInsert.network_number).toBeUndefined()
       expect(dbInsert.mac_address).toBeUndefined()
       expect(dbInsert.description).toBeUndefined()
-      expect(dbInsert.is_enabled).toBe(true)
+      expect(dbInsert.is_active).toBe(true)
       expect(dbInsert.metadata).toBe('{}')
     })
 
@@ -202,7 +203,7 @@ describe('BacnetReaderMapper', () => {
         macAddress: '22:33:44:55:66:77',
         name: 'Updated Reader',
         description: 'Updated description',
-        isEnabled: true,
+        isActive: true,
         metadata,
       }
 
@@ -215,7 +216,7 @@ describe('BacnetReaderMapper', () => {
       expect(dbUpdate.mac_address).toBe('22:33:44:55:66:77')
       expect(dbUpdate.name).toBe('Updated Reader')
       expect(dbUpdate.description).toBe('Updated description')
-      expect(dbUpdate.is_enabled).toBe(true)
+      expect(dbUpdate.is_active).toBe(true)
       expect(dbUpdate.metadata).toEqual(metadata)
       expect(dbUpdate.updated_at).toMatch(
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
@@ -251,7 +252,7 @@ describe('BacnetReaderMapper', () => {
       expect('mac_address' in dbUpdate).toBe(false)
       expect('name' in dbUpdate).toBe(false)
       expect('description' in dbUpdate).toBe(false)
-      expect('is_enabled' in dbUpdate).toBe(false)
+      expect('is_active' in dbUpdate).toBe(false)
       expect('metadata' in dbUpdate).toBe(false)
       expect('updated_at' in dbUpdate).toBe(false)
     })

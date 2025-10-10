@@ -52,7 +52,9 @@ export function InfrastructureSidebar({
 
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden">
-        {activeTab === 'controllers' && <ControllersTab />}
+        {activeTab === 'controllers' && (
+          <ControllersTab orgId={orgId} siteId={siteId} projectId={projectId} />
+        )}
         {activeTab === 'supervisors' && (
           <SupervisorsTab orgId={orgId} siteId={siteId} projectId={projectId} />
         )}

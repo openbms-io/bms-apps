@@ -29,7 +29,7 @@ export const iotDeviceControllers = sqliteTable(
     // Metadata
     name: text('name').notNull(),
     description: text('description'),
-    is_enabled: integer('is_enabled', { mode: 'boolean' })
+    is_active: integer('is_active', { mode: 'boolean' })
       .notNull()
       .default(true),
     metadata: text('metadata', { mode: 'json' })

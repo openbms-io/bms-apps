@@ -43,4 +43,14 @@ export const queryKeys = {
     details: () => [...queryKeys.iotDevices.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.iotDevices.details(), id] as const,
   },
+  iotDeviceControllers: {
+    all: ['iotDeviceControllers'] as const,
+    list: (iotDeviceId: string) =>
+      ['iotDeviceControllers', 'list', iotDeviceId] as const,
+  },
+  bacnetReaders: {
+    all: ['bacnetReaders'] as const,
+    list: (iotDeviceId: string) =>
+      ['bacnetReaders', 'list', iotDeviceId] as const,
+  },
 } as const

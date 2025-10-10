@@ -44,30 +44,74 @@ The `get_config` command enables BACnet network discovery by allowing users to c
      → Sends config to IoT device via MQTT
 
 2. MQTT Request (Designer → IoT Device)
-   Topic: .../command/get_config/request
+   Topic: iot/global/{organization_id}/{site_id}/{iot_device_id}/command/get_config/request
    Properties:
      - correlationData: <uuid>
-     - responseTopic: .../command/get_config/response
-   Payload:
-     {
-       "urlToUploadConfig": "https://...",
-       "jwtToken": "...",
-       "iotDeviceControllers": [
-         { "ip_address": "192.168.1.101" },
-         { "ip_address": "192.168.1.102" }
-       ],
-       "bacnetReaders": [
-         {
-           "id": "reader_1",
-           "ip_address": "192.168.1.100",
-           "subnet_mask": 24,
-           "bacnet_device_id": 1001,
-           "port": 47808,
-           "bbmd_enabled": false,
-           "is_active": true
-         }
-       ]
-     }
+     - responseTopic: iot/global/{organization_id}/{site_id}/{iot_device_id}/command/get_config/response
+
+   Payload Schema:
+   {
+     urlToUploadConfig: string,    // Presigned URL for config upload
+     jwtToken: string,             // JWT token for authentication
+
+     iotDeviceControllers: Array<{
+       id: string,                 // UUID from Designer DB
+       ip_address: string,         // Controller IP (e.g., "192.168.1.101")
+       port: number,               // BACnet port (default: 47808)
+       device_id: number,          // BACnet device ID
+       network_number?: number,    // Optional network number
+       mac_address?: string        // Optional MAC address
+     }>,
+
+     bacnetReaders: Array<{
+       id: string,                 // UUID from Designer DB
+       ip_address: string,         // Reader IP (e.g., "192.168.1.100")
+       port: number,               // BACnet port (default: 47808)
+       device_id: number,          // BACnet device ID
+       network_number?: number,    // Optional network number
+       mac_address?: string,       // Optional MAC address
+       is_active: boolean          // Enable/disable flag
+     }>
+   }
+
+   Example Payload:
+   {
+     "urlToUploadConfig": "https://api.example.com/config-uploads/cfg_123",
+     "jwtToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+     "iotDeviceControllers": [
+       {
+         "id": "ctrl_uuid_1",
+         "ip_address": "192.168.1.101",
+         "port": 47808,
+         "device_id": 1001,
+         "network_number": null,
+         "mac_address": null
+       },
+       {
+         "id": "ctrl_uuid_2",
+         "ip_address": "192.168.1.102",
+         "port": 47808,
+         "device_id": 1002
+       }
+     ],
+     "bacnetReaders": [
+       {
+         "id": "reader_uuid_1",
+         "ip_address": "192.168.1.100",
+         "port": 47808,
+         "device_id": 1000,
+         "network_number": null,
+         "mac_address": null,
+         "is_active": true
+       }
+     ]
+   }
+
+   Field Mapping Notes:
+   - Designer DB uses 'device_id', IoT App expects 'device_id' ✅
+   - Designer DB uses 'is_active', IoT App uses 'is_active' ✅
+   - All snake_case fields match between Designer DB and IoT App expectations
+   - Network and MAC address fields are optional (null allowed)
 
 3. IoT Device Processing
    - Extract correlationData from MQTT message
@@ -573,7 +617,7 @@ export interface MQTTSlice {
 
 Create proper hierarchy: Organization → Site → Project → IoT Device → BACnet Resources
 
-1. **New Tables using Drizzle ORM:**
+1. **New Tables using Drizzle ORM:** [Done]
 
    - `organizations` table with auto-generated `org_<uuid>` ID
    - `sites` table with UUID ID and FK to organizations
@@ -661,19 +705,20 @@ app/
 │                               └── configs/page.tsx
 ```
 
-### Phase 2c: Store & Business Logic (Designer)
+### Phase 2c: UI Components (Designer)
+
+1. ControllersModal (IP address form)
+2. BacnetReadersModal (reader config form with all Supabase fields)
+3. Update SupervisorsTab (config sections + Get Config button)
+4. Save the Controllers, BacnetReaders info in the database by integrating with CRUD endpoint.
+
+### Phase 2d: Store & Business Logic (Designer)
 
 1. Update mqtt-slice with getConfig action
 2. Implement flow: Generate presigned URL → Send MQTT request → Match response via correlationData → Fetch config → Persist to DB
 3. Error handling and loading states
 4. Handle metadata JSON when storing/retrieving points
-
-### Phase 2d: UI Components (Designer)
-
-1. ControllersModal (IP address form)
-2. BacnetReadersModal (reader config form with all Supabase fields)
-3. Update SupervisorsTab (config sections + Get Config button)
-4. Update ControllersTab (replace mock data with real API data, display metadata properties)
+5. Update ControllersTab (replace mock data with real API data, display metadata properties)
 
 ### Phase 2e: Integration & Testing (Both apps)
 
