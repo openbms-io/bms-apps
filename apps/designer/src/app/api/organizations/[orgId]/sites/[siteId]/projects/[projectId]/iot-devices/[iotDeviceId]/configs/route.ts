@@ -6,6 +6,7 @@ import {
   type IotDeviceRouteParams,
 } from './schemas'
 import { handleApiError } from '@/lib/api/error-handler'
+import { IotDeviceConfigMapper } from '@/lib/domain/mappers/iot-device-config.mapper'
 
 export async function GET(
   request: NextRequest,
@@ -15,13 +16,17 @@ export async function GET(
     const validatedParams = IotDeviceRouteParamsSchema.parse(await params)
     const { orgId, siteId, iotDeviceId } = validatedParams
 
-    const configs = await iotDeviceConfigsRepository.findByDevice(
+    const dbConfigs = await iotDeviceConfigsRepository.findByDevice(
       orgId,
       siteId,
       iotDeviceId
     )
 
-    return NextResponse.json({ configs })
+    const data = {
+      configs: dbConfigs.map((db) => IotDeviceConfigMapper.toDTO(db)),
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     return handleApiError(error, 'fetch device configs')
   }
@@ -39,14 +44,18 @@ export async function POST(
       'organization_id' | 'site_id' | 'iot_device_id'
     > = await request.json()
 
-    const config = await iotDeviceConfigsRepository.create({
+    const dbConfig = await iotDeviceConfigsRepository.create({
       ...body,
       organization_id: orgId,
       site_id: siteId,
       iot_device_id: iotDeviceId,
     })
 
-    return NextResponse.json({ config }, { status: 201 })
+    const data = {
+      config: IotDeviceConfigMapper.toDTO(dbConfig),
+    }
+
+    return NextResponse.json({ success: true, data }, { status: 201 })
   } catch (error) {
     return handleApiError(error, 'create device config')
   }

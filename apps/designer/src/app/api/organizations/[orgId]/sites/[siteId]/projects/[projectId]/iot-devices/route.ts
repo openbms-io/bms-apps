@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { handleApiError } from '@/lib/api/error-handler'
 import { projectsRepository } from '@/lib/db/models/projects'
 import { ProjectRouteParamsSchema, CreateIotDeviceSchema } from './schemas'
+import { IotDeviceMapper } from '@/lib/domain/mappers/iot-device.mapper'
 
 export async function POST(
   request: NextRequest,
@@ -14,7 +15,7 @@ export async function POST(
     const body = await request.json()
     const { name, description } = CreateIotDeviceSchema.parse(body)
 
-    const iotDevice = await projectsRepository.createIotDeviceForProject({
+    const dbIotDevice = await projectsRepository.createIotDeviceForProject({
       projectId: routeParams.projectId,
       orgId: routeParams.orgId,
       siteId: routeParams.siteId,
@@ -22,9 +23,16 @@ export async function POST(
       description,
     })
 
+    const data = {
+      iotDevice: IotDeviceMapper.toDTO({
+        ...dbIotDevice,
+        description: dbIotDevice.description ?? null,
+      }),
+    }
+
     const response = {
       success: true,
-      iot_device: iotDevice,
+      data,
     }
 
     return NextResponse.json(response, { status: 201 })

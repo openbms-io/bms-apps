@@ -6,6 +6,7 @@ import {
   type ControllerRouteParams,
 } from './schemas'
 import { handleApiError } from '@/lib/api/error-handler'
+import { ControllerPointMapper } from '@/lib/domain/mappers/controller-point.mapper'
 
 export async function GET(
   request: NextRequest,
@@ -15,10 +16,21 @@ export async function GET(
     const validatedParams = ControllerRouteParamsSchema.parse(await params)
     const { controllerId } = validatedParams
 
-    const points =
+    const dbPoints =
       await controllerPointsRepository.findByController(controllerId)
 
-    return NextResponse.json({ points })
+    const data = {
+      points: dbPoints.map((db) =>
+        ControllerPointMapper.toDTO({
+          ...db,
+          units: db.units ?? null,
+          description: db.description ?? null,
+          metadata: db.metadata ?? null,
+        })
+      ),
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     return handleApiError(error, 'fetch controller points')
   }
@@ -36,7 +48,7 @@ export async function POST(
       'organization_id' | 'site_id' | 'iot_device_id' | 'controller_id'
     > = await request.json()
 
-    const point = await controllerPointsRepository.create({
+    const dbPoint = await controllerPointsRepository.create({
       ...body,
       organization_id: orgId,
       site_id: siteId,
@@ -44,7 +56,16 @@ export async function POST(
       controller_id: controllerId,
     })
 
-    return NextResponse.json({ point }, { status: 201 })
+    const data = {
+      point: ControllerPointMapper.toDTO({
+        ...dbPoint,
+        units: dbPoint.units ?? null,
+        description: dbPoint.description ?? null,
+        metadata: dbPoint.metadata ?? null,
+      }),
+    }
+
+    return NextResponse.json({ success: true, data }, { status: 201 })
   } catch (error) {
     return handleApiError(error, 'create controller point')
   }

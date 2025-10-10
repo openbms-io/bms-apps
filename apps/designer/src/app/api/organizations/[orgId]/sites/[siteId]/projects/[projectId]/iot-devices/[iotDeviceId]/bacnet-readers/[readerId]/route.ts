@@ -6,6 +6,7 @@ import {
   type BacnetReaderRouteParams,
 } from '../schemas'
 import { handleApiError } from '@/lib/api/error-handler'
+import { BacnetReaderMapper } from '@/lib/domain/mappers/bacnet-reader.mapper'
 
 export async function GET(
   request: NextRequest,
@@ -15,16 +16,26 @@ export async function GET(
     const validatedParams = BacnetReaderRouteParamsSchema.parse(await params)
     const { readerId } = validatedParams
 
-    const reader = await bacnetReadersRepository.findById(readerId)
+    const dbReader = await bacnetReadersRepository.findById(readerId)
 
-    if (!reader) {
+    if (!dbReader) {
       return NextResponse.json(
-        { error: 'BACnet reader not found' },
+        { success: false, error: 'BACnet reader not found' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ reader })
+    const data = {
+      reader: BacnetReaderMapper.toDTO({
+        ...dbReader,
+        network_number: dbReader.network_number ?? null,
+        mac_address: dbReader.mac_address ?? null,
+        description: dbReader.description ?? null,
+        metadata: dbReader.metadata ?? null,
+      }),
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     return handleApiError(error, 'fetch BACnet reader')
   }
@@ -39,16 +50,26 @@ export async function PUT(
     const { readerId } = validatedParams
     const body: Partial<InsertBacnetReader> = await request.json()
 
-    const reader = await bacnetReadersRepository.update(readerId, body)
+    const dbReader = await bacnetReadersRepository.update(readerId, body)
 
-    if (!reader) {
+    if (!dbReader) {
       return NextResponse.json(
-        { error: 'BACnet reader not found' },
+        { success: false, error: 'BACnet reader not found' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ reader })
+    const data = {
+      reader: BacnetReaderMapper.toDTO({
+        ...dbReader,
+        network_number: dbReader.network_number ?? null,
+        mac_address: dbReader.mac_address ?? null,
+        description: dbReader.description ?? null,
+        metadata: dbReader.metadata ?? null,
+      }),
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     return handleApiError(error, 'update BACnet reader')
   }
@@ -66,7 +87,7 @@ export async function DELETE(
 
     if (!success) {
       return NextResponse.json(
-        { error: 'BACnet reader not found' },
+        { success: false, error: 'BACnet reader not found' },
         { status: 404 }
       )
     }

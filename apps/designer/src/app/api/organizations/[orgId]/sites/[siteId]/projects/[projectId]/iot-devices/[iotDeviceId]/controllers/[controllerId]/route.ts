@@ -6,6 +6,7 @@ import {
   type ControllerRouteParams,
 } from '../schemas'
 import { handleApiError } from '@/lib/api/error-handler'
+import { IotDeviceControllerMapper } from '@/lib/domain/mappers/iot-device-controller.mapper'
 
 export async function GET(
   request: NextRequest,
@@ -15,17 +16,27 @@ export async function GET(
     const validatedParams = ControllerRouteParamsSchema.parse(await params)
     const { controllerId } = validatedParams
 
-    const controller =
+    const dbController =
       await iotDeviceControllersRepository.findById(controllerId)
 
-    if (!controller) {
+    if (!dbController) {
       return NextResponse.json(
-        { error: 'Controller not found' },
+        { success: false, error: 'Controller not found' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ controller })
+    const data = {
+      controller: IotDeviceControllerMapper.toDTO({
+        ...dbController,
+        network_number: dbController.network_number ?? null,
+        mac_address: dbController.mac_address ?? null,
+        description: dbController.description ?? null,
+        metadata: dbController.metadata ?? null,
+      }),
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     return handleApiError(error, 'fetch controller')
   }
@@ -40,19 +51,29 @@ export async function PUT(
     const { controllerId } = validatedParams
     const body: Partial<InsertIotDeviceController> = await request.json()
 
-    const controller = await iotDeviceControllersRepository.update(
+    const dbController = await iotDeviceControllersRepository.update(
       controllerId,
       body
     )
 
-    if (!controller) {
+    if (!dbController) {
       return NextResponse.json(
-        { error: 'Controller not found' },
+        { success: false, error: 'Controller not found' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ controller })
+    const data = {
+      controller: IotDeviceControllerMapper.toDTO({
+        ...dbController,
+        network_number: dbController.network_number ?? null,
+        mac_address: dbController.mac_address ?? null,
+        description: dbController.description ?? null,
+        metadata: dbController.metadata ?? null,
+      }),
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     return handleApiError(error, 'update controller')
   }
@@ -70,7 +91,7 @@ export async function DELETE(
 
     if (!success) {
       return NextResponse.json(
-        { error: 'Controller not found' },
+        { success: false, error: 'Controller not found' },
         { status: 404 }
       )
     }

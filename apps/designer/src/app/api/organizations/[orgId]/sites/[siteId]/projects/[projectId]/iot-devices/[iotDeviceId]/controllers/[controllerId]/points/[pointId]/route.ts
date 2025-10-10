@@ -6,6 +6,7 @@ import {
   type ControllerPointRouteParams,
 } from '../schemas'
 import { handleApiError } from '@/lib/api/error-handler'
+import { ControllerPointMapper } from '@/lib/domain/mappers/controller-point.mapper'
 
 export async function GET(
   request: NextRequest,
@@ -15,16 +16,25 @@ export async function GET(
     const validatedParams = ControllerPointRouteParamsSchema.parse(await params)
     const { pointId } = validatedParams
 
-    const point = await controllerPointsRepository.findById(pointId)
+    const dbPoint = await controllerPointsRepository.findById(pointId)
 
-    if (!point) {
+    if (!dbPoint) {
       return NextResponse.json(
-        { error: 'Controller point not found' },
+        { success: false, error: 'Controller point not found' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ point })
+    const data = {
+      point: ControllerPointMapper.toDTO({
+        ...dbPoint,
+        units: dbPoint.units ?? null,
+        description: dbPoint.description ?? null,
+        metadata: dbPoint.metadata ?? null,
+      }),
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     return handleApiError(error, 'fetch controller point')
   }
@@ -39,16 +49,25 @@ export async function PUT(
     const { pointId } = validatedParams
     const body: Partial<InsertControllerPoint> = await request.json()
 
-    const point = await controllerPointsRepository.update(pointId, body)
+    const dbPoint = await controllerPointsRepository.update(pointId, body)
 
-    if (!point) {
+    if (!dbPoint) {
       return NextResponse.json(
-        { error: 'Controller point not found' },
+        { success: false, error: 'Controller point not found' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ point })
+    const data = {
+      point: ControllerPointMapper.toDTO({
+        ...dbPoint,
+        units: dbPoint.units ?? null,
+        description: dbPoint.description ?? null,
+        metadata: dbPoint.metadata ?? null,
+      }),
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     return handleApiError(error, 'update controller point')
   }
@@ -66,7 +85,7 @@ export async function DELETE(
 
     if (!success) {
       return NextResponse.json(
-        { error: 'Controller point not found' },
+        { success: false, error: 'Controller point not found' },
         { status: 404 }
       )
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { handleApiError } from '@/lib/api/error-handler'
 import { iotDevicesRepository } from '@/lib/db/models/iot-devices'
+import { IotDeviceMapper } from '@/lib/domain/mappers/iot-device.mapper'
 
 interface RouteParams {
   params: Promise<{ iotDeviceId: string }>
@@ -13,9 +14,9 @@ export async function GET(
   try {
     const { iotDeviceId } = await params
 
-    const iotDevice = await iotDevicesRepository.findById(iotDeviceId)
+    const dbIotDevice = await iotDevicesRepository.findById(iotDeviceId)
 
-    if (!iotDevice) {
+    if (!dbIotDevice) {
       return NextResponse.json(
         {
           success: false,
@@ -25,9 +26,16 @@ export async function GET(
       )
     }
 
+    const data = {
+      iotDevice: IotDeviceMapper.toDTO({
+        ...dbIotDevice,
+        description: dbIotDevice.description ?? null,
+      }),
+    }
+
     const response = {
       success: true,
-      iot_device: iotDevice,
+      data,
     }
 
     return NextResponse.json(response)
