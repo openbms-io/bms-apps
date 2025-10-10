@@ -2,7 +2,7 @@
 
 import { ControllersTreeContainer } from '@/containers/controllers-tree-container'
 import { PointPropertiesContainer } from '@/containers/point-properties-container'
-import { useInfrastructureStore } from '@/store/use-infrastructure-store'
+import { useTreeUIStore } from '@/store/use-tree-ui-store'
 
 interface ControllersTabProps {
   orgId: string
@@ -15,9 +15,7 @@ export function ControllersTab({
   siteId,
   projectId,
 }: ControllersTabProps) {
-  const selectedPointId = useInfrastructureStore(
-    (state) => state.selectedPointId
-  )
+  const selectedPointId = useTreeUIStore((state) => state.selectedPointId)
 
   return (
     <div className="h-full flex flex-col">
