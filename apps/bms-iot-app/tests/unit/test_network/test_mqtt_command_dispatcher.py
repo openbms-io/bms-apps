@@ -38,10 +38,10 @@ class TestMqttCommandDispatcher:
         return ControllerPointsModel(
             iot_device_id="test-device",
             controller_device_id="test-controller",
-            point_id="test-point",
+            point_id=123,
             point_name="Test Point",
             point_type="analog-input",
-            present_value=23.5,
+            present_value="23.5",
             status_flags="fault;overridden",
             priority_array="[null, null, 50.0, null]",
             created_at_unix_milli_timestamp=1640995200000,
@@ -268,8 +268,8 @@ class TestMqttCommandDispatcher:
 
         # Verify serialization
         serialized_point = payload["points"][0]
-        assert serialized_point["point_id"] == "test-point"
-        assert serialized_point["present_value"] == 23.5
+        assert serialized_point["point_id"] == 123
+        assert serialized_point["present_value"] == "23.5"
         assert serialized_point["status_flags"] == [
             "fault",
             "overridden",
