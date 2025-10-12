@@ -10,9 +10,26 @@ import { Plus, RefreshCw } from 'lucide-react'
 import { LogicNodesSection } from '@/components/sidebar/logic-nodes-section'
 import { ControlFlowSection } from '@/components/sidebar/control-flow-section'
 import { CommandNodesSection } from '@/components/sidebar/command-nodes-section'
-import { useIotDeviceControllers } from '@/hooks/use-iot-device-controllers'
+import {
+  useIotDeviceControllers,
+  useDeleteIotDeviceController,
+} from '@/hooks/use-iot-device-controllers'
 import { useProject } from '@/hooks/use-projects'
+import { useIotDevice } from '@/hooks/use-iot-device'
 import { AddControllerDialog } from '@/components/modals/add-controller-dialog'
+import { useGetConfigPayload } from '@/hooks/use-get-config-payload'
+import { useFlowStore } from '@/store/use-flow-store'
+import { CommandNameEnum } from 'mqtt-topics'
+import { toast } from 'sonner'
+import { buildConfigUploadPayload } from '@/store/slices/mqtt-slice'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface ControllersTreeContainerProps {
   orgId: string
@@ -26,6 +43,12 @@ export function ControllersTreeContainer({
   projectId,
 }: ControllersTreeContainerProps) {
   const { data: project } = useProject({ orgId, siteId, projectId })
+  const { data: iotDevice } = useIotDevice(
+    orgId,
+    siteId,
+    projectId,
+    project?.iotDeviceId
+  )
   const { data: controllers = [], isLoading } = useIotDeviceControllers(
     orgId,
     siteId,
@@ -35,11 +58,27 @@ export function ControllersTreeContainer({
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [controllerToDelete, setControllerToDelete] = useState<{
+    id: string
+    name: string
+  } | null>(null)
+
+  // Hooks
+  const sendCommand = useFlowStore((s) => s.sendCommand)
+  const { refetch: fetchPayload, isFetching } = useGetConfigPayload(
+    orgId,
+    siteId,
+    projectId,
+    project?.iotDeviceId
+  )
+
+  const { mutate: deleteController, isPending: isDeleting } =
+    useDeleteIotDeviceController()
 
   // Tree UI Store
   const {
     selectedPointId,
-    expandedNodes,
     toggleNode,
     selectPoint,
     expandAll,
@@ -48,9 +87,9 @@ export function ControllersTreeContainer({
   } = useTreeUIStore()
 
   // Transform controllers into tree structure
-  const treeData = useMemo(
-    () => getTreeData(controllers, project?.iotDeviceId || ''),
-    [getTreeData, controllers, project?.iotDeviceId, expandedNodes]
+  const treeData = getTreeData(
+    controllers,
+    iotDevice ? { id: iotDevice.id, name: iotDevice.name } : undefined
   )
 
   // Filter tree data based on search
@@ -61,19 +100,76 @@ export function ControllersTreeContainer({
   const handleExpandAll = useCallback(() => {
     const allNodeIds: string[] = []
 
-    if (project?.iotDeviceId) {
-      allNodeIds.push(project.iotDeviceId)
+    if (iotDevice) {
+      allNodeIds.push(iotDevice.id)
       controllers.forEach((controller) => {
         allNodeIds.push(controller.id)
       })
     }
 
     expandAll(allNodeIds)
-  }, [controllers, expandAll, project?.iotDeviceId])
+  }, [controllers, expandAll, iotDevice])
 
   const handleContainerClick = useCallback(() => {
     selectPoint(null)
   }, [selectPoint])
+
+  const handleRefresh = async () => {
+    if (!project?.iotDeviceId) return
+
+    try {
+      const { data: payload } = await fetchPayload()
+      if (!payload) throw new Error('No payload received')
+
+      const transformedPayload = buildConfigUploadPayload(payload)
+      toast.success('Config discovery started')
+
+      await sendCommand({
+        command: CommandNameEnum.GET_CONFIG,
+        payload: transformedPayload,
+      })
+
+      toast.success('Config discovery completed', { duration: 5000 })
+    } catch (error) {
+      console.error('Refresh error:', error)
+      toast.error('Failed to start discovery', { duration: 5000 })
+    }
+  }
+
+  const handleDeleteClick = useCallback(
+    (controllerId: string) => {
+      const controller = controllers.find((c) => c.id === controllerId)
+      if (controller) {
+        setControllerToDelete({ id: controller.id, name: controller.name })
+        setDeleteDialogOpen(true)
+      }
+    },
+    [controllers]
+  )
+
+  const handleConfirmDelete = useCallback(() => {
+    if (!controllerToDelete || !project?.iotDeviceId) return
+
+    deleteController(
+      {
+        orgId,
+        siteId,
+        projectId,
+        iotDeviceId: project.iotDeviceId,
+        controllerId: controllerToDelete.id,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Controller deleted successfully')
+          setDeleteDialogOpen(false)
+          setControllerToDelete(null)
+        },
+        onError: (error) => {
+          toast.error(error.message || 'Failed to delete controller')
+        },
+      }
+    )
+  }, [controllerToDelete, deleteController, orgId, siteId, projectId, project])
 
   return (
     <div className="flex flex-col h-full" onClick={handleContainerClick}>
@@ -93,13 +189,13 @@ export function ControllersTreeContainer({
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => {
-              // TODO: Implement get_config via MQTT in Phase 2
-              console.log('Refresh - will implement MQTT get_config')
-            }}
-            title="Refresh (Coming Soon)"
+            onClick={handleRefresh}
+            disabled={!project?.iotDeviceId || isFetching}
+            title="Refresh Controllers"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw
+              className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`}
+            />
           </Button>
         </div>
       </div>
@@ -125,6 +221,7 @@ export function ControllersTreeContainer({
             selectedNodeId={selectedPointId}
             onToggle={toggleNode}
             onSelect={selectPoint}
+            onDelete={handleDeleteClick}
             isDraggable={false} // No dragging until we have points
             className="min-h-0"
           />
@@ -145,6 +242,35 @@ export function ControllersTreeContainer({
           iotDeviceId={project.iotDeviceId}
         />
       )}
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Controller</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &quot;{controllerToDelete?.name}
+              &quot;? This will also delete all associated points. This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

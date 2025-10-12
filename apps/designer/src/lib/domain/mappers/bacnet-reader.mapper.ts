@@ -13,8 +13,9 @@ type DbBacnetReader = {
   ip_address: string
   port: number
   device_id: number
-  network_number: number | null
-  mac_address: string | null
+  subnet_mask: number
+  bbmd_enabled: boolean
+  bbmd_server_ip: string | null
   name: string
   description: string | null
   is_active: boolean
@@ -31,8 +32,9 @@ type DbInsertBacnetReader = {
   ip_address: string
   port: number
   device_id: number
-  network_number?: number
-  mac_address?: string
+  subnet_mask: number
+  bbmd_enabled: boolean
+  bbmd_server_ip?: string
   name: string
   description?: string
   is_active: boolean
@@ -45,8 +47,9 @@ type DbUpdateBacnetReader = {
   ip_address?: string
   port?: number
   device_id?: number
-  network_number?: number | null
-  mac_address?: string | null
+  subnet_mask?: number
+  bbmd_enabled?: boolean
+  bbmd_server_ip?: string | null
   name?: string
   description?: string | null
   is_active?: boolean
@@ -64,8 +67,9 @@ export const BacnetReaderMapper = {
       ipAddress: db.ip_address,
       port: db.port,
       deviceId: db.device_id,
-      networkNumber: db.network_number ?? undefined,
-      macAddress: db.mac_address ?? undefined,
+      subnetMask: db.subnet_mask as 8 | 16 | 24 | 28 | 30,
+      bbmdEnabled: db.bbmd_enabled,
+      bbmdServerIp: db.bbmd_server_ip ?? undefined,
       name: db.name,
       description: db.description ?? undefined,
       isActive: db.is_active,
@@ -85,8 +89,9 @@ export const BacnetReaderMapper = {
       ip_address: dto.ipAddress,
       port: dto.port,
       device_id: dto.deviceId,
-      network_number: dto.networkNumber,
-      mac_address: dto.macAddress,
+      subnet_mask: dto.subnetMask,
+      bbmd_enabled: dto.bbmdEnabled,
+      bbmd_server_ip: dto.bbmdServerIp,
       name: dto.name,
       description: dto.description,
       is_active: dto.isActive,
@@ -115,13 +120,18 @@ export const BacnetReaderMapper = {
       hasUpdates = true
     }
 
-    if (dto.networkNumber !== undefined) {
-      db.network_number = dto.networkNumber
+    if (dto.subnetMask !== undefined) {
+      db.subnet_mask = dto.subnetMask
       hasUpdates = true
     }
 
-    if (dto.macAddress !== undefined) {
-      db.mac_address = dto.macAddress
+    if (dto.bbmdEnabled !== undefined) {
+      db.bbmd_enabled = dto.bbmdEnabled
+      hasUpdates = true
+    }
+
+    if (dto.bbmdServerIp !== undefined) {
+      db.bbmd_server_ip = dto.bbmdServerIp
       hasUpdates = true
     }
 

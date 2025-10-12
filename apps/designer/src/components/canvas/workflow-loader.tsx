@@ -35,7 +35,6 @@ export function WorkflowLoader({
   const startMqtt = useFlowStore((s) => s.startMqtt)
   const stopMqtt = useFlowStore((s) => s.stopMqtt)
   const clearAllNodes = useFlowStore((s) => s.clearAllNodes)
-  const connectionStatus = useFlowStore((s) => s.connectionStatus)
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -45,8 +44,8 @@ export function WorkflowLoader({
     if (!iotDevice) return
 
     startMqtt({
-      organizationId: iotDevice.organization_id,
-      siteId: iotDevice.site_id,
+      organizationId: iotDevice.organizationId,
+      siteId: iotDevice.siteId,
       iotDeviceId: iotDevice.id,
     })
 
@@ -55,8 +54,8 @@ export function WorkflowLoader({
       stopMqtt()
     }
   }, [
-    iotDevice?.organization_id,
-    iotDevice?.site_id,
+    iotDevice?.organizationId,
+    iotDevice?.siteId,
     iotDevice?.id,
     startMqtt,
     stopMqtt,

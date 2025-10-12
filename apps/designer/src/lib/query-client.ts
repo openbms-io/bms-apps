@@ -53,4 +53,6 @@ export const queryKeys = {
     list: (iotDeviceId: string) =>
       ['bacnetReaders', 'list', iotDeviceId] as const,
   },
+  getConfigPayload: (iotDeviceId: string) =>
+    ['get-config-payload', iotDeviceId] as const,
 } as const

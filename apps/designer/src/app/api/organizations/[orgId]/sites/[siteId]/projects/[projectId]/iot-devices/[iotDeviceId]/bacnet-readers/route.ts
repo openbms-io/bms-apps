@@ -27,8 +27,9 @@ export async function GET(
       readers: dbReaders.map((db) =>
         BacnetReaderMapper.toDTO({
           ...db,
-          network_number: db.network_number ?? null,
-          mac_address: db.mac_address ?? null,
+          subnet_mask: db.subnet_mask,
+          bbmd_enabled: db.bbmd_enabled,
+          bbmd_server_ip: db.bbmd_server_ip ?? null,
           description: db.description ?? null,
           metadata: db.metadata ?? null,
         })
@@ -66,8 +67,9 @@ export async function POST(
     const data = {
       reader: BacnetReaderMapper.toDTO({
         ...dbReader,
-        network_number: dbReader.network_number ?? null,
-        mac_address: dbReader.mac_address ?? null,
+        subnet_mask: dbReader.subnet_mask,
+        bbmd_enabled: dbReader.bbmd_enabled,
+        bbmd_server_ip: dbReader.bbmd_server_ip ?? null,
         description: dbReader.description ?? null,
         metadata: dbReader.metadata ?? null,
       }),

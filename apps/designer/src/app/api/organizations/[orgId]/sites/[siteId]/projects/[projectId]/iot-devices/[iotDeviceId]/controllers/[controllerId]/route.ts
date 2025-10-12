@@ -29,8 +29,6 @@ export async function GET(
     const data = {
       controller: IotDeviceControllerMapper.toDTO({
         ...dbController,
-        network_number: dbController.network_number ?? null,
-        mac_address: dbController.mac_address ?? null,
         description: dbController.description ?? null,
         metadata: dbController.metadata ?? null,
       }),
@@ -66,8 +64,6 @@ export async function PUT(
     const data = {
       controller: IotDeviceControllerMapper.toDTO({
         ...dbController,
-        network_number: dbController.network_number ?? null,
-        mac_address: dbController.mac_address ?? null,
         description: dbController.description ?? null,
         metadata: dbController.metadata ?? null,
       }),

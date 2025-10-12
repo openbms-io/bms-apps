@@ -55,12 +55,14 @@ CREATE TABLE `bacnet_readers` (
 	`ip_address` text NOT NULL,
 	`port` integer DEFAULT 47808 NOT NULL,
 	`device_id` integer NOT NULL,
-	`network_number` integer,
-	`mac_address` text,
+	`subnet_mask` integer DEFAULT 24 NOT NULL,
+	`bbmd_enabled` integer DEFAULT 0 NOT NULL,
+	`bbmd_server_ip` text,
 	`name` text NOT NULL,
 	`description` text,
 	`is_active` integer DEFAULT true NOT NULL,
 	`metadata` text DEFAULT '{}',
+	`is_deleted` integer DEFAULT false NOT NULL,
 	`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
 	`updated_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
 	FOREIGN KEY (`organization_id`) REFERENCES `organizations`(`id`) ON UPDATE no action ON DELETE cascade,
@@ -70,6 +72,7 @@ CREATE TABLE `bacnet_readers` (
 --> statement-breakpoint
 CREATE INDEX `idx_bacnet_readers_org_site_device` ON `bacnet_readers` (`organization_id`,`site_id`,`iot_device_id`);--> statement-breakpoint
 CREATE INDEX `idx_bacnet_readers_device` ON `bacnet_readers` (`iot_device_id`);--> statement-breakpoint
+CREATE INDEX `idx_bacnet_readers_deleted` ON `bacnet_readers` (`is_deleted`);--> statement-breakpoint
 CREATE TABLE `iot_device_controllers` (
 	`id` text PRIMARY KEY NOT NULL,
 	`organization_id` text NOT NULL,
@@ -78,12 +81,11 @@ CREATE TABLE `iot_device_controllers` (
 	`ip_address` text NOT NULL,
 	`port` integer DEFAULT 47808 NOT NULL,
 	`device_id` integer NOT NULL,
-	`network_number` integer,
-	`mac_address` text,
 	`name` text NOT NULL,
 	`description` text,
 	`is_active` integer DEFAULT true NOT NULL,
 	`metadata` text DEFAULT '{}',
+	`is_deleted` integer DEFAULT false NOT NULL,
 	`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
 	`updated_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
 	FOREIGN KEY (`organization_id`) REFERENCES `organizations`(`id`) ON UPDATE no action ON DELETE cascade,
@@ -92,6 +94,7 @@ CREATE TABLE `iot_device_controllers` (
 );
 --> statement-breakpoint
 CREATE INDEX `idx_controllers_org_site_device` ON `iot_device_controllers` (`organization_id`,`site_id`,`iot_device_id`);--> statement-breakpoint
+CREATE INDEX `idx_controllers_deleted` ON `iot_device_controllers` (`is_deleted`);--> statement-breakpoint
 CREATE TABLE `controller_points` (
 	`id` text PRIMARY KEY NOT NULL,
 	`organization_id` text NOT NULL,
@@ -106,6 +109,7 @@ CREATE TABLE `controller_points` (
 	`units` text,
 	`description` text,
 	`metadata` text DEFAULT '{}',
+	`is_deleted` integer DEFAULT false NOT NULL,
 	`created_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
 	`updated_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
 	FOREIGN KEY (`organization_id`) REFERENCES `organizations`(`id`) ON UPDATE no action ON DELETE cascade,
@@ -116,6 +120,7 @@ CREATE TABLE `controller_points` (
 --> statement-breakpoint
 CREATE INDEX `idx_points_controller` ON `controller_points` (`controller_id`);--> statement-breakpoint
 CREATE INDEX `idx_points_org_site_device` ON `controller_points` (`organization_id`,`site_id`,`iot_device_id`);--> statement-breakpoint
+CREATE INDEX `idx_points_deleted` ON `controller_points` (`is_deleted`);--> statement-breakpoint
 CREATE TABLE `iot_device_configs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`project_id` text NOT NULL,

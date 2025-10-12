@@ -712,13 +712,546 @@ app/
 3. Update SupervisorsTab (config sections + Get Config button)
 4. Save the Controllers, BacnetReaders info in the database by integrating with CRUD endpoint.
 
-### Phase 2d: Store & Business Logic (Designer)
+### Phase 2d: Store & Business Logic (Designer) - TDD Approach
 
-1. Update mqtt-slice with getConfig action
-2. Implement flow: Generate presigned URL → Send MQTT request → Match response via correlationData → Fetch config → Persist to DB
-3. Error handling and loading states
-4. Handle metadata JSON when storing/retrieving points
-5. Update ControllersTab (replace mock data with real API data, display metadata properties)
+**Reference Implementation**: `/Users/amol/Documents/ai-projects/bms-project/apps/bms-ui/`
+
+- JWT utilities: `lib/jwt.ts`
+- Payload generation: `app/.../do-sync-config/route.ts`
+- Webhook upload: `app/webhook/iot/api/v1/upload-config/route.ts`
+
+#### Phase 2d.1: Database Schema + Soft Delete ✅
+
+**Goal**: Add soft delete support for points and controllers
+
+**TDD Steps**:
+
+1. **Write Test First** (`controller-points.spec.ts`):
+
+   ```ts
+   it("should filter out deleted points by default");
+   it("should include deleted points when includeDeleted=true");
+   ```
+
+2. **Run Test** → Should FAIL (field doesn't exist)
+
+3. **Implement**:
+
+   - Add `is_deleted: boolean` to `controller-points.ts` schema
+   - Add `is_deleted: boolean` to `iot-device-controllers.ts` schema
+   - Add indexes: `index('idx_points_deleted').on(table.is_deleted)`
+   - Generate migration: `pnpm db:generate`
+   - Apply migration: `pnpm db:migrate`
+
+4. **Run Test** → Should PASS
+
+**Files Changed**:
+
+- `apps/designer/src/lib/db/schema/controller-points.ts`
+- `apps/designer/src/lib/db/schema/iot-device-controllers.ts`
+- `apps/designer/src/lib/db/models/controller-points.spec.ts` (new)
+
+---
+
+#### Phase 2d.2: JWT Utilities ✅
+
+**Goal**: Create JWT encode/decode utilities (no Clerk, no Supabase)
+
+**TDD Steps**:
+
+1. **Write Test First** (`jwt.spec.ts`):
+
+   ```ts
+   it("should encode and decode JWT with correct payload");
+   it("should throw error for expired token");
+   it("should throw error for invalid token");
+   ```
+
+2. **Run Test** → Should FAIL (jwt.ts doesn't exist)
+
+3. **Implement**:
+
+   - Install: `pnpm add jose`
+   - Create `apps/designer/src/lib/jwt.ts`
+   - Copy pattern from reference: `encodeJWT()`, `decodeJWT()`, `buildIOTDeviceJWTPayload()`
+   - Add `JWT_SECRET` to `.env.local`
+   - Adapt payload structure (no Clerk fields):
+     ```ts
+     interface IOTDeviceJWTPayload {
+       orgId: string;
+       siteId: string;
+       iotDeviceId: string;
+       scope: string; // 'upload-config'
+     }
+     ```
+
+4. **Run Test** → Should PASS
+
+**Files Changed**:
+
+- `apps/designer/src/lib/jwt.ts` (new)
+- `apps/designer/src/lib/jwt.spec.ts` (new)
+- `.env.local` (add JWT_SECRET)
+
+---
+
+#### Phase 2d.3: Payload Generation Endpoint ✅
+
+**Goal**: Backend generates complete MQTT payload (frontend is mediator)
+
+**TDD Steps**:
+
+1. **Write Test First** (`get-config-payload/route.test.ts`):
+
+   ```ts
+   it("should return complete payload with JWT and data from DB");
+   it("should return empty arrays when no controllers/readers exist");
+   it("should generate valid JWT with correct claims");
+   ```
+
+2. **Run Test** → Should FAIL (route doesn't exist)
+
+3. **Implement**:
+
+   - Create `apps/designer/src/app/api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/iot-devices/[iotDeviceId]/get-config-payload/route.ts`
+   - Pattern from reference: `do-sync-config/route.ts`
+   - Fetch controllers from DB via repository
+   - Fetch BACnet readers from DB via repository
+   - Generate JWT (10 min expiry):
+     ```ts
+     const jwtPayload = buildIOTDeviceJWTPayload({
+       orgId,
+       siteId,
+       iotDeviceId,
+       scope: "upload-config",
+     });
+     const jwtToken = await encodeJWT(jwtPayload, 600);
+     ```
+   - Return payload:
+     ```ts
+     {
+       urlToUploadConfig: `${NEXT_PUBLIC_API_URL}/api/webhook/iot-device-config-upload`,
+       jwtToken,
+       iotDeviceControllers: [...],
+       bacnetReaders: [...]
+     }
+     ```
+
+4. **Run Test** → Should PASS
+
+**Files Changed**:
+
+- `apps/designer/src/app/api/.../get-config-payload/route.ts` (new)
+- `apps/designer/src/app/api/.../get-config-payload/route.test.ts` (new)
+
+---
+
+#### Phase 2d.4: Repository Soft Delete Methods ✅
+
+**Goal**: Add soft delete operations to repositories
+
+**TDD Steps**:
+
+1. **Write Test First** (`controller-points.spec.ts`):
+
+   ```ts
+   describe("softDeleteNotInList", () => {
+     it("should mark points as deleted when not in list");
+     it("should restore deleted points when they reappear in config");
+   });
+   ```
+
+2. **Run Test** → Should FAIL (methods don't exist)
+
+3. **Implement** in `controller-points.ts` repository:
+
+   ```ts
+   async softDeleteNotInList(controllerId: string, pointIds: string[]) {
+     await db.update(controllerPoints)
+       .set({ is_deleted: true })
+       .where(
+         and(
+           eq(controllerPoints.controller_id, controllerId),
+           notInArray(controllerPoints.id, pointIds)
+         )
+       )
+   }
+
+   async findByController(controllerId: string, includeDeleted = false) {
+     const conditions = [eq(controllerPoints.controller_id, controllerId)]
+     if (!includeDeleted) {
+       conditions.push(eq(controllerPoints.is_deleted, false))
+     }
+     return db.select().from(controllerPoints).where(and(...conditions))
+   }
+
+   async upsert(point: InsertControllerPoint) {
+     // On conflict, update and set is_deleted = false (restore if needed)
+   }
+   ```
+
+4. **Run Test** → Should PASS
+
+**Files Changed**:
+
+- `apps/designer/src/lib/db/models/controller-points.ts`
+- `apps/designer/src/lib/db/models/controller-points.spec.ts`
+
+---
+
+#### Phase 2d.5: Webhook Upload Endpoint ✅
+
+**Goal**: IoT device uploads discovered config via webhook
+
+**TDD Steps**:
+
+1. **Write Test First** (`iot-device-config-upload/route.test.ts`):
+
+   ```ts
+   it("should accept valid JWT and upload config to DB");
+   it("should reject invalid JWT with 401");
+   it("should reject mismatched claims with 403");
+   it("should soft delete points not in uploaded config");
+   it("should restore previously deleted points if they reappear");
+   ```
+
+2. **Run Test** → Should FAIL (route doesn't exist)
+
+3. **Implement**:
+
+   - Create `apps/designer/src/app/api/webhook/iot-device-config-upload/route.ts`
+   - Pattern from reference: `webhook/iot/api/v1/upload-config/route.ts`
+   - Extract JWT from `Authorization: Bearer {token}` header
+   - Validate JWT and decode payload
+   - Validate body matches JWT claims (org/site/device)
+   - For each controller:
+     - Upsert controller
+     - Get existing points (include deleted)
+     - Soft delete points not in config: `softDeleteNotInList(controllerId, configPointIds)`
+     - Upsert points from config (sets `is_deleted = false`)
+   - Invalidate React Query cache
+   - Return success response
+
+4. **Run Test** → Should PASS
+
+**Files Changed**:
+
+- `apps/designer/src/app/api/webhook/iot-device-config-upload/route.ts` (new)
+- `apps/designer/src/app/api/webhook/iot-device-config-upload/route.test.ts` (new)
+
+**Security**:
+
+- JWT validation with scope check (`scope === 'upload-config'`)
+- Body claims must match JWT claims
+- 10-minute token expiration
+
+---
+
+#### Phase 2d.6: Frontend Refresh Button ✅
+
+**Goal**: Wire refresh button to trigger get_config flow
+
+**TDD Steps**:
+
+1. **Write Test First** (`controllers-tree-container.spec.tsx`):
+
+   ```tsx
+   it("should call payload endpoint and send MQTT on refresh click");
+   it("should show success toast on successful request");
+   it("should show error toast on failure");
+   ```
+
+2. **Run Test** → Should FAIL (handler doesn't exist)
+
+3. **Implement** in `controllers-tree-container.tsx`:
+
+   ```ts
+   const sendCommand = useFlowStore((s) => s.sendCommand);
+
+   const handleRefresh = async () => {
+     if (!project?.iotDeviceId) return;
+
+     try {
+       // 1. Get payload from backend
+       const payload = await fetch(
+         `/api/organizations/${orgId}/sites/${siteId}/projects/${projectId}/iot-devices/${project.iotDeviceId}/get-config-payload`,
+         { method: "POST" },
+       ).then((r) => r.json());
+
+       // 2. Send MQTT request (frontend is mediator)
+       await sendCommand({
+         command: CommandNameEnum.get_config,
+         payload,
+       });
+
+       toast.success("Config discovery started");
+     } catch (error) {
+       toast.error("Failed to start discovery");
+     }
+   };
+   ```
+
+   Update button:
+
+   ```tsx
+   <Button onClick={handleRefresh} title="Refresh Controllers">
+     <RefreshCw className="h-4 w-4" />
+   </Button>
+   ```
+
+4. **Run Test** → Should PASS
+
+**Files Changed**:
+
+- `apps/designer/src/containers/controllers-tree-container.tsx`
+- `apps/designer/src/containers/controllers-tree-container.spec.tsx`
+
+---
+
+#### Phase 2d.7: IoT App Upload to Webhook ✅
+
+**Goal**: IoT app uploads discovered config to Designer webhook
+
+**TDD Steps**:
+
+1. **Write Test First** (`test_config_upload_webhook.py`):
+
+   ```python
+   @pytest.mark.asyncio
+   async def test_upload_config_after_discovery():
+       # Mock HTTP server for webhook
+       # Trigger discovery
+       # Assert webhook receives POST with correct data
+       # Assert MQTT response published with correlationData
+   ```
+
+2. **Run Test** → Should FAIL (upload logic doesn't exist)
+
+3. **Implement** in `bacnet_actor.py`:
+
+   ```python
+   # After BACnet discovery completes
+   config_payload = {
+       "organization_id": org_id,
+       "site_id": site_id,
+       "iot_device_id": iot_device_id,
+       "controllers": discovered_controllers,
+       "points": discovered_points
+   }
+
+   # Upload to webhook
+   response = requests.put(
+       url_to_upload_config,
+       json=config_payload,
+       headers={"Authorization": f"Bearer {jwt_token}"}
+   )
+
+   # Publish MQTT response with correlationData
+   dispatcher.publish_response(
+       CommandNameEnum.get_config,
+       {
+           "success": response.ok,
+           "uploaded_at": datetime.utcnow().isoformat(),
+           "controllers_discovered": len(discovered_controllers),
+           "points_discovered": len(discovered_points)
+       },
+       correlation_data=payload.correlationData
+   )
+   ```
+
+4. **Run Test** → Should PASS
+
+**Files Changed**:
+
+- `apps/bms-iot-app/src/actors/bacnet/bacnet_actor.py`
+- `apps/bms-iot-app/tests/integration/test_config_upload_webhook.py` (new)
+
+---
+
+#### Phase 2d.8: Display Points in Tree UI ✅
+
+**Goal**: Show discovered points under controllers in tree
+
+**TDD Steps**:
+
+1. **Write Test First** (`tree-ui-slice.spec.ts`):
+
+   ```ts
+   it("should include points under controllers in tree");
+   it("should not include deleted points");
+   it("should expand/collapse points correctly");
+   ```
+
+2. **Run Test** → Should FAIL (points not in tree)
+
+3. **Implement**:
+
+   - Create `useControllerPoints()` hook:
+
+     ```ts
+     export function useControllerPoints(
+       orgId, siteId, projectId, iotDeviceId, controllerId?
+     ) {
+       return useQuery({
+         queryKey: queryKeys.controllerPoints.list(iotDeviceId, controllerId),
+         queryFn: () => controllerPointsApi.list({ ... }),
+         enabled: !!orgId && !!siteId && !!projectId && !!iotDeviceId
+       })
+     }
+     ```
+
+   - Update `tree-ui-slice.ts`:
+
+     ```ts
+     getTreeData: (controllers, points, supervisorId) => {
+       // ... supervisor node
+
+       if (supervisorNode.isExpanded) {
+         controllers.forEach(controller => {
+           const controllerNode = { ... }
+
+           if (controllerNode.isExpanded) {
+             const controllerPoints = points.filter(
+               p => p.controllerId === controller.id && !p.is_deleted
+             )
+
+             controllerPoints.forEach(point => {
+               controllerNode.children.push({
+                 id: point.id,
+                 type: 'point',
+                 label: point.pointName,
+                 sublabel: `${point.pointType} #${point.instanceNumber}`,
+                 icon: point.writable ? '✏️' : '📊',
+                 depth: 2,
+                 data: point
+               })
+             })
+           }
+
+           supervisorNode.children.push(controllerNode)
+         })
+       }
+
+       return [supervisorNode]
+     }
+     ```
+
+   - Update `ControllersTreeContainer`:
+
+     ```ts
+     const { data: points = [] } = useControllerPoints(
+       orgId,
+       siteId,
+       projectId,
+       project?.iotDeviceId,
+     );
+
+     const treeData = useMemo(
+       () => getTreeData(controllers, points, project?.iotDeviceId || ""),
+       [getTreeData, controllers, points, project?.iotDeviceId, expandedNodes],
+     );
+     ```
+
+4. **Run Test** → Should PASS
+
+**Files Changed**:
+
+- `apps/designer/src/hooks/use-controller-points.ts` (new)
+- `apps/designer/src/store/slices/tree-ui-slice.ts`
+- `apps/designer/src/store/slices/tree-ui-slice.spec.ts`
+- `apps/designer/src/containers/controllers-tree-container.tsx`
+
+---
+
+#### Phase 2d.9: React Query Cache Invalidation ✅
+
+**Goal**: Auto-refresh UI after webhook upload
+
+**TDD Steps**:
+
+1. **Write Test First** (in webhook route test):
+
+   ```ts
+   it("should invalidate cache after successful upload");
+   ```
+
+2. **Run Test** → Should FAIL
+
+3. **Implement** in webhook route:
+
+   ```ts
+   import { revalidatePath } from "next/cache";
+
+   // After successful upload
+   revalidatePath(`/organizations/${orgId}/sites/${siteId}/...`);
+
+   // Or trigger React Query invalidation via server action
+   ```
+
+4. **Run Test** → Should PASS
+
+**Files Changed**:
+
+- `apps/designer/src/app/api/webhook/iot-device-config-upload/route.ts`
+
+---
+
+#### Phase 2d.10: Error Handling & Polish ✅
+
+**Goal**: Handle all error scenarios gracefully
+
+**TDD Steps**:
+
+1. **Write Tests First**:
+
+   ```ts
+   it("should handle MQTT timeout (30s)");
+   it("should handle webhook upload failure");
+   it("should handle network errors");
+   it("should show info when no points discovered");
+   it("should show loading state during discovery");
+   ```
+
+2. **Implement**:
+
+   - MQTT timeout error → Toast error
+   - Webhook 401/403 → MQTT error response
+   - Network failure → Toast error
+   - Empty discovery → Info message
+   - Loading states during refresh
+
+3. **Run Tests** → Should PASS
+
+**Files Changed**:
+
+- Various components for error handling
+
+---
+
+## Testing Commands
+
+**Designer (Frontend)**:
+
+```bash
+pnpm test                           # All tests
+pnpm test jwt.spec.ts              # JWT utilities
+pnpm test get-config-payload       # Payload endpoint
+pnpm test iot-device-config-upload # Webhook endpoint
+pnpm test controllers-tree         # Tree UI
+```
+
+**BMS IoT App (Backend)**:
+
+```bash
+pnpm bms-iot:test                                    # All tests
+pytest tests/integration/test_config_upload_webhook.py  # Webhook upload
+```
+
+**E2E Flow**:
+
+1. Start Designer: `pnpm dev`
+2. Start IoT App: `pnpm bms-iot:run`
+3. Click refresh → Check MQTT logs → Verify DB updates
 
 ### Phase 2e: Integration & Testing (Both apps)
 
@@ -741,6 +1274,15 @@ app/
 - [ ] Metadata JSON properly stores all health/optional BACnet properties
 - [ ] Database structure aligns with Supabase (nullable org/site/device fields present)
 - [ ] All tests passing
+
+Phase 2f: Fix issue on sync when NO data from controllers
+
+- When no data from simulator or controller is unavailable, the mqtt dies and does not restart.
+
+Expectation:
+
+- Should respond the mqtt with request response 5.0 on error that the sync had issue.
+- The MQTT should not die. If it dies, it should restart.
 
 ## Breaking Changes
 

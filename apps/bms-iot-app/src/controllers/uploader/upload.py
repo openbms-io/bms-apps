@@ -4,7 +4,7 @@ import logging
 from src.models.controller_points import get_points_to_upload, mark_points_as_uploaded
 from src.models.controller_points import ControllerPointsModel
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 async def upload_config(url: str, jwt_token: str):

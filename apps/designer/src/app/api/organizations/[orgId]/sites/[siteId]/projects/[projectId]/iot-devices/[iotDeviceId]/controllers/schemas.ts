@@ -18,9 +18,7 @@ export const CreateIotDeviceControllerRequestSchema = z.object({
   ipAddress: z.string().ip(),
   port: z.number().int().min(1).max(65535),
   deviceId: z.number().int().nonnegative(),
-  networkNumber: z.number().int().nonnegative().optional(),
-  macAddress: z.string().optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
   description: z.string().optional(),
   metadata: z.any().optional(),
 }) satisfies z.ZodType<

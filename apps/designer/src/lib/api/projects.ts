@@ -10,7 +10,6 @@ import {
   ProjectResponseSchema,
 } from '@/app/api/organizations/[orgId]/sites/[siteId]/projects/schemas'
 import { withRetry, handleResponse } from './utils'
-import { VersionedWorkflowConfig } from '../workflow/serializer'
 
 export const projectsApi = {
   async list({

@@ -3,6 +3,7 @@ import { Subject, interval } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
 import { getMqttBus } from '@/lib/mqtt/mqtt-bus'
 import { CommandNameEnum } from 'mqtt-topics'
+import type { GetConfigPayload } from '@/lib/api/get-config-payload'
 
 export interface HeartbeatPayload {
   cpu_usage_percent: number | null
@@ -49,6 +50,29 @@ export interface MQTTSlice {
     command: CommandNameEnum
     payload: unknown
   }) => Promise<unknown>
+}
+
+export function buildConfigUploadPayload(payload: GetConfigPayload) {
+  return {
+    urlToUploadConfig: payload.urlToUploadConfig,
+    jwtToken: payload.jwtToken,
+    iotDeviceControllers: payload.iotDeviceControllers.map((controller) => ({
+      id: controller.id,
+      ipAddress: controller.ipAddress,
+      port: controller.port,
+      controllerDeviceId: controller.controllerDeviceId,
+    })),
+    bacnetReaders: payload.bacnetReaders.map((reader) => ({
+      id: reader.id,
+      ip_address: reader.ipAddress,
+      port: reader.port,
+      bacnet_device_id: reader.deviceId,
+      subnet_mask: reader.subnetMask,
+      bbmd_enabled: reader.bbmdEnabled,
+      bbmd_server_ip: reader.bbmdServerIp,
+      is_active: reader.isActive,
+    })),
+  }
 }
 
 export const createMQTTSlice: StateCreator<MQTTSlice> = (set, get) => {
@@ -140,7 +164,10 @@ export const createMQTTSlice: StateCreator<MQTTSlice> = (set, get) => {
       payload: unknown
     }) => {
       const bus = getMqttBus()
-      return bus.request(command, payload).toPromise()
+      console.log('Sending command', command, payload)
+      const response = await bus.request(command, payload).toPromise()
+      console.log('Command Response', command, response)
+      return response
     },
   }
 }

@@ -35,9 +35,12 @@ export const controllerPoints = sqliteTable(
     description: text('description'),
 
     // Metadata for additional BACnet properties
-    metadata: text('metadata', { mode: 'json' })
-      .$type<BacnetMetadata | '{}'>()
-      .default('{}'),
+    metadata: text('metadata', { mode: 'json' }).$type<BacnetMetadata>(),
+
+    // Soft delete
+    is_deleted: integer('is_deleted', { mode: 'boolean' })
+      .notNull()
+      .default(false),
 
     // Timestamps
     created_at: text('created_at')
@@ -54,6 +57,7 @@ export const controllerPoints = sqliteTable(
       table.site_id,
       table.iot_device_id
     ),
+    index('idx_points_deleted').on(table.is_deleted),
   ]
 )
 

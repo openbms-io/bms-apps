@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { eq, and } from 'drizzle-orm'
+import { eq, and, notInArray } from 'drizzle-orm'
 import { getDatabase } from '../client'
 import {
   controllerPoints,
@@ -14,11 +14,20 @@ export class ControllerPointsRepository {
     return getDatabase()
   }
 
-  async findByController(controllerId: string): Promise<ControllerPoint[]> {
+  async findByController(
+    controllerId: string,
+    includeDeleted = false
+  ): Promise<ControllerPoint[]> {
+    const conditions = [eq(controllerPoints.controller_id, controllerId)]
+
+    if (!includeDeleted) {
+      conditions.push(eq(controllerPoints.is_deleted, false))
+    }
+
     const results = await this.db
       .select()
       .from(controllerPoints)
-      .where(eq(controllerPoints.controller_id, controllerId))
+      .where(and(...conditions))
       .all()
 
     return results.map((r) => ({
@@ -169,6 +178,62 @@ export class ControllerPointsRepository {
       resource.site_id === siteId &&
       resource.iot_device_id === iotDeviceId
     )
+  }
+
+  async softDeleteNotInList(
+    controllerId: string,
+    pointIds: string[]
+  ): Promise<void> {
+    const conditions = [eq(controllerPoints.controller_id, controllerId)]
+
+    if (pointIds.length > 0) {
+      conditions.push(notInArray(controllerPoints.id, pointIds))
+    }
+
+    await this.db
+      .update(controllerPoints)
+      .set({
+        is_deleted: true,
+        updated_at: new Date().toISOString(),
+      })
+      .where(and(...conditions))
+      .run()
+  }
+
+  async upsert(
+    data: InsertControllerPoint & { id: string }
+  ): Promise<ControllerPoint> {
+    const now = new Date().toISOString()
+
+    const upsertData = {
+      ...data,
+      is_deleted: false,
+      updated_at: now,
+      created_at: now,
+    }
+
+    await this.db
+      .insert(controllerPoints)
+      .values(upsertData)
+      .onConflictDoUpdate({
+        target: controllerPoints.id,
+        set: {
+          point_name: upsertData.point_name,
+          point_type: upsertData.point_type,
+          object_identifier: upsertData.object_identifier,
+          instance_number: upsertData.instance_number,
+          writable: upsertData.writable ?? false,
+          units: upsertData.units,
+          description: upsertData.description,
+          metadata: upsertData.metadata ?? null,
+          is_deleted: false,
+          updated_at: now,
+        },
+      })
+      .run()
+
+    const result = await this.findById(data.id)
+    return result!
   }
 }
 

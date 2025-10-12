@@ -13,6 +13,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Trash2 } from 'lucide-react'
 import {
   useBacnetReaders,
@@ -43,8 +50,9 @@ export function BacnetReadersModal({
     ipAddress: '',
     port: '47808',
     deviceId: '',
-    networkNumber: '',
-    macAddress: '',
+    subnetMask: '24' as '8' | '16' | '24' | '28' | '30',
+    bbmdEnabled: false,
+    bbmdServerIp: '',
     isActive: true,
   })
 
@@ -78,15 +86,19 @@ export function BacnetReadersModal({
       return
     }
 
-    const networkNumber = formData.networkNumber
-      ? parseInt(formData.networkNumber)
-      : undefined
-    if (
-      networkNumber !== undefined &&
-      (isNaN(networkNumber) || networkNumber < 0)
-    ) {
-      toast.error('Network number must be a positive number')
+    const subnetMask = parseInt(formData.subnetMask) as 8 | 16 | 24 | 28 | 30
+
+    if (formData.bbmdEnabled && !formData.bbmdServerIp) {
+      toast.error('BBMD Server IP is required when BBMD is enabled')
       return
+    }
+
+    if (formData.bbmdServerIp) {
+      const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
+      if (!ipRegex.test(formData.bbmdServerIp)) {
+        toast.error('Invalid BBMD Server IP address format')
+        return
+      }
     }
 
     try {
@@ -100,8 +112,9 @@ export function BacnetReadersModal({
           ipAddress: formData.ipAddress,
           port,
           deviceId,
-          networkNumber,
-          macAddress: formData.macAddress || undefined,
+          subnetMask,
+          bbmdEnabled: formData.bbmdEnabled,
+          bbmdServerIp: formData.bbmdServerIp || undefined,
           isActive: formData.isActive,
         },
       })
@@ -112,8 +125,9 @@ export function BacnetReadersModal({
         ipAddress: '',
         port: '47808',
         deviceId: '',
-        networkNumber: '',
-        macAddress: '',
+        subnetMask: '24' as '8' | '16' | '24' | '28' | '30',
+        bbmdEnabled: false,
+        bbmdServerIp: '',
         isActive: true,
       })
     } catch (error) {
@@ -225,35 +239,62 @@ export function BacnetReadersModal({
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="reader-network" className="text-right">
-                  Network Number
+                <Label htmlFor="reader-subnet" className="text-right">
+                  Subnet Mask *
                 </Label>
-                <Input
-                  id="reader-network"
-                  type="number"
-                  value={formData.networkNumber}
-                  onChange={(e) =>
-                    setFormData({ ...formData, networkNumber: e.target.value })
+                <Select
+                  value={formData.subnetMask}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      subnetMask: value as '8' | '16' | '24' | '28' | '30',
+                    })
                   }
-                  placeholder="Optional"
-                  className="col-span-3"
-                />
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="8">/8 (255.0.0.0)</SelectItem>
+                    <SelectItem value="16">/16 (255.255.0.0)</SelectItem>
+                    <SelectItem value="24">/24 (255.255.255.0)</SelectItem>
+                    <SelectItem value="28">/28 (255.255.255.240)</SelectItem>
+                    <SelectItem value="30">/30 (255.255.255.252)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="reader-mac" className="text-right">
-                  MAC Address
+                <Label htmlFor="reader-bbmd" className="text-right">
+                  BBMD Enabled
                 </Label>
-                <Input
-                  id="reader-mac"
-                  value={formData.macAddress}
-                  onChange={(e) =>
-                    setFormData({ ...formData, macAddress: e.target.value })
-                  }
-                  placeholder="Optional"
-                  className="col-span-3"
-                />
+                <div className="col-span-3">
+                  <Switch
+                    id="reader-bbmd"
+                    checked={formData.bbmdEnabled}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, bbmdEnabled: checked })
+                    }
+                  />
+                </div>
               </div>
+
+              {formData.bbmdEnabled && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="reader-bbmd-ip" className="text-right">
+                    BBMD Server IP *
+                  </Label>
+                  <Input
+                    id="reader-bbmd-ip"
+                    value={formData.bbmdServerIp}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bbmdServerIp: e.target.value })
+                    }
+                    placeholder="192.168.1.1"
+                    className="col-span-3"
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="reader-active" className="text-right">
@@ -319,10 +360,9 @@ export function BacnetReadersModal({
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
                         {reader.ipAddress}:{reader.port} | Device ID:{' '}
-                        {reader.deviceId}
-                        {reader.networkNumber !== undefined &&
-                          ` | Network: ${reader.networkNumber}`}
-                        {reader.macAddress && ` | MAC: ${reader.macAddress}`}
+                        {reader.deviceId} | Subnet: /{reader.subnetMask}
+                        {reader.bbmdEnabled &&
+                          ` | BBMD: ${reader.bbmdServerIp ?? 'N/A'}`}
                       </div>
                     </div>
                     <Button

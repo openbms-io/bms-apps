@@ -84,11 +84,6 @@ class BacnetMonitoringActor:
                         logger.info("Completed monitor_all_devices")
                         await self._update_bacnet_status()
 
-                    # # 2. Check for incoming messages (non-blocking)
-                    # while not queue.empty():
-                    #     msg: ActorMessage = await queue.get()
-                    #     await self._handle_message(msg)
-
                     await asyncio.sleep(0)  # Yield control to event loop
 
                 except Exception as e:
@@ -204,6 +199,7 @@ class BacnetMonitoringActor:
                         jwtToken=payload.jwtToken,
                         iotDeviceControllers=payload.iotDeviceControllers,
                         bacnetReaders=payload.bacnetReaders,
+                        correlationData=payload.correlationData,
                     ),
                 )
             else:

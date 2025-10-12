@@ -72,8 +72,6 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
       ip_address: '192.168.1.100',
       port: 47808,
       device_id: 1001,
-      network_number: 2000,
-      mac_address: '00:1A:2B:3C:4D:5E',
       name: 'Main Building Reader',
       description: 'Primary BACnet reader for main building',
       is_active: true,
@@ -91,8 +89,6 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
     expect(created.ip_address).toBe('192.168.1.100')
     expect(created.port).toBe(47808)
     expect(created.device_id).toBe(1001)
-    expect(created.network_number).toBe(2000)
-    expect(created.mac_address).toBe('00:1A:2B:3C:4D:5E')
     expect(created.name).toBe('Main Building Reader')
     expect(created.description).toBe('Primary BACnet reader for main building')
     expect(created.is_active).toBe(true)
@@ -127,7 +123,7 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
     expect(created.mac_address).toBeUndefined()
     expect(created.port).toBe(47808) // default
     expect(created.is_active).toBe(true) // default
-    expect(created.metadata).toEqual({})
+    expect(created.metadata).toBeNull()
 
     const fetched = await bacnetReadersRepository.findById(created.id)
     expect(fetched!.description).toBeUndefined()
@@ -189,7 +185,7 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
   })
 
   it('findByDevice returns readers scoped to org/site/device', async () => {
-    const reader1 = await bacnetReadersRepository.create({
+    await bacnetReadersRepository.create({
       organization_id: testOrgId,
       site_id: testSiteId,
       iot_device_id: testIotDeviceId,
@@ -198,7 +194,7 @@ describe('BacnetReadersRepository (SQLite + Drizzle)', () => {
       name: 'Device Reader 1',
     })
 
-    const reader2 = await bacnetReadersRepository.create({
+    await bacnetReadersRepository.create({
       organization_id: testOrgId,
       site_id: testSiteId,
       iot_device_id: testIotDeviceId,

@@ -37,7 +37,6 @@ import {
   createNodeFactory,
   type ReactFlowObject,
   type WorkflowMetadata,
-  type VersionedWorkflowConfig,
 } from '@/lib/workflow/serializer'
 
 export interface DraggedPoint {

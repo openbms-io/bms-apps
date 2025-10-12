@@ -17,25 +17,29 @@ export class BacnetReadersRepository {
   async findByDevice(
     orgId: string,
     siteId: string,
-    iotDeviceId: string
+    iotDeviceId: string,
+    includeDeleted = false
   ): Promise<BacnetReader[]> {
+    const conditions = [
+      eq(bacnetReaders.organization_id, orgId),
+      eq(bacnetReaders.site_id, siteId),
+      eq(bacnetReaders.iot_device_id, iotDeviceId),
+    ]
+
+    if (!includeDeleted) {
+      conditions.push(eq(bacnetReaders.is_deleted, false))
+    }
+
     const results = await this.db
       .select()
       .from(bacnetReaders)
-      .where(
-        and(
-          eq(bacnetReaders.organization_id, orgId),
-          eq(bacnetReaders.site_id, siteId),
-          eq(bacnetReaders.iot_device_id, iotDeviceId)
-        )
-      )
+      .where(and(...conditions))
       .all()
 
     return results.map((r) => ({
       ...r,
       description: r.description ?? undefined,
-      network_number: r.network_number ?? undefined,
-      mac_address: r.mac_address ?? undefined,
+      bbmd_server_ip: r.bbmd_server_ip ?? undefined,
       metadata:
         typeof r.metadata === 'string' ? JSON.parse(r.metadata) : r.metadata,
     })) as BacnetReader[]
@@ -52,8 +56,7 @@ export class BacnetReadersRepository {
       ? ({
           ...result,
           description: result.description ?? undefined,
-          network_number: result.network_number ?? undefined,
-          mac_address: result.mac_address ?? undefined,
+          bbmd_server_ip: result.bbmd_server_ip ?? undefined,
           metadata:
             typeof result.metadata === 'string'
               ? JSON.parse(result.metadata)
@@ -70,8 +73,7 @@ export class BacnetReadersRepository {
       ...data,
       id,
       description: data.description ?? undefined,
-      network_number: data.network_number ?? undefined,
-      mac_address: data.mac_address ?? undefined,
+      bbmd_server_ip: data.bbmd_server_ip ?? undefined,
       created_at: now,
       updated_at: now,
     } as BacnetReader
@@ -87,8 +89,7 @@ export class BacnetReadersRepository {
     return {
       ...result!,
       description: result!.description ?? undefined,
-      network_number: result!.network_number ?? undefined,
-      mac_address: result!.mac_address ?? undefined,
+      bbmd_server_ip: result!.bbmd_server_ip ?? undefined,
       metadata:
         typeof result!.metadata === 'string'
           ? JSON.parse(result!.metadata)
@@ -107,10 +108,8 @@ export class BacnetReadersRepository {
       ...data,
       description:
         data.description !== undefined ? data.description : undefined,
-      network_number:
-        data.network_number !== undefined ? data.network_number : undefined,
-      mac_address:
-        data.mac_address !== undefined ? data.mac_address : undefined,
+      bbmd_server_ip:
+        data.bbmd_server_ip !== undefined ? data.bbmd_server_ip : undefined,
       updated_at: new Date().toISOString(),
     } as BacnetReader
 

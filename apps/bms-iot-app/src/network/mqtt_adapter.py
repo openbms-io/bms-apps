@@ -4,7 +4,6 @@ Provides functionality for MQTT operations and configuration.
 """
 
 import json
-import logging
 import os
 import time
 from typing import Dict, Any, Optional
@@ -19,7 +18,7 @@ from .mqtt_config import (
 )
 
 # Get module-level logger
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 # Load saved MQTT configuration
 mqtt_config = load_config()

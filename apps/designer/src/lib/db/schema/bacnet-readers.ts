@@ -23,8 +23,11 @@ export const bacnetReaders = sqliteTable(
     ip_address: text('ip_address').notNull(),
     port: integer('port').notNull().default(47808),
     device_id: integer('device_id').notNull(),
-    network_number: integer('network_number'),
-    mac_address: text('mac_address'),
+    subnet_mask: integer('subnet_mask').notNull().default(24),
+    bbmd_enabled: integer('bbmd_enabled', { mode: 'boolean' })
+      .notNull()
+      .default(false),
+    bbmd_server_ip: text('bbmd_server_ip'),
 
     // Metadata
     name: text('name').notNull(),
@@ -32,9 +35,12 @@ export const bacnetReaders = sqliteTable(
     is_active: integer('is_active', { mode: 'boolean' })
       .notNull()
       .default(true),
-    metadata: text('metadata', { mode: 'json' })
-      .$type<BacnetMetadata | '{}'>()
-      .default('{}'),
+    metadata: text('metadata', { mode: 'json' }).$type<BacnetMetadata>(),
+
+    // Soft delete
+    is_deleted: integer('is_deleted', { mode: 'boolean' })
+      .notNull()
+      .default(false),
 
     // Timestamps
     created_at: text('created_at')
@@ -51,6 +57,7 @@ export const bacnetReaders = sqliteTable(
       table.iot_device_id
     ),
     index('idx_bacnet_readers_device').on(table.iot_device_id),
+    index('idx_bacnet_readers_deleted').on(table.is_deleted),
   ]
 )
 

@@ -77,13 +77,15 @@ class MQTTActor:
         queue = self.actor_queue_registry.get_queue(self.actor_name)
 
         while not queue.empty():
+            logger.info(f"Handling messages for {self.actor_name}")
             message: ActorMessage = await queue.get()
             if message.message_type == ActorMessageType.CONFIG_UPLOAD_RESPONSE:
+                logger.info(f"Handling CONFIG_UPLOAD_RESPONSE for {self.actor_name}")
                 # Extract correlation data from payload and pass to publish_response
                 correlation_data = getattr(message.payload, "correlationData", None)
                 self.mqtt_handler.publish_response(
-                    CommandNameEnum.get_config,
-                    message.payload,
+                    command=CommandNameEnum.get_config,
+                    payload=message.payload,
                     correlation_data=correlation_data,
                 )
             elif message.message_type == ActorMessageType.POINT_PUBLISH_REQUEST:

@@ -15,7 +15,6 @@ import type {
 
 import { projectsApi } from '../lib/api/projects'
 import { queryKeys } from '../lib/query-client'
-import { VersionedWorkflowConfig } from '../lib/workflow/serializer'
 
 export function useProjects(
   query: { orgId: string; siteId: string } & ProjectQuery,

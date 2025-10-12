@@ -13,8 +13,6 @@ type DbIotDeviceController = {
   ip_address: string
   port: number
   device_id: number
-  network_number: number | null
-  mac_address: string | null
   name: string
   description: string | null
   is_active: boolean
@@ -31,11 +29,10 @@ type DbInsertIotDeviceController = {
   ip_address: string
   port: number
   device_id: number
-  network_number?: number
-  mac_address?: string
   name: string
   description?: string
   is_active: boolean
+  is_deleted: boolean
   metadata?: BacnetMetadata | '{}'
   created_at: string
   updated_at: string
@@ -45,8 +42,6 @@ type DbUpdateIotDeviceController = {
   ip_address?: string
   port?: number
   device_id?: number
-  network_number?: number | null
-  mac_address?: string | null
   name?: string
   description?: string | null
   is_active?: boolean
@@ -64,8 +59,6 @@ export const IotDeviceControllerMapper = {
       ipAddress: db.ip_address,
       port: db.port,
       deviceId: db.device_id,
-      networkNumber: db.network_number ?? undefined,
-      macAddress: db.mac_address ?? undefined,
       name: db.name,
       description: db.description ?? undefined,
       isActive: db.is_active,
@@ -88,11 +81,10 @@ export const IotDeviceControllerMapper = {
       ip_address: dto.ipAddress,
       port: dto.port,
       device_id: dto.deviceId,
-      network_number: dto.networkNumber,
-      mac_address: dto.macAddress,
       name: dto.name,
       description: dto.description,
       is_active: dto.isActive,
+      is_deleted: false,
       metadata: dto.metadata ?? '{}',
       created_at: now,
       updated_at: now,
@@ -117,16 +109,6 @@ export const IotDeviceControllerMapper = {
 
     if (dto.deviceId !== undefined) {
       db.device_id = dto.deviceId
-      hasUpdates = true
-    }
-
-    if (dto.networkNumber !== undefined) {
-      db.network_number = dto.networkNumber
-      hasUpdates = true
-    }
-
-    if (dto.macAddress !== undefined) {
-      db.mac_address = dto.macAddress
       hasUpdates = true
     }
 

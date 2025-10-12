@@ -16,7 +16,7 @@ export interface TreeUISlice {
   // Simple tree transform - just supervisors → controllers (no points yet)
   getTreeData: (
     controllers: IotDeviceController[],
-    supervisorId: string
+    iotDevice: { id: string; name: string } | undefined
   ) => TreeNode[]
 }
 
@@ -53,20 +53,28 @@ export const createTreeUISlice: StateCreator<
     set({ expandedNodes: new Set() })
   },
 
-  getTreeData: (controllers: IotDeviceController[], supervisorId: string) => {
+  getTreeData: (
+    controllers: IotDeviceController[],
+    iotDevice: { id: string; name: string } | undefined
+  ) => {
     const { expandedNodes } = get()
 
-    if (!supervisorId) return []
+    if (!iotDevice) return []
 
     const supervisorNode: TreeNode = {
-      id: supervisorId,
+      id: iotDevice.id,
       type: 'supervisor',
-      label: 'Default Supervisor',
+      label: iotDevice.name,
       icon: '🖥️',
       depth: 0,
       hasChildren: controllers.length > 0,
-      isExpanded: expandedNodes.has(supervisorId),
-      data: { id: supervisorId, name: 'Default Supervisor' },
+      isExpanded: expandedNodes.has(iotDevice.id),
+      data: {
+        id: iotDevice.id,
+        name: iotDevice.name,
+        status: 'active' as const,
+        controllers: [],
+      },
       children: [],
     }
 
@@ -81,7 +89,16 @@ export const createTreeUISlice: StateCreator<
           depth: 1,
           hasChildren: false, // No points yet
           isExpanded: false,
-          data: controller,
+          data: {
+            id: controller.id,
+            supervisorId: iotDevice.id,
+            ipAddress: controller.ipAddress,
+            name: controller.name,
+            status: controller.isActive
+              ? ('connected' as const)
+              : ('disconnected' as const),
+            discoveredPoints: [],
+          },
           children: [],
         }
 

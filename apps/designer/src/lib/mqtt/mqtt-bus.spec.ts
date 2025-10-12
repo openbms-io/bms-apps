@@ -120,10 +120,17 @@ describe('MqttBusManager', () => {
       )?.[1]
       connectHandler()
 
-      expect(mockClient.subscribe).toHaveBeenCalledWith(
-        expect.stringContaining('/status/heartbeat'),
-        expect.any(Object)
+      // Verify batched subscription includes heartbeat topic
+      const subscriptionCall = mockClient.subscribe.mock.calls[0]
+      const subscriptions = subscriptionCall[0] as Record<
+        string,
+        { qos: number }
+      >
+
+      const heartbeatTopic = Object.keys(subscriptions).find((topic) =>
+        topic.includes('/status/heartbeat')
       )
+      expect(heartbeatTopic).toBeDefined()
     })
 
     it('should subscribe to point_bulk topic on connect', () => {
@@ -141,10 +148,17 @@ describe('MqttBusManager', () => {
       )?.[1]
       connectHandler()
 
-      expect(mockClient.subscribe).toHaveBeenCalledWith(
-        expect.stringContaining('/bulk'),
-        expect.any(Object)
+      // Verify batched subscription includes point_bulk topic
+      const subscriptionCall = mockClient.subscribe.mock.calls[0]
+      const subscriptions = subscriptionCall[0] as Record<
+        string,
+        { qos: number }
+      >
+
+      const bulkTopic = Object.keys(subscriptions).find((topic) =>
+        topic.includes('/bulk')
       )
+      expect(bulkTopic).toBeDefined()
     })
 
     it('should subscribe to command response topics', () => {
@@ -162,9 +176,13 @@ describe('MqttBusManager', () => {
       )?.[1]
       connectHandler()
 
+      // Verify batched subscription was called
       expect(mockClient.subscribe).toHaveBeenCalledWith(
-        expect.stringContaining('/command/get_config/response'),
-        expect.any(Object)
+        expect.objectContaining({
+          'iot/global/org_test/site-123/device-456/command/get_config/response':
+            expect.objectContaining({ qos: 1 }),
+        }),
+        expect.any(Function)
       )
     })
 
@@ -183,12 +201,21 @@ describe('MqttBusManager', () => {
       )?.[1]
       connectHandler()
 
-      const heartbeatCall = mockClient.subscribe.mock.calls.find((call: any) =>
-        call[0].includes('/status/heartbeat')
+      // Get the batched subscription object
+      const subscriptionCall = mockClient.subscribe.mock.calls[0]
+      const subscriptions = subscriptionCall[0] as Record<
+        string,
+        { qos: number }
+      >
+
+      // Find heartbeat topic
+      const heartbeatTopic = Object.keys(subscriptions).find((topic) =>
+        topic.includes('/status/heartbeat')
       )
-      expect(heartbeatCall[0]).toContain('org_test')
-      expect(heartbeatCall[0]).toContain('site-123')
-      expect(heartbeatCall[0]).toContain('device-456')
+      expect(heartbeatTopic).toBeDefined()
+      expect(heartbeatTopic).toContain('org_test')
+      expect(heartbeatTopic).toContain('site-123')
+      expect(heartbeatTopic).toContain('device-456')
     })
   })
 

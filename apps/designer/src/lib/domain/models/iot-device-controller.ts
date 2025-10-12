@@ -8,8 +8,6 @@ export type IotDeviceController = {
   ipAddress: string
   port: number
   deviceId: number
-  networkNumber?: number
-  macAddress?: string
   name: string
   description?: string
   isActive: boolean
@@ -25,8 +23,6 @@ export type CreateIotDeviceController = {
   ipAddress: string
   port: number
   deviceId: number
-  networkNumber?: number
-  macAddress?: string
   name: string
   description?: string
   isActive: boolean
@@ -37,8 +33,6 @@ export type UpdateIotDeviceController = {
   ipAddress?: string
   port?: number
   deviceId?: number
-  networkNumber?: number | null
-  macAddress?: string | null
   name?: string
   description?: string | null
   isActive?: boolean

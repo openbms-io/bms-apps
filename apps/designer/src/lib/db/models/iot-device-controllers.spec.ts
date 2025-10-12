@@ -78,8 +78,6 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
       ip_address: '192.168.2.100',
       port: 47808,
       device_id: 2001,
-      network_number: 3000,
-      mac_address: 'AA:BB:CC:DD:EE:FF',
       name: 'HVAC Controller',
       description: 'Main HVAC system controller',
       is_active: true,
@@ -99,8 +97,6 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
     expect(created.ip_address).toBe('192.168.2.100')
     expect(created.port).toBe(47808)
     expect(created.device_id).toBe(2001)
-    expect(created.network_number).toBe(3000)
-    expect(created.mac_address).toBe('AA:BB:CC:DD:EE:FF')
     expect(created.name).toBe('HVAC Controller')
     expect(created.description).toBe('Main HVAC system controller')
     expect(created.is_active).toBe(true)
@@ -132,16 +128,12 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
 
     expect(created.name).toBe('Minimal Controller')
     expect(created.description).toBeUndefined()
-    expect(created.network_number).toBeUndefined()
-    expect(created.mac_address).toBeUndefined()
     expect(created.port).toBe(47808)
     expect(created.is_active).toBe(true)
-    expect(created.metadata).toEqual({})
+    expect(created.metadata).toBeNull()
 
     const fetched = await iotDeviceControllersRepository.findById(created.id)
     expect(fetched!.description).toBeUndefined()
-    expect(fetched!.network_number).toBeUndefined()
-    expect(fetched!.mac_address).toBeUndefined()
   })
 
   it('updates controller properties and timestamps', async () => {
@@ -200,14 +192,16 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
     expect(deleted).toBe(true)
 
     const fetched = await iotDeviceControllersRepository.findById(created.id)
-    expect(fetched).toBeNull()
+    // Soft delete: record exists but is marked as deleted
+    expect(fetched).not.toBeNull()
+    expect(fetched!.is_deleted).toBe(true)
 
     const deletedAgain = await iotDeviceControllersRepository.delete(created.id)
     expect(deletedAgain).toBe(false)
   })
 
   it('findByDevice returns controllers scoped to org/site/device', async () => {
-    const controller1 = await iotDeviceControllersRepository.create({
+    await iotDeviceControllersRepository.create({
       organization_id: testOrgId,
       site_id: testSiteId,
       iot_device_id: testIotDeviceId,
@@ -217,7 +211,7 @@ describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
       id: randomUUID(),
     })
 
-    const controller2 = await iotDeviceControllersRepository.create({
+    await iotDeviceControllersRepository.create({
       organization_id: testOrgId,
       site_id: testSiteId,
       iot_device_id: testIotDeviceId,

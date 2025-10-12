@@ -1,6 +1,5 @@
 import asyncio
 from typing import Dict, List
-import logging
 
 from src.actors.messages.message_type import (
     ActorName,
@@ -9,7 +8,7 @@ from src.actors.messages.message_type import (
     AllowedPayloadTypes,
 )
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 # --- Registry supporting one-to-one and broadcast messaging ---

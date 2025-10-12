@@ -38,8 +38,6 @@ export function AddControllerDialog({
     ipAddress: '',
     port: '47808',
     deviceId: '',
-    networkNumber: '',
-    macAddress: '',
     isActive: true,
   })
 
@@ -66,17 +64,6 @@ export function AddControllerDialog({
       return
     }
 
-    const networkNumber = formData.networkNumber
-      ? parseInt(formData.networkNumber)
-      : undefined
-    if (
-      networkNumber !== undefined &&
-      (isNaN(networkNumber) || networkNumber < 0)
-    ) {
-      toast.error('Network number must be a positive number')
-      return
-    }
-
     try {
       await createMutation.mutateAsync({
         orgId,
@@ -88,8 +75,6 @@ export function AddControllerDialog({
           ipAddress: formData.ipAddress,
           port,
           deviceId,
-          networkNumber,
-          macAddress: formData.macAddress || undefined,
           isActive: formData.isActive,
         },
       })
@@ -100,8 +85,6 @@ export function AddControllerDialog({
         ipAddress: '',
         port: '47808',
         deviceId: '',
-        networkNumber: '',
-        macAddress: '',
         isActive: true,
       })
       onOpenChange(false)
@@ -186,37 +169,6 @@ export function AddControllerDialog({
                 placeholder="123456"
                 className="col-span-3"
                 required
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="network-number" className="text-right">
-                Network Number
-              </Label>
-              <Input
-                id="network-number"
-                type="number"
-                value={formData.networkNumber}
-                onChange={(e) =>
-                  setFormData({ ...formData, networkNumber: e.target.value })
-                }
-                placeholder="Optional"
-                className="col-span-3"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="mac-address" className="text-right">
-                MAC Address
-              </Label>
-              <Input
-                id="mac-address"
-                value={formData.macAddress}
-                onChange={(e) =>
-                  setFormData({ ...formData, macAddress: e.target.value })
-                }
-                placeholder="Optional"
-                className="col-span-3"
               />
             </div>
 

@@ -117,8 +117,14 @@ class MqttBusCore {
 
     this.client.on('message', (topic, payload, packet) => {
       try {
+        console.log('Received message', {
+          topic,
+          payload,
+          packet,
+        })
         const correlationData = packet.properties?.correlationData
         const responseTopic = packet.properties?.responseTopic
+
         const msg: MqttMessage = {
           topic,
           payload: JSON.parse(payload.toString()),
@@ -148,21 +154,32 @@ class MqttBusCore {
     if (!this.client || !this.topics) return
     const { status, data, command } = this.topics
 
-    this.client.subscribe(status.heartbeat.topic, {
+    // Collect all topics to subscribe to in a single call
+    const subscriptions: Record<string, { qos: 0 | 1 | 2 }> = {}
+
+    subscriptions[status.heartbeat.topic] = {
       qos: status.heartbeat.qos as 0 | 1 | 2,
-    })
-    this.client.subscribe(data.point_bulk.topic, {
+    }
+    subscriptions[data.point_bulk.topic] = {
       qos: data.point_bulk.qos as 0 | 1 | 2,
-    })
+    }
 
     for (const key of Object.keys(command) as Array<
       keyof AllTopics['command']
     >) {
       const resp = command[key]?.response
       if (resp?.topic) {
-        this.client.subscribe(resp.topic, { qos: resp.qos as 0 | 1 | 2 })
+        subscriptions[resp.topic] = { qos: resp.qos as 0 | 1 | 2 }
       }
     }
+
+    // Subscribe to all topics in a single call
+    this.client.subscribe(subscriptions, (err) => {
+      console.log('Subscribed to all topics', subscriptions)
+      if (err) {
+        console.error('MQTT subscription error:', err)
+      }
+    })
   }
 
   private routeToDomainStreams(msg: MqttMessage): void {

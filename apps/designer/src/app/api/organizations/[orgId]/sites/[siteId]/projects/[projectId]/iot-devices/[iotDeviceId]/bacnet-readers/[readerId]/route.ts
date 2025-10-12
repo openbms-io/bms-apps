@@ -28,8 +28,6 @@ export async function GET(
     const data = {
       reader: BacnetReaderMapper.toDTO({
         ...dbReader,
-        network_number: dbReader.network_number ?? null,
-        mac_address: dbReader.mac_address ?? null,
         description: dbReader.description ?? null,
         metadata: dbReader.metadata ?? null,
       }),
@@ -62,8 +60,6 @@ export async function PUT(
     const data = {
       reader: BacnetReaderMapper.toDTO({
         ...dbReader,
-        network_number: dbReader.network_number ?? null,
-        mac_address: dbReader.mac_address ?? null,
         description: dbReader.description ?? null,
         metadata: dbReader.metadata ?? null,
       }),

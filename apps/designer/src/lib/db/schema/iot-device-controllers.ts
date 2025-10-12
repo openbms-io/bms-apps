@@ -23,8 +23,6 @@ export const iotDeviceControllers = sqliteTable(
     ip_address: text('ip_address').notNull(),
     port: integer('port').notNull().default(47808),
     device_id: integer('device_id').notNull(),
-    network_number: integer('network_number'),
-    mac_address: text('mac_address'),
 
     // Metadata
     name: text('name').notNull(),
@@ -32,9 +30,12 @@ export const iotDeviceControllers = sqliteTable(
     is_active: integer('is_active', { mode: 'boolean' })
       .notNull()
       .default(true),
-    metadata: text('metadata', { mode: 'json' })
-      .$type<BacnetMetadata | '{}'>()
-      .default('{}'),
+    metadata: text('metadata', { mode: 'json' }).$type<BacnetMetadata>(),
+
+    // Soft delete
+    is_deleted: integer('is_deleted', { mode: 'boolean' })
+      .notNull()
+      .default(false),
 
     // Timestamps
     created_at: text('created_at')
@@ -50,6 +51,7 @@ export const iotDeviceControllers = sqliteTable(
       table.site_id,
       table.iot_device_id
     ),
+    index('idx_controllers_deleted').on(table.is_deleted),
   ]
 )
 

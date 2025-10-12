@@ -158,7 +158,7 @@ describe('ControllerPointsRepository (SQLite + Drizzle)', () => {
     expect(created.writable).toBe(false)
     expect(created.units).toBeUndefined()
     expect(created.description).toBeUndefined()
-    expect(created.metadata).toEqual({})
+    expect(created.metadata).toBeNull()
 
     const fetched = await controllerPointsRepository.findById(created.id)
     expect(fetched!.units).toBeUndefined()
@@ -233,7 +233,7 @@ describe('ControllerPointsRepository (SQLite + Drizzle)', () => {
   })
 
   it('findByController returns all points for a controller', async () => {
-    const point1 = await controllerPointsRepository.create({
+    await controllerPointsRepository.create({
       organization_id: testOrgId,
       site_id: testSiteId,
       iot_device_id: testIotDeviceId,
@@ -245,7 +245,7 @@ describe('ControllerPointsRepository (SQLite + Drizzle)', () => {
       id: randomUUID(),
     })
 
-    const point2 = await controllerPointsRepository.create({
+    await controllerPointsRepository.create({
       organization_id: testOrgId,
       site_id: testSiteId,
       iot_device_id: testIotDeviceId,
@@ -270,7 +270,7 @@ describe('ControllerPointsRepository (SQLite + Drizzle)', () => {
   })
 
   it('findByDevice returns all points scoped to org/site/device', async () => {
-    const point1 = await controllerPointsRepository.create({
+    await controllerPointsRepository.create({
       organization_id: testOrgId,
       site_id: testSiteId,
       iot_device_id: testIotDeviceId,
@@ -282,7 +282,7 @@ describe('ControllerPointsRepository (SQLite + Drizzle)', () => {
       id: randomUUID(),
     })
 
-    const point2 = await controllerPointsRepository.create({
+    await controllerPointsRepository.create({
       organization_id: testOrgId,
       site_id: testSiteId,
       iot_device_id: testIotDeviceId,
@@ -428,5 +428,310 @@ describe('ControllerPointsRepository (SQLite + Drizzle)', () => {
     })
 
     expect(isOwner).toBe(false)
+  })
+
+  describe('Soft Delete', () => {
+    it('should filter out deleted points by default', async () => {
+      // Setup: Insert 3 points, mark 1 as deleted
+      await controllerPointsRepository.create({
+        id: randomUUID(),
+        organization_id: testOrgId,
+        site_id: testSiteId,
+        iot_device_id: testIotDeviceId,
+        controller_id: testControllerId,
+        point_name: 'Temperature Sensor',
+        point_type: 'analogInput',
+        object_identifier: 'analog-input,0',
+        instance_number: 0,
+        writable: false,
+        is_deleted: false,
+      })
+
+      await controllerPointsRepository.create({
+        id: randomUUID(),
+        organization_id: testOrgId,
+        site_id: testSiteId,
+        iot_device_id: testIotDeviceId,
+        controller_id: testControllerId,
+        point_name: 'Pressure Sensor',
+        point_type: 'analogInput',
+        object_identifier: 'analog-input,1',
+        instance_number: 1,
+        writable: false,
+        is_deleted: false,
+      })
+
+      await controllerPointsRepository.create({
+        id: randomUUID(),
+        organization_id: testOrgId,
+        site_id: testSiteId,
+        iot_device_id: testIotDeviceId,
+        controller_id: testControllerId,
+        point_name: 'Deleted Sensor',
+        point_type: 'analogInput',
+        object_identifier: 'analog-input,2',
+        instance_number: 2,
+        writable: false,
+        is_deleted: true, // This one is deleted
+      })
+
+      // Act: Fetch points without including deleted
+      const points = await controllerPointsRepository.findByController(
+        testControllerId,
+        false
+      )
+
+      // Assert: Should only get 2 non-deleted points
+      expect(points).toHaveLength(2)
+      expect(points.map((p) => p.point_name)).toEqual(
+        expect.arrayContaining(['Temperature Sensor', 'Pressure Sensor'])
+      )
+      expect(points.map((p) => p.point_name)).not.toContain('Deleted Sensor')
+    })
+
+    it('should include deleted points when includeDeleted=true', async () => {
+      // Setup: Insert 3 points, mark 1 as deleted
+      await controllerPointsRepository.create({
+        id: randomUUID(),
+        organization_id: testOrgId,
+        site_id: testSiteId,
+        iot_device_id: testIotDeviceId,
+        controller_id: testControllerId,
+        point_name: 'Active Point 1',
+        point_type: 'analogInput',
+        object_identifier: 'analog-input,0',
+        instance_number: 0,
+        writable: false,
+        is_deleted: false,
+      })
+
+      await controllerPointsRepository.create({
+        id: randomUUID(),
+        organization_id: testOrgId,
+        site_id: testSiteId,
+        iot_device_id: testIotDeviceId,
+        controller_id: testControllerId,
+        point_name: 'Active Point 2',
+        point_type: 'analogInput',
+        object_identifier: 'analog-input,1',
+        instance_number: 1,
+        writable: false,
+        is_deleted: false,
+      })
+
+      await controllerPointsRepository.create({
+        id: randomUUID(),
+        organization_id: testOrgId,
+        site_id: testSiteId,
+        iot_device_id: testIotDeviceId,
+        controller_id: testControllerId,
+        point_name: 'Deleted Point',
+        point_type: 'analogInput',
+        object_identifier: 'analog-input,2',
+        instance_number: 2,
+        writable: false,
+        is_deleted: true,
+      })
+
+      // Act: Fetch points including deleted
+      const allPoints = await controllerPointsRepository.findByController(
+        testControllerId,
+        true
+      )
+
+      // Assert: Should get all 3 points
+      expect(allPoints).toHaveLength(3)
+      expect(allPoints.filter((p) => p.is_deleted)).toHaveLength(1)
+      expect(allPoints.filter((p) => !p.is_deleted)).toHaveLength(2)
+    })
+  })
+
+  describe('Soft Delete Operations', () => {
+    describe('softDeleteNotInList', () => {
+      it('should mark points as deleted when not in current config list', async () => {
+        const point1 = await controllerPointsRepository.create({
+          id: randomUUID(),
+          organization_id: testOrgId,
+          site_id: testSiteId,
+          iot_device_id: testIotDeviceId,
+          controller_id: testControllerId,
+          point_name: 'Point 1',
+          point_type: 'analogInput',
+          object_identifier: 'analog-input,0',
+          instance_number: 0,
+        })
+
+        const point2 = await controllerPointsRepository.create({
+          id: randomUUID(),
+          organization_id: testOrgId,
+          site_id: testSiteId,
+          iot_device_id: testIotDeviceId,
+          controller_id: testControllerId,
+          point_name: 'Point 2',
+          point_type: 'analogInput',
+          object_identifier: 'analog-input,1',
+          instance_number: 1,
+        })
+
+        const point3 = await controllerPointsRepository.create({
+          id: randomUUID(),
+          organization_id: testOrgId,
+          site_id: testSiteId,
+          iot_device_id: testIotDeviceId,
+          controller_id: testControllerId,
+          point_name: 'Point 3',
+          point_type: 'analogInput',
+          object_identifier: 'analog-input,2',
+          instance_number: 2,
+        })
+
+        await controllerPointsRepository.softDeleteNotInList(testControllerId, [
+          point1.id,
+          point2.id,
+        ])
+
+        const allPoints = await controllerPointsRepository.findByController(
+          testControllerId,
+          true
+        )
+        const activePoints = await controllerPointsRepository.findByController(
+          testControllerId,
+          false
+        )
+
+        expect(allPoints).toHaveLength(3)
+        expect(activePoints).toHaveLength(2)
+
+        const deletedPoint = allPoints.find((p) => p.id === point3.id)
+        expect(deletedPoint?.is_deleted).toBe(true)
+      })
+
+      it('should not affect points from different controllers', async () => {
+        const db = getDatabase()
+        const now = new Date().toISOString()
+        const differentControllerId = 'test-controller-999'
+
+        await db
+          .insert(iotDeviceControllers)
+          .values({
+            id: differentControllerId,
+            organization_id: testOrgId,
+            site_id: testSiteId,
+            iot_device_id: testIotDeviceId,
+            ip_address: '192.168.3.51',
+            port: 47808,
+            device_id: 3001,
+            network_number: null,
+            mac_address: null,
+            name: 'Different Controller',
+            description: null,
+            is_active: true,
+            metadata: '{}',
+            created_at: now,
+            updated_at: now,
+          })
+          .run()
+
+        await controllerPointsRepository.create({
+          id: randomUUID(),
+          organization_id: testOrgId,
+          site_id: testSiteId,
+          iot_device_id: testIotDeviceId,
+          controller_id: testControllerId,
+          point_name: 'Controller 1 Point',
+          point_type: 'analogInput',
+          object_identifier: 'analog-input,0',
+          instance_number: 0,
+        })
+
+        await controllerPointsRepository.create({
+          id: randomUUID(),
+          organization_id: testOrgId,
+          site_id: testSiteId,
+          iot_device_id: testIotDeviceId,
+          controller_id: differentControllerId,
+          point_name: 'Controller 2 Point',
+          point_type: 'analogInput',
+          object_identifier: 'analog-input,0',
+          instance_number: 0,
+        })
+
+        await controllerPointsRepository.softDeleteNotInList(
+          testControllerId,
+          []
+        )
+
+        const ctrl1Points = await controllerPointsRepository.findByController(
+          testControllerId,
+          true
+        )
+        const ctrl2Points = await controllerPointsRepository.findByController(
+          differentControllerId,
+          false
+        )
+
+        expect(ctrl1Points[0].is_deleted).toBe(true)
+        expect(ctrl2Points[0].is_deleted).toBe(false)
+      })
+    })
+
+    describe('upsert', () => {
+      it('should create new point if it does not exist', async () => {
+        const pointData = {
+          id: 'new-point-id',
+          organization_id: testOrgId,
+          site_id: testSiteId,
+          iot_device_id: testIotDeviceId,
+          controller_id: testControllerId,
+          point_name: 'New Point',
+          point_type: 'analogInput',
+          object_identifier: 'analog-input,99',
+          instance_number: 99,
+        }
+
+        await controllerPointsRepository.upsert(pointData)
+
+        const point = await controllerPointsRepository.findById('new-point-id')
+        expect(point).toBeDefined()
+        expect(point?.point_name).toBe('New Point')
+        expect(point?.is_deleted).toBe(false)
+      })
+
+      it('should update existing point and restore if deleted', async () => {
+        await controllerPointsRepository.create({
+          id: 'existing-point',
+          organization_id: testOrgId,
+          site_id: testSiteId,
+          iot_device_id: testIotDeviceId,
+          controller_id: testControllerId,
+          point_name: 'Old Name',
+          point_type: 'analogInput',
+          object_identifier: 'analog-input,88',
+          instance_number: 88,
+        })
+
+        await controllerPointsRepository.softDeleteNotInList(
+          testControllerId,
+          []
+        )
+
+        await controllerPointsRepository.upsert({
+          id: 'existing-point',
+          organization_id: testOrgId,
+          site_id: testSiteId,
+          iot_device_id: testIotDeviceId,
+          controller_id: testControllerId,
+          point_name: 'Updated Name',
+          point_type: 'analogInput',
+          object_identifier: 'analog-input,88',
+          instance_number: 88,
+        })
+
+        const updated =
+          await controllerPointsRepository.findById('existing-point')
+        expect(updated?.point_name).toBe('Updated Name')
+        expect(updated?.is_deleted).toBe(false)
+      })
+    })
   })
 })

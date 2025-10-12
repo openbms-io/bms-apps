@@ -1,6 +1,5 @@
 """Bridge module to connect BACnet monitoring with MQTT publishing."""
 
-import logging
 import time
 from typing import Dict, Any, Optional
 
@@ -8,7 +7,7 @@ from ...network.mqtt_client import MQTTClient
 from ...network.mqtt_config import MQTTConfig
 from ...network.mqtt_adapter import get_mqtt_config
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 class MQTTMonitorBridge:

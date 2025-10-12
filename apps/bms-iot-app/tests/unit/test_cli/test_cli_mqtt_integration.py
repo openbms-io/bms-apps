@@ -118,7 +118,7 @@ class TestMQTTIntegration:
                 use_tls=False,
                 tls_ca_cert=None,
                 topic_prefix="",
-                clean_session=False,
+                clean_session=True,
             )
 
     @pytest.mark.asyncio
@@ -374,7 +374,7 @@ class TestMQTTIntegration:
                 prompt_calls.append(kwargs)
                 if "hide_input" in kwargs and kwargs["hide_input"]:
                     return "hidden_password"
-                elif "type" in kwargs and kwargs["type"] == int:
+                elif "type" in kwargs and kwargs["type"] is int:
                     return 2  # Choose EMQX broker (option 2)
                 else:
                     return "visible_input"

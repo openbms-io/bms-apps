@@ -2,11 +2,6 @@ import '@testing-library/jest-dom'
 import fs from 'fs'
 import path from 'path'
 import { migrateTestDatabase } from './test-utils/migrate'
-// Mock ESM-only uuid globally so Jest (CJS) doesn't choke on export syntax
-jest.mock('uuid', () => ({
-  v4: jest.fn(() => 'mock-uuid-' + Math.random().toString(36).substr(2, 9)),
-  v5: jest.fn(() => 'mock-uuid-v5'),
-}))
 
 // Clean up test database before tests
 beforeAll(async () => {
@@ -61,5 +56,16 @@ global.localStorage = localStorageMock
 
 // Global fetch mock for libSQL client
 global.Request = global.Request || class Request {}
-global.Response = global.Response || class Response {}
+global.Response =
+  global.Response ||
+  class Response {
+    static json(data) {
+      return new Response(JSON.stringify(data))
+    }
+  }
 global.fetch = global.fetch || jest.fn()
+
+// TextEncoder/TextDecoder for jose JWT library
+import { TextEncoder, TextDecoder } from 'util'
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder

@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { renderWithProviders as render } from '@test-utils/render'
 import { SupervisorsTab } from './supervisors-tab'
 import { useProject } from '@/hooks/use-projects'
 import { useIotDevice } from '@/hooks/use-iot-device'
@@ -31,12 +32,12 @@ describe('SupervisorsTab', () => {
 
   const mockIotDevice = {
     id: 'device-456',
-    organization_id: 'org_test',
-    site_id: 'site-123',
+    organizationId: 'org_test',
+    siteId: 'site-123',
     name: 'Test IoT Device',
     description: 'Test device description',
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   }
 
   beforeEach(() => {

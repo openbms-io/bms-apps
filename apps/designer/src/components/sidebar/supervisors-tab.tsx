@@ -1,13 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Edit,
-  Save,
-  X,
   Activity,
   Wifi,
   WifiOff,
@@ -16,7 +13,7 @@ import {
   Settings,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useProject, useUpdateProject } from '@/hooks/use-projects'
+import { useProject } from '@/hooks/use-projects'
 import {
   useIotDevice,
   useCreateIotDeviceForProject,
@@ -50,7 +47,6 @@ export function SupervisorsTab({
     projectId,
     project?.iotDeviceId ?? undefined
   )
-  const updateProjectMutation = useUpdateProject()
   const createIotDeviceMutation = useCreateIotDeviceForProject()
 
   const [isCreating, setIsCreating] = useState(false)
@@ -306,7 +302,9 @@ export function SupervisorsTab({
                   <span className="text-xs font-medium text-muted-foreground">
                     Organization:
                   </span>
-                  <span className="text-xs ml-2">{iotDevice.siteId}</span>
+                  <span className="text-xs ml-2">
+                    {iotDevice.organizationId}
+                  </span>
                 </div>
                 <div>
                   <span className="text-xs font-medium text-muted-foreground">

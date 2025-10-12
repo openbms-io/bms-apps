@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
+import { renderWithProviders as render } from '@test-utils/render'
 import mqtt from 'mqtt'
 import { SupervisorsTab } from '@/components/sidebar/supervisors-tab'
 import { useProject } from '@/hooks/use-projects'
@@ -40,11 +41,11 @@ describe('MQTT Integration - Full Lifecycle', () => {
 
   const mockIotDevice = {
     id: 'device-456',
-    organization_id: 'org_test',
-    site_id: 'site-123',
+    organizationId: 'org_test',
+    siteId: 'site-123',
     name: 'Test IoT Device',
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   }
 
   beforeEach(() => {

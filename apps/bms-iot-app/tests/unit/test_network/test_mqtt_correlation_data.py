@@ -64,23 +64,26 @@ class TestMQTTCorrelationData:
         properties = call_args[1].get("properties")
         assert properties is None
 
-    def test_publish_response_logs_correlation_data(self, dispatcher, mock_mqtt_client):
-        """Test that correlation data logging works correctly."""
-        test_correlation_data = b"log-test-correlation"
+    def test_publish_response_passes_correlation_data_to_mqtt_client(
+        self, dispatcher, mock_mqtt_client
+    ):
+        """Test that correlation data is properly passed to MQTT client publish method."""
+        test_correlation_data = b"test-correlation-bytes"
         test_payload = {"test": "data"}
 
-        with patch("src.network.mqtt_command_dispatcher.logger") as mock_logger:
-            dispatcher.publish_response(
-                CommandNameEnum.get_config,
-                test_payload,
-                correlation_data=test_correlation_data,
-            )
+        dispatcher.publish_response(
+            CommandNameEnum.get_config,
+            test_payload,
+            correlation_data=test_correlation_data,
+        )
 
-            # Verify logging happened
-            mock_logger.info.assert_called_once()
-            log_message = mock_logger.info.call_args[0][0]
-            assert "correlationData" in log_message
-            assert str(test_correlation_data) in log_message
+        # Verify publish was called with correlation_data in properties
+        mock_mqtt_client.publish.assert_called_once()
+        call_kwargs = mock_mqtt_client.publish.call_args[1]
+
+        # Verify properties contains correlation_data
+        assert "properties" in call_kwargs
+        assert call_kwargs["properties"]["correlation_data"] == test_correlation_data
 
 
 class TestMQTTControllerCorrelation:
@@ -95,7 +98,7 @@ class TestMQTTControllerCorrelation:
 
         # Mock MQTT 5.0 properties
         mock_properties = Mock()
-        mock_properties.correlation_data = b"test-correlation-123"
+        mock_properties.CorrelationData = b"test-correlation-123"
         mock_message.properties = mock_properties
 
         # Setup handler with mocked MQTT client
@@ -176,7 +179,7 @@ class TestMQTTControllerCorrelation:
         mock_message.payload = b'{"urlToUploadConfig": "https://test.com", "jwtToken": "test-jwt", "iotDeviceControllers": [], "bacnetReaders": []}'
 
         mock_properties = Mock()
-        mock_properties.correlation_data = b"logged-correlation"
+        mock_properties.CorrelationData = b"logged-correlation"
         mock_message.properties = mock_properties
 
         mqtt_config = MQTTConfig(broker="test", port=1883)

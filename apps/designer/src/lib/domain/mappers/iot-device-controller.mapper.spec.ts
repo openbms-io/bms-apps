@@ -21,8 +21,6 @@ describe('IotDeviceControllerMapper', () => {
         ip_address: '192.168.1.100',
         port: 47808,
         device_id: 1001,
-        network_number: 10,
-        mac_address: '00:11:22:33:44:55',
         name: 'Test Controller',
         description: 'A test controller',
         is_active: true,
@@ -40,8 +38,6 @@ describe('IotDeviceControllerMapper', () => {
       expect(dto.ipAddress).toBe('192.168.1.100')
       expect(dto.port).toBe(47808)
       expect(dto.deviceId).toBe(1001)
-      expect(dto.networkNumber).toBe(10)
-      expect(dto.macAddress).toBe('00:11:22:33:44:55')
       expect(dto.name).toBe('Test Controller')
       expect(dto.description).toBe('A test controller')
       expect(dto.isActive).toBe(true)
@@ -59,8 +55,6 @@ describe('IotDeviceControllerMapper', () => {
         ip_address: '192.168.1.100',
         port: 47808,
         device_id: 1001,
-        network_number: null,
-        mac_address: null,
         name: 'Test Controller',
         description: null,
         is_active: true,
@@ -71,8 +65,6 @@ describe('IotDeviceControllerMapper', () => {
 
       const dto = IotDeviceControllerMapper.toDTO(dbController)
 
-      expect(dto.networkNumber).toBeUndefined()
-      expect(dto.macAddress).toBeUndefined()
       expect(dto.description).toBeUndefined()
       expect(dto.metadata).toBeUndefined()
     })
@@ -86,8 +78,6 @@ describe('IotDeviceControllerMapper', () => {
         ip_address: '192.168.1.100',
         port: 47808,
         device_id: 1001,
-        network_number: null,
-        mac_address: null,
         name: 'Test Controller',
         description: null,
         is_active: true,
@@ -116,8 +106,6 @@ describe('IotDeviceControllerMapper', () => {
         ipAddress: '192.168.1.101',
         port: 47809,
         deviceId: 1002,
-        networkNumber: 20,
-        macAddress: '11:22:33:44:55:66',
         name: 'New Controller',
         description: 'Controller description',
         isActive: false,
@@ -134,8 +122,6 @@ describe('IotDeviceControllerMapper', () => {
       expect(dbInsert.ip_address).toBe('192.168.1.101')
       expect(dbInsert.port).toBe(47809)
       expect(dbInsert.device_id).toBe(1002)
-      expect(dbInsert.network_number).toBe(20)
-      expect(dbInsert.mac_address).toBe('11:22:33:44:55:66')
       expect(dbInsert.name).toBe('New Controller')
       expect(dbInsert.description).toBe('Controller description')
       expect(dbInsert.is_active).toBe(false)
@@ -163,8 +149,6 @@ describe('IotDeviceControllerMapper', () => {
 
       const dbInsert = IotDeviceControllerMapper.toDbInsert(createDto, id)
 
-      expect(dbInsert.network_number).toBeUndefined()
-      expect(dbInsert.mac_address).toBeUndefined()
       expect(dbInsert.description).toBeUndefined()
       expect(dbInsert.is_active).toBe(true)
       expect(dbInsert.metadata).toBe('{}')
@@ -199,8 +183,6 @@ describe('IotDeviceControllerMapper', () => {
         ipAddress: '192.168.1.104',
         port: 47810,
         deviceId: 1005,
-        networkNumber: 30,
-        macAddress: '22:33:44:55:66:77',
         name: 'Updated Controller',
         description: 'Updated description',
         isActive: true,
@@ -212,8 +194,6 @@ describe('IotDeviceControllerMapper', () => {
       expect(dbUpdate.ip_address).toBe('192.168.1.104')
       expect(dbUpdate.port).toBe(47810)
       expect(dbUpdate.device_id).toBe(1005)
-      expect(dbUpdate.network_number).toBe(30)
-      expect(dbUpdate.mac_address).toBe('22:33:44:55:66:77')
       expect(dbUpdate.name).toBe('Updated Controller')
       expect(dbUpdate.description).toBe('Updated description')
       expect(dbUpdate.is_active).toBe(true)
@@ -225,16 +205,11 @@ describe('IotDeviceControllerMapper', () => {
 
     it('allows explicit null to clear optional fields', () => {
       const updateDto: UpdateIotDeviceController = {
-        networkNumber: null,
-        macAddress: null,
         description: null,
         metadata: null,
       }
 
       const dbUpdate = IotDeviceControllerMapper.toDbUpdate(updateDto)
-
-      expect(dbUpdate.network_number).toBeNull()
-      expect(dbUpdate.mac_address).toBeNull()
       expect(dbUpdate.description).toBeNull()
       expect(dbUpdate.metadata).toBe('{}')
       expect(dbUpdate.updated_at).toBeDefined()

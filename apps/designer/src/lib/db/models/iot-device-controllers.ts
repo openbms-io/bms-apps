@@ -4,6 +4,7 @@ import { eq, and } from 'drizzle-orm'
 import { getDatabase } from '../client'
 import {
   iotDeviceControllers,
+  controllerPoints,
   type IotDeviceController,
   type InsertIotDeviceController,
 } from '../schema'
@@ -17,25 +18,28 @@ export class IotDeviceControllersRepository {
   async findByDevice(
     orgId: string,
     siteId: string,
-    iotDeviceId: string
+    iotDeviceId: string,
+    includeDeleted = false
   ): Promise<IotDeviceController[]> {
+    const conditions = [
+      eq(iotDeviceControllers.organization_id, orgId),
+      eq(iotDeviceControllers.site_id, siteId),
+      eq(iotDeviceControllers.iot_device_id, iotDeviceId),
+    ]
+
+    if (!includeDeleted) {
+      conditions.push(eq(iotDeviceControllers.is_deleted, false))
+    }
+
     const results = await this.db
       .select()
       .from(iotDeviceControllers)
-      .where(
-        and(
-          eq(iotDeviceControllers.organization_id, orgId),
-          eq(iotDeviceControllers.site_id, siteId),
-          eq(iotDeviceControllers.iot_device_id, iotDeviceId)
-        )
-      )
+      .where(and(...conditions))
       .all()
 
     return results.map((r) => ({
       ...r,
       description: r.description ?? undefined,
-      network_number: r.network_number ?? undefined,
-      mac_address: r.mac_address ?? undefined,
       metadata:
         typeof r.metadata === 'string' ? JSON.parse(r.metadata) : r.metadata,
     })) as IotDeviceController[]
@@ -52,8 +56,6 @@ export class IotDeviceControllersRepository {
       ? ({
           ...result,
           description: result.description ?? undefined,
-          network_number: result.network_number ?? undefined,
-          mac_address: result.mac_address ?? undefined,
           metadata:
             typeof result.metadata === 'string'
               ? JSON.parse(result.metadata)
@@ -70,8 +72,6 @@ export class IotDeviceControllersRepository {
       ...data,
       id,
       description: data.description ?? undefined,
-      network_number: data.network_number ?? undefined,
-      mac_address: data.mac_address ?? undefined,
       created_at: now,
       updated_at: now,
     }
@@ -87,8 +87,6 @@ export class IotDeviceControllersRepository {
     return {
       ...result!,
       description: result!.description ?? undefined,
-      network_number: result!.network_number ?? undefined,
-      mac_address: result!.mac_address ?? undefined,
       metadata:
         typeof result!.metadata === 'string'
           ? JSON.parse(result!.metadata)
@@ -108,10 +106,6 @@ export class IotDeviceControllersRepository {
       id,
       description:
         data.description !== undefined ? data.description : undefined,
-      network_number:
-        data.network_number !== undefined ? data.network_number : undefined,
-      mac_address:
-        data.mac_address !== undefined ? data.mac_address : undefined,
       updated_at: new Date().toISOString(),
     }
 
@@ -127,11 +121,24 @@ export class IotDeviceControllersRepository {
   async delete(id: string): Promise<boolean> {
     const existed = await this.findById(id)
     if (!existed) return false
+    if (existed.is_deleted) return false
 
+    const now = new Date().toISOString()
+
+    // Soft delete the controller
     await this.db
-      .delete(iotDeviceControllers)
+      .update(iotDeviceControllers)
+      .set({ is_deleted: true, updated_at: now })
       .where(eq(iotDeviceControllers.id, id))
       .run()
+
+    // Cascade soft delete to all controller points
+    await this.db
+      .update(controllerPoints)
+      .set({ is_deleted: true, updated_at: now })
+      .where(eq(controllerPoints.controller_id, id))
+      .run()
+
     return true
   }
 

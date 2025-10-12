@@ -171,6 +171,9 @@ class MqttCommandDispatcher:
         if not entry:
             raise ValueError(f"No response topic for command: {command}")
         topic_config = entry.response
+        logger.info(
+            f"Publishing response for {command} with payload: {payload}, topic: {topic_config.topic}"
+        )
 
         # Publish with MQTT 5.0 properties if correlation_data provided
         if correlation_data:

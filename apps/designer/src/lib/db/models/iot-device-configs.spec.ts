@@ -232,7 +232,7 @@ describe('IotDeviceConfigsRepository (SQLite + Drizzle)', () => {
   })
 
   it('findLatestByDevice returns only active config', async () => {
-    const config1 = await iotDeviceConfigsRepository.create({
+    await iotDeviceConfigsRepository.create({
       project_id: testProjectId,
       organization_id: testOrgId,
       site_id: testSiteId,
@@ -244,7 +244,7 @@ describe('IotDeviceConfigsRepository (SQLite + Drizzle)', () => {
 
     await new Promise((r) => setTimeout(r, 10))
 
-    const config2 = await iotDeviceConfigsRepository.create({
+    await iotDeviceConfigsRepository.create({
       project_id: testProjectId,
       organization_id: testOrgId,
       site_id: testSiteId,

@@ -39,6 +39,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.44.5",
+    "jose": "^6.1.0",
     "lucide-react": "^0.468.0",
     "monaco-editor": "^0.53.0",
     "mqtt": "^5.14.1",

@@ -175,10 +175,10 @@ def _configure_local_broker(client_id: str) -> bool:
             use_tls=False,
             tls_ca_cert=None,
             topic_prefix="",
-            clean_session=False,
+            clean_session=True,
         )
         logger.info(
-            "✓ MQTT configured for local broker (localhost:1883, no TLS, persistent sessions)"
+            "✓ MQTT configured for local broker (localhost:1883, no TLS, clean sessions)"
         )
         return True
     except Exception as e:

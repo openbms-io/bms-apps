@@ -8,8 +8,9 @@ export type BacnetReader = {
   ipAddress: string
   port: number
   deviceId: number
-  networkNumber?: number
-  macAddress?: string
+  subnetMask: 8 | 16 | 24 | 28 | 30
+  bbmdEnabled: boolean
+  bbmdServerIp?: string
   name: string
   description?: string
   isActive: boolean
@@ -25,8 +26,9 @@ export type CreateBacnetReader = {
   ipAddress: string
   port: number
   deviceId: number
-  networkNumber?: number
-  macAddress?: string
+  subnetMask: 8 | 16 | 24 | 28 | 30
+  bbmdEnabled: boolean
+  bbmdServerIp?: string
   name: string
   description?: string
   isActive: boolean
@@ -37,8 +39,9 @@ export type UpdateBacnetReader = {
   ipAddress?: string
   port?: number
   deviceId?: number
-  networkNumber?: number | null
-  macAddress?: string | null
+  subnetMask?: 8 | 16 | 24 | 28 | 30
+  bbmdEnabled?: boolean
+  bbmdServerIp?: string | null
   name?: string
   description?: string | null
   isActive?: boolean

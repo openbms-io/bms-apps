@@ -1,7 +1,6 @@
 from typing import List, Optional, Union, Dict
-import logging
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 class BACnetHealthProcessor:

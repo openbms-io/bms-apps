@@ -48,7 +48,7 @@ async def test_end_to_end_correlation_flow():
         mock_message.payload = b'{"urlToUploadConfig": "https://example.com/upload", "jwtToken": "jwt-token", "iotDeviceControllers": [], "bacnetReaders": []}'
 
         mock_properties = Mock()
-        mock_properties.correlation_data = correlation_id
+        mock_properties.CorrelationData = correlation_id
         mock_message.properties = mock_properties
 
         # Mock upload_config to avoid actual HTTP call
@@ -261,7 +261,7 @@ async def test_correlation_preserves_through_all_actors():
         mock_message.payload = b'{"urlToUploadConfig": "https://test.com", "jwtToken": "test", "iotDeviceControllers": [], "bacnetReaders": []}'
 
         mock_properties = Mock()
-        mock_properties.correlation_data = correlation_id
+        mock_properties.CorrelationData = correlation_id
         mock_message.properties = mock_properties
 
         # Mock external dependencies
