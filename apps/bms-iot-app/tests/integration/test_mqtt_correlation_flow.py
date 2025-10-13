@@ -14,8 +14,21 @@ async def test_end_to_end_correlation_flow():
         ActorMessageType,
     )
     from src.network.mqtt_config import MQTTConfig
+    from src.models.bacnet_config import BacnetDeviceInfo, insert_bacnet_config_json
 
     correlation_id = b"unique-correlation-id-xyz"
+
+    # Insert test data into database
+    test_device = BacnetDeviceInfo(
+        vendor_id=8,
+        device_id=123,
+        controller_ip_address="192.168.1.100",
+        controller_device_id=123,
+        controller_id="test-controller-1",
+        object_list=[],
+        configured_by_reader=1,
+    )
+    await insert_bacnet_config_json([test_device])
 
     # Setup
     actor_registry = ActorQueueRegistry()
@@ -94,6 +107,19 @@ async def test_correlation_flow_without_correlation_data():
     from src.actors.messages.actor_queue_registry import ActorQueueRegistry
     from src.actors.messages.message_type import ActorName, ActorMessageType
     from src.network.mqtt_config import MQTTConfig
+    from src.models.bacnet_config import BacnetDeviceInfo, insert_bacnet_config_json
+
+    # Insert test data into database
+    test_device = BacnetDeviceInfo(
+        vendor_id=8,
+        device_id=124,
+        controller_ip_address="192.168.1.101",
+        controller_device_id=124,
+        controller_id="test-controller-2",
+        object_list=[],
+        configured_by_reader=1,
+    )
+    await insert_bacnet_config_json([test_device])
 
     # Setup
     actor_registry = ActorQueueRegistry()
@@ -228,9 +254,22 @@ async def test_correlation_preserves_through_all_actors():
     from src.actors.messages.actor_queue_registry import ActorQueueRegistry
     from src.actors.messages.message_type import ActorName
     from src.network.mqtt_config import MQTTConfig
+    from src.models.bacnet_config import BacnetDeviceInfo, insert_bacnet_config_json
     import paho.mqtt.client as mqtt
 
     correlation_id = b"full-flow-test"
+
+    # Insert test data into database
+    test_device = BacnetDeviceInfo(
+        vendor_id=8,
+        device_id=125,
+        controller_ip_address="192.168.1.102",
+        controller_device_id=125,
+        controller_id="test-controller-3",
+        object_list=[],
+        configured_by_reader=1,
+    )
+    await insert_bacnet_config_json([test_device])
 
     # Setup all actors
     actor_registry = ActorQueueRegistry()

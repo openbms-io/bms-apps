@@ -16,7 +16,7 @@ type DbIotDeviceController = {
   name: string
   description: string | null
   is_active: boolean
-  metadata: BacnetMetadata | '{}' | null
+  metadata: BacnetMetadata | null
   created_at: string
   updated_at: string
 }
@@ -33,7 +33,7 @@ type DbInsertIotDeviceController = {
   description?: string
   is_active: boolean
   is_deleted: boolean
-  metadata?: BacnetMetadata | '{}'
+  metadata?: BacnetMetadata | null
   created_at: string
   updated_at: string
 }
@@ -45,7 +45,7 @@ type DbUpdateIotDeviceController = {
   name?: string
   description?: string | null
   is_active?: boolean
-  metadata?: BacnetMetadata | '{}' | null
+  metadata?: BacnetMetadata | null | null
   updated_at?: string
 }
 
@@ -62,7 +62,7 @@ export const IotDeviceControllerMapper = {
       name: db.name,
       description: db.description ?? undefined,
       isActive: db.is_active,
-      metadata: db.metadata === '{}' ? undefined : db.metadata ?? undefined,
+      metadata: db.metadata ?? undefined,
       createdAt: db.created_at,
       updatedAt: db.updated_at,
     }
@@ -85,7 +85,7 @@ export const IotDeviceControllerMapper = {
       description: dto.description,
       is_active: dto.isActive,
       is_deleted: false,
-      metadata: dto.metadata ?? '{}',
+      metadata: dto.metadata ?? null,
       created_at: now,
       updated_at: now,
     }
@@ -128,7 +128,7 @@ export const IotDeviceControllerMapper = {
     }
 
     if (dto.metadata !== undefined) {
-      db.metadata = dto.metadata ?? '{}'
+      db.metadata = dto.metadata ?? null
       hasUpdates = true
     }
 

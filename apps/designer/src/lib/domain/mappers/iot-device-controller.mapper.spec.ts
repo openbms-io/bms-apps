@@ -81,7 +81,7 @@ describe('IotDeviceControllerMapper', () => {
         name: 'Test Controller',
         description: null,
         is_active: true,
-        metadata: '{}' as const,
+        metadata: null,
         created_at: '2025-01-01T00:00:00Z',
         updated_at: '2025-01-02T00:00:00Z',
       }
@@ -151,7 +151,7 @@ describe('IotDeviceControllerMapper', () => {
 
       expect(dbInsert.description).toBeUndefined()
       expect(dbInsert.is_active).toBe(true)
-      expect(dbInsert.metadata).toBe('{}')
+      expect(dbInsert.metadata).toBeNull()
     })
 
     it('sets created_at and updated_at to same timestamp', () => {
@@ -211,7 +211,7 @@ describe('IotDeviceControllerMapper', () => {
 
       const dbUpdate = IotDeviceControllerMapper.toDbUpdate(updateDto)
       expect(dbUpdate.description).toBeNull()
-      expect(dbUpdate.metadata).toBe('{}')
+      expect(dbUpdate.metadata).toBeNull()
       expect(dbUpdate.updated_at).toBeDefined()
     })
 

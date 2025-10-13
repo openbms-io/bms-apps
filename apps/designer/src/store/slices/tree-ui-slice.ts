@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand'
 import { TreeNode } from '@/types/infrastructure'
 import { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
+import { ControllerPoint } from '@/lib/domain/models/controller-point'
 
 export interface TreeUISlice {
   // UI State only
@@ -13,10 +14,11 @@ export interface TreeUISlice {
   expandAll: (allNodeIds: string[]) => void
   collapseAll: () => void
 
-  // Simple tree transform - just supervisors → controllers (no points yet)
+  // Tree transform with points support
   getTreeData: (
     controllers: IotDeviceController[],
-    iotDevice: { id: string; name: string } | undefined
+    iotDevice: { id: string; name: string } | undefined,
+    pointsByController: Record<string, ControllerPoint[]>
   ) => TreeNode[]
 }
 
@@ -55,7 +57,8 @@ export const createTreeUISlice: StateCreator<
 
   getTreeData: (
     controllers: IotDeviceController[],
-    iotDevice: { id: string; name: string } | undefined
+    iotDevice: { id: string; name: string } | undefined,
+    pointsByController: Record<string, ControllerPoint[]>
   ) => {
     const { expandedNodes } = get()
 
@@ -80,6 +83,9 @@ export const createTreeUISlice: StateCreator<
 
     if (supervisorNode.isExpanded) {
       controllers.forEach((controller) => {
+        const points = pointsByController[controller.id] || []
+        const hasPoints = points.length > 0
+
         const controllerNode: TreeNode = {
           id: controller.id,
           type: 'controller',
@@ -87,8 +93,8 @@ export const createTreeUISlice: StateCreator<
           sublabel: `${controller.ipAddress}:${controller.port}`,
           icon: controller.isActive ? '🟢' : '🔴',
           depth: 1,
-          hasChildren: false, // No points yet
-          isExpanded: false,
+          hasChildren: hasPoints,
+          isExpanded: expandedNodes.has(controller.id),
           data: {
             id: controller.id,
             supervisorId: iotDevice.id,
@@ -100,6 +106,25 @@ export const createTreeUISlice: StateCreator<
             discoveredPoints: [],
           },
           children: [],
+        }
+
+        if (controllerNode.isExpanded && hasPoints) {
+          points.forEach((point) => {
+            const pointNode: TreeNode = {
+              id: point.id,
+              type: 'point',
+              label: point.pointName,
+              sublabel: `${point.pointType} (${point.instanceNumber})`,
+              icon: point.writable ? '✏️' : '📊',
+              depth: 2,
+              hasChildren: false,
+              isExpanded: false,
+              data: point,
+              children: [],
+            }
+
+            controllerNode.children!.push(pointNode)
+          })
         }
 
         supervisorNode.children!.push(controllerNode)

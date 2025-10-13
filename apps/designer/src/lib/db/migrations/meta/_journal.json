@@ -43,6 +43,13 @@
       "when": 1759785153527,
       "tag": "0005_add_hierarchical_org_site_structure",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1760285657882,
+      "tag": "0006_numerous_ink",
+      "breakpoints": true
     }
   ]
 }

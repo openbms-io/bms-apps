@@ -28,9 +28,9 @@ test = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
     "pytest-mock>=3.11.1",
-    "pytest-timeout>=2.1.0",
     "pytest-cov>=4.1.0",
     "pytest-xdist>=3.3.0",
+    "pytest-isolate",
     "memory-profiler>=0.61.0",
     "psutil>=5.9.0",
 ]
@@ -53,9 +53,11 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-ra -q --asyncio-mode=auto"
 asyncio_mode = "auto"
-timeout = 300
 filterwarnings = [
     "ignore::DeprecationWarning",
+]
+markers = [
+    "isolate: mark test to run in isolated subprocess",
 ]
 
 [tool.black]

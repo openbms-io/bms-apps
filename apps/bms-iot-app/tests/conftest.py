@@ -4,14 +4,23 @@ Pytest configuration and fixtures for BMS IoT Application tests.
 
 import os
 import sys
-
+from unittest.mock import Mock, AsyncMock
+from sqlmodel import SQLModel, select
+from src.network.sqlmodel_client import get_engine, get_session, initialize_database
+from src.models.bacnet_config import BacnetConfigModel
+from src.models.controller_points import ControllerPointsModel
 import pytest
 import pytest_asyncio
 import asyncio
-from unittest.mock import Mock, AsyncMock
-from sqlmodel import SQLModel
-from src.network.sqlmodel_client import get_engine
-from src.network.sqlmodel_client import initialize_database
+
+# Add monorepo root to Python path to access packages/ directory
+# This conftest.py is in apps/bms-iot-app/tests/conftest.py
+# We need to add the monorepo root (../../../ from here) to access packages/
+project_root = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..")
+)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 # Import all models to ensure they're registered with SQLModel before create_all()
 
@@ -150,15 +159,6 @@ def event_loop():
 async def setup_database():
     """Initialize database tables before running tests using SQLModel.metadata.create_all()"""
 
-    # Add monorepo root to Python path to access packages/ directory
-    # This conftest.py is in apps/bms-iot-app/tests/conftest.py
-    # We need to add the monorepo root (../../../ from here) to access packages/
-    project_root = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "..")
-    )
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
-
     try:
         # For tests, use SQLModel.metadata.create_all() for simplicity
         # This creates all tables based on the current model definitions
@@ -180,6 +180,39 @@ async def setup_database():
     except Exception as e:
         print(f"❌ Global test database setup failed: {e}")
         raise
+
+
+@pytest_asyncio.fixture
+async def cleanup_database():
+    """Cleanup database before and after each test to ensure test isolation.
+
+    Note: This is NOT autouse - tests must explicitly request this fixture.
+    Only use for integration tests that need database isolation.
+    """
+
+    async def _cleanup():
+        async with get_session() as session:
+            # Delete all controller points
+            result = await session.execute(select(ControllerPointsModel))
+            points = result.scalars().all()
+            for point in points:
+                await session.delete(point)
+
+            # Delete all bacnet configs
+            result = await session.execute(select(BacnetConfigModel))
+            configs = result.scalars().all()
+            for config in configs:
+                await session.delete(config)
+
+            await session.commit()
+
+    # Cleanup before test
+    await _cleanup()
+
+    yield  # Run the test
+
+    # Cleanup after test
+    await _cleanup()
 
 
 # Pytest configuration for asyncio

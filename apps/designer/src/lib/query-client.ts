@@ -53,6 +53,13 @@ export const queryKeys = {
     list: (iotDeviceId: string) =>
       ['bacnetReaders', 'list', iotDeviceId] as const,
   },
+  controllerPoints: {
+    all: ['controllerPoints'] as const,
+    list: (controllerId: string) =>
+      ['controllerPoints', 'list', controllerId] as const,
+    batch: (controllerIds: string[]) =>
+      ['controllerPoints', 'batch', ...controllerIds.sort()] as const,
+  },
   getConfigPayload: (iotDeviceId: string) =>
     ['get-config-payload', iotDeviceId] as const,
 } as const

@@ -2,6 +2,7 @@ import { v4 as uuidv4, v5 as uuidv5 } from 'uuid'
 import { BacnetProperties } from './bacnet-properties'
 import { MessageNode } from '@/lib/message-system/types'
 import { SerializableNode } from '@/lib/node-serializer'
+import { ControllerPoint } from '@/lib/domain/models/controller-point'
 
 // BACnet namespace for deterministic UUIDs
 export const BACNET_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
@@ -247,7 +248,7 @@ export interface TreeNode {
   depth: number
   hasChildren: boolean
   isExpanded: boolean
-  data: Supervisor | Controller | PointGroup | BacnetConfig
+  data: Supervisor | Controller | PointGroup | BacnetConfig | ControllerPoint
   children?: TreeNode[]
 }
 

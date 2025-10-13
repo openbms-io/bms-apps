@@ -19,7 +19,7 @@ type DbBacnetReader = {
   name: string
   description: string | null
   is_active: boolean
-  metadata: BacnetMetadata | '{}' | null
+  metadata: BacnetMetadata | null
   created_at: string
   updated_at: string
 }
@@ -38,7 +38,7 @@ type DbInsertBacnetReader = {
   name: string
   description?: string
   is_active: boolean
-  metadata?: BacnetMetadata | '{}'
+  metadata?: BacnetMetadata | null
   created_at: string
   updated_at: string
 }
@@ -53,7 +53,7 @@ type DbUpdateBacnetReader = {
   name?: string
   description?: string | null
   is_active?: boolean
-  metadata?: BacnetMetadata | '{}' | null
+  metadata?: BacnetMetadata | null | null
   updated_at?: string
 }
 
@@ -73,7 +73,7 @@ export const BacnetReaderMapper = {
       name: db.name,
       description: db.description ?? undefined,
       isActive: db.is_active,
-      metadata: db.metadata === '{}' ? undefined : db.metadata ?? undefined,
+      metadata: db.metadata ?? undefined,
       createdAt: db.created_at,
       updatedAt: db.updated_at,
     }
@@ -95,7 +95,7 @@ export const BacnetReaderMapper = {
       name: dto.name,
       description: dto.description,
       is_active: dto.isActive,
-      metadata: dto.metadata ?? '{}',
+      metadata: dto.metadata ?? null,
       created_at: now,
       updated_at: now,
     }
@@ -151,7 +151,7 @@ export const BacnetReaderMapper = {
     }
 
     if (dto.metadata !== undefined) {
-      db.metadata = dto.metadata ?? '{}'
+      db.metadata = dto.metadata ?? null
       hasUpdates = true
     }
 

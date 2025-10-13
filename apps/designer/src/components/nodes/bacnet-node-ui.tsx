@@ -126,7 +126,15 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
                         {metadata.name}:
                       </div>
                       <div className="font-medium">
-                        {formatPropertyValue(propertyName, value, typedData)}
+                        {propertyName === 'priorityArray' ? (
+                          <PriorityArrayDropdown
+                            value={
+                              value as Array<{ type: string; value: number }>
+                            }
+                          />
+                        ) : (
+                          formatPropertyValue(propertyName, value, typedData)
+                        )}
                       </div>
                     </div>
 
@@ -201,6 +209,42 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
 
 BacnetNodeUI.displayName = 'BacnetNodeUI'
 
+function PriorityArrayDropdown({
+  value,
+}: {
+  value: Array<{ type: string; value: number }>
+}) {
+  const activeCount = value.filter((slot) => slot.type !== 'null').length
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="text-xs hover:underline cursor-pointer">
+          {activeCount} active slot{activeCount !== 1 ? 's' : ''} ▼
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="max-h-[300px] overflow-y-auto">
+        {value.map((slot, index) => {
+          const priority = index + 1
+          const isActive = slot.type !== 'null'
+          return (
+            <DropdownMenuItem key={priority} className="text-xs font-mono">
+              {isActive ? '✓' : '✗'} Priority {priority}:{' '}
+              {isActive ? `${slot.value} (${slot.type})` : 'null'}
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+function formatNumber(value: number | string): string {
+  const num = typeof value === 'string' ? parseFloat(value) : value
+  if (isNaN(num)) return String(value)
+  return num.toFixed(2)
+}
+
 // Helper to format property values for display
 function formatPropertyValue(
   propertyName: keyof BacnetProperties,
@@ -250,8 +294,17 @@ function formatPropertyValue(
   ) {
     const units = data.discoveredProperties.units
     if (units) {
-      return `${value} ${units}`
+      const formattedValue = formatNumber(value as number | string)
+      return `${formattedValue} ${units}`
     }
+  }
+
+  // Format numbers to 2 decimal places
+  if (
+    typeof value === 'number' ||
+    (typeof value === 'string' && !isNaN(parseFloat(value as string)))
+  ) {
+    return formatNumber(value as number | string)
   }
 
   return String(value)

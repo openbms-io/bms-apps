@@ -80,6 +80,12 @@ async def get_latest_bacnet_config_json() -> Optional[BacnetConfigModel]:
             select(BacnetConfigModel).order_by(BacnetConfigModel.created_at.desc())  # type: ignore
         )
         config = result.scalars().first()
+        if config:
+            logger.info(
+                f"get_latest_bacnet_config_json: Config: {len(config.bacnet_devices)}"
+            )
+        else:
+            logger.info("get_latest_bacnet_config_json: No config found")
         return config
 
 
@@ -166,7 +172,7 @@ async def get_bacnet_readers(iot_device_id: str) -> List[BacnetReaderConfig]:
             result = await session.execute(
                 select(BacnetReaderConfigModel)
                 .where(BacnetReaderConfigModel.iot_device_id == iot_device_id)
-                .where(BacnetReaderConfigModel.is_active is True)
+                .where(BacnetReaderConfigModel.is_active)
                 .order_by(BacnetReaderConfigModel.created_at.asc())  # type: ignore
             )
             readers = result.scalars().all()
@@ -183,7 +189,7 @@ async def get_all_active_readers() -> List[BacnetReaderConfig]:
         async with get_session() as session:
             result = await session.execute(
                 select(BacnetReaderConfigModel)
-                .where(BacnetReaderConfigModel.is_active is True)
+                .where(BacnetReaderConfigModel.is_active)
                 .order_by(
                     BacnetReaderConfigModel.iot_device_id.asc(),
                     BacnetReaderConfigModel.created_at.asc(),

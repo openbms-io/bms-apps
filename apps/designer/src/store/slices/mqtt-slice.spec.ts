@@ -430,6 +430,166 @@ describe('MQTTSlice', () => {
     })
   })
 
+  describe('Health Status Derivation', () => {
+    it('should mark unhealthy when bacnet_connection_status is error', () => {
+      const store = create<MQTTSlice>()(createMQTTSlice)
+      store.getState().startMqtt({
+        organizationId: 'org_test',
+        siteId: 'site-123',
+        iotDeviceId: 'device-456',
+      })
+
+      const heartbeat: HeartbeatPayload = {
+        cpu_usage_percent: 10.5,
+        memory_usage_percent: 75.2,
+        disk_usage_percent: 45.3,
+        temperature_celsius: null,
+        uptime_seconds: 666,
+        load_average: 1.5,
+        monitoring_status: 'active',
+        mqtt_connection_status: 'connected',
+        bacnet_connection_status: 'error',
+        bacnet_devices_connected: 0,
+        bacnet_points_monitored: 0,
+        timestamp: Date.now() / 1000,
+        organization_id: 'org_test',
+        site_id: 'site-123',
+        iot_device_id: 'device-456',
+      }
+
+      mockBus.heartbeatStream$.next(heartbeat)
+
+      expect(store.getState().brokerHealth.status).toBe('unhealthy')
+    })
+
+    it('should mark unhealthy when mqtt_connection_status is error', () => {
+      const store = create<MQTTSlice>()(createMQTTSlice)
+      store.getState().startMqtt({
+        organizationId: 'org_test',
+        siteId: 'site-123',
+        iotDeviceId: 'device-456',
+      })
+
+      const heartbeat: HeartbeatPayload = {
+        cpu_usage_percent: 10.5,
+        memory_usage_percent: 75.2,
+        disk_usage_percent: 45.3,
+        temperature_celsius: null,
+        uptime_seconds: 666,
+        load_average: 1.5,
+        monitoring_status: 'active',
+        mqtt_connection_status: 'error',
+        bacnet_connection_status: 'connected',
+        bacnet_devices_connected: 5,
+        bacnet_points_monitored: 100,
+        timestamp: Date.now() / 1000,
+        organization_id: 'org_test',
+        site_id: 'site-123',
+        iot_device_id: 'device-456',
+      }
+
+      mockBus.heartbeatStream$.next(heartbeat)
+
+      expect(store.getState().brokerHealth.status).toBe('unhealthy')
+    })
+
+    it('should mark healthy when both connections are connected', () => {
+      const store = create<MQTTSlice>()(createMQTTSlice)
+      store.getState().startMqtt({
+        organizationId: 'org_test',
+        siteId: 'site-123',
+        iotDeviceId: 'device-456',
+      })
+
+      const heartbeat: HeartbeatPayload = {
+        cpu_usage_percent: 10.5,
+        memory_usage_percent: 75.2,
+        disk_usage_percent: 45.3,
+        temperature_celsius: null,
+        uptime_seconds: 666,
+        load_average: 1.5,
+        monitoring_status: 'active',
+        mqtt_connection_status: 'connected',
+        bacnet_connection_status: 'connected',
+        bacnet_devices_connected: 5,
+        bacnet_points_monitored: 100,
+        timestamp: Date.now() / 1000,
+        organization_id: 'org_test',
+        site_id: 'site-123',
+        iot_device_id: 'device-456',
+      }
+
+      mockBus.heartbeatStream$.next(heartbeat)
+
+      expect(store.getState().brokerHealth.status).toBe('healthy')
+    })
+
+    it('should mark healthy when connection statuses are null (not yet initialized)', () => {
+      const store = create<MQTTSlice>()(createMQTTSlice)
+      store.getState().startMqtt({
+        organizationId: 'org_test',
+        siteId: 'site-123',
+        iotDeviceId: 'device-456',
+      })
+
+      const heartbeat: HeartbeatPayload = {
+        cpu_usage_percent: 10.5,
+        memory_usage_percent: 75.2,
+        disk_usage_percent: 45.3,
+        temperature_celsius: null,
+        uptime_seconds: 666,
+        load_average: 1.5,
+        monitoring_status: 'active',
+        mqtt_connection_status: null,
+        bacnet_connection_status: null,
+        bacnet_devices_connected: null,
+        bacnet_points_monitored: null,
+        timestamp: Date.now() / 1000,
+        organization_id: 'org_test',
+        site_id: 'site-123',
+        iot_device_id: 'device-456',
+      }
+
+      mockBus.heartbeatStream$.next(heartbeat)
+
+      expect(store.getState().brokerHealth.status).toBe('healthy')
+    })
+
+    it('should not override unhealthy status when watchdog runs if connection status is error', () => {
+      const store = create<MQTTSlice>()(createMQTTSlice)
+      store.getState().startMqtt({
+        organizationId: 'org_test',
+        siteId: 'site-123',
+        iotDeviceId: 'device-456',
+      })
+
+      const heartbeat: HeartbeatPayload = {
+        cpu_usage_percent: 10.5,
+        memory_usage_percent: 75.2,
+        disk_usage_percent: 45.3,
+        temperature_celsius: null,
+        uptime_seconds: 666,
+        load_average: 1.5,
+        monitoring_status: 'active',
+        mqtt_connection_status: 'connected',
+        bacnet_connection_status: 'error',
+        bacnet_devices_connected: 0,
+        bacnet_points_monitored: 0,
+        timestamp: Date.now() / 1000,
+        organization_id: 'org_test',
+        site_id: 'site-123',
+        iot_device_id: 'device-456',
+      }
+
+      mockBus.heartbeatStream$.next(heartbeat)
+      expect(store.getState().brokerHealth.status).toBe('unhealthy')
+
+      jest.advanceTimersByTime(10_000)
+
+      expect(store.getState().brokerHealth.status).toBe('unhealthy')
+    })
+  })
+
   describe('sendCommand', () => {
     it('should call bus.request with correct enum and payload', async () => {
       const mockObservable = {

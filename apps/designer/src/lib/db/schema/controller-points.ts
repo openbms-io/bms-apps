@@ -24,9 +24,9 @@ export const controllerPoints = sqliteTable(
       .references(() => iotDeviceControllers.id, { onDelete: 'cascade' }),
 
     // BACnet point configuration
-    point_name: text('point_name').notNull(),
-    point_type: text('point_type').notNull(), // e.g., 'analogInput', 'binaryOutput'
-    object_identifier: text('object_identifier').notNull(),
+    point_name: text('point_name'),
+    point_type: text('point_type').notNull(), // e.g., 'analog-input', 'binary-output' (kebab-case)
+    object_identifier: text('object_identifier'),
     instance_number: integer('instance_number').notNull(),
 
     // Properties

@@ -6,6 +6,12 @@ import { iotDeviceControllersRepository } from '@/lib/db/models/iot-device-contr
 import { controllerPointsRepository } from '@/lib/db/models/controller-points'
 import { ConfigUploadSchema } from './schemas'
 
+// analogOutput -> analog-output.
+// We use kebab-case for point types everywhere in code.
+function normalizePointType(pointType: string): string {
+  return pointType.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     console.log('Received config upload request')
@@ -32,6 +38,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 2. Parse and validate request body
     const body = await request.json()
     console.log('Config upload received body JSON', JSON.stringify(body))
+
     const validated = ConfigUploadSchema.parse(body)
 
     // 3. Extract IDs from JWT (not from body)
@@ -100,7 +107,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           iot_device_id: iot_device_id,
           controller_id: cfg.controller_id,
           point_name: obj.properties.objectName,
-          point_type: obj.type,
+          point_type: normalizePointType(obj.type),
           object_identifier: JSON.stringify(obj.properties.objectIdentifier),
           instance_number: obj.point_id,
           writable: obj.properties.outOfService === 0,

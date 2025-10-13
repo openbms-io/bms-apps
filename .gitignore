@@ -17,6 +17,7 @@ logs/*.log
 .mcp-cache/
 .claude/
 bms-iot.db
+bms_iot_app.db
 
 # Next.js specific
 .next/

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { controllerPointsRepository } from '@/lib/db/models/controller-points'
+import { iotDeviceControllersRepository } from '@/lib/db/models/iot-device-controllers'
 import { type InsertControllerPoint } from '@/lib/db/schema'
 import {
   ControllerRouteParamsSchema,
@@ -14,7 +15,29 @@ export async function GET(
 ): Promise<NextResponse> {
   try {
     const validatedParams = ControllerRouteParamsSchema.parse(await params)
-    const { controllerId } = validatedParams
+    const { orgId, siteId, iotDeviceId, controllerId } = validatedParams
+
+    // Verify controller exists and ownership
+    const controller =
+      await iotDeviceControllersRepository.findById(controllerId)
+
+    if (!controller) {
+      return NextResponse.json(
+        { error: 'Controller not found' },
+        { status: 404 }
+      )
+    }
+
+    const isOwner = await iotDeviceControllersRepository.verifyOwnership({
+      id: controllerId,
+      orgId,
+      siteId,
+      iotDeviceId,
+    })
+
+    if (!isOwner) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     const dbPoints =
       await controllerPointsRepository.findByController(controllerId)

@@ -2,12 +2,12 @@ import { z } from 'zod'
 
 export const BacnetObjectPropertiesSchema = z
   .object({
-    objectIdentifier: z.array(z.any()),
-    objectName: z.string(),
-    presentValue: z.union([z.number(), z.string()]),
-    objectType: z.string(),
+    objectIdentifier: z.array(z.any()).optional(),
+    objectName: z.string().optional(),
+    presentValue: z.union([z.number(), z.string()]).optional(),
+    objectType: z.string().optional(),
     description: z.string().optional(),
-    statusFlags: z.string(),
+    statusFlags: z.string().optional(),
     units: z.string().optional(),
   })
   .passthrough() // Allow additional properties

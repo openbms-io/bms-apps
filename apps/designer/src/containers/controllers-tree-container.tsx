@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { TreeView } from '@/components/tree/tree-view'
 import { TreeToolbar } from '@/components/tree/tree-toolbar'
 import { useTreeUIStore } from '@/store/use-tree-ui-store'
@@ -16,6 +16,9 @@ import {
 } from '@/hooks/use-iot-device-controllers'
 import { useProject } from '@/hooks/use-projects'
 import { useIotDevice } from '@/hooks/use-iot-device'
+import { useAllControllerPoints } from '@/hooks/use-all-controller-points'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query-client'
 import { AddControllerDialog } from '@/components/modals/add-controller-dialog'
 import { useGetConfigPayload } from '@/hooks/use-get-config-payload'
 import { useFlowStore } from '@/store/use-flow-store'
@@ -30,6 +33,59 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  BacnetConfig,
+  BacnetObjectType,
+  generateBACnetPointId,
+} from '@/types/infrastructure'
+import { DraggedPoint } from '@/store/slices/flow-slice'
+import { ControllerPoint } from '@/lib/domain/models/controller-point'
+
+function convertPointToBacnetConfig(
+  point: ControllerPoint,
+  iotDeviceId: string
+): BacnetConfig {
+  // Parse individual status flag from string "[0, 0, 0, 0]"
+  const parseStatusFlag = (
+    flags: string | undefined,
+    index: number
+  ): boolean | undefined => {
+    if (!flags) return undefined
+    try {
+      const arr = JSON.parse(flags) as number[]
+      return arr[index] === 1
+    } catch {
+      return undefined
+    }
+  }
+
+  return {
+    pointId: generateBACnetPointId({
+      supervisorId: iotDeviceId,
+      controllerId: point.controllerId,
+      objectId: point.instanceNumber,
+    }),
+    objectType: point.pointType as BacnetObjectType,
+    objectId: point.instanceNumber,
+    supervisorId: iotDeviceId,
+    controllerId: point.controllerId,
+    discoveredProperties: {
+      // Spread all metadata from Python (camelCase)
+      ...(point.metadata || {}),
+      // Override with top-level fields if present
+      units: point.units ?? point.metadata?.units,
+      description: point.description ?? point.metadata?.description,
+      // Expand statusFlags string into individual boolean properties
+      inAlarm: parseStatusFlag(point.metadata?.statusFlags, 0),
+      fault: parseStatusFlag(point.metadata?.statusFlags, 1),
+      overridden: parseStatusFlag(point.metadata?.statusFlags, 2),
+      outOfService: parseStatusFlag(point.metadata?.statusFlags, 3),
+      // Remove statusFlags to prevent duplication
+      statusFlags: undefined,
+    },
+    name: point.pointName,
+  }
+}
 
 interface ControllersTreeContainerProps {
   orgId: string
@@ -56,6 +112,16 @@ export function ControllersTreeContainer({
     project?.iotDeviceId
   )
 
+  const controllerIds = controllers.map((c) => c.id)
+  const { data: pointsByController = {} } = useAllControllerPoints(
+    orgId,
+    siteId,
+    projectId,
+    project?.iotDeviceId,
+    controllerIds
+  )
+
+  const queryClient = useQueryClient()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -86,16 +152,39 @@ export function ControllersTreeContainer({
     getTreeData,
   } = useTreeUIStore()
 
-  // Transform controllers into tree structure
+  // Transform controllers into tree structure with points
   const treeData = getTreeData(
     controllers,
-    iotDevice ? { id: iotDevice.id, name: iotDevice.name } : undefined
+    iotDevice ? { id: iotDevice.id, name: iotDevice.name } : undefined,
+    pointsByController
   )
 
   // Filter tree data based on search
   const filteredTreeData = searchValue
     ? filterTreeNodes(treeData, searchValue.toLowerCase())
     : treeData
+
+  const handleDragStart = useCallback(
+    (e: React.DragEvent, node: TreeNodeType) => {
+      if (node.type === 'point' && node.data && project?.iotDeviceId) {
+        const point = node.data as ControllerPoint
+        const bacnetConfig = convertPointToBacnetConfig(
+          point,
+          project.iotDeviceId
+        )
+
+        const draggedPoint: DraggedPoint = {
+          type: 'bacnet-point',
+          config: bacnetConfig,
+          draggedFrom: 'controllers-tree',
+        }
+
+        e.dataTransfer.effectAllowed = 'copy'
+        e.dataTransfer.setData('application/json', JSON.stringify(draggedPoint))
+      }
+    },
+    [project?.iotDeviceId]
+  )
 
   const handleExpandAll = useCallback(() => {
     const allNodeIds: string[] = []
@@ -127,6 +216,11 @@ export function ControllersTreeContainer({
       await sendCommand({
         command: CommandNameEnum.GET_CONFIG,
         payload: transformedPayload,
+      })
+
+      // Invalidate points cache to refetch after sync
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.controllerPoints.batch(controllerIds),
       })
 
       toast.success('Config discovery completed', { duration: 5000 })
@@ -222,7 +316,8 @@ export function ControllersTreeContainer({
             onToggle={toggleNode}
             onSelect={selectPoint}
             onDelete={handleDeleteClick}
-            isDraggable={false} // No dragging until we have points
+            isDraggable={true}
+            onDragStart={handleDragStart}
             className="min-h-0"
           />
         )}

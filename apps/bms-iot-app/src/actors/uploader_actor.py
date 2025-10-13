@@ -14,7 +14,7 @@ from src.controllers.uploader.upload import upload_config, get_points_to_publish
 import asyncio
 from src.controllers.uploader.upload import mark_points_as_uploaded_in_db
 
-logging = logger
+logger
 
 
 class UploaderActor:
@@ -63,11 +63,14 @@ class UploaderActor:
     async def publish_points(self):
         points = await get_points_to_publish()
         if not points:
-            logging.warning("No points found to publish.")
+            logger.warning("No points found to publish.")
             return None
 
         payload = PointPublishPayload(points=points)
 
+        logger.info(
+            f"Sending POINT_PUBLISH_REQUEST to MQTT with payload: {len(points)} points"
+        )
         await self.actor_queue_registry.send_from(
             sender=self.actor_name,
             receiver=ActorName.MQTT,

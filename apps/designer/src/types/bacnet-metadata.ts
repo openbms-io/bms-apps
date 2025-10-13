@@ -1,17 +1,44 @@
 export interface BacnetMetadata {
-  status_flags?: string[]
-  event_state?: string
-  out_of_service?: boolean
-  reliability?: string
-  min_pres_value?: number
-  max_pres_value?: number
-  high_limit?: number
-  low_limit?: number
+  // Core BACnet properties (camelCase from Python API)
+  objectIdentifier?: [string, number]
+  objectName?: string
+  presentValue?: number | string | boolean
+  objectType?: string
+  description?: string
+  statusFlags?: string // "[0, 0, 0, 0]" format
+  units?: string
+
+  // Analog properties
+  minPresValue?: number
+  maxPresValue?: number
+  highLimit?: number
+  lowLimit?: number
   resolution?: number
-  cov_increment?: number
-  time_delay?: number
+  covIncrement?: number
   deadband?: number
-  priority_array?: string
-  relinquish_default?: number
+
+  // Priority and control
+  priorityArray?: Array<{ type: string; value: number }>
+  relinquishDefault?: number
+  outOfService?: number // 0 or 1
+
+  // Event and alarm properties
+  eventState?: string
+  reliability?: string
+  timeDelay?: number
+  timeDelayNormal?: number
+  notifyType?: string
+  notificationClass?: number
+  limitEnable?: number[]
+  eventEnable?: number[]
+  eventAlgorithmInhibit?: number
+  eventDetectionEnable?: number
+  reliabilityEvaluationInhibit?: number
+  ackedTransitions?: number[]
+  eventTimeStamps?: Array<{ type: string; value: string }>
+  eventMessageTexts?: string[]
+  eventMessageTextsConfig?: string[]
+
+  // Allow any additional properties from Python
   [key: string]: unknown
 }

@@ -75,6 +75,14 @@ export function buildConfigUploadPayload(payload: GetConfigPayload) {
   }
 }
 
+function deriveHealthStatus(
+  heartbeat: HeartbeatPayload
+): 'healthy' | 'unhealthy' {
+  if (heartbeat.mqtt_connection_status === 'error') return 'unhealthy'
+  if (heartbeat.bacnet_connection_status === 'error') return 'unhealthy'
+  return 'healthy'
+}
+
 export const createMQTTSlice: StateCreator<MQTTSlice> = (set, get) => {
   let mqttStop$: Subject<void> | undefined
 
@@ -117,7 +125,7 @@ export const createMQTTSlice: StateCreator<MQTTSlice> = (set, get) => {
         next: (hb) =>
           set({
             brokerHealth: {
-              status: 'healthy',
+              status: deriveHealthStatus(hb as HeartbeatPayload),
               lastHeartbeat: hb as HeartbeatPayload,
               lastHeartbeatTimestamp: Date.now(),
             },
@@ -145,9 +153,13 @@ export const createMQTTSlice: StateCreator<MQTTSlice> = (set, get) => {
             set({ brokerHealth: { ...brokerHealth, status: 'unhealthy' } })
           } else if (
             silentFor <= HEARTBEAT_THRESHOLD_MS &&
-            brokerHealth.status !== 'healthy'
+            brokerHealth.status === 'unhealthy' &&
+            brokerHealth.lastHeartbeat
           ) {
-            set({ brokerHealth: { ...brokerHealth, status: 'healthy' } })
+            const derivedStatus = deriveHealthStatus(brokerHealth.lastHeartbeat)
+            if (derivedStatus !== brokerHealth.status) {
+              set({ brokerHealth: { ...brokerHealth, status: derivedStatus } })
+            }
           }
         })
     },
