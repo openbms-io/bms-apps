@@ -27,7 +27,7 @@ export class MultistateInputNode implements BacnetInputOutput {
   readonly supervisorId: string
   readonly controllerId: string
   discoveredProperties: BacnetProperties
-  readonly name: string
+  readonly name?: string
   readonly position?: { x: number; y: number }
 
   // From DataNode
@@ -55,7 +55,7 @@ export class MultistateInputNode implements BacnetInputOutput {
 
     // DataNode properties
     this.id = id ?? generateInstanceId() // Generate unique UUID for each instance
-    this.label = config.name
+    this.label = config.name || ''
   }
 
   canConnectWith(target: DataNode): boolean {

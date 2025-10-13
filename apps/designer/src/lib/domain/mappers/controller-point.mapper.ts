@@ -11,9 +11,9 @@ type DbControllerPoint = {
   site_id: string
   iot_device_id: string
   controller_id: string
-  point_name: string
+  point_name: string | null
   point_type: string
-  object_identifier: string
+  object_identifier: string | null
   instance_number: number
   writable: boolean
   units: string | null
@@ -61,9 +61,9 @@ export const ControllerPointMapper = {
       siteId: db.site_id,
       iotDeviceId: db.iot_device_id,
       controllerId: db.controller_id,
-      pointName: db.point_name,
+      pointName: db.point_name ?? undefined,
       pointType: db.point_type,
-      objectIdentifier: db.object_identifier,
+      objectIdentifier: db.object_identifier ?? undefined,
       instanceNumber: db.instance_number,
       writable: db.writable,
       units: db.units ?? undefined,

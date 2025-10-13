@@ -165,40 +165,6 @@ export interface EdgeData extends Record<string, unknown> {
   isActive?: boolean
 }
 
-// Single source of truth: derive valid properties from BacnetProperties interface
-// This array must match the keys defined in BacnetProperties interface
-const BACNET_PROPERTY_KEYS = [
-  'presentValue',
-  'statusFlags',
-  'eventState',
-  'reliability',
-  'outOfService',
-  'units',
-  'description',
-  'minPresValue',
-  'maxPresValue',
-  'resolution',
-  'covIncrement',
-  'timeDelay',
-  'highLimit',
-  'lowLimit',
-  'deadband',
-  'priorityArray',
-  'relinquishDefault',
-  'numberOfStates',
-  'stateText',
-] as const satisfies readonly (keyof BacnetProperties)[]
-
-// Use Set for O(1) lookup performance
-const BACNET_PROPERTY_SET = new Set<string>(BACNET_PROPERTY_KEYS)
-
-// Type guard for BACnet properties
-export function isBacnetProperty(
-  property: string
-): property is BacnetPropertyKey {
-  return BACNET_PROPERTY_SET.has(property)
-}
-
 // BACnet configuration (pointId here for deterministic business ID)
 export interface BacnetConfig {
   // Identification
@@ -212,14 +178,16 @@ export interface BacnetConfig {
   discoveredProperties: BacnetProperties
 
   // Display
-  name: string // Point name/description
+  name?: string // Point name/description
   position?: { x: number; y: number }
 }
 
 // BACnet nodes have dynamic inputs and outputs based on discovered properties
 export interface BacnetInputOutput
   extends DataNode<BacnetInputHandle, BacnetOutputHandle>,
-    BacnetConfig {}
+    BacnetConfig {
+  readonly name?: string
+}
 
 export interface Supervisor {
   id: string
@@ -234,7 +202,7 @@ export interface Controller {
   ipAddress: string
   name: string
   status: 'connected' | 'disconnected' | 'discovering'
-  discoveredPoints: BacnetConfig[] // Direct BacnetConfig array
+  discoveredPoints: BacnetConfig[]
   lastDiscovered?: Date
 }
 

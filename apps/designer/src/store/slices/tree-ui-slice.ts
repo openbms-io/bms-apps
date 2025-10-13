@@ -113,7 +113,7 @@ export const createTreeUISlice: StateCreator<
             const pointNode: TreeNode = {
               id: point.id,
               type: 'point',
-              label: point.pointName,
+              label: point.pointName || '',
               sublabel: `${point.pointType} (${point.instanceNumber})`,
               icon: point.writable ? '✏️' : '📊',
               depth: 2,

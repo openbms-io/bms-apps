@@ -5,6 +5,7 @@ import { decodeJWT } from '@/lib/jwt'
 import { iotDeviceControllersRepository } from '@/lib/db/models/iot-device-controllers'
 import { controllerPointsRepository } from '@/lib/db/models/controller-points'
 import { ConfigUploadSchema } from './schemas'
+import type { BacnetMetadata } from '@/types/bacnet-metadata'
 
 // analogOutput -> analog-output.
 // We use kebab-case for point types everywhere in code.
@@ -113,7 +114,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           writable: obj.properties.outOfService === 0,
           units: obj.properties.units || undefined,
           description: obj.properties.description || undefined,
-          metadata: obj.properties || {},
+          metadata: obj.properties
+            ? (obj.properties as BacnetMetadata)
+            : undefined,
         })
       }
     }

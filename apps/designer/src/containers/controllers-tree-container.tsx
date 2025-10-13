@@ -80,8 +80,6 @@ function convertPointToBacnetConfig(
       fault: parseStatusFlag(point.metadata?.statusFlags, 1),
       overridden: parseStatusFlag(point.metadata?.statusFlags, 2),
       outOfService: parseStatusFlag(point.metadata?.statusFlags, 3),
-      // Remove statusFlags to prevent duplication
-      statusFlags: undefined,
     },
     name: point.pointName,
   }

@@ -6,9 +6,9 @@ export type ControllerPoint = {
   siteId: string
   iotDeviceId: string
   controllerId: string
-  pointName: string
+  pointName?: string
   pointType: string
-  objectIdentifier: string
+  objectIdentifier?: string
   instanceNumber: number
   writable: boolean
   units?: string
