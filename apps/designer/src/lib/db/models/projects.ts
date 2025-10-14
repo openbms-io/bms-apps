@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { eq, like, or, and, asc, desc } from 'drizzle-orm'
+import { eq, like, or, and, asc, desc, type SQL } from 'drizzle-orm'
 import { getDatabase } from '../client'
 import {
   projects,
@@ -121,11 +121,9 @@ export class ProjectsRepository {
         or(
           like(projects.name, `%${search}%`),
           like(projects.description, `%${search}%`)
-        )
+        )!
       )
     }
-
-    const whereClause = and(...conditions)
 
     // Build order clause
     const validSorts = ['name', 'created_at', 'updated_at'] as const
@@ -137,7 +135,10 @@ export class ProjectsRepository {
     const orderClause = orderFn(projects[sortColumn])
 
     // Get total count
-    const totalQuery = this.db.select().from(projects).where(whereClause)
+    const totalQuery = this.db
+      .select()
+      .from(projects)
+      .where(and(...conditions))
     const totalRows = await totalQuery.all()
     const total = totalRows.length
 
@@ -145,7 +146,7 @@ export class ProjectsRepository {
     const projectsList = await this.db
       .select()
       .from(projects)
-      .where(whereClause)
+      .where(and(...conditions))
       .orderBy(orderClause)
       .limit(limit)
       .offset(offset)
