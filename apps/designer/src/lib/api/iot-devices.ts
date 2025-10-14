@@ -1,12 +1,5 @@
 import { IotDevice } from '@/lib/domain/models/iot-device'
-
-interface ApiResponse<T> {
-  success: boolean
-  error?: string
-  data?: {
-    iotDevice: T
-  }
-}
+import { ApiResponse } from './utils'
 
 export const iotDevicesApi = {
   async get(
@@ -18,13 +11,13 @@ export const iotDevicesApi = {
     const res = await fetch(
       `/api/organizations/${orgId}/sites/${siteId}/projects/${projectId}/iot-devices/${id}`
     )
-    const json: ApiResponse<IotDevice> = await res.json()
+    const json: ApiResponse<{ iotDevice: IotDevice }> = await res.json()
 
     if (!res.ok || !json.success) {
       throw new Error(json.error || 'Failed to fetch IoT device')
     }
 
-    if (!json.data?.iotDevice) {
+    if (!json.data.iotDevice) {
       throw new Error('IoT device not found in response')
     }
 
@@ -49,13 +42,13 @@ export const iotDevicesApi = {
         }),
       }
     )
-    const json: ApiResponse<IotDevice> = await res.json()
+    const json: ApiResponse<{ iotDevice: IotDevice }> = await res.json()
 
     if (!res.ok || !json.success) {
       throw new Error(json.error || 'Failed to create IoT device')
     }
 
-    if (!json.data?.iotDevice) {
+    if (!json.data.iotDevice) {
       throw new Error('IoT device not found in response')
     }
 
