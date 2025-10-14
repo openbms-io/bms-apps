@@ -34,13 +34,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ orgId: string; siteId: string }> }
+): Promise<NextResponse> {
   try {
+    const { siteId } = await params
     const body = await request.json()
 
     const dto = CreateProjectRequestSchema.parse(body)
 
-    const dbInsert = ProjectMapper.toDbInsert(dto)
+    const dbInsert = ProjectMapper.toDbInsert({ ...dto, siteId })
 
     const dbProject = await projectsRepository.create(dbInsert)
 

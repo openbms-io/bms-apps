@@ -12,7 +12,6 @@ export type { Project, CreateProject, UpdateProject }
 
 // Zod schemas ONLY for API request validation
 export const CreateProjectRequestSchema = z.object({
-  siteId: z.string().uuid('Invalid site ID format'),
   name: z
     .string()
     .min(1, 'Project name is required')
