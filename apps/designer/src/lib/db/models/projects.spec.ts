@@ -1,5 +1,6 @@
 /** @jest-environment node */
 
+import { eq } from 'drizzle-orm'
 import { projectsRepository } from './projects'
 import { closeDatabase, getDatabase } from '../client'
 import { projects as projectsTable, sites, organizations } from '../schema'
@@ -165,6 +166,7 @@ describe('ProjectsRepository (SQLite + Drizzle)', () => {
     })
 
     const listByNameAsc = await projectsRepository.list({
+      siteId: testSiteId,
       search: 'Zeta Project',
       sort: 'name',
       order: 'asc',
@@ -185,5 +187,80 @@ describe('ProjectsRepository (SQLite + Drizzle)', () => {
     // Cleanup
     await projectsRepository.delete(a.id)
     await projectsRepository.delete(b.id)
+  })
+
+  it('list() filters by siteId correctly', async () => {
+    // Create a second site
+    const testSiteId2 = 'test-site-789'
+    const now = new Date().toISOString()
+    const db = getDatabase()
+
+    await db
+      .insert(sites)
+      .values({
+        id: testSiteId2,
+        organization_id: testOrgId,
+        name: 'Test Site 2',
+        description: null,
+        created_at: now,
+        updated_at: now,
+      })
+      .run()
+
+    // Create projects in different sites
+    const projectSite1 = await projectsRepository.create({
+      site_id: testSiteId,
+      name: 'Project in Site 1',
+      workflow_config: '{}',
+    })
+
+    const projectSite2 = await projectsRepository.create({
+      site_id: testSiteId2,
+      name: 'Project in Site 2',
+      workflow_config: '{}',
+    })
+
+    // List projects for site 1
+    const site1Results = await projectsRepository.list({
+      siteId: testSiteId,
+      page: 1,
+      limit: 50,
+    })
+
+    // Should only return projects from site 1
+    expect(site1Results.projects.length).toBeGreaterThanOrEqual(1)
+    expect(site1Results.projects.every((p) => p.site_id === testSiteId)).toBe(
+      true
+    )
+    expect(site1Results.projects.some((p) => p.id === projectSite1.id)).toBe(
+      true
+    )
+    expect(site1Results.projects.some((p) => p.id === projectSite2.id)).toBe(
+      false
+    )
+
+    // List projects for site 2
+    const site2Results = await projectsRepository.list({
+      siteId: testSiteId2,
+      page: 1,
+      limit: 50,
+    })
+
+    // Should only return projects from site 2
+    expect(site2Results.projects.length).toBe(1)
+    expect(site2Results.projects.every((p) => p.site_id === testSiteId2)).toBe(
+      true
+    )
+    expect(site2Results.projects.some((p) => p.id === projectSite2.id)).toBe(
+      true
+    )
+    expect(site2Results.projects.some((p) => p.id === projectSite1.id)).toBe(
+      false
+    )
+
+    // Cleanup
+    await projectsRepository.delete(projectSite1.id)
+    await projectsRepository.delete(projectSite2.id)
+    await db.delete(sites).where(eq(sites.id, testSiteId2)).run()
   })
 })

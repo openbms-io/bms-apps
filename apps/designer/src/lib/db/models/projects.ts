@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { eq, like, or, asc, desc } from 'drizzle-orm'
+import { eq, like, or, and, asc, desc } from 'drizzle-orm'
 import { getDatabase } from '../client'
 import {
   projects,
@@ -103,24 +103,29 @@ export class ProjectsRepository {
   }
 
   // List projects with pagination and search
-  async list(query: Partial<ProjectQuery> = {}): Promise<ProjectListResponse> {
-    const {
-      page = 1,
-      limit = 20,
-      search,
-      sort = 'updated_at',
-      order = 'desc',
-    } = query
+  async list({
+    siteId,
+    page = 1,
+    limit = 20,
+    search,
+    sort = 'updated_at',
+    order = 'desc',
+  }: { siteId: string } & Partial<ProjectQuery>): Promise<ProjectListResponse> {
     const offset = (page - 1) * limit
 
-    // Build where clause for search
-    let whereClause = undefined
+    // Build where clause for siteId and search
+    const conditions = [eq(projects.site_id, siteId)]
+
     if (search) {
-      whereClause = or(
-        like(projects.name, `%${search}%`),
-        like(projects.description, `%${search}%`)
+      conditions.push(
+        or(
+          like(projects.name, `%${search}%`),
+          like(projects.description, `%${search}%`)
+        )
       )
     }
+
+    const whereClause = and(...conditions)
 
     // Build order clause
     const validSorts = ['name', 'created_at', 'updated_at'] as const
@@ -131,20 +136,16 @@ export class ProjectsRepository {
     const orderFn = order === 'asc' ? asc : desc
     const orderClause = orderFn(projects[sortColumn])
 
-    // Get total count (avoid select fields to satisfy both drivers)
-    const totalBase = this.db.select().from(projects)
-    const totalQuery = whereClause ? totalBase.where(whereClause) : totalBase
+    // Get total count
+    const totalQuery = this.db.select().from(projects).where(whereClause)
     const totalRows = await totalQuery.all()
     const total = totalRows.length
 
-    // Get projects
-    const query_builder = this.db.select().from(projects)
-
-    const query_with_conditions = whereClause
-      ? query_builder.where(whereClause)
-      : query_builder
-
-    const projectsList = await query_with_conditions
+    // Get paginated results
+    const projectsList = await this.db
+      .select()
+      .from(projects)
+      .where(whereClause)
       .orderBy(orderClause)
       .limit(limit)
       .offset(offset)

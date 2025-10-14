@@ -4,8 +4,12 @@ import { projectsRepository } from '@/lib/db/models/projects'
 import { handleApiError } from '@/lib/api/error-handler'
 import { ProjectMapper } from '@/lib/domain/mappers/project.mapper'
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ orgId: string; siteId: string }> }
+): Promise<NextResponse> {
   try {
+    const { siteId } = await params
     const { searchParams } = new URL(request.url)
 
     const query = ProjectQuerySchema.parse({
@@ -16,7 +20,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       order: searchParams.get('order'),
     })
 
-    const dbData = await projectsRepository.list(query)
+    const dbData = await projectsRepository.list({ siteId, ...query })
 
     const data = {
       ...dbData,
