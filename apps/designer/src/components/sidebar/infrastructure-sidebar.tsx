@@ -7,7 +7,17 @@ import { SupervisorsTab } from './supervisors-tab'
 
 type TabType = 'controllers' | 'supervisors'
 
-export function InfrastructureSidebar() {
+interface InfrastructureSidebarProps {
+  orgId: string
+  siteId: string
+  projectId: string
+}
+
+export function InfrastructureSidebar({
+  orgId,
+  siteId,
+  projectId,
+}: InfrastructureSidebarProps) {
   const [activeTab, setActiveTab] = useState<TabType>('controllers')
 
   return (
@@ -42,8 +52,12 @@ export function InfrastructureSidebar() {
 
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden">
-        {activeTab === 'controllers' && <ControllersTab />}
-        {activeTab === 'supervisors' && <SupervisorsTab />}
+        {activeTab === 'controllers' && (
+          <ControllersTab orgId={orgId} siteId={siteId} projectId={projectId} />
+        )}
+        {activeTab === 'supervisors' && (
+          <SupervisorsTab orgId={orgId} siteId={siteId} projectId={projectId} />
+        )}
       </div>
     </div>
   )

@@ -4,10 +4,12 @@ from typing import Union, Optional
 from src.models.controller_points import ControllerPointsModel
 from packages.mqtt_topics.topics_loader import CommandNameEnum
 from src.models.device_status_enums import MonitoringStatusEnum, ConnectionStatusEnum
+from pydantic import Field
 
 
 class ConfigUploadResponsePayload(BaseModel):
     success: bool
+    correlationData: Optional[bytes] = Field(default=None, exclude=True)
 
 
 class BacnetReaderConfig(BaseModel):
@@ -26,7 +28,9 @@ class ConfigUploadPayload(BaseModel):
     jwtToken: str
     iotDeviceControllers: list[dict]
     bacnetReaders: Optional[list[BacnetReaderConfig]] = []
-    # devicePointIPAddresses: list[str]
+    correlationData: Optional[bytes] = Field(
+        default=None, exclude=True
+    )  # Excludes from model_dump.
 
 
 class PointPublishPayload(BaseModel):

@@ -1,0 +1,249 @@
+import { BacnetReaderMapper } from './bacnet-reader.mapper'
+import type {
+  CreateBacnetReader,
+  UpdateBacnetReader,
+} from '../models/bacnet-reader'
+import type { BacnetMetadata } from '@/types/bacnet-metadata'
+
+describe('BacnetReaderMapper', () => {
+  describe('toDTO', () => {
+    it('converts DB record to DTO (snake_case → camelCase)', () => {
+      const metadata: BacnetMetadata = {
+        manufacturer: 'Test',
+        modelName: 'Model1',
+      }
+
+      const dbReader = {
+        id: 'reader_123',
+        organization_id: 'org_456',
+        site_id: 'site_789',
+        iot_device_id: 'device_101',
+        ip_address: '192.168.1.100',
+        port: 47808,
+        device_id: 1001,
+        name: 'Test Reader',
+        description: 'A test reader',
+        is_active: true,
+        metadata,
+        created_at: '2025-01-01T00:00:00Z',
+        updated_at: '2025-01-02T00:00:00Z',
+      }
+
+      const dto = BacnetReaderMapper.toDTO(dbReader)
+
+      expect(dto.id).toBe('reader_123')
+      expect(dto.organizationId).toBe('org_456')
+      expect(dto.siteId).toBe('site_789')
+      expect(dto.iotDeviceId).toBe('device_101')
+      expect(dto.ipAddress).toBe('192.168.1.100')
+      expect(dto.port).toBe(47808)
+      expect(dto.deviceId).toBe(1001)
+      expect(dto.name).toBe('Test Reader')
+      expect(dto.description).toBe('A test reader')
+      expect(dto.isActive).toBe(true)
+      expect(dto.metadata).toEqual(metadata)
+      expect(dto.createdAt).toBe('2025-01-01T00:00:00Z')
+      expect(dto.updatedAt).toBe('2025-01-02T00:00:00Z')
+    })
+
+    it('converts null to undefined for optional fields', () => {
+      const dbReader = {
+        id: 'reader_123',
+        organization_id: 'org_456',
+        site_id: 'site_789',
+        iot_device_id: 'device_101',
+        ip_address: '192.168.1.100',
+        port: 47808,
+        device_id: 1001,
+        name: 'Test Reader',
+        description: null,
+        is_active: true,
+        metadata: null,
+        created_at: '2025-01-01T00:00:00Z',
+        updated_at: '2025-01-02T00:00:00Z',
+      }
+
+      const dto = BacnetReaderMapper.toDTO(dbReader)
+
+      expect(dto.description).toBeUndefined()
+      expect(dto.metadata).toBeUndefined()
+    })
+
+    it('converts empty object metadata to undefined', () => {
+      const dbReader = {
+        id: 'reader_123',
+        organization_id: 'org_456',
+        site_id: 'site_789',
+        iot_device_id: 'device_101',
+        ip_address: '192.168.1.100',
+        port: 47808,
+        device_id: 1001,
+        name: 'Test Reader',
+        description: null,
+        is_active: true,
+        metadata: null,
+        created_at: '2025-01-01T00:00:00Z',
+        updated_at: '2025-01-02T00:00:00Z',
+      }
+
+      const dto = BacnetReaderMapper.toDTO(dbReader)
+
+      expect(dto.metadata).toBeUndefined()
+    })
+  })
+
+  describe('toDbInsert', () => {
+    it('converts DTO to DB insert (camelCase → snake_case)', () => {
+      const metadata: BacnetMetadata = {
+        manufacturer: 'Test',
+        modelName: 'Model1',
+      }
+
+      const createDto: CreateBacnetReader = {
+        organizationId: 'org_789',
+        siteId: 'site_101',
+        iotDeviceId: 'device_202',
+        ipAddress: '192.168.1.101',
+        port: 47809,
+        deviceId: 1002,
+        name: 'New Reader',
+        description: 'Reader description',
+        isActive: false,
+        metadata,
+      }
+      const id = 'reader_456'
+
+      const dbInsert = BacnetReaderMapper.toDbInsert(createDto, id)
+
+      expect(dbInsert.id).toBe('reader_456')
+      expect(dbInsert.organization_id).toBe('org_789')
+      expect(dbInsert.site_id).toBe('site_101')
+      expect(dbInsert.iot_device_id).toBe('device_202')
+      expect(dbInsert.ip_address).toBe('192.168.1.101')
+      expect(dbInsert.port).toBe(47809)
+      expect(dbInsert.device_id).toBe(1002)
+      expect(dbInsert.name).toBe('New Reader')
+      expect(dbInsert.description).toBe('Reader description')
+      expect(dbInsert.is_active).toBe(false)
+      expect(dbInsert.metadata).toEqual(metadata)
+      expect(dbInsert.created_at).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+      )
+      expect(dbInsert.updated_at).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+      )
+    })
+
+    it('handles optional fields', () => {
+      const createDto: CreateBacnetReader = {
+        organizationId: 'org_123',
+        siteId: 'site_456',
+        iotDeviceId: 'device_789',
+        ipAddress: '192.168.1.102',
+        port: 47808,
+        deviceId: 1003,
+        name: 'New Reader',
+        isActive: true,
+      }
+      const id = 'reader_789'
+
+      const dbInsert = BacnetReaderMapper.toDbInsert(createDto, id)
+
+      expect(dbInsert.description).toBeUndefined()
+      expect(dbInsert.is_active).toBe(true)
+      expect(dbInsert.metadata).toBeNull()
+    })
+
+    it('sets created_at and updated_at to same timestamp', () => {
+      const createDto: CreateBacnetReader = {
+        organizationId: 'org_123',
+        siteId: 'site_456',
+        iotDeviceId: 'device_789',
+        ipAddress: '192.168.1.103',
+        port: 47808,
+        deviceId: 1004,
+        name: 'Test Reader',
+      }
+      const id = 'reader_999'
+
+      const dbInsert = BacnetReaderMapper.toDbInsert(createDto, id)
+
+      expect(dbInsert.created_at).toBe(dbInsert.updated_at)
+    })
+  })
+
+  describe('toDbUpdate', () => {
+    it('converts DTO update to DB update (camelCase → snake_case)', () => {
+      const metadata: BacnetMetadata = {
+        manufacturer: 'Updated',
+        modelName: 'Model2',
+      }
+
+      const updateDto: UpdateBacnetReader = {
+        ipAddress: '192.168.1.104',
+        port: 47810,
+        deviceId: 1005,
+        name: 'Updated Reader',
+        description: 'Updated description',
+        isActive: true,
+        metadata,
+      }
+
+      const dbUpdate = BacnetReaderMapper.toDbUpdate(updateDto)
+
+      expect(dbUpdate.ip_address).toBe('192.168.1.104')
+      expect(dbUpdate.port).toBe(47810)
+      expect(dbUpdate.device_id).toBe(1005)
+      expect(dbUpdate.name).toBe('Updated Reader')
+      expect(dbUpdate.description).toBe('Updated description')
+      expect(dbUpdate.is_active).toBe(true)
+      expect(dbUpdate.metadata).toEqual(metadata)
+      expect(dbUpdate.updated_at).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+      )
+    })
+
+    it('allows explicit null to clear optional fields', () => {
+      const updateDto: UpdateBacnetReader = {
+        description: null,
+        metadata: null,
+      }
+
+      const dbUpdate = BacnetReaderMapper.toDbUpdate(updateDto)
+      expect(dbUpdate.description).toBeNull()
+      expect(dbUpdate.metadata).toBeNull()
+      expect(dbUpdate.updated_at).toBeDefined()
+    })
+
+    it('omits undefined fields from update', () => {
+      const updateDto: UpdateBacnetReader = {}
+
+      const dbUpdate = BacnetReaderMapper.toDbUpdate(updateDto)
+
+      expect('ip_address' in dbUpdate).toBe(false)
+      expect('port' in dbUpdate).toBe(false)
+      expect('device_id' in dbUpdate).toBe(false)
+      expect('name' in dbUpdate).toBe(false)
+      expect('description' in dbUpdate).toBe(false)
+      expect('is_active' in dbUpdate).toBe(false)
+      expect('metadata' in dbUpdate).toBe(false)
+      expect('updated_at' in dbUpdate).toBe(false)
+    })
+
+    it('updates only some fields without touching others', () => {
+      const updateDto: UpdateBacnetReader = {
+        name: 'Changed Name',
+        port: 48000,
+      }
+
+      const dbUpdate = BacnetReaderMapper.toDbUpdate(updateDto)
+
+      expect(dbUpdate.name).toBe('Changed Name')
+      expect(dbUpdate.port).toBe(48000)
+      expect('ip_address' in dbUpdate).toBe(false)
+      expect('device_id' in dbUpdate).toBe(false)
+      expect('description' in dbUpdate).toBe(false)
+      expect(dbUpdate.updated_at).toBeDefined()
+    })
+  })
+})

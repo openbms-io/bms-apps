@@ -3,7 +3,6 @@ from sqlalchemy import text
 from ..config.paths import get_database_url
 from ..config.bacnet_constants import SQLITE_CACHE_SIZE_PAGES
 import asyncio
-import logging
 import contextlib
 from functools import wraps
 import sys
@@ -12,7 +11,7 @@ import os
 from collections import defaultdict
 from typing import DefaultDict
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 # Use test database if running under pytest
 if "pytest" in sys.modules or "PYTEST_CURRENT_TEST" in os.environ:

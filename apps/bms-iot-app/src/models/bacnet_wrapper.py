@@ -1,6 +1,6 @@
 import BAC0
 import json
-from typing import Any, Optional, Union, Dict
+from typing import Any, Optional, Union, Dict, Tuple, List
 import asyncio
 from src.actors.messages.message_type import BacnetReaderConfig
 from src.models.bacnet_types import (
@@ -8,6 +8,9 @@ from src.models.bacnet_types import (
 )
 from src.utils.logger import logger
 from src.utils.performance import performance_metrics
+
+BacnetObjectTuple = Tuple[Any, int]
+BacnetReadRangeResponse = List[Tuple[List[BacnetObjectTuple], Any]]
 
 
 def convert_bacnet_health_value(prop_name: str, value: Any) -> Any:
@@ -128,25 +131,6 @@ class BACnetWrapper:
                 logger.error(f"[{self.instance_id}] Failed to connect BAC0: {e}")
                 raise
 
-    async def read(self, command: str) -> Any:
-        """Thread-safe read operation."""
-        if not self._bacnet_connected:
-            await self.start()
-
-        if self._bacnet is None:
-            raise RuntimeError("BACnet connection not established")
-
-        lock = await self.get_lock()
-        async with lock:
-            self._active_operations += 1
-            try:
-                logger.info(
-                    f"[{self.instance_id}] Read command: {command} (active ops: {self._active_operations})"
-                )
-                return await self._bacnet.read(command)
-            finally:
-                self._active_operations -= 1
-
     @performance_metrics("bacnet_read_multiple")
     async def read_multiple(self, command: str) -> Any:
         """Thread-safe read multiple operation."""
@@ -176,7 +160,7 @@ class BACnetWrapper:
     ) -> Any:
         """Thread-safe read present value operation."""
         read_command = f"{device_ip} {object_type} {object_id} presentValue"
-        return await self.read(read_command)
+        return await self.read_multiple(read_command)
 
     async def read_all_properties(
         self, device_ip: str, object_type: str, object_id: int
@@ -765,13 +749,39 @@ class BACnetWrapper:
             finally:
                 self._active_operations -= 1
 
-    async def read_object_list(self, ip: str, device_id: int) -> Any:
-        """Thread-safe read object list operation."""
-        if self._bacnet is None:
-            raise RuntimeError(f"[{self.instance_id}] BAC0 instance not initialized")
-        return await self._bacnet.read(
-            args=f"{ip} device {device_id} objectList", show_property_name=True
+    def _unwrap_read_range_response(self, response: Any) -> List[BacnetObjectTuple]:
+        """
+        Unwrap BACnet read_range response structure.
+
+        Transforms: [([(<ObjectType>, id), ...], metadata)] -> [(<ObjectType>, id), ...]
+        """
+        if (
+            isinstance(response, list)
+            and len(response) > 0
+            and isinstance(response[0], tuple)
+        ):
+            return response[0][0]
+        return response
+
+    async def read_object_list(
+        self, ip: str, device_id: int
+    ) -> List[BacnetObjectTuple]:
+        """
+        Read and unwrap BACnet object list.
+
+        Returns:
+            List of (ObjectType, instance_number) tuples
+        """
+        command = f"{ip} device {device_id} objectList"
+        logger.info(f"[{self.instance_id}] Read object list command started: {command}")
+        response = await self.read_multiple(command)
+        logger.info(
+            f"[{self.instance_id}] Read object list response completed: {response}"
         )
+
+        unwrapped = self._unwrap_read_range_response(response)
+        logger.info(f"[{self.instance_id}] Unwrapped object list: {unwrapped}")
+        return unwrapped
 
     async def write_with_priority(
         self,

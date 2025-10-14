@@ -1,34 +1,29 @@
-// External libraries
 import { StateCreator } from 'zustand'
-
-// Internal absolute imports
-import {
-  TreeNode,
-  PointGroup,
-  BacnetObjectType,
-  BacnetConfig,
-} from '@/types/infrastructure'
-
-// Relative imports
-import { InfrastructureSlice } from './infrastructure-slice'
+import { TreeNode } from '@/types/infrastructure'
+import { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
+import { ControllerPoint } from '@/lib/domain/models/controller-point'
 
 export interface TreeUISlice {
   // UI State only
   expandedNodes: Set<string>
   selectedPointId: string | null
 
-  // Actions
+  // UI Actions
   toggleNode: (nodeId: string) => void
   selectPoint: (pointId: string | null) => void
-  expandAll: () => void
+  expandAll: (allNodeIds: string[]) => void
   collapseAll: () => void
 
-  // Computed from Infrastructure
-  getTreeData: () => TreeNode[]
+  // Tree transform with points support
+  getTreeData: (
+    controllers: IotDeviceController[],
+    iotDevice: { id: string; name: string } | undefined,
+    pointsByController: Record<string, ControllerPoint[]>
+  ) => TreeNode[]
 }
 
 export const createTreeUISlice: StateCreator<
-  InfrastructureSlice & TreeUISlice,
+  TreeUISlice,
   [],
   [],
   TreeUISlice
@@ -52,217 +47,90 @@ export const createTreeUISlice: StateCreator<
     set({ selectedPointId: pointId })
   },
 
-  expandAll: () => {
-    const { supervisors } = get()
-    const allNodeIds = new Set<string>()
-
-    supervisors.forEach((supervisor) => {
-      allNodeIds.add(supervisor.id)
-      supervisor.controllers.forEach((controller) => {
-        allNodeIds.add(controller.id)
-        if (controller.discoveredPoints.length > 0) {
-          const types: BacnetObjectType[] = [
-            'analog-input',
-            'analog-output',
-            'analog-value',
-            'binary-input',
-            'binary-output',
-            'binary-value',
-          ]
-          types.forEach((type) => {
-            allNodeIds.add(`${controller.id}-${type}`)
-          })
-        }
-      })
-    })
-
-    set({ expandedNodes: allNodeIds })
+  expandAll: (allNodeIds: string[]) => {
+    set({ expandedNodes: new Set(allNodeIds) })
   },
 
   collapseAll: () => {
     set({ expandedNodes: new Set() })
   },
 
-  getTreeData: () => {
-    const { supervisors, expandedNodes } = get()
-    const treeNodes: TreeNode[] = []
+  getTreeData: (
+    controllers: IotDeviceController[],
+    iotDevice: { id: string; name: string } | undefined,
+    pointsByController: Record<string, ControllerPoint[]>
+  ) => {
+    const { expandedNodes } = get()
 
-    supervisors.forEach((supervisor) => {
-      const supervisorNode: TreeNode = {
-        id: supervisor.id,
-        type: 'supervisor',
-        label: supervisor.name,
-        icon: '🖥️',
-        depth: 0,
-        hasChildren: supervisor.controllers.length > 0,
-        isExpanded: expandedNodes.has(supervisor.id),
-        data: supervisor,
-        children: [],
-      }
+    if (!iotDevice) return []
 
-      if (supervisorNode.isExpanded) {
-        supervisor.controllers.forEach((controller) => {
-          const controllerNode: TreeNode = {
+    const supervisorNode: TreeNode = {
+      id: iotDevice.id,
+      type: 'supervisor',
+      label: iotDevice.name,
+      icon: '🖥️',
+      depth: 0,
+      hasChildren: controllers.length > 0,
+      isExpanded: expandedNodes.has(iotDevice.id),
+      data: {
+        id: iotDevice.id,
+        name: iotDevice.name,
+        status: 'active' as const,
+        controllers: [],
+      },
+      children: [],
+    }
+
+    if (supervisorNode.isExpanded) {
+      controllers.forEach((controller) => {
+        const points = pointsByController[controller.id] || []
+        const hasPoints = points.length > 0
+
+        const controllerNode: TreeNode = {
+          id: controller.id,
+          type: 'controller',
+          label: controller.name,
+          sublabel: `${controller.ipAddress}:${controller.port}`,
+          icon: controller.isActive ? '🟢' : '🔴',
+          depth: 1,
+          hasChildren: hasPoints,
+          isExpanded: expandedNodes.has(controller.id),
+          data: {
             id: controller.id,
-            type: 'controller',
-            label: controller.name,
-            sublabel: `${controller.ipAddress} • ${controller.discoveredPoints.length} points`,
-            icon:
-              controller.status === 'connected'
-                ? '🟢'
-                : controller.status === 'discovering'
-                  ? '🔄'
-                  : '🔴',
-            depth: 1,
-            hasChildren: controller.discoveredPoints.length > 0,
-            isExpanded: expandedNodes.has(controller.id),
-            data: controller,
-            children: [],
-          }
+            supervisorId: iotDevice.id,
+            ipAddress: controller.ipAddress,
+            name: controller.name,
+            status: controller.isActive
+              ? ('connected' as const)
+              : ('disconnected' as const),
+            discoveredPoints: [],
+          },
+          children: [],
+        }
 
-          if (
-            controllerNode.isExpanded &&
-            controller.discoveredPoints.length > 0
-          ) {
-            // Group by objectType
-            const pointsByType = new Map<BacnetObjectType, BacnetConfig[]>()
+        if (controllerNode.isExpanded && hasPoints) {
+          points.forEach((point) => {
+            const pointNode: TreeNode = {
+              id: point.id,
+              type: 'point',
+              label: point.pointName || '',
+              sublabel: `${point.pointType} (${point.instanceNumber})`,
+              icon: point.writable ? '✏️' : '📊',
+              depth: 2,
+              hasChildren: false,
+              isExpanded: false,
+              data: point,
+              children: [],
+            }
 
-            controller.discoveredPoints.forEach((point) => {
-              const points = pointsByType.get(point.objectType) || []
-              points.push(point)
-              pointsByType.set(point.objectType, points)
-            })
+            controllerNode.children!.push(pointNode)
+          })
+        }
 
-            // Create groups
-            const typeOrder: BacnetObjectType[] = [
-              'analog-input',
-              'analog-output',
-              'analog-value',
-              'binary-input',
-              'binary-output',
-              'binary-value',
-              'multistate-input',
-              'multistate-output',
-              'multistate-value',
-            ]
+        supervisorNode.children!.push(controllerNode)
+      })
+    }
 
-            typeOrder.forEach((objectType) => {
-              const points = pointsByType.get(objectType)
-              if (!points || points.length === 0) return
-
-              const groupId = `${controller.id}-${objectType}`
-              const groupNode: TreeNode = {
-                id: groupId,
-                type: 'point-group',
-                label: getPointGroupLabel({ objectType }),
-                sublabel: `${points.length} points`,
-                icon: getPointGroupIcon({ objectType }),
-                depth: 2,
-                hasChildren: true,
-                isExpanded: expandedNodes.has(groupId),
-                data: {
-                  objectType,
-                  count: points.length,
-                  points,
-                } as PointGroup,
-                children: [],
-              }
-
-              if (groupNode.isExpanded) {
-                points.forEach((point) => {
-                  const pointNode: TreeNode = {
-                    id: point.pointId, // Use deterministic pointId
-                    type: 'point',
-                    label: point.name,
-                    sublabel: formatPointValue({ point }),
-                    icon: '•',
-                    depth: 3,
-                    hasChildren: false,
-                    isExpanded: false,
-                    data: point,
-                  }
-                  groupNode.children!.push(pointNode)
-                })
-              }
-
-              controllerNode.children!.push(groupNode)
-            })
-          }
-
-          supervisorNode.children!.push(controllerNode)
-        })
-      }
-
-      treeNodes.push(supervisorNode)
-    })
-
-    return treeNodes
+    return [supervisorNode]
   },
 })
-
-// Helper functions
-function getPointGroupLabel({
-  objectType,
-}: {
-  objectType: BacnetObjectType
-}): string {
-  const labels: Record<BacnetObjectType, string> = {
-    'analog-input': 'Analog Inputs',
-    'analog-output': 'Analog Outputs',
-    'analog-value': 'Analog Values',
-    'binary-input': 'Binary Inputs',
-    'binary-output': 'Binary Outputs',
-    'binary-value': 'Binary Values',
-    'multistate-input': 'Multistate Inputs',
-    'multistate-output': 'Multistate Outputs',
-    'multistate-value': 'Multistate Values',
-  }
-  return labels[objectType] || objectType
-}
-
-function getPointGroupIcon({
-  objectType,
-}: {
-  objectType: BacnetObjectType
-}): string {
-  const icons: Record<BacnetObjectType, string> = {
-    'analog-input': '📊',
-    'analog-output': '🔧',
-    'analog-value': '🎯',
-    'binary-input': '🔌',
-    'binary-output': '💡',
-    'binary-value': '⚡',
-    'multistate-input': '🔢',
-    'multistate-output': '🎛️',
-    'multistate-value': '📋',
-  }
-  return icons[objectType] || '📍'
-}
-
-function formatPointValue({ point }: { point: BacnetConfig }): string {
-  const value = point.discoveredProperties?.presentValue
-  const units = point.discoveredProperties?.units
-    ? ` ${point.discoveredProperties.units}`
-    : ''
-
-  // Handle multistate objects specially
-  if (point.objectType.includes('multistate') && typeof value === 'number') {
-    const stateText = point.discoveredProperties?.stateText as
-      | string[]
-      | undefined
-    if (stateText && stateText[value]) {
-      return stateText[value]
-    }
-    return `State ${value}`
-  }
-
-  if (typeof value === 'boolean') {
-    return value ? 'ON' : 'OFF'
-  }
-
-  if (typeof value === 'number') {
-    return `${value.toFixed(1)}${units}`
-  }
-
-  return value !== undefined ? String(value) : 'N/A'
-}

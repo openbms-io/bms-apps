@@ -2,6 +2,7 @@ import { v4 as uuidv4, v5 as uuidv5 } from 'uuid'
 import { BacnetProperties } from './bacnet-properties'
 import { MessageNode } from '@/lib/message-system/types'
 import { SerializableNode } from '@/lib/node-serializer'
+import { ControllerPoint } from '@/lib/domain/models/controller-point'
 
 // BACnet namespace for deterministic UUIDs
 export const BACNET_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
@@ -164,40 +165,6 @@ export interface EdgeData extends Record<string, unknown> {
   isActive?: boolean
 }
 
-// Single source of truth: derive valid properties from BacnetProperties interface
-// This array must match the keys defined in BacnetProperties interface
-const BACNET_PROPERTY_KEYS = [
-  'presentValue',
-  'statusFlags',
-  'eventState',
-  'reliability',
-  'outOfService',
-  'units',
-  'description',
-  'minPresValue',
-  'maxPresValue',
-  'resolution',
-  'covIncrement',
-  'timeDelay',
-  'highLimit',
-  'lowLimit',
-  'deadband',
-  'priorityArray',
-  'relinquishDefault',
-  'numberOfStates',
-  'stateText',
-] as const satisfies readonly (keyof BacnetProperties)[]
-
-// Use Set for O(1) lookup performance
-const BACNET_PROPERTY_SET = new Set<string>(BACNET_PROPERTY_KEYS)
-
-// Type guard for BACnet properties
-export function isBacnetProperty(
-  property: string
-): property is BacnetPropertyKey {
-  return BACNET_PROPERTY_SET.has(property)
-}
-
 // BACnet configuration (pointId here for deterministic business ID)
 export interface BacnetConfig {
   // Identification
@@ -211,14 +178,16 @@ export interface BacnetConfig {
   discoveredProperties: BacnetProperties
 
   // Display
-  name: string // Point name/description
+  name?: string // Point name/description
   position?: { x: number; y: number }
 }
 
 // BACnet nodes have dynamic inputs and outputs based on discovered properties
 export interface BacnetInputOutput
   extends DataNode<BacnetInputHandle, BacnetOutputHandle>,
-    BacnetConfig {}
+    BacnetConfig {
+  readonly name?: string
+}
 
 export interface Supervisor {
   id: string
@@ -233,7 +202,7 @@ export interface Controller {
   ipAddress: string
   name: string
   status: 'connected' | 'disconnected' | 'discovering'
-  discoveredPoints: BacnetConfig[] // Direct BacnetConfig array
+  discoveredPoints: BacnetConfig[]
   lastDiscovered?: Date
 }
 
@@ -247,7 +216,7 @@ export interface TreeNode {
   depth: number
   hasChildren: boolean
   isExpanded: boolean
-  data: Supervisor | Controller | PointGroup | BacnetConfig
+  data: Supervisor | Controller | PointGroup | BacnetConfig | ControllerPoint
   children?: TreeNode[]
 }
 

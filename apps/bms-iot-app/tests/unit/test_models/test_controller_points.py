@@ -164,38 +164,66 @@ class TestControllerPointsDatabaseOperations:
 
     @pytest.mark.asyncio
     async def test_delete_uploaded_points(self):
-        """Test: Delete points that have been uploaded"""
-        with patch("src.models.controller_points.get_session") as mock_get_session:
-            mock_session = AsyncMock()
+        """Test: Delete points that have been uploaded (uses real database to verify SQL WHERE clause)"""
+        # Create uploaded points
+        uploaded_point1 = ControllerPointsModel(
+            controller_ip_address="192.168.1.100",
+            bacnet_object_type=BacnetObjectTypeEnum.ANALOG_INPUT,
+            point_id=5001,
+            iot_device_point_id="uploaded-point-1",
+            controller_id="controller-1",
+            controller_device_id="device-1",
+            present_value="100.0",
+            is_uploaded=True,
+        )
 
-            # Create async context manager mock
-            mock_context_manager = AsyncMock()
-            mock_context_manager.__aenter__ = AsyncMock(return_value=mock_session)
-            mock_context_manager.__aexit__ = AsyncMock(return_value=None)
+        uploaded_point2 = ControllerPointsModel(
+            controller_ip_address="192.168.1.100",
+            bacnet_object_type=BacnetObjectTypeEnum.ANALOG_INPUT,
+            point_id=5002,
+            iot_device_point_id="uploaded-point-2",
+            controller_id="controller-1",
+            controller_device_id="device-1",
+            present_value="200.0",
+            is_uploaded=True,
+        )
 
-            mock_get_session.return_value = mock_context_manager
+        not_uploaded_point = ControllerPointsModel(
+            controller_ip_address="192.168.1.100",
+            bacnet_object_type=BacnetObjectTypeEnum.ANALOG_INPUT,
+            point_id=5003,
+            iot_device_point_id="not-uploaded-point",
+            controller_id="controller-1",
+            controller_device_id="device-1",
+            present_value="300.0",
+            is_uploaded=False,
+        )
 
-            # Create mock uploaded points
-            mock_point1 = Mock(spec=ControllerPointsModel)
-            mock_point1.is_uploaded = True
-            mock_point2 = Mock(spec=ControllerPointsModel)
-            mock_point2.is_uploaded = True
+        # Insert all points into real database
+        await bulk_insert_controller_points(
+            [uploaded_point1, uploaded_point2, not_uploaded_point]
+        )
 
-            # Mock query result
-            mock_result = Mock()
-            mock_result.scalars.return_value.all.return_value = [
-                mock_point1,
-                mock_point2,
-            ]
-            mock_session.execute = AsyncMock(return_value=mock_result)
-            mock_session.delete = AsyncMock()
-            mock_session.commit = AsyncMock()
+        # Delete uploaded points
+        deleted_count = await delete_uploaded_points()
 
-            result = await delete_uploaded_points()
+        # Should delete only the 2 uploaded points
+        assert (
+            deleted_count == 2
+        ), f"Expected to delete 2 points, deleted {deleted_count}"
 
-            assert result == 2
-            assert mock_session.delete.call_count == 2
-            mock_session.commit.assert_called_once()
+        # Verify not-uploaded point still exists
+        remaining_points = await get_points_to_upload()
+        remaining_ids = [p.iot_device_point_id for p in remaining_points]
+        assert (
+            "not-uploaded-point" in remaining_ids
+        ), "Not-uploaded point should still exist"
+        assert (
+            "uploaded-point-1" not in remaining_ids
+        ), "Uploaded point should be deleted"
+        assert (
+            "uploaded-point-2" not in remaining_ids
+        ), "Uploaded point should be deleted"
 
     @pytest.mark.asyncio
     async def test_mark_points_as_uploaded(self):

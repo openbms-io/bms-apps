@@ -243,9 +243,7 @@ async def delete_uploaded_points() -> int:
     """Delete all controller points where is_uploaded is True. Returns the number of deleted rows."""
     async with get_session() as session:
         result = await session.execute(
-            select(ControllerPointsModel).where(
-                ControllerPointsModel.is_uploaded is True
-            )
+            select(ControllerPointsModel).where(ControllerPointsModel.is_uploaded)
         )
         points_to_delete = list(result.scalars().all())
         deleted_count = len(points_to_delete)
@@ -282,7 +280,7 @@ async def get_points_to_upload() -> list[ControllerPointsModel]:
     async with get_session() as session:
         result = await session.execute(
             select(ControllerPointsModel)
-            .where(ControllerPointsModel.is_uploaded is False)
+            .where(~ControllerPointsModel.is_uploaded)
             .order_by(ControllerPointsModel.created_at)
             .limit(100)  # type: ignore[arg-type]
         )

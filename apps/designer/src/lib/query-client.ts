@@ -22,6 +22,14 @@ export function createQueryClient(): QueryClient {
 type QueryParams = Record<string, string | number | boolean | undefined | null>
 
 export const queryKeys = {
+  organizations: {
+    all: ['organizations'] as const,
+    lists: () => [...queryKeys.organizations.all, 'list'] as const,
+  },
+  sites: {
+    all: ['sites'] as const,
+    byOrg: (orgId: string) => [...queryKeys.sites.all, 'org', orgId] as const,
+  },
   projects: {
     all: ['projects'] as const,
     lists: () => [...queryKeys.projects.all, 'list'] as const,
@@ -30,4 +38,28 @@ export const queryKeys = {
     details: () => [...queryKeys.projects.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.projects.details(), id] as const,
   },
+  iotDevices: {
+    all: ['iotDevices'] as const,
+    details: () => [...queryKeys.iotDevices.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.iotDevices.details(), id] as const,
+  },
+  iotDeviceControllers: {
+    all: ['iotDeviceControllers'] as const,
+    list: (iotDeviceId: string) =>
+      ['iotDeviceControllers', 'list', iotDeviceId] as const,
+  },
+  bacnetReaders: {
+    all: ['bacnetReaders'] as const,
+    list: (iotDeviceId: string) =>
+      ['bacnetReaders', 'list', iotDeviceId] as const,
+  },
+  controllerPoints: {
+    all: ['controllerPoints'] as const,
+    list: (controllerId: string) =>
+      ['controllerPoints', 'list', controllerId] as const,
+    batch: (controllerIds: string[]) =>
+      ['controllerPoints', 'batch', ...controllerIds.sort()] as const,
+  },
+  getConfigPayload: (iotDeviceId: string) =>
+    ['get-config-payload', iotDeviceId] as const,
 } as const

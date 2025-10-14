@@ -1,15 +1,17 @@
 import json
 import time
-import logging
 import os
-from typing import Any, Dict, Callable
+from typing import Any, Dict, Callable, Optional
 
 import paho.mqtt.client as mqtt
+from paho.mqtt.client import CallbackAPIVersion
+from paho.mqtt.properties import Properties
+from paho.mqtt.packettypes import PacketTypes
 
 from .mqtt_config import MQTTConfig, default_config, CERT_FILE_PATH
 from src.utils.performance_monitor import payload_monitor
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 class MQTTClient:
@@ -17,8 +19,12 @@ class MQTTClient:
 
     def __init__(self, config: MQTTConfig = default_config):
         self.config = config
-        # Use standard MQTT client with default protocol version
-        self.client = mqtt.Client(client_id=config.client_id)
+        # Use MQTT 5.0 client with VERSION2 callbacks (clean_start is set in connect method)
+        self.client = mqtt.Client(
+            callback_api_version=CallbackAPIVersion.VERSION2,
+            client_id=config.client_id,
+            protocol=mqtt.MQTTv5,
+        )
         self.connected = False
 
         # Log warning if TLS is disabled
@@ -79,9 +85,9 @@ class MQTTClient:
         self.client.on_disconnect = self._on_disconnect
         self.client.on_publish = self._on_publish
 
-    def _on_connect(self, client, userdata, flags, rc):
-        """Callback for when the client receives a CONNACK response from the server."""
-        if rc == 0:
+    def _on_connect(self, client, userdata, connect_flags, reason_code, properties):
+        """Callback for when the client receives a CONNACK response from the server (MQTT 5.0)."""
+        if reason_code.value == 0:
             self.connected = True
             if self.config.use_tls:
                 logger.info(
@@ -99,20 +105,24 @@ class MQTTClient:
                 4: "Bad username or password",
                 5: "Not authorized",
             }
-            error_message = error_messages.get(rc, f"Unknown error code: {rc}")
+            error_message = error_messages.get(
+                reason_code.value, f"Unknown error code: {reason_code}"
+            )
             logger.error(f"Failed to connect to MQTT broker: {error_message}")
 
-    def _on_disconnect(self, client, userdata, rc):
-        """Callback for when the client disconnects from the server."""
+    def _on_disconnect(
+        self, client, userdata, disconnect_flags, reason_code, properties
+    ):
+        """Callback for when the client disconnects from the server (MQTT 5.0)."""
         self.connected = False
-        logger.warning(f"Disconnected from MQTT broker with code: {rc}")
+        logger.warning(f"Disconnected from MQTT broker with code: {reason_code}")
         # Implement reconnection logic
-        if rc != 0:
+        if reason_code.value != 0:
             self._reconnect()
 
-    def _on_publish(self, client, userdata, mid):
-        """Callback for when a message has been published."""
-        logger.debug(f"Message published with ID: {mid}")
+    def _on_publish(self, client, userdata, mid, reason_code, properties):
+        """Callback for when a message has been published (MQTT 5.0)."""
+        logger.debug(f"Message published with ID: {mid}, reason_code: {reason_code}")
 
     def connect(self):
         """Connect to the MQTT broker."""
@@ -127,7 +137,10 @@ class MQTTClient:
                 )
 
             self.client.connect(
-                self.config.broker_host, self.config.broker_port, self.config.keep_alive
+                host=self.config.broker_host,
+                port=self.config.broker_port,
+                keepalive=self.config.keep_alive,
+                clean_start=self.config.clean_session,
             )
             self.client.loop_start()
             # Give it a moment to connect
@@ -176,7 +189,12 @@ class MQTTClient:
         self.client.on_message = callback
 
     def publish(
-        self, topic: str, payload: Dict[str, Any], retain: bool = False
+        self,
+        topic: str,
+        payload: Dict[str, Any],
+        retain: bool = False,
+        qos: Optional[int] = None,
+        properties: Optional[Dict[str, Any]] = None,
     ) -> bool:
         """
         Publish a message to the MQTT broker.
@@ -185,6 +203,8 @@ class MQTTClient:
             topic: The topic to publish to (will be prefixed with config.topic_prefix)
             payload: The message payload (will be converted to JSON)
             retain: Whether the message should be retained by the broker
+            qos: QoS level (0, 1, or 2). If None, uses config default
+            properties: MQTT 5.0 properties (e.g., {"correlation_data": bytes})
 
         Returns:
             bool: True if successfully published, False otherwise
@@ -212,9 +232,26 @@ class MQTTClient:
             # Monitor payload size
             self._record_payload_metrics(payload, message)
 
+            # Use provided QoS or fall back to config default
+            used_qos = qos if qos is not None else self.config.qos
+
+            # Build MQTT 5.0 properties if provided
+            mqtt_properties = None
+            if properties:
+                mqtt_properties = Properties(PacketTypes.PUBLISH)
+                if "correlation_data" in properties:
+                    mqtt_properties.CorrelationData = properties["correlation_data"]
+                    logger.info(
+                        f"Publishing with correlation_data: {properties['correlation_data']}"
+                    )
+
             logger.info(f"Publishing message to topic: {full_topic}")
             result = self.client.publish(
-                full_topic, message, qos=self.config.qos, retain=retain
+                full_topic,
+                message,
+                qos=used_qos,
+                retain=retain,
+                properties=mqtt_properties,
             )
 
             logger.info(

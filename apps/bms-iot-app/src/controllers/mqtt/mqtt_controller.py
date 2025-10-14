@@ -1,6 +1,5 @@
-import logging
 import json
-import asyncio
+import time
 from typing import Optional, Any
 import paho.mqtt.client as mqtt
 
@@ -21,7 +20,7 @@ from packages.mqtt_topics.topics_loader import CommandNameEnum
 from src.models.controller_points import ControllerPointsModel
 from src.actors.messages.actor_queue_registry import ActorQueueRegistry
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 class MQTTHandler:
@@ -105,24 +104,20 @@ class MQTTHandler:
         logger.info("Subscribed to all request topics.")
         return self.mqtt_client, self.dispatcher
 
-    # def update_mqtt_topics(self, controller_device_id: str, iot_device_point_id: str):
-    #     self.controller_device_id = controller_device_id
-    #     self.iot_device_point_id = iot_device_point_id
-    #     if self.dispatcher:
-    #         self.dispatcher.update_mqtt_topics(controller_device_id, iot_device_point_id)
-
-    # def register_handler(self, command: CommandNameEnum, handler):
-    #     if self.dispatcher:
-    #         self.dispatcher.register_handler(command, handler)
-
-    # def attach_to_client(self):
-    #     if self.dispatcher:
-    #         self.dispatcher.attach_to_client()
-
-    def publish_response(self, command: CommandNameEnum, payload: AllowedPayloadTypes):
-        payload_dict = payload.model_dump()
+    def publish_response(
+        self,
+        command: CommandNameEnum,
+        payload: AllowedPayloadTypes,
+        correlation_data: Optional[bytes] = None,
+    ):
+        payload_dict = payload.model_dump(mode="json")
+        logger.info(
+            f"Publishing response for {command} with payload: {payload_dict}, correlation_data: {correlation_data}"
+        )
         if self.dispatcher:
-            self.dispatcher.publish_response(command=command, payload=payload_dict)
+            self.dispatcher.publish_response(
+                command=command, payload=payload_dict, correlation_data=correlation_data
+            )
 
     async def publish_point_bulk(self, points: list[ControllerPointsModel]):
         assert self.actor_queue_registry is not None
@@ -146,7 +141,7 @@ class MQTTHandler:
             # Add metadata
             payload_dict.update(
                 {
-                    "timestamp": asyncio.get_event_loop().time(),
+                    "timestamp": time.time(),
                     "organization_id": self.organization_id,
                     "site_id": self.site_id,
                     "iot_device_id": self.iot_device_id,
@@ -162,7 +157,6 @@ class MQTTHandler:
             self.mqtt_client.disconnect()
             logger.info("MQTTHandler stopped.")
 
-    # Example handler methods (to be registered with dispatcher)
     async def on_get_config_request(
         self,
         actor_queue_registry: Optional[ActorQueueRegistry],
@@ -171,8 +165,15 @@ class MQTTHandler:
         userdata: Any,
         message: mqtt.MQTTMessage,
     ):
+        logger.info(f"Received get_config request: {message}")
+        logger.info(f"Received get_config userdata: {userdata}")
         if not actor_queue_registry or not actor_name:
             raise ValueError("actor_queue_registry and actor_name cannot be None")
+
+        # Extract correlationData from MQTT 5.0 properties
+        correlation_data = None
+        if hasattr(message, "properties") and message.properties:
+            correlation_data = getattr(message.properties, "CorrelationData", None)
 
         payload_dict = json.loads(message.payload.decode())
         urlToUploadConfig: str = payload_dict.get("urlToUploadConfig")
@@ -202,11 +203,12 @@ class MQTTHandler:
             jwtToken=jwtToken,
             iotDeviceControllers=iotDeviceControllers,
             bacnetReaders=bacnet_readers_config,
+            correlationData=correlation_data,
         )
         logger.info(
             f"Received get_config request with {len(iotDeviceControllers)} controllers and {len(bacnet_readers_config)} BACnet readers"
         )
-        logger.info(f"Full payload: {payload}")
+        logger.info(f"Full payload with correlationData: {payload}")
         await actor_queue_registry.send_from(
             sender=actor_name,
             receiver=ActorName.BACNET,  # will be overwritten in broadcast

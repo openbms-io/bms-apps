@@ -1,22 +1,25 @@
 import { BacnetObjectType } from './infrastructure'
 
 // Define all possible property value types
-export type PropertyValue = number | boolean | string | StatusFlags | null
-
-export interface StatusFlags {
-  inAlarm: boolean
-  fault: boolean
-  overridden: boolean
-  outOfService: boolean
-}
+export type PropertyValue = number | boolean | string | null
 
 // All possible BACnet properties with their types
 export interface BacnetProperties {
   presentValue?: number | boolean | string
-  statusFlags?: StatusFlags
+
+  // Metadata properties
+  objectIdentifier?: [string, number]
+  objectName?: string
+  objectType?: string
+
+  // Individual status flag properties
+  inAlarm?: boolean
+  fault?: boolean
+  overridden?: boolean
+  outOfService?: boolean
+
   eventState?: string
   reliability?: string
-  outOfService?: boolean
   units?: string
   description?: string
   minPresValue?: number
@@ -24,16 +27,29 @@ export interface BacnetProperties {
   resolution?: number
   covIncrement?: number
   timeDelay?: number
+  timeDelayNormal?: number
   highLimit?: number
   lowLimit?: number
   deadband?: number
-  priorityArray?: number[]
+  priorityArray?: Array<{ type: string; value: number }>
   relinquishDefault?: number | boolean | string
 
+  // Event/Alarm properties
+  notifyType?: string
+  notificationClass?: number
+  limitEnable?: number[]
+  eventEnable?: number[]
+  eventAlgorithmInhibit?: number
+  eventDetectionEnable?: number
+  reliabilityEvaluationInhibit?: number
+  ackedTransitions?: number[]
+  eventTimeStamps?: Array<{ type: string; value: string }>
+  eventMessageTexts?: string[]
+  eventMessageTextsConfig?: string[]
+
   // Multistate-specific properties
-  numberOfStates?: number // Required for multistate objects
-  stateText?: (string | null)[] // Optional array of state descriptions (null at index 0 for BACnet 1-based indexing)
-  // Add more as discovered from actual devices
+  numberOfStates?: number
+  stateText?: (string | null)[]
 }
 
 // Property metadata interface
@@ -43,15 +59,79 @@ export interface PropertyMetadata {
   writable: boolean
 }
 
+// Properties that are metadata/info (read-only, diagnostic)
+const METADATA_INFO: Record<string, PropertyMetadata> = {
+  objectIdentifier: {
+    name: 'Object Identifier',
+    readable: true,
+    writable: false,
+  },
+  objectName: { name: 'Object Name', readable: true, writable: false },
+  objectType: { name: 'Object Type', readable: true, writable: false },
+}
+
+// Event/alarm diagnostic properties (read-only)
+const EVENT_ALARM_PROPERTIES: Record<string, PropertyMetadata> = {
+  timeDelayNormal: {
+    name: 'Time Delay Normal',
+    readable: true,
+    writable: false,
+  },
+  notifyType: { name: 'Notify Type', readable: true, writable: false },
+  notificationClass: {
+    name: 'Notification Class',
+    readable: true,
+    writable: false,
+  },
+  limitEnable: { name: 'Limit Enable', readable: true, writable: false },
+  eventEnable: { name: 'Event Enable', readable: true, writable: false },
+  eventAlgorithmInhibit: {
+    name: 'Event Algorithm Inhibit',
+    readable: true,
+    writable: false,
+  },
+  eventDetectionEnable: {
+    name: 'Event Detection Enable',
+    readable: true,
+    writable: false,
+  },
+  reliabilityEvaluationInhibit: {
+    name: 'Reliability Evaluation Inhibit',
+    readable: true,
+    writable: false,
+  },
+  ackedTransitions: {
+    name: 'Acked Transitions',
+    readable: true,
+    writable: false,
+  },
+  eventTimeStamps: {
+    name: 'Event Time Stamps',
+    readable: true,
+    writable: false,
+  },
+  eventMessageTexts: {
+    name: 'Event Message Texts',
+    readable: true,
+    writable: false,
+  },
+  eventMessageTextsConfig: {
+    name: 'Event Message Texts Config',
+    readable: true,
+    writable: false,
+  },
+}
+
 // Properties that are ALWAYS read-only regardless of object type
 const ALWAYS_READONLY: Record<string, PropertyMetadata> = {
-  statusFlags: { name: 'Status Flags', readable: true, writable: false },
+  inAlarm: { name: 'In Alarm', readable: true, writable: false },
+  fault: { name: 'Fault', readable: true, writable: false },
+  overridden: { name: 'Overridden', readable: true, writable: false },
   eventState: { name: 'Event State', readable: true, writable: false },
   reliability: { name: 'Reliability', readable: true, writable: false },
   units: { name: 'Units', readable: true, writable: false },
   description: { name: 'Description', readable: true, writable: false },
   resolution: { name: 'Resolution', readable: true, writable: false },
-  priorityArray: { name: 'Priority Array', readable: true, writable: false },
 }
 
 // Properties that are ALWAYS writable regardless of object type
@@ -60,6 +140,11 @@ const ALWAYS_WRITABLE: Record<string, PropertyMetadata> = {
   covIncrement: { name: 'COV Increment', readable: true, writable: true },
   timeDelay: { name: 'Time Delay', readable: true, writable: true },
   deadband: { name: 'Deadband', readable: true, writable: true },
+}
+
+// Properties that are display-only (no handles, just status display)
+const DISPLAY_ONLY: Record<string, PropertyMetadata> = {
+  priorityArray: { name: 'Priority Array', readable: false, writable: false },
 }
 
 // Properties specific to analog objects only
@@ -153,9 +238,24 @@ export function getPropertyMetadata(
 ): PropertyMetadata | undefined {
   const propName = propertyName as string
 
-  // Check object-type-specific first
+  // Check display-only first (no handles)
+  if (DISPLAY_ONLY[propName]) {
+    return DISPLAY_ONLY[propName]
+  }
+
+  // Check object-type-specific
   if (OBJECT_TYPE_METADATA[objectType]?.[propName]) {
     return OBJECT_TYPE_METADATA[objectType][propName]
+  }
+
+  // Check metadata/info properties
+  if (METADATA_INFO[propName]) {
+    return METADATA_INFO[propName]
+  }
+
+  // Check event/alarm properties
+  if (EVENT_ALARM_PROPERTIES[propName]) {
+    return EVENT_ALARM_PROPERTIES[propName]
   }
 
   // Then check always-readonly

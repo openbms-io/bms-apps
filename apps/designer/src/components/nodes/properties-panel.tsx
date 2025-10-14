@@ -10,7 +10,6 @@ import { BacnetInputOutput } from '@/types/infrastructure'
 import {
   getPropertyMetadata,
   BacnetProperties,
-  StatusFlags,
 } from '@/types/bacnet-properties'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -98,17 +97,6 @@ function formatPropertyValue(
   data: BacnetInputOutput
 ): string {
   if (value === null || value === undefined) return 'N/A'
-
-  // Handle StatusFlags specially
-  if (propertyName === 'statusFlags' && typeof value === 'object') {
-    const flags = value as StatusFlags
-    const active = []
-    if (flags.inAlarm) active.push('Alarm')
-    if (flags.fault) active.push('Fault')
-    if (flags.overridden) active.push('Override')
-    if (flags.outOfService) active.push('OOS')
-    return active.join(', ') || 'Normal'
-  }
 
   // Handle stateText array display (skip null at index 0)
   if (propertyName === 'stateText' && Array.isArray(value)) {

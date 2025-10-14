@@ -4,7 +4,6 @@ Provides functionality for MQTT operations and configuration.
 """
 
 import json
-import logging
 import os
 import time
 from typing import Dict, Any, Optional
@@ -19,7 +18,7 @@ from .mqtt_config import (
 )
 
 # Get module-level logger
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 # Load saved MQTT configuration
 mqtt_config = load_config()
@@ -34,6 +33,7 @@ def configure_mqtt(
     use_tls: bool,
     tls_ca_cert: Optional[str],
     topic_prefix: str,
+    clean_session: bool = True,
 ) -> MQTTConfig:
     """Configure MQTT client with the specified parameters."""
     global mqtt_config
@@ -48,6 +48,7 @@ def configure_mqtt(
         use_tls=use_tls,
         tls_ca_cert=tls_ca_cert,
         topic_prefix=topic_prefix,
+        clean_session=clean_session,
     )
 
     # If TLS is enabled but no certificate is specified, try to use the default EMQX certificate

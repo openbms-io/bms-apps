@@ -13,6 +13,11 @@ build/
 .parcel-cache/
 bms_bacnet.db
 logs/*.log
+.ruff_cache/
+.mcp-cache/
+.claude/
+bms-iot.db
+bms_iot_app.db
 
 # Next.js specific
 .next/

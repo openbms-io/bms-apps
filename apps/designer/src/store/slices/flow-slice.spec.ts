@@ -6,7 +6,7 @@ import {
   deserializeWorkflow,
   createNodeFactory,
 } from '@/lib/workflow/serializer'
-import type { Project } from '@/app/api/projects/schemas'
+import type { Project } from '@/app/api/organizations/[orgId]/sites/[siteId]/projects/schemas'
 
 // Mock the dependencies
 jest.mock('@/lib/api/projects')
@@ -40,11 +40,12 @@ describe('FlowSlice - Save/Load Integration', () => {
       const projectId = 'test-project-123'
       const mockProject: Project = {
         id: projectId,
+        siteId: 'test-site-123',
         name: 'Test Project',
         description: 'Test Description',
-        workflow_config: '{}',
-        created_at: '2025-01-01T00:00:00Z',
-        updated_at: '2025-01-01T00:00:00Z',
+        workflowConfig: undefined,
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z',
       }
 
       const mockVersionedConfig = {
@@ -80,8 +81,11 @@ describe('FlowSlice - Save/Load Integration', () => {
           lastModified: expect.any(String),
         }),
       })
-      expect(mockProjectsApi.update).toHaveBeenCalledWith(projectId, {
-        workflow_config: mockVersionedConfig,
+      expect(mockProjectsApi.update).toHaveBeenCalledWith({
+        orgId: undefined,
+        siteId: undefined,
+        projectId: projectId,
+        workflowConfig: mockVersionedConfig,
       })
     })
 
@@ -150,11 +154,12 @@ describe('FlowSlice - Save/Load Integration', () => {
       // Resolve the update
       const mockProject: Project = {
         id: projectId,
+        siteId: 'test-site-123',
         name: 'Test Project',
         description: 'Test Description',
-        workflow_config: '{}',
-        created_at: '2025-01-01T00:00:00Z',
-        updated_at: '2025-01-01T00:00:00Z',
+        workflowConfig: undefined,
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z',
       }
       resolveUpdate(mockProject)
       await savePromise
@@ -163,7 +168,7 @@ describe('FlowSlice - Save/Load Integration', () => {
     // Retry behavior is verified at API layer; flow-slice calls API once.
   })
 
-  describe('loadProject', () => {
+  describe('loadWorkflowIntoCanvas', () => {
     it('should successfully load a project with workflow config', async () => {
       // Arrange
       const projectId = 'test-project-123'
@@ -184,11 +189,12 @@ describe('FlowSlice - Save/Load Integration', () => {
 
       const mockProject: Project = {
         id: projectId,
+        siteId: 'test-site-123',
         name: 'Test Project',
         description: 'Test Description',
-        workflow_config: JSON.stringify(mockVersionedConfig),
-        created_at: '2025-01-01T00:00:00Z',
-        updated_at: '2025-01-01T00:00:00Z',
+        workflowConfig: mockVersionedConfig,
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z',
       }
 
       const mockDeserializedState = {
@@ -206,11 +212,11 @@ describe('FlowSlice - Save/Load Integration', () => {
       mockDeserializeWorkflow.mockReturnValue(mockDeserializedState)
 
       // Act
-      await store.getState().loadProject({ projectId })
+      await store.getState().loadWorkflowIntoCanvas({ projectId })
 
       // Assert
       expect(store.getState().saveStatus).toBe('saved')
-      expect(mockProjectsApi.get).toHaveBeenCalledWith(projectId)
+      expect(mockProjectsApi.get).toHaveBeenCalledWith({ projectId })
       expect(mockCreateNodeFactory).toHaveBeenCalled()
       expect(mockDeserializeWorkflow).toHaveBeenCalledWith({
         versionedConfig: mockVersionedConfig,
@@ -223,17 +229,18 @@ describe('FlowSlice - Save/Load Integration', () => {
       const projectId = 'test-project-123'
       const mockProject: Project = {
         id: projectId,
+        siteId: 'test-site-123',
         name: 'Test Project',
         description: 'Test Description',
-        workflow_config: '{}',
-        created_at: '2025-01-01T00:00:00Z',
-        updated_at: '2025-01-01T00:00:00Z',
+        workflowConfig: undefined,
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z',
       }
 
       mockProjectsApi.get.mockResolvedValue(mockProject)
 
       // Act
-      await store.getState().loadProject({ projectId })
+      await store.getState().loadWorkflowIntoCanvas({ projectId })
 
       // Assert
       expect(store.getState().saveStatus).toBe('saved')
@@ -249,9 +256,9 @@ describe('FlowSlice - Save/Load Integration', () => {
       mockProjectsApi.get.mockRejectedValue(error)
 
       // Act & Assert
-      await expect(store.getState().loadProject({ projectId })).rejects.toThrow(
-        'API Error'
-      )
+      await expect(
+        store.getState().loadWorkflowIntoCanvas({ projectId })
+      ).rejects.toThrow('API Error')
       expect(store.getState().saveStatus).toBe('error')
     })
 

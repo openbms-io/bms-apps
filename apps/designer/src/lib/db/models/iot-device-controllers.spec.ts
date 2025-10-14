@@ -1,0 +1,351 @@
+/** @jest-environment node */
+
+import { iotDeviceControllersRepository } from './iot-device-controllers'
+import { closeDatabase, getDatabase } from '../client'
+import {
+  iotDeviceControllers,
+  organizations,
+  sites,
+  iotDevices,
+} from '../schema'
+import { randomUUID } from 'crypto'
+
+describe('IotDeviceControllersRepository (SQLite + Drizzle)', () => {
+  const testOrgId = 'test-org-123'
+  const testSiteId = 'test-site-456'
+  const testIotDeviceId = 'test-device-789'
+
+  beforeEach(async () => {
+    const db = getDatabase()
+    await db.delete(iotDeviceControllers).run()
+    await db.delete(iotDevices).run()
+    await db.delete(sites).run()
+    await db.delete(organizations).run()
+
+    const now = new Date().toISOString()
+
+    await db
+      .insert(organizations)
+      .values({
+        id: testOrgId,
+        name: 'Test Organization',
+        created_at: now,
+        updated_at: now,
+      })
+      .run()
+
+    await db
+      .insert(sites)
+      .values({
+        id: testSiteId,
+        organization_id: testOrgId,
+        name: 'Test Site',
+        description: null,
+        created_at: now,
+        updated_at: now,
+      })
+      .run()
+
+    await db
+      .insert(iotDevices)
+      .values({
+        id: testIotDeviceId,
+        organization_id: testOrgId,
+        site_id: testSiteId,
+        name: 'Test IoT Device',
+        description: null,
+        created_at: now,
+        updated_at: now,
+      })
+      .run()
+  })
+
+  afterAll(() => {
+    closeDatabase()
+  })
+
+  function expectIsoString(value: unknown): asserts value is string {
+    expect(typeof value).toBe('string')
+    expect(value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/)
+    expect(() => new Date(value as string)).not.toThrow()
+  }
+
+  it('creates and reads back a controller with all fields', async () => {
+    const created = await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.100',
+      port: 47808,
+      device_id: 2001,
+      name: 'HVAC Controller',
+      description: 'Main HVAC system controller',
+      is_active: true,
+      metadata: {
+        status_flags: ['out_of_service'],
+        event_state: 'offnormal',
+        min_pres_value: 0,
+        max_pres_value: 100,
+      },
+      id: randomUUID(),
+    })
+
+    expect(created.id).toMatch(/[0-9a-fA-F-]{36}/)
+    expect(created.organization_id).toBe(testOrgId)
+    expect(created.site_id).toBe(testSiteId)
+    expect(created.iot_device_id).toBe(testIotDeviceId)
+    expect(created.ip_address).toBe('192.168.2.100')
+    expect(created.port).toBe(47808)
+    expect(created.device_id).toBe(2001)
+    expect(created.name).toBe('HVAC Controller')
+    expect(created.description).toBe('Main HVAC system controller')
+    expect(created.is_active).toBe(true)
+    expect(created.metadata).toEqual({
+      status_flags: ['out_of_service'],
+      event_state: 'offnormal',
+      min_pres_value: 0,
+      max_pres_value: 100,
+    })
+    expectIsoString(created.created_at)
+    expectIsoString(created.updated_at)
+
+    const fetched = await iotDeviceControllersRepository.findById(created.id)
+    expect(fetched).not.toBeNull()
+    expect(fetched!.id).toBe(created.id)
+    expect(fetched!.name).toBe('HVAC Controller')
+  })
+
+  it('creates with minimal required fields and default values', async () => {
+    const created = await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.101',
+      device_id: 2002,
+      name: 'Minimal Controller',
+      id: randomUUID(),
+    })
+
+    expect(created.name).toBe('Minimal Controller')
+    expect(created.description).toBeUndefined()
+    expect(created.port).toBe(47808)
+    expect(created.is_active).toBe(true)
+    expect(created.metadata).toBeNull()
+
+    const fetched = await iotDeviceControllersRepository.findById(created.id)
+    expect(fetched!.description).toBeUndefined()
+  })
+
+  it('updates controller properties and timestamps', async () => {
+    const created = await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.102',
+      device_id: 2003,
+      name: 'Controller to Update',
+      description: 'Original description',
+      is_active: true,
+      id: randomUUID(),
+    })
+
+    await new Promise((r) => setTimeout(r, 5))
+
+    const updated = await iotDeviceControllersRepository.update(created.id, {
+      name: 'Updated Controller',
+      description: null,
+      is_active: false,
+      metadata: {
+        reliability: 'unreliable_other',
+        high_limit: 85,
+        low_limit: 15,
+      },
+    })
+
+    expect(updated).not.toBeNull()
+    expect(updated!.id).toBe(created.id)
+    expect(updated!.name).toBe('Updated Controller')
+    expect(updated!.description).toBeUndefined()
+    expect(updated!.is_active).toBe(false)
+    expect(updated!.metadata).toEqual({
+      reliability: 'unreliable_other',
+      high_limit: 85,
+      low_limit: 15,
+    })
+    expect(new Date(updated!.updated_at).getTime()).toBeGreaterThan(
+      new Date(created.updated_at).getTime()
+    )
+  })
+
+  it('deletes controller successfully', async () => {
+    const created = await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.103',
+      device_id: 2004,
+      name: 'Controller to Delete',
+      id: randomUUID(),
+    })
+
+    const deleted = await iotDeviceControllersRepository.delete(created.id)
+    expect(deleted).toBe(true)
+
+    const fetched = await iotDeviceControllersRepository.findById(created.id)
+    // Soft delete: record exists but is marked as deleted
+    expect(fetched).not.toBeNull()
+    expect(fetched!.is_deleted).toBe(true)
+
+    const deletedAgain = await iotDeviceControllersRepository.delete(created.id)
+    expect(deletedAgain).toBe(false)
+  })
+
+  it('findByDevice returns controllers scoped to org/site/device', async () => {
+    await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.104',
+      device_id: 2005,
+      name: 'Device Controller 1',
+      id: randomUUID(),
+    })
+
+    await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.105',
+      device_id: 2006,
+      name: 'Device Controller 2',
+      id: randomUUID(),
+    })
+
+    const controllers = await iotDeviceControllersRepository.findByDevice(
+      testOrgId,
+      testSiteId,
+      testIotDeviceId
+    )
+
+    expect(controllers).toHaveLength(2)
+    const names = controllers.map((c) => c.name).sort()
+    expect(names).toEqual(['Device Controller 1', 'Device Controller 2'])
+
+    const wrongDevice = await iotDeviceControllersRepository.findByDevice(
+      testOrgId,
+      testSiteId,
+      'wrong-device'
+    )
+    expect(wrongDevice).toHaveLength(0)
+  })
+
+  it('findById returns null for non-existent controller', async () => {
+    const result = await iotDeviceControllersRepository.findById(
+      '00000000-0000-0000-0000-000000000000'
+    )
+    expect(result).toBeNull()
+  })
+
+  it('update returns null for non-existent controller', async () => {
+    const result = await iotDeviceControllersRepository.update(
+      '00000000-0000-0000-0000-000000000000',
+      { name: 'Should not work' }
+    )
+    expect(result).toBeNull()
+  })
+
+  it('verifyOwnership returns true for correct owner', async () => {
+    const created = await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.106',
+      device_id: 2007,
+      name: 'Ownership Test Controller',
+      id: randomUUID(),
+    })
+
+    const isOwner = await iotDeviceControllersRepository.verifyOwnership({
+      id: created.id,
+      orgId: testOrgId,
+      siteId: testSiteId,
+      iotDeviceId: testIotDeviceId,
+    })
+
+    expect(isOwner).toBe(true)
+  })
+
+  it('verifyOwnership returns false for wrong org', async () => {
+    const created = await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.107',
+      device_id: 2008,
+      name: 'Wrong Org Test',
+      id: randomUUID(),
+    })
+
+    const isOwner = await iotDeviceControllersRepository.verifyOwnership({
+      id: created.id,
+      orgId: 'wrong-org',
+      siteId: testSiteId,
+      iotDeviceId: testIotDeviceId,
+    })
+
+    expect(isOwner).toBe(false)
+  })
+
+  it('verifyOwnership returns false for wrong site', async () => {
+    const created = await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.108',
+      device_id: 2009,
+      name: 'Wrong Site Test',
+      id: randomUUID(),
+    })
+
+    const isOwner = await iotDeviceControllersRepository.verifyOwnership({
+      id: created.id,
+      orgId: testOrgId,
+      siteId: 'wrong-site',
+      iotDeviceId: testIotDeviceId,
+    })
+
+    expect(isOwner).toBe(false)
+  })
+
+  it('verifyOwnership returns false for wrong device', async () => {
+    const created = await iotDeviceControllersRepository.create({
+      organization_id: testOrgId,
+      site_id: testSiteId,
+      iot_device_id: testIotDeviceId,
+      ip_address: '192.168.2.109',
+      device_id: 2010,
+      name: 'Wrong Device Test',
+      id: randomUUID(),
+    })
+
+    const isOwner = await iotDeviceControllersRepository.verifyOwnership({
+      id: created.id,
+      orgId: testOrgId,
+      siteId: testSiteId,
+      iotDeviceId: 'wrong-device',
+    })
+
+    expect(isOwner).toBe(false)
+  })
+
+  it('verifyOwnership returns false for non-existent controller', async () => {
+    const isOwner = await iotDeviceControllersRepository.verifyOwnership({
+      id: '00000000-0000-0000-0000-000000000000',
+      orgId: testOrgId,
+      siteId: testSiteId,
+      iotDeviceId: testIotDeviceId,
+    })
+
+    expect(isOwner).toBe(false)
+  })
+})

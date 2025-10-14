@@ -2,18 +2,30 @@
 
 import { ControllersTreeContainer } from '@/containers/controllers-tree-container'
 import { PointPropertiesContainer } from '@/containers/point-properties-container'
-import { useInfrastructureStore } from '@/store/use-infrastructure-store'
+import { useTreeUIStore } from '@/store/use-tree-ui-store'
 
-export function ControllersTab() {
-  const selectedPointId = useInfrastructureStore(
-    (state) => state.selectedPointId
-  )
+interface ControllersTabProps {
+  orgId: string
+  siteId: string
+  projectId: string
+}
+
+export function ControllersTab({
+  orgId,
+  siteId,
+  projectId,
+}: ControllersTabProps) {
+  const selectedPointId = useTreeUIStore((state) => state.selectedPointId)
 
   return (
     <div className="h-full flex flex-col">
       {/* Tree view takes most of the space */}
       <div className="flex-1 min-h-0">
-        <ControllersTreeContainer />
+        <ControllersTreeContainer
+          orgId={orgId}
+          siteId={siteId}
+          projectId={projectId}
+        />
       </div>
 
       {/* Properties panel shows when a point is selected */}

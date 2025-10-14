@@ -7,13 +7,12 @@ large payloads that could impact network performance.
 
 import json
 import sys
-import logging
 from typing import Dict, List, Any
 from datetime import datetime
 
 from src.config.bacnet_constants import LARGE_PAYLOAD_THRESHOLD_BYTES
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 class PayloadSizeMonitor:

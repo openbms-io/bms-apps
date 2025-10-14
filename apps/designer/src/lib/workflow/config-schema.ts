@@ -10,26 +10,29 @@ import type {
   DayOfWeek,
 } from '@/lib/data-nodes/schedule-node'
 import type { SwitchNodeMetadata } from '@/lib/data-nodes/switch-node'
-import type { BacnetProperties, StatusFlags } from '@/types/bacnet-properties'
+import type { BacnetProperties } from '@/types/bacnet-properties'
 
 // Node/category enums
 export const NodeTypeSchema = z.nativeEnum(NodeType)
 export const NodeCategorySchema = z.nativeEnum(NodeCategory)
 
 // BACnet property schemas (kept permissive but typed)
-const StatusFlagsSchema: z.ZodType<StatusFlags> = z.object({
-  inAlarm: z.boolean(),
-  fault: z.boolean(),
-  overridden: z.boolean(),
-  outOfService: z.boolean(),
-})
-
 const BacnetPropertiesSchema: z.ZodType<BacnetProperties> = z.object({
   presentValue: z.union([z.number(), z.boolean(), z.string()]).optional(),
-  statusFlags: StatusFlagsSchema.optional(),
+
+  // Metadata properties
+  objectIdentifier: z.tuple([z.string(), z.number()]).optional(),
+  objectName: z.string().optional(),
+  objectType: z.string().optional(),
+
+  // Individual status flag properties
+  inAlarm: z.boolean().optional(),
+  fault: z.boolean().optional(),
+  overridden: z.boolean().optional(),
+  outOfService: z.boolean().optional(),
+
   eventState: z.string().optional(),
   reliability: z.string().optional(),
-  outOfService: z.boolean().optional(),
   units: z.string().optional(),
   description: z.string().optional(),
   minPresValue: z.number().optional(),
@@ -37,11 +40,31 @@ const BacnetPropertiesSchema: z.ZodType<BacnetProperties> = z.object({
   resolution: z.number().optional(),
   covIncrement: z.number().optional(),
   timeDelay: z.number().optional(),
+  timeDelayNormal: z.number().optional(),
   highLimit: z.number().optional(),
   lowLimit: z.number().optional(),
   deadband: z.number().optional(),
-  priorityArray: z.array(z.number()).optional(),
+  priorityArray: z
+    .array(z.object({ type: z.string(), value: z.number() }))
+    .optional(),
   relinquishDefault: z.union([z.number(), z.boolean(), z.string()]).optional(),
+
+  // Event/Alarm properties
+  notifyType: z.string().optional(),
+  notificationClass: z.number().optional(),
+  limitEnable: z.array(z.number()).optional(),
+  eventEnable: z.array(z.number()).optional(),
+  eventAlgorithmInhibit: z.number().optional(),
+  eventDetectionEnable: z.number().optional(),
+  reliabilityEvaluationInhibit: z.number().optional(),
+  ackedTransitions: z.array(z.number()).optional(),
+  eventTimeStamps: z
+    .array(z.object({ type: z.string(), value: z.string() }))
+    .optional(),
+  eventMessageTexts: z.array(z.string()).optional(),
+  eventMessageTextsConfig: z.array(z.string()).optional(),
+
+  // Multistate-specific properties
   numberOfStates: z.number().optional(),
   stateText: z.array(z.union([z.string(), z.null()])).optional(),
 })

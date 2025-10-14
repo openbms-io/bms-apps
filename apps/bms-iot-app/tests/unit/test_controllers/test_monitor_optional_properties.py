@@ -5,8 +5,10 @@ This test suite validates the Phase 3 enhancements to monitor.py that added
 support for reading and processing all 24 optional BACnet properties.
 """
 
-from unittest.mock import patch
-from src.controllers.monitoring.monitor import BACnetMonitor
+from unittest.mock import patch, Mock
+from src.controllers.monitoring.controller_monitor import ControllerMonitor
+from src.controllers.monitoring.error_collector import ErrorCollector
+from src.models.bacnet_config import BacnetDeviceInfo
 
 
 class TestBACnetMonitorOptionalProperties:
@@ -14,7 +16,9 @@ class TestBACnetMonitorOptionalProperties:
 
     def test_get_available_device_properties_basic_configuration(self):
         """Test: Available properties detection with basic configuration."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         # Mock object properties with basic health properties only
         object_properties = {
@@ -38,7 +42,9 @@ class TestBACnetMonitorOptionalProperties:
 
     def test_get_available_device_properties_with_optional_properties(self):
         """Test: Available properties detection with optional BACnet properties."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         # Mock object properties with optional properties
         object_properties = {
@@ -78,7 +84,9 @@ class TestBACnetMonitorOptionalProperties:
 
     def test_get_available_device_properties_with_null_values(self):
         """Test: Properties with null values are excluded."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         # Mock object properties with some null values
         object_properties = {
@@ -104,7 +112,9 @@ class TestBACnetMonitorOptionalProperties:
 
     def test_get_available_device_properties_empty_configuration(self):
         """Test: Empty or None configuration returns minimal set."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         # Test with None configuration
         available_none = monitor.get_available_device_properties(None)
@@ -116,7 +126,9 @@ class TestBACnetMonitorOptionalProperties:
 
     def test_get_available_device_properties_all_optional_properties(self):
         """Test: All 24 optional properties are detected when present."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         # Mock object properties with all optional properties
         object_properties = {
@@ -196,7 +208,9 @@ class TestBACnetMonitorOptionalProperties:
 
     def test_get_available_device_properties_analog_value_subset(self):
         """Test: AnalogValue object with typical property subset."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         # Mock AnalogValue properties (common subset)
         object_properties = {
@@ -241,7 +255,9 @@ class TestBACnetMonitorOptionalProperties:
 
     def test_get_available_device_properties_analog_input_subset(self):
         """Test: AnalogInput object without control properties."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         # Mock AnalogInput properties (no control properties)
         object_properties = {
@@ -285,7 +301,9 @@ class TestBACnetMonitorOptionalProperties:
 
     def test_get_available_device_properties_binary_value_subset(self):
         """Test: BinaryValue object with binary-specific properties."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         # Mock BinaryValue properties
         object_properties = {
@@ -325,7 +343,9 @@ class TestBACnetMonitorOptionalProperties:
     @patch("src.utils.logger.logger.debug")
     def test_get_available_device_properties_logging(self, mock_debug):
         """Test: Proper logging of property detection logic."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         object_properties = {
             "presentValue": 22.5,
@@ -346,7 +366,9 @@ class TestBACnetMonitorOptionalProperties:
 
     def test_get_available_device_properties_preserves_original_health_behavior(self):
         """Test: Backward compatibility - original health properties still work."""
-        monitor = BACnetMonitor()
+        mock_controller = Mock(spec=BacnetDeviceInfo)
+        error_collector = ErrorCollector()
+        monitor = ControllerMonitor(mock_controller, error_collector)
 
         # Test original configuration format (just basic health properties)
         original_config = {

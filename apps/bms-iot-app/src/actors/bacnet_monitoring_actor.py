@@ -1,5 +1,6 @@
 from src.controllers.monitoring.monitor import BACnetMonitor
 import asyncio
+from bacpypes3.apdu import AbortPDU
 from src.actors.messages.actor_queue_registry import ActorQueueRegistry
 from src.actors.messages.message_type import (
     ActorName,
@@ -13,10 +14,12 @@ from src.actors.messages.message_type import (
 from src.models.iot_device_status import (
     upsert_iot_device_status,
     get_latest_iot_device_status,
+    update_connection_status,
 )
 from src.models.device_status_enums import MonitoringStatusEnum, ConnectionStatusEnum
 from src.models.bacnet_config import save_bacnet_readers, get_bacnet_readers
 from src.utils.logger import logger
+from src.actors.messages.message_type import ConfigUploadResponsePayload
 
 
 class BacnetMonitoringActor:
@@ -37,6 +40,38 @@ class BacnetMonitoringActor:
         self.site_id = site_id
         self.iot_device_id = iot_device_id
 
+    async def _handle_monitoring_communication_failure(
+        self, error: Exception, context: str = "monitoring"
+    ) -> None:
+        """
+        Handle BACnet communication failure during monitoring.
+
+        Updates connection status to ERROR and triggers immediate heartbeat.
+        """
+        logger.error(
+            f"BACnet {context} failed for device {self.iot_device_id}: {error}"
+        )
+
+        try:
+            await update_connection_status(
+                self.iot_device_id, "bacnet", ConnectionStatusEnum.ERROR
+            )
+            logger.info(
+                f"Updated BACnet connection status to ERROR for device {self.iot_device_id}"
+            )
+
+            await self.actor_queue_registry.send_from(
+                sender=self.actor_name,
+                receiver=ActorName.HEARTBEAT,
+                type=ActorMessageType.FORCE_HEARTBEAT_REQUEST,
+                payload=ForceHeartbeatPayload(reason=f"bacnet_{context}_failure"),
+            )
+            logger.info("Sent force heartbeat request due to BACnet failure")
+        except Exception as status_error:
+            logger.error(
+                f"Failed to update connection status or send heartbeat: {status_error}"
+            )
+
     async def start(self):
         await self._run_monitor_loop()
 
@@ -54,6 +89,7 @@ class BacnetMonitoringActor:
             raise Exception(
                 f"No monitoring status found for device {self.iot_device_id}"
             )
+        logger.info(f"Latest status: {latest_status}")
 
         self.monitoring_enabled = (
             latest_status.monitoring_status == MonitoringStatusEnum.ACTIVE
@@ -80,14 +116,15 @@ class BacnetMonitoringActor:
                     # 1. Perform regular monitoring only if enabled and initialized
                     if self.monitoring_enabled and self._monitor_initialized:
                         logger.info("Starting monitor_all_devices")
-                        await self.monitor.monitor_all_devices()
-                        logger.info("Completed monitor_all_devices")
-                        await self._update_bacnet_status()
-
-                    # # 2. Check for incoming messages (non-blocking)
-                    # while not queue.empty():
-                    #     msg: ActorMessage = await queue.get()
-                    #     await self._handle_message(msg)
+                        try:
+                            await self.monitor.monitor_all_devices()
+                            logger.info("Completed monitor_all_devices")
+                            await self._update_bacnet_status()
+                        except (Exception, AbortPDU) as e:
+                            logger.error(f"BACnetMonitor error: {e}", exc_info=True)
+                            await self._handle_monitoring_communication_failure(
+                                e, "monitor_all_devices"
+                            )
 
                     await asyncio.sleep(0)  # Yield control to event loop
 
@@ -113,18 +150,19 @@ class BacnetMonitoringActor:
 
         if msg.message_type == ActorMessageType.CONFIG_UPLOAD_REQUEST:
             if isinstance(msg.payload, ConfigUploadPayload):
+                # PAUSE monitoring during reconfiguration to prevent race conditions
+                old_monitoring_enabled = self.monitoring_enabled
+                old_monitor_initialized = self._monitor_initialized
+
                 payload: ConfigUploadPayload = msg.payload
                 logger.info(
                     f"Handling CONFIG_UPLOAD inside BacnetMonitoringActor with {len(payload.iotDeviceControllers)} controllers and {len(payload.bacnetReaders or [])} readers"
                 )
 
-                # PAUSE monitoring during reconfiguration to prevent race conditions
-                old_monitoring_enabled = self.monitoring_enabled
-                old_monitor_initialized = self._monitor_initialized
                 self.monitoring_enabled = False
                 self._monitor_initialized = False
                 logger.info(
-                    "PAUSED monitoring during CONFIG_UPLOAD processing to prevent race conditions"
+                    "PAUSED monitoring during CONFIG_UPLOAD processing to prevent race conditions: monitoring_enabled={self.monitoring_enabled}, monitor_initialized={self._monitor_initialized}"
                 )
 
                 try:
@@ -168,8 +206,8 @@ class BacnetMonitoringActor:
                         )
                         # Set monitoring to disabled if no readers
                         self.monitoring_enabled = False
-                        await self._update_monitoring_status(
-                            MonitoringStatusEnum.STOPPED
+                        logger.info(
+                            "Set monitoring to disabled as no BACnet readers provided in config: monitoring_enabled={self.monitoring_enabled}, monitor_initialized={self._monitor_initialized}"
                         )
 
                     # Fetch and save device controller config
@@ -179,6 +217,21 @@ class BacnetMonitoringActor:
 
                     logger.info(
                         f"CONFIG_UPLOAD processing completed successfully. Monitoring: {self.monitoring_enabled}, Initialized: {self._monitor_initialized}"
+                    )
+
+                    # SUCCESS: Send to UPLOADER (who will upload and notify MQTT)
+                    logger.info("Sending CONFIG_UPLOAD_RESPONSE to UPLOADER")
+                    await self.actor_queue_registry.send_from(
+                        sender=self.actor_name,
+                        receiver=ActorName.UPLOADER,
+                        type=ActorMessageType.CONFIG_UPLOAD_RESPONSE,
+                        payload=ConfigUploadPayload(
+                            urlToUploadConfig=payload.urlToUploadConfig,
+                            jwtToken=payload.jwtToken,
+                            iotDeviceControllers=payload.iotDeviceControllers,
+                            bacnetReaders=payload.bacnetReaders,
+                            correlationData=payload.correlationData,
+                        ),
                     )
 
                 except Exception as config_error:
@@ -192,20 +245,20 @@ class BacnetMonitoringActor:
                     logger.warning(
                         f"Restored previous monitoring state due to CONFIG_UPLOAD error: monitoring={self.monitoring_enabled}, initialized={self._monitor_initialized}"
                     )
-                    await self._update_monitoring_status(MonitoringStatusEnum.ERROR)
 
-                logger.info("Sending CONFIG_UPLOAD_RESPONSE to UPLOADER")
-                await self.actor_queue_registry.send_from(
-                    sender=self.actor_name,
-                    receiver=ActorName.UPLOADER,
-                    type=ActorMessageType.CONFIG_UPLOAD_RESPONSE,
-                    payload=ConfigUploadPayload(
-                        urlToUploadConfig=payload.urlToUploadConfig,
-                        jwtToken=payload.jwtToken,
-                        iotDeviceControllers=payload.iotDeviceControllers,
-                        bacnetReaders=payload.bacnetReaders,
-                    ),
-                )
+                    # FAILURE: Send directly to MQTT (skip uploader)
+                    logger.info(
+                        "Sending CONFIG_UPLOAD_RESPONSE (failure) directly to MQTT"
+                    )
+                    await self.actor_queue_registry.send_from(
+                        sender=self.actor_name,
+                        receiver=ActorName.MQTT,
+                        type=ActorMessageType.CONFIG_UPLOAD_RESPONSE,
+                        payload=ConfigUploadResponsePayload(
+                            success=False,
+                            correlationData=payload.correlationData,
+                        ),
+                    )
             else:
                 logger.warning(
                     "Received CONFIG_UPLOAD_REQUEST with unexpected payload type"

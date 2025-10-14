@@ -5,47 +5,63 @@ import {
   UseQueryOptions,
   UseMutationOptions,
 } from '@tanstack/react-query'
-import {
+import type {
   Project,
   CreateProject,
   UpdateProject,
   ProjectQuery,
   ProjectListResponse,
-} from '@/app/api/projects/schemas'
+} from '@/app/api/organizations/[orgId]/sites/[siteId]/projects/schemas'
 
 import { projectsApi } from '../lib/api/projects'
 import { queryKeys } from '../lib/query-client'
 
 export function useProjects(
-  query?: ProjectQuery,
+  query: { orgId: string; siteId: string } & ProjectQuery,
   options?: Omit<UseQueryOptions<ProjectListResponse>, 'queryKey' | 'queryFn'>
 ): ReturnType<typeof useQuery<ProjectListResponse>> {
   return useQuery({
     queryKey: queryKeys.projects.list(query),
+    enabled: !!query.orgId && !!query.siteId,
     queryFn: () => projectsApi.list(query),
     ...options,
   })
 }
 
 export function useProject(
-  id: string,
+  {
+    orgId,
+    siteId,
+    projectId,
+  }: { orgId: string; siteId: string; projectId: string },
   options?: Omit<UseQueryOptions<Project>, 'queryKey' | 'queryFn'>
 ): ReturnType<typeof useQuery<Project>> {
   return useQuery({
-    queryKey: queryKeys.projects.detail(id),
-    queryFn: () => projectsApi.get(id),
-    enabled: !!id,
+    queryKey: queryKeys.projects.detail(projectId),
+    queryFn: () => projectsApi.get({ orgId, siteId, projectId }),
+    enabled: !!orgId && !!siteId && !!projectId,
     ...options,
   })
 }
 
 export function useCreateProject(
-  options?: UseMutationOptions<Project, Error, CreateProject>
-): ReturnType<typeof useMutation<Project, Error, CreateProject>> {
+  options?: UseMutationOptions<
+    Project,
+    Error,
+    { orgId: string; siteId: string } & CreateProject
+  >
+): ReturnType<
+  typeof useMutation<
+    Project,
+    Error,
+    { orgId: string; siteId: string } & CreateProject
+  >
+> {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: CreateProject) => projectsApi.create(data),
+    mutationFn: (data: { orgId: string; siteId: string } & CreateProject) =>
+      projectsApi.create(data),
     onSuccess: (newProject) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects.lists(),
@@ -63,23 +79,24 @@ export function useUpdateProject(
   options?: UseMutationOptions<
     Project,
     Error,
-    { params: { id: string; data: UpdateProject } }
+    { orgId: string; siteId: string; projectId: string } & UpdateProject
   >
 ): ReturnType<
   typeof useMutation<
     Project,
     Error,
-    { params: { id: string; data: UpdateProject } }
+    { orgId: string; siteId: string; projectId: string } & UpdateProject
   >
 > {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ params }: { params: { id: string; data: UpdateProject } }) =>
-      projectsApi.update(params.id, params.data),
-    onSuccess: (updatedProject, { params }) => {
+    mutationFn: (
+      data: { orgId: string; siteId: string; projectId: string } & UpdateProject
+    ) => projectsApi.update(data),
+    onSuccess: (updatedProject, data) => {
       queryClient.setQueryData(
-        queryKeys.projects.detail(params.id),
+        queryKeys.projects.detail(data.projectId),
         updatedProject
       )
       queryClient.invalidateQueries({
@@ -91,15 +108,26 @@ export function useUpdateProject(
 }
 
 export function useDeleteProject(
-  options?: UseMutationOptions<void, Error, string>
-): ReturnType<typeof useMutation<void, Error, string>> {
+  options?: UseMutationOptions<
+    void,
+    Error,
+    { orgId: string; siteId: string; projectId: string }
+  >
+): ReturnType<
+  typeof useMutation<
+    void,
+    Error,
+    { orgId: string; siteId: string; projectId: string }
+  >
+> {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) => projectsApi.delete(id),
-    onSuccess: (_, deletedId) => {
+    mutationFn: (data: { orgId: string; siteId: string; projectId: string }) =>
+      projectsApi.delete(data),
+    onSuccess: (_, data) => {
       queryClient.removeQueries({
-        queryKey: queryKeys.projects.detail(deletedId),
+        queryKey: queryKeys.projects.detail(data.projectId),
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects.lists(),
@@ -114,7 +142,7 @@ export function useOptimisticUpdateProject(
     UseMutationOptions<
       Project,
       Error,
-      { params: { id: string; data: UpdateProject } },
+      { orgId: string; siteId: string; projectId: string } & UpdateProject,
       { previousProject: Project | undefined }
     >,
     'mutationFn' | 'onMutate' | 'onError' | 'onSettled'
@@ -123,7 +151,7 @@ export function useOptimisticUpdateProject(
   typeof useMutation<
     Project,
     Error,
-    { params: { id: string; data: UpdateProject } },
+    { orgId: string; siteId: string; projectId: string } & UpdateProject,
     { previousProject: Project | undefined }
   >
 > {
@@ -132,59 +160,56 @@ export function useOptimisticUpdateProject(
   return useMutation<
     Project,
     Error,
-    { params: { id: string; data: UpdateProject } },
+    { orgId: string; siteId: string; projectId: string } & UpdateProject,
     { previousProject: Project | undefined }
   >({
-    mutationFn: ({ params }: { params: { id: string; data: UpdateProject } }) =>
-      projectsApi.update(params.id, params.data),
-    onMutate: async ({
-      params,
-    }: {
-      params: { id: string; data: UpdateProject }
-    }) => {
+    mutationFn: (
+      data: { orgId: string; siteId: string; projectId: string } & UpdateProject
+    ) => projectsApi.update(data),
+    onMutate: async (
+      data: { orgId: string; siteId: string; projectId: string } & UpdateProject
+    ) => {
       await queryClient.cancelQueries({
-        queryKey: queryKeys.projects.detail(params.id),
+        queryKey: queryKeys.projects.detail(data.projectId),
       })
       const previousProject = queryClient.getQueryData<Project>(
-        queryKeys.projects.detail(params.id)
+        queryKeys.projects.detail(data.projectId)
       )
       if (previousProject) {
         const updatedProject: Project = {
           ...previousProject,
-          updated_at: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         }
 
-        if (params.data.name !== undefined) {
-          updatedProject.name = params.data.name
+        if (data.name !== undefined) {
+          updatedProject.name = data.name
         }
-        if (params.data.description !== undefined) {
-          updatedProject.description = params.data.description
+        if (data.description !== undefined) {
+          updatedProject.description = data.description ?? undefined
         }
-        if (params.data.workflow_config !== undefined) {
-          updatedProject.workflow_config = JSON.stringify(
-            params.data.workflow_config
-          )
+        if (data.workflowConfig !== undefined) {
+          updatedProject.workflowConfig = data.workflowConfig
         }
 
         queryClient.setQueryData<Project>(
-          queryKeys.projects.detail(params.id),
+          queryKeys.projects.detail(data.projectId),
           updatedProject
         )
       }
 
       return { previousProject }
     },
-    onError: (err, { params }, context) => {
+    onError: (err, data, context) => {
       if (context?.previousProject) {
         queryClient.setQueryData(
-          queryKeys.projects.detail(params.id),
+          queryKeys.projects.detail(data.projectId),
           context.previousProject
         )
       }
     },
-    onSettled: (_, __, { params }) => {
+    onSettled: (_, __, data) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.detail(params.id),
+        queryKey: queryKeys.projects.detail(data.projectId),
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects.lists(),
@@ -194,13 +219,29 @@ export function useOptimisticUpdateProject(
   })
 }
 
-export function usePrefetchProject(): ({ id }: { id: string }) => void {
+export function usePrefetchProject(): ({
+  orgId,
+  siteId,
+  projectId,
+}: {
+  orgId: string
+  siteId: string
+  projectId: string
+}) => void {
   const queryClient = useQueryClient()
 
-  return ({ id }: { id: string }): void => {
+  return ({
+    orgId,
+    siteId,
+    projectId,
+  }: {
+    orgId: string
+    siteId: string
+    projectId: string
+  }): void => {
     queryClient.prefetchQuery({
-      queryKey: queryKeys.projects.detail(id),
-      queryFn: () => projectsApi.get(id),
+      queryKey: queryKeys.projects.detail(projectId),
+      queryFn: () => projectsApi.get({ orgId, siteId, projectId }),
       staleTime: 5 * 60 * 1000,
     })
   }

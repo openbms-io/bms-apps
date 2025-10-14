@@ -1,3 +1,4 @@
+from typing import Optional
 from src.utils.logger import logger
 from src.actors.messages.actor_queue_registry import ActorQueueRegistry
 from src.actors.messages.message_type import (
@@ -13,7 +14,7 @@ from src.controllers.uploader.upload import upload_config, get_points_to_publish
 import asyncio
 from src.controllers.uploader.upload import mark_points_as_uploaded_in_db
 
-logging = logger
+logger
 
 
 class UploaderActor:
@@ -46,6 +47,7 @@ class UploaderActor:
     async def on_upload_request(self, payload: ConfigUploadPayload):
         urlToUploadConfig: str = payload.urlToUploadConfig
         jwtToken: str = payload.jwtToken
+        correlation_data: Optional[bytes] = payload.correlationData
 
         logger.info(f"Uploading config to {urlToUploadConfig} with jwtToken {jwtToken}")
         await upload_config(urlToUploadConfig, jwtToken)
@@ -53,17 +55,22 @@ class UploaderActor:
             sender=self.actor_name,
             receiver=ActorName.MQTT,
             type=ActorMessageType.CONFIG_UPLOAD_RESPONSE,
-            payload=ConfigUploadResponsePayload(success=True),
+            payload=ConfigUploadResponsePayload(
+                success=True, correlationData=correlation_data
+            ),
         )
 
     async def publish_points(self):
         points = await get_points_to_publish()
         if not points:
-            logging.warning("No points found to publish.")
+            logger.warning("No points found to publish.")
             return None
 
         payload = PointPublishPayload(points=points)
 
+        logger.info(
+            f"Sending POINT_PUBLISH_REQUEST to MQTT with payload: {len(points)} points"
+        )
         await self.actor_queue_registry.send_from(
             sender=self.actor_name,
             receiver=ActorName.MQTT,

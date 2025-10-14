@@ -4,23 +4,75 @@ import { useEffect, useState, useCallback } from 'react'
 import { Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useFlowStore } from '@/store/use-flow-store'
+import { useProject } from '@/hooks/use-projects'
+import { useIotDevice } from '@/hooks/use-iot-device'
 
 interface WorkflowLoaderProps {
+  orgId: string
+  siteId: string
   projectId: string
 }
 
-export function WorkflowLoader({ projectId }: WorkflowLoaderProps) {
-  const loadProject = useFlowStore((s) => s.loadProject)
+export function WorkflowLoader({
+  orgId,
+  siteId,
+  projectId,
+}: WorkflowLoaderProps) {
+  const { data: project, isLoading: isLoadingProject } = useProject({
+    orgId,
+    siteId,
+    projectId,
+  })
+  const { data: iotDevice } = useIotDevice(
+    orgId,
+    siteId,
+    projectId,
+    project?.iotDeviceId ?? undefined
+  )
+
+  const loadWorkflowIntoCanvas = useFlowStore((s) => s.loadWorkflowIntoCanvas)
   const showError = useFlowStore((s) => s.showError)
+  const startMqtt = useFlowStore((s) => s.startMqtt)
+  const stopMqtt = useFlowStore((s) => s.stopMqtt)
+  const clearAllNodes = useFlowStore((s) => s.clearAllNodes)
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // MQTT lifecycle management - stop/start when iot device changes
+  useEffect(() => {
+    if (!iotDevice) return
+
+    startMqtt({
+      organizationId: iotDevice.organizationId,
+      siteId: iotDevice.siteId,
+      iotDeviceId: iotDevice.id,
+    })
+
+    return () => {
+      clearAllNodes()
+      stopMqtt()
+    }
+  }, [
+    iotDevice?.organizationId,
+    iotDevice?.siteId,
+    iotDevice?.id,
+    startMqtt,
+    stopMqtt,
+    clearAllNodes,
+    iotDevice,
+  ])
+
   const doLoad = useCallback(async () => {
+    if (isLoadingProject) {
+      setIsLoading(true)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
     try {
-      await loadProject({ projectId })
+      await loadWorkflowIntoCanvas({ orgId, siteId, projectId })
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to load workflow'
       setError(msg)
@@ -28,10 +80,18 @@ export function WorkflowLoader({ projectId }: WorkflowLoaderProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [loadProject, projectId, showError])
+  }, [
+    loadWorkflowIntoCanvas,
+    orgId,
+    siteId,
+    projectId,
+    showError,
+    isLoadingProject,
+  ])
 
+  // Load workflow when project is ready
   useEffect(() => {
-    void doLoad()
+    doLoad()
   }, [doLoad])
 
   return (

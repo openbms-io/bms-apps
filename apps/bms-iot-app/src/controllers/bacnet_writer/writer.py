@@ -1,4 +1,3 @@
-import logging
 from typing import Optional, Union
 import ipaddress
 from src.actors.messages.message_type import (
@@ -18,7 +17,7 @@ from src.models.bacnet_config import (
 from src.models.controller_points import ControllerPointsModel, insert_controller_point
 from src.config.config import DEFAULT_CONTROLLER_PORT
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 class BACnetWriter:

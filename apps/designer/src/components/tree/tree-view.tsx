@@ -9,6 +9,7 @@ interface TreeViewProps {
   selectedNodeId?: string | null
   onToggle: (nodeId: string) => void
   onSelect?: (nodeId: string | null) => void
+  onDelete?: (nodeId: string) => void
   isDraggable?: boolean
   onDragStart?: (e: React.DragEvent, node: TreeNodeType) => void
   className?: string
@@ -19,6 +20,7 @@ export function TreeView({
   selectedNodeId,
   onToggle,
   onSelect,
+  onDelete,
   isDraggable = false,
   onDragStart,
   className,
@@ -30,6 +32,7 @@ export function TreeView({
           node={node}
           onToggle={onToggle}
           onSelect={onSelect}
+          onDelete={onDelete}
           isSelected={selectedNodeId === node.id}
           isDraggable={isDraggable}
           onDragStart={onDragStart}

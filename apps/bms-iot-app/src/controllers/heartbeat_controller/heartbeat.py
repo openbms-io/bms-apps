@@ -1,9 +1,8 @@
-import logging
 from src.actors.messages.message_type import HeartbeatStatusPayload
 from src.models.iot_device_status import get_latest_iot_device_status
 from src.models.device_status_enums import ConnectionStatusEnum
 
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 class HeartbeatController:

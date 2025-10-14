@@ -185,14 +185,13 @@ class TestBACnetWrapper:
     async def test_read_present_value(self):
         """Test: Read present value from a point"""
         mock_network = AsyncMock()
-        mock_network.read = AsyncMock(return_value=25.5)
+        mock_network.readMultiple = AsyncMock(return_value=25.5)
         self.wrapper._bacnet = mock_network
         self.wrapper._bacnet_connected = True
 
         value = await self.wrapper.read_present_value("192.168.1.100", "analogInput", 1)
 
-        # Verify read was called
-        mock_network.read.assert_called_once()
+        mock_network.readMultiple.assert_called_once()
 
         assert value == 25.5
 
@@ -231,7 +230,7 @@ class TestBACnetWrapper:
         """Test: Write value to point with priority"""
         mock_network = AsyncMock()
         mock_network._write = AsyncMock(return_value=True)
-        mock_network.read = AsyncMock(return_value=30.0)  # Verification read
+        mock_network.readMultiple = AsyncMock(return_value=30.0)
         self.wrapper._bacnet = mock_network
         self.wrapper._bacnet_connected = True
 
@@ -243,11 +242,8 @@ class TestBACnetWrapper:
             priority=8,
         )
 
-        # Verify write was called
         mock_network._write.assert_called_once()
-
-        # Verify read was called for verification
-        mock_network.read.assert_called_once()
+        mock_network.readMultiple.assert_called_once()
 
         assert result == 30.0
 
@@ -255,13 +251,14 @@ class TestBACnetWrapper:
     async def test_read_object_list(self):
         """Test: Read object list from device"""
         mock_network = AsyncMock()
-        mock_object_list = [
+        mock_unwrapped_object_list = [
             ("analogInput", 1),
             ("analogInput", 2),
             ("analogOutput", 1),
             ("binaryInput", 1),
         ]
-        mock_network.read = AsyncMock(return_value=mock_object_list)
+        mock_wrapped_response = [(mock_unwrapped_object_list, "objectList")]
+        mock_network.readMultiple = AsyncMock(return_value=mock_wrapped_response)
         self.wrapper._bacnet = mock_network
         self.wrapper._bacnet_connected = True
 
@@ -269,13 +266,12 @@ class TestBACnetWrapper:
             ip="192.168.1.100", device_id=12345
         )
 
-        # Verify read was called with correct parameters
-        mock_network.read.assert_called_once()
-        call_kwargs = mock_network.read.call_args.kwargs
+        mock_network.readMultiple.assert_called_once()
+        call_kwargs = mock_network.readMultiple.call_args.kwargs
         assert "args" in call_kwargs
         assert "192.168.1.100 device 12345 objectList" in call_kwargs["args"]
 
-        assert object_list == mock_object_list
+        assert object_list == mock_unwrapped_object_list
 
     @pytest.mark.asyncio
     async def test_is_connected(self):
@@ -340,7 +336,7 @@ class TestBACnetWrapperErrorHandling:
     async def test_read_error_handling(self):
         """Test: Handle read operation errors"""
         mock_network = AsyncMock()
-        mock_network.read.side_effect = Exception("Read timeout")
+        mock_network.readMultiple.side_effect = Exception("Read timeout")
         self.wrapper._bacnet = mock_network
         self.wrapper._bacnet_connected = True
 
@@ -430,7 +426,7 @@ class TestBACnetWrapperIntegration:
 
         with patch("src.models.bacnet_wrapper.BAC0.connect") as mock_bac0_connect:
             mock_network = AsyncMock()
-            mock_network.read = AsyncMock(return_value=25.5)
+            mock_network.readMultiple = AsyncMock(return_value=25.5)
             mock_network._disconnect = AsyncMock()
             mock_bac0_connect.return_value = mock_network
 
@@ -441,7 +437,7 @@ class TestBACnetWrapperIntegration:
             value = await wrapper.read_present_value("192.168.1.100", "analogInput", 1)
 
             # Disconnect
-            with patch("asyncio.sleep"):  # Mock sleep
+            with patch("asyncio.sleep"):
                 await wrapper.disconnect()
 
             assert value == 25.5
@@ -462,7 +458,7 @@ class TestBACnetWrapperIntegration:
         wrapper = BACnetWrapper(reader_config)
 
         mock_network = AsyncMock()
-        mock_network.read = AsyncMock(side_effect=[20.0, 21.0, 22.0])
+        mock_network.readMultiple = AsyncMock(side_effect=[20.0, 21.0, 22.0])
         mock_network._write = AsyncMock(return_value=True)
         wrapper._bacnet = mock_network
         wrapper._bacnet_connected = True
@@ -478,7 +474,7 @@ class TestBACnetWrapperIntegration:
         assert value1 == 20.0
         assert value2 == 21.0
         assert value3 == 22.0
-        assert mock_network.read.call_count == 3
+        assert mock_network.readMultiple.call_count == 3
         mock_network._write.assert_called_once()
 
     @pytest.mark.asyncio
@@ -496,7 +492,7 @@ class TestBACnetWrapperIntegration:
         wrapper = BACnetWrapper(reader_config)
 
         mock_network = AsyncMock()
-        mock_network.read = AsyncMock(return_value=25.0)
+        mock_network.readMultiple = AsyncMock(return_value=25.0)
         wrapper._bacnet = mock_network
         wrapper._bacnet_connected = True
 
@@ -510,7 +506,7 @@ class TestBACnetWrapperIntegration:
 
         assert len(results) == 5
         assert all(r == 25.0 for r in results)
-        assert mock_network.read.call_count == 5
+        assert mock_network.readMultiple.call_count == 5
 
     @pytest.mark.asyncio
     async def test_operation_counting(self):
@@ -532,7 +528,7 @@ class TestBACnetWrapperIntegration:
 
         # Test simpler case - after operation completes, count should be reset
         mock_network = AsyncMock()
-        mock_network.read = AsyncMock(return_value=25.0)
+        mock_network.readMultiple = AsyncMock(return_value=25.0)
         wrapper._bacnet = mock_network
         wrapper._bacnet_connected = True
 
