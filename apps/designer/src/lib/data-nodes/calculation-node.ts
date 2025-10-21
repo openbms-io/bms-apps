@@ -12,6 +12,7 @@ import {
 import { Message, SendCallback } from '@/lib/message-system/types'
 import { v4 as uuidv4 } from 'uuid'
 import { makeSerializable } from '@/lib/workflow/serialization-utils'
+import { toNumber } from './bacnet-utils'
 
 export type CalculationOperation =
   | 'add'
@@ -36,7 +37,6 @@ export class CalculationNode
   private sendCallback?: SendCallback<LogicOutputHandle>
   private messageBuffer: Map<CalculationInputHandle, Message> = new Map()
 
-  // Public getters for UI access
   get computedValue(): number | undefined {
     return this._computedValue
   }
@@ -52,7 +52,11 @@ export class CalculationNode
   }
 
   getValue(): ComputeValue | undefined {
-    return this._computedValue
+    if (this._computedValue === undefined) return undefined
+    return {
+      value: this._computedValue,
+      type: 'number',
+    }
   }
 
   getInputValues(): ComputeValue[] {
@@ -66,9 +70,9 @@ export class CalculationNode
   }
 
   private execute(inputs: ComputeValue[]): number {
-    // Convert boolean to number: true=1, false=0
-    const num1 = typeof inputs[0] === 'number' ? inputs[0] : inputs[0] ? 1 : 0
-    const num2 = typeof inputs[1] === 'number' ? inputs[1] : inputs[1] ? 1 : 0
+    // Convert to numbers using helper
+    const num1 = toNumber(inputs[0])
+    const num2 = toNumber(inputs[1])
 
     let result: number
     switch (this.metadata.operation) {
@@ -147,7 +151,8 @@ export class CalculationNode
 
       // Collect and execute
       const inputs: ComputeValue[] = requiredHandles.map(
-        (h) => this.messageBuffer.get(h)?.payload ?? 0
+        (h) =>
+          this.messageBuffer.get(h)?.payload ?? { value: 0, type: 'number' }
       )
 
       const result = this.execute(inputs)
@@ -164,7 +169,7 @@ export class CalculationNode
       // Send result - this triggers downstream nodes!
       await this.send(
         {
-          payload: result,
+          payload: { value: result, type: 'number' },
           _msgid: uuidv4(),
           timestamp: Date.now(),
           metadata: { source: this.id, operation: this.metadata.operation },

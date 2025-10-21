@@ -36,7 +36,7 @@ import {
 import {
   BacnetConfig,
   BacnetObjectType,
-  generateBACnetPointId,
+  convertStatusFlagsToIndividualProperties,
 } from '@/types/infrastructure'
 import { DraggedPoint } from '@/store/slices/flow-slice'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
@@ -45,26 +45,11 @@ function convertPointToBacnetConfig(
   point: ControllerPoint,
   iotDeviceId: string
 ): BacnetConfig {
-  // Parse individual status flag from string "[0, 0, 0, 0]"
-  const parseStatusFlag = (
-    flags: string | undefined,
-    index: number
-  ): boolean | undefined => {
-    if (!flags) return undefined
-    try {
-      const arr = JSON.parse(flags) as number[]
-      return arr[index] === 1
-    } catch {
-      return undefined
-    }
-  }
-
+  const statusFlags = convertStatusFlagsToIndividualProperties({
+    statusFlags: point.metadata?.statusFlags,
+  })
   return {
-    pointId: generateBACnetPointId({
-      supervisorId: iotDeviceId,
-      controllerId: point.controllerId,
-      objectId: point.instanceNumber,
-    }),
+    pointId: point.id,
     objectType: point.pointType as BacnetObjectType,
     objectId: point.instanceNumber,
     supervisorId: iotDeviceId,
@@ -76,10 +61,10 @@ function convertPointToBacnetConfig(
       units: point.units ?? point.metadata?.units,
       description: point.description ?? point.metadata?.description,
       // Expand statusFlags string into individual boolean properties
-      inAlarm: parseStatusFlag(point.metadata?.statusFlags, 0),
-      fault: parseStatusFlag(point.metadata?.statusFlags, 1),
-      overridden: parseStatusFlag(point.metadata?.statusFlags, 2),
-      outOfService: parseStatusFlag(point.metadata?.statusFlags, 3),
+      inAlarm: statusFlags.inAlarm,
+      fault: statusFlags.fault,
+      overridden: statusFlags.overridden,
+      outOfService: statusFlags.outOfService,
     },
     name: point.pointName,
   }

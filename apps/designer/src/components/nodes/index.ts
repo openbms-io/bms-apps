@@ -7,33 +7,34 @@ import { FunctionNode } from './function-node'
 import { SwitchNode } from './switch-node'
 import { TimerNode } from './timer-node'
 import { ScheduleNode } from './schedule-node'
+import { NodeType, NodeCategory } from '@/types/infrastructure'
 
 // Strongly typed node types for React Flow
 export const nodeTypes = {
   // BACnet nodes - all using unified UI
-  'bacnet.analog-input': BacnetNodeUI,
-  'bacnet.binary-input': BacnetNodeUI,
-  'bacnet.multistate-input': BacnetNodeUI,
+  [`${NodeCategory.BACNET}.${NodeType.ANALOG_INPUT}`]: BacnetNodeUI,
+  [`${NodeCategory.BACNET}.${NodeType.BINARY_INPUT}`]: BacnetNodeUI,
+  [`${NodeCategory.BACNET}.${NodeType.MULTISTATE_INPUT}`]: BacnetNodeUI,
 
-  'bacnet.analog-output': BacnetNodeUI,
-  'bacnet.binary-output': BacnetNodeUI,
-  'bacnet.multistate-output': BacnetNodeUI,
+  [`${NodeCategory.BACNET}.${NodeType.ANALOG_OUTPUT}`]: BacnetNodeUI,
+  [`${NodeCategory.BACNET}.${NodeType.BINARY_OUTPUT}`]: BacnetNodeUI,
+  [`${NodeCategory.BACNET}.${NodeType.MULTISTATE_OUTPUT}`]: BacnetNodeUI,
 
-  'bacnet.analog-value': BacnetNodeUI,
-  'bacnet.binary-value': BacnetNodeUI,
-  'bacnet.multistate-value': BacnetNodeUI,
+  [`${NodeCategory.BACNET}.${NodeType.ANALOG_VALUE}`]: BacnetNodeUI,
+  [`${NodeCategory.BACNET}.${NodeType.BINARY_VALUE}`]: BacnetNodeUI,
+  [`${NodeCategory.BACNET}.${NodeType.MULTISTATE_VALUE}`]: BacnetNodeUI,
 
   // Logic nodes
-  'logic.calculation': CalculationNode,
-  'logic.comparison': ComparisonNode,
-  'logic.constant': ConstantNodeUI,
-  'logic.function': FunctionNode,
+  [`${NodeCategory.LOGIC}.${NodeType.CALCULATION}`]: CalculationNode,
+  [`${NodeCategory.LOGIC}.${NodeType.COMPARISON}`]: ComparisonNode,
+  [`${NodeCategory.LOGIC}.${NodeType.CONSTANT}`]: ConstantNodeUI,
+  [`${NodeCategory.LOGIC}.${NodeType.FUNCTION}`]: FunctionNode,
 
   // Command nodes
-  'command.write-setpoint': WriteSetpointNode,
+  [`${NodeCategory.COMMAND}.${NodeType.WRITE_SETPOINT}`]: WriteSetpointNode,
 
   // Control flow nodes
-  'control-flow.switch': SwitchNode,
-  'control-flow.timer': TimerNode,
-  'control-flow.schedule': ScheduleNode,
+  [`${NodeCategory.CONTROL_FLOW}.${NodeType.SWITCH}`]: SwitchNode,
+  [`${NodeCategory.CONTROL_FLOW}.${NodeType.TIMER}`]: TimerNode,
+  [`${NodeCategory.CONTROL_FLOW}.${NodeType.SCHEDULE}`]: ScheduleNode,
 } as const

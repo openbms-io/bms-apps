@@ -62,63 +62,73 @@ export enum CommandNameEnum {
   STOP_MONITORING = 'stop_monitoring',
 }
 
-// MQTT message payload types matching Python ControllerPointsModel
+// MQTT message payload types matching Python ControllerPointDTO (camelCase)
 
 export interface ControllerPoint {
+  // Core identification fields
   id: number | null
-  controller_ip_address: string
-  controller_port: number
-  bacnet_object_type: string
-  point_id: number
-  iot_device_point_id: string
-  controller_id: string
+  controllerId: string
+  controllerIpAddress: string
+  controllerPort: number
+  bacnetObjectType: string
+  pointId: number
+  iotDevicePointId: string
+  controllerDeviceId: string
+
+  // Value and metadata
   units: string | null
-  present_value: string | null
-  controller_device_id: string
-  created_at: string
-  updated_at: string
-  created_at_unix_milli_timestamp: number
+  presentValue: string | null
+  isUploaded: boolean
+
+  // Timestamps
+  createdAt: string
+  updatedAt: string
+  createdAtUnixMilliTimestamp: number
 
   // Health monitoring fields
-  status_flags: string[] | null
-  event_state: string | null
-  out_of_service: boolean | null
+  statusFlags: number[] | null  // Array of 4 integers [0, 1, 0, 1]
+  eventState: string | null
+  outOfService: boolean | null
   reliability: string | null
 
   // Value limit properties
-  min_pres_value: number | null
-  max_pres_value: number | null
-  high_limit: number | null
-  low_limit: number | null
+  minPresValue: number | null
+  maxPresValue: number | null
+  highLimit: number | null
+  lowLimit: number | null
   resolution: number | null
 
   // Control properties
-  priority_array: unknown | null
-  relinquish_default: number | null
+  priorityArray: Array<number | null> | null  // 16-element array
+  relinquishDefault: number | null
 
   // Notification configuration properties
-  cov_increment: number | null
-  time_delay: number | null
-  time_delay_normal: number | null
-  notification_class: number | null
-  notify_type: string | null
+  covIncrement: number | null
+  timeDelay: number | null
+  timeDelayNormal: number | null
+  notificationClass: number | null
+  notifyType: string | null
   deadband: number | null
-  limit_enable: unknown | null
+  limitEnable: { lowLimitEnable: boolean; highLimitEnable: boolean } | null
 
   // Event properties
-  event_enable: unknown | null
-  acked_transitions: unknown | null
-  event_time_stamps: unknown | null
-  event_message_texts: unknown | null
-  event_message_texts_config: unknown | null
+  eventEnable: { toFault: boolean; toNormal: boolean; toOffnormal: boolean } | null
+  ackedTransitions: { toFault: boolean; toNormal: boolean; toOffnormal: boolean } | null
+  eventTimeStamps: Array<string | null> | null  // 3-element array of ISO 8601 strings
+  eventMessageTexts: string[] | null  // 3-element array
+  eventMessageTextsConfig: string[] | null  // 3-element array
 
   // Algorithm control properties
-  event_detection_enable: boolean | null
-  event_algorithm_inhibit_ref: unknown | null
-  event_algorithm_inhibit: boolean | null
-  reliability_evaluation_inhibit: boolean | null
+  eventDetectionEnable: boolean | null
+  eventAlgorithmInhibitRef: {
+    objectIdentifier: string
+    propertyIdentifier: string
+    arrayIndex: number | null
+  } | null
+  eventAlgorithmInhibit: boolean | null
+  reliabilityEvaluationInhibit: boolean | null
 
-  error_info: string | null
+  errorInfo: string | null
 }
 
 export interface PointBulkPayload {

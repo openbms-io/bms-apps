@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional, Union, Dict
 
 from src.utils.logger import logger
@@ -12,63 +13,30 @@ class BACnetHealthProcessor:
     @staticmethod
     def process_status_flags(raw_flags) -> Optional[str]:
         """
-        Convert BACnet statusFlags to semicolon-separated string.
-        Adds a check to see if the statusFlags is a string and if it is, it will return the string as-is.
-        If not, it will convert the statusFlags array [1,0,1,0] to a semicolon-separated string.
+        Convert BACnet statusFlags array to JSON string for database storage.
 
         Args:
-            raw_flags: BACnet StatusFlags object, array of 4 integers, or None
-                      [in-alarm, fault, overridden, out-of-service]
+            raw_flags: Array of 4 integers [in-alarm, fault, overridden, out-of-service]
 
         Returns:
-            Semicolon-separated string of active flags (e.g., "fault;overridden")
-            None if no flags are active or input is invalid
+            JSON array string (e.g., "[0,1,0,1]") or None if invalid
 
         Example:
-            Input: [0, 1, 0, 1]  # fault and out-of-service flags set
-            Output: "fault;out-of-service"
+            Input: [0, 1, 0, 1]
+            Output: "[0,1,0,1]"
         """
         if raw_flags is None:
             return None
 
         try:
-            # Handle BACnet StatusFlags object - convert to string and parse
-            if hasattr(raw_flags, "__class__") and "StatusFlags" in str(
-                raw_flags.__class__
-            ):
-                # Convert StatusFlags object to string representation
-                status_str = str(raw_flags).strip()
-                logger.debug(f"StatusFlags string representation: {status_str}")
-
-                # Parse common StatusFlags string patterns
-                # Examples: "" (no flags), "fault;overridden", "in-alarm;out-of-service"
-                if not status_str or status_str == "":
-                    return None
-
-                # If the string already contains semicolons, return as-is
-                if ";" in status_str:
-                    return status_str
-
-                # If single flag, return it
-                if status_str in ["in-alarm", "fault", "overridden", "out-of-service"]:
-                    return status_str
-
-                # For other string formats, try to parse as space-separated or return as-is
-                return status_str
-
-            # Handle list of integers (original format)
+            # Handle list of 4 integers (standard format from BACnet reads)
             if isinstance(raw_flags, list) and len(raw_flags) == 4:
-                flag_names = ["in-alarm", "fault", "overridden", "out-of-service"]
-                active_flags = [
-                    flag_names[i] for i, flag in enumerate(raw_flags) if flag == 1
-                ]
+                return json.dumps([int(flag) for flag in raw_flags])
 
-                return ";".join(active_flags) if active_flags else None
-            else:
-                logger.debug(
-                    f"Invalid statusFlags format: {raw_flags} (type: {type(raw_flags)})"
-                )
-                return None
+            logger.debug(
+                f"Invalid statusFlags format: {raw_flags} (type: {type(raw_flags)})"
+            )
+            return None
 
         except Exception as e:
             logger.warning(f"Failed to process statusFlags {raw_flags}: {e}")
@@ -181,7 +149,6 @@ class BACnetHealthProcessor:
             return None
 
         try:
-            import json
 
             # Handle BACnet PriorityArray object
             if hasattr(raw_priority_array, "__class__") and (
@@ -229,7 +196,6 @@ class BACnetHealthProcessor:
             return None
 
         try:
-            import json
 
             # Handle BACnet LimitEnable object
             if hasattr(raw_limit_enable, "__class__") and (
@@ -287,7 +253,6 @@ class BACnetHealthProcessor:
             return None
 
         try:
-            import json
 
             # Handle BACnet EventTransitionBits object
             if hasattr(raw_bits, "__class__") and (
@@ -344,7 +309,6 @@ class BACnetHealthProcessor:
             return None
 
         try:
-            import json
 
             timestamps: List[Optional[str]] = []
 
@@ -388,7 +352,6 @@ class BACnetHealthProcessor:
             return None
 
         try:
-            import json
 
             messages = []
 
@@ -428,7 +391,6 @@ class BACnetHealthProcessor:
             return None
 
         try:
-            import json
 
             ref_dict: Dict[str, Union[str, int, None]] = {}
 
@@ -454,6 +416,9 @@ class BACnetHealthProcessor:
 
         Returns dict with processed properties ready for database storage.
         """
+        logger.info(
+            f"Processing optional raw_properties BACnet properties: {raw_properties}"
+        )
         return {
             # Value limits (simple Real values - no processing needed)
             "min_pres_value": raw_properties.get("minPresValue"),

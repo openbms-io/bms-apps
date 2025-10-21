@@ -55,7 +55,10 @@ export class ScheduleNode
   }
 
   get computedValue(): ComputeValue | undefined {
-    return this.state.isActive
+    return {
+      value: this.state.isActive,
+      type: 'boolean',
+    }
   }
 
   constructor(
@@ -182,7 +185,9 @@ export class ScheduleNode
   private async sendOutput(): Promise<void> {
     // Send trigger when schedule state changes
     const payload =
-      this._inputValue !== undefined ? this._inputValue : this.state.isActive
+      this._inputValue !== undefined
+        ? this._inputValue
+        : { value: this.state.isActive, type: 'boolean' as const }
 
     if (this.sendCallback && payload !== undefined) {
       await this.send(

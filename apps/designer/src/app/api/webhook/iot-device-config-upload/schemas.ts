@@ -7,7 +7,7 @@ export const BacnetObjectPropertiesSchema = z
     presentValue: z.union([z.number(), z.string()]).optional(),
     objectType: z.string().optional(),
     description: z.string().optional(),
-    statusFlags: z.string().optional(),
+    statusFlags: z.array(z.number()).optional(),
     units: z.string().optional(),
   })
   .passthrough() // Allow additional properties

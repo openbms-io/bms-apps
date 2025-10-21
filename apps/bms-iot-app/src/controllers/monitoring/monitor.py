@@ -19,6 +19,7 @@ from src.models.bacnet_config import BacnetDeviceInfo, insert_bacnet_config_json
 from src.models.bacnet_config import get_latest_bacnet_config_json_as_list
 from src.utils.logger import logger
 from src.utils.performance import performance_metrics
+from src.models.bacnet_wrapper import BACnetWrapper
 
 
 class BACnetMonitor:
@@ -47,6 +48,7 @@ class BACnetMonitor:
             f"Successfully initialized BACnet wrapper manager with {actual_initialized_count} active readers"
         )
 
+    # IS THIS METHOD NEEDED?
     async def discover_devices(self, device_address_list: List[str]):
         """Discover BACnet devices on the network using all available wrappers."""
         devices: List[Dict] = []
@@ -285,7 +287,7 @@ class BACnetMonitor:
         controller_id: str,
         controller_ip_address: str,
         filtered_object_list,
-        wrapper: Optional[Any] = None,
+        wrapper: Optional[BACnetWrapper] = None,
     ):
         filtered_object_list_mapped: List[Dict[str, Any]] = [
             {
@@ -314,15 +316,24 @@ class BACnetMonitor:
         for obj in filtered_object_list_mapped:
             object_type = obj["type"]
             point_id = obj["point_id"]
+            logger.info(
+                f"Reading properties for object_type: {object_type}, point_id: {point_id}"
+            )
 
             # Skip if type or point_id is None
             if object_type is None or point_id is None:
                 obj["properties"] = {}
+                logger.warning(
+                    "Missing object_type or point_id, skipping property read"
+                )
                 continue
 
             # Ensure object_type is string and point_id is int
             if not isinstance(object_type, str) or not isinstance(point_id, int):
                 obj["properties"] = {}
+                logger.warning(
+                    f"Invalid object_type: {object_type} or point_id: {point_id} format, skipping property read"
+                )
                 continue
 
             try:
@@ -332,16 +343,13 @@ class BACnetMonitor:
                     object_id=point_id,
                 )
 
+                # NOTE: We cannot use BacnetHealthProcessor, since the object_list keys are used by
+                # src/controllers/monitoring/controller_monitor.py
+                # These keys are utilized for querying the controller points properties.
+                # We will for now map the optional properties structure in the DTO layer.
                 properties_dict = extract_property_dict_camel(properties)
-                status_flags = properties_dict["statusFlags"]
-                # Convert the status flags to a string
-                # values are -> in-alarm;fault;overridden;out-of-service
-                status_flags = str(status_flags) or None
-                properties_dict["statusFlags"] = status_flags
                 obj["properties"] = properties_dict
-                logger.info(
-                    f"Filtered object list was successfully mapped and enriched. {obj}"
-                )
+
             except Exception as e:
                 logger.error(
                     f"Failed to get properties for {object_type} {point_id}: {e}"

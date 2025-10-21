@@ -44,25 +44,42 @@ const BacnetPropertiesSchema: z.ZodType<BacnetProperties> = z.object({
   highLimit: z.number().optional(),
   lowLimit: z.number().optional(),
   deadband: z.number().optional(),
-  priorityArray: z
-    .array(z.object({ type: z.string(), value: z.number() }))
-    .optional(),
+  priorityArray: z.array(z.union([z.number(), z.null()])).optional(),
   relinquishDefault: z.union([z.number(), z.boolean(), z.string()]).optional(),
+
+  // Binary specific
+  activeText: z.string().optional(),
+  inactiveText: z.string().optional(),
 
   // Event/Alarm properties
   notifyType: z.string().optional(),
   notificationClass: z.number().optional(),
-  limitEnable: z.array(z.number()).optional(),
-  eventEnable: z.array(z.number()).optional(),
-  eventAlgorithmInhibit: z.number().optional(),
-  eventDetectionEnable: z.number().optional(),
-  reliabilityEvaluationInhibit: z.number().optional(),
-  ackedTransitions: z.array(z.number()).optional(),
-  eventTimeStamps: z
-    .array(z.object({ type: z.string(), value: z.string() }))
+  limitEnable: z
+    .object({ lowLimitEnable: z.boolean(), highLimitEnable: z.boolean() })
+    .nullable()
     .optional(),
-  eventMessageTexts: z.array(z.string()).optional(),
-  eventMessageTextsConfig: z.array(z.string()).optional(),
+  eventEnable: z
+    .object({
+      toFault: z.boolean(),
+      toNormal: z.boolean(),
+      toOffnormal: z.boolean(),
+    })
+    .nullable()
+    .optional(),
+  eventAlgorithmInhibit: z.boolean().optional(),
+  eventDetectionEnable: z.boolean().optional(),
+  reliabilityEvaluationInhibit: z.boolean().optional(),
+  ackedTransitions: z
+    .object({
+      toFault: z.boolean(),
+      toNormal: z.boolean(),
+      toOffnormal: z.boolean(),
+    })
+    .nullable()
+    .optional(),
+  eventTimeStamps: z.array(z.union([z.string(), z.null()])).optional(),
+  eventMessageTexts: z.array(z.string()).nullable().optional(),
+  eventMessageTextsConfig: z.array(z.string()).nullable().optional(),
 
   // Multistate-specific properties
   numberOfStates: z.number().optional(),
@@ -78,9 +95,9 @@ const BacnetObjectTypeSchema = z.enum([
   'binary-input',
   'binary-output',
   'binary-value',
-  'multistate-input',
-  'multistate-output',
-  'multistate-value',
+  'multi-state-input',
+  'multi-state-output',
+  'multi-state-value',
 ])
 
 // Bacnet config schema (matches BacnetConfig)

@@ -55,7 +55,13 @@ export class TimerNode
   }
 
   get computedValue(): ComputeValue | undefined {
-    return this._inputValue !== undefined ? this._inputValue : this._tickCount
+    if (this._inputValue !== undefined) {
+      return this._inputValue
+    }
+    return {
+      value: this._tickCount,
+      type: 'number',
+    }
   }
 
   constructor(label: string, duration: number = 1000, id?: string) {
@@ -128,7 +134,9 @@ export class TimerNode
 
   private async sendOutput(): Promise<void> {
     const payload =
-      this._inputValue !== undefined ? this._inputValue : this._tickCount
+      this._inputValue !== undefined
+        ? this._inputValue
+        : { value: this._tickCount, type: 'number' as const }
 
     if (this.sendCallback && payload !== undefined) {
       await this.send(

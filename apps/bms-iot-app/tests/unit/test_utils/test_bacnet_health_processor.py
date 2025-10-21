@@ -20,12 +20,12 @@ class TestBACnetHealthProcessorExisting:
     """Test existing BACnetHealthProcessor methods before extending"""
 
     def test_process_status_flags_with_list(self):
-        """Test: Existing status flags processing with list input"""
+        """Test: Status flags processing returns JSON array"""
         result = BACnetHealthProcessor.process_status_flags([0, 1, 0, 1])
-        assert result == "fault;out-of-service"
+        assert result == "[0, 1, 0, 1]"
 
     def test_process_status_flags_with_none(self):
-        """Test: Existing status flags processing with None input"""
+        """Test: Status flags processing with None input"""
         result = BACnetHealthProcessor.process_status_flags(None)
         assert result is None
 

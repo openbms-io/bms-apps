@@ -209,8 +209,8 @@ class MqttBusCore {
       map((bulk) => {
         const point = bulk.points?.find(
           (p) =>
-            p.controller_id === ids.controllerId &&
-            p.iot_device_point_id === ids.pointId
+            p.controllerId === ids.controllerId &&
+            p.iotDevicePointId === ids.pointId
         )
         if (!point) {
           console.warn(

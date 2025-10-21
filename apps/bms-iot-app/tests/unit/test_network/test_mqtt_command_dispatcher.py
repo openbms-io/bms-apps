@@ -35,15 +35,25 @@ class TestMqttCommandDispatcher:
     @pytest.fixture
     def sample_controller_point(self):
         """Create a sample controller point for testing."""
+        from src.models.bacnet_types import BacnetObjectTypeEnum
+        from datetime import datetime, timezone
+
         return ControllerPointsModel(
-            iot_device_id="test-device",
-            controller_device_id="test-controller",
+            id=1,
+            controller_id="test-controller-id",
+            controller_ip_address="192.168.1.100",
+            controller_port=47808,
+            bacnet_object_type=BacnetObjectTypeEnum.ANALOG_INPUT,
             point_id=123,
-            point_name="Test Point",
-            point_type="analog-input",
+            iot_device_point_id="test-point-uuid",
+            controller_device_id="test-controller-device",
+            units="degrees-celsius",
             present_value="23.5",
-            status_flags="fault;overridden",
-            priority_array="[null, null, 50.0, null]",
+            status_flags="[0, 1, 0, 1]",  # JSON format
+            priority_array="[null, null, 50.0, null, null, null, null, null, null, null, null, null, null, null, null, null]",  # JSON format
+            is_uploaded=False,
+            created_at=datetime(2024, 1, 1, 10, 0, 0, tzinfo=timezone.utc),
+            updated_at=datetime(2024, 1, 1, 10, 0, 0, tzinfo=timezone.utc),
             created_at_unix_milli_timestamp=1640995200000,
         )
 
@@ -266,21 +276,21 @@ class TestMqttCommandDispatcher:
         assert "points" in payload
         assert len(payload["points"]) == 1
 
-        # Verify serialization
+        # Verify serialization (camelCase format)
         serialized_point = payload["points"][0]
-        assert serialized_point["point_id"] == 123
-        assert serialized_point["present_value"] == "23.5"
-        assert serialized_point["status_flags"] == [
-            "fault",
-            "overridden",
-        ]  # Converted from string
-        assert serialized_point["priority_array"] == [
-            None,
-            None,
-            50.0,
-            None,
-        ]  # Parsed JSON
-        assert "created_at_unix_milli_timestamp" in serialized_point
+        assert serialized_point["pointId"] == 123
+        assert serialized_point["presentValue"] == "23.5"
+        assert serialized_point["statusFlags"] == [0, 1, 0, 1]  # Parsed from JSON
+        assert serialized_point["priorityArray"][2] == 50.0  # Parsed from JSON
+        assert "createdAtUnixMilliTimestamp" in serialized_point
+
+        # Verify camelCase keys
+        assert "controllerId" in serialized_point
+        assert "iotDevicePointId" in serialized_point
+
+        # Verify NO snake_case keys
+        assert "controller_id" not in serialized_point
+        assert "point_id" not in serialized_point
 
     def test_update_mqtt_topics_updates_internal_state(self, dispatcher):
         """Test update_mqtt_topics updates controller and point IDs."""

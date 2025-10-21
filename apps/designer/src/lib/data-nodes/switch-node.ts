@@ -11,6 +11,7 @@ import {
 } from '@/types/infrastructure'
 import { Message, SendCallback } from '@/lib/message-system/types'
 import { makeSerializable } from '@/lib/workflow/serialization-utils'
+import { toNumber } from './bacnet-utils'
 
 export interface SwitchNodeMetadata {
   condition: 'gt' | 'lt' | 'eq' | 'gte' | 'lte'
@@ -140,7 +141,7 @@ export class SwitchNode
   private evaluate(): boolean {
     if (this._inputValue === undefined) return false
 
-    const value = Number(this._inputValue)
+    const value = toNumber(this._inputValue)
     const thresh = Number(this._threshold)
 
     switch (this._condition) {

@@ -2,6 +2,7 @@
 
 import { memo, useState, useMemo } from 'react'
 import { Handle, Position, NodeProps } from '@xyflow/react'
+import { useShallow } from 'zustand/react/shallow'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ import { PropertiesPanel } from './properties-panel'
 import {
   getPropertyMetadata,
   BacnetProperties,
+  isMultistateObjectType,
 } from '@/types/bacnet-properties'
 import { BacnetNodeData } from '@/types/node-data-types'
 import { useFlowStore } from '@/store/use-flow-store'
@@ -25,10 +27,12 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
   const [showProperties, setShowProperties] = useState(false)
 
   // Subscribe to discoveredProperties from store for reactive updates
-  const discoveredProperties = useFlowStore((state) => {
-    const node = state.nodes.find((n) => n.id === id)
-    return node?.data?.discoveredProperties ?? typedData.discoveredProperties
-  }) as BacnetProperties
+  const discoveredProperties = useFlowStore(
+    useShallow((state) => {
+      const node = state.nodes.find((n) => n.id === id)
+      return node?.data?.discoveredProperties ?? typedData.discoveredProperties
+    })
+  ) as BacnetProperties
 
   // Local state for which properties to show in UI
   const [visibleProperties, setVisibleProperties] = useState<
@@ -124,9 +128,7 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
                       <div className="font-medium">
                         {propertyName === 'priorityArray' ? (
                           <PriorityArrayDropdown
-                            value={
-                              value as Array<{ type: string; value: number }>
-                            }
+                            value={value as Array<number | null>}
                           />
                         ) : (
                           formatPropertyValue(propertyName, value, typedData)
@@ -205,12 +207,8 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
 
 BacnetNodeUI.displayName = 'BacnetNodeUI'
 
-function PriorityArrayDropdown({
-  value,
-}: {
-  value: Array<{ type: string; value: number }>
-}) {
-  const activeCount = value.filter((slot) => slot.type !== 'null').length
+function PriorityArrayDropdown({ value }: { value: Array<number | null> }) {
+  const activeCount = value.filter((slot) => slot !== null).length
 
   return (
     <DropdownMenu>
@@ -222,11 +220,11 @@ function PriorityArrayDropdown({
       <DropdownMenuContent className="max-h-[300px] overflow-y-auto">
         {value.map((slot, index) => {
           const priority = index + 1
-          const isActive = slot.type !== 'null'
+          const isActive = slot !== null
           return (
             <DropdownMenuItem key={priority} className="text-xs font-mono">
               {isActive ? '✓' : '✗'} Priority {priority}:{' '}
-              {isActive ? `${slot.value} (${slot.type})` : 'null'}
+              {isActive ? slot : 'null'}
             </DropdownMenuItem>
           )
         })}
@@ -260,7 +258,7 @@ function formatPropertyValue(
   // Handle multistate presentValue with stateText lookup
   if (
     propertyName === 'presentValue' &&
-    data.objectType.includes('multistate') &&
+    isMultistateObjectType(data.objectType) &&
     typeof value === 'number'
   ) {
     const stateText = data.discoveredProperties.stateText as
@@ -275,7 +273,7 @@ function formatPropertyValue(
   // Handle units if present (for non-multistate objects)
   if (
     propertyName === 'presentValue' &&
-    !data.objectType.includes('multistate')
+    !isMultistateObjectType(data.objectType)
   ) {
     const units = data.discoveredProperties.units
     if (units) {

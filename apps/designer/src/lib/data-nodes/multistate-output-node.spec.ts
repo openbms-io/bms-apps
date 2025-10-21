@@ -16,9 +16,12 @@ jest.mock('@/types/infrastructure', () => ({
 }))
 
 describe('MultistateOutputNode', () => {
+  const mockMqttBus = { pointBulkStream$: { subscribe: jest.fn() } }
+  const mockOnDataChange = jest.fn()
+
   const mockBacnetConfig: BacnetConfig = {
     pointId: 'MSO_001',
-    objectType: 'multistate-output',
+    objectType: 'multi-state-output',
     objectId: 456,
     supervisorId: 'supervisor-1',
     controllerId: 'controller-1',
@@ -34,22 +37,24 @@ describe('MultistateOutputNode', () => {
 
   describe('Constructor and basic properties', () => {
     it('should create node with BacnetConfig properties', () => {
-      const node = new MultistateOutputNode(
-        mockBacnetConfig,
-        'explicit-test-id'
-      )
+      const node = new MultistateOutputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'explicit-test-id',
+      })
 
       expect(node.id).toBe('explicit-test-id')
       expect(node.pointId).toBe('MSO_001')
-      expect(node.objectType).toBe('multistate-output')
-      expect(node.type).toBe('multistate-output')
+      expect(node.objectType).toBe('multi-state-output')
+      expect(node.type).toBe('multi-state-output')
       expect(node.objectId).toBe(456)
       expect(node.supervisorId).toBe('supervisor-1')
       expect(node.controllerId).toBe('controller-1')
       expect(node.name).toBe('VAV Box Mode')
       expect(node.label).toBe('VAV Box Mode')
       expect(node.discoveredProperties).toEqual({
-        presentValue: 1,
+        presentValue: 'Off',
         stateText: [null, 'Off', 'Heat', 'Cool'],
         numberOfStates: 3,
         description: 'VAV box operating mode',
@@ -64,10 +69,12 @@ describe('MultistateOutputNode', () => {
         pointId: 'MSO_002',
         name: 'Fan Speed Control',
       }
-      const node = new MultistateOutputNode(
+      const node = new MultistateOutputNode({
         config,
-        'custom-multistate-output-id'
-      )
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'custom-multistate-output-id',
+      })
 
       expect(node.id).toBe('custom-multistate-output-id')
       expect(node.pointId).toBe('MSO_002')
@@ -78,7 +85,7 @@ describe('MultistateOutputNode', () => {
     it('should handle different configurations', () => {
       const config: BacnetConfig = {
         pointId: 'MSO_003',
-        objectType: 'multistate-output',
+        objectType: 'multi-state-output',
         objectId: 789,
         supervisorId: 'supervisor-2',
         controllerId: 'controller-2',
@@ -89,34 +96,43 @@ describe('MultistateOutputNode', () => {
           numberOfStates: 3,
         },
       }
-      const node = new MultistateOutputNode(config)
+      const node = new MultistateOutputNode({
+        config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+      })
 
       expect(node.objectId).toBe(789)
-      expect(node.discoveredProperties.presentValue).toBe(2)
+      expect(node.discoveredProperties.presentValue).toBe('Modulating')
       expect(node.discoveredProperties.numberOfStates).toBe(3)
     })
   })
 
   describe('Serialization', () => {
     it('should implement toSerializable correctly', () => {
-      const node = new MultistateOutputNode(mockBacnetConfig, 'test-id-456')
+      const node = new MultistateOutputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'test-id-456',
+      })
 
       const serialized = node.toSerializable()
 
       expect(serialized).toEqual({
         id: 'test-id-456',
-        type: 'multistate-output',
+        type: 'multi-state-output',
         category: 'bacnet',
         label: 'VAV Box Mode',
         metadata: {
           pointId: 'MSO_001',
-          objectType: 'multistate-output',
+          objectType: 'multi-state-output',
           objectId: 456,
           supervisorId: 'supervisor-1',
           controllerId: 'controller-1',
           name: 'VAV Box Mode',
           discoveredProperties: {
-            presentValue: 1,
+            presentValue: 'Off',
             stateText: [null, 'Off', 'Heat', 'Cool'],
             numberOfStates: 3,
             description: 'VAV box operating mode',
@@ -127,10 +143,12 @@ describe('MultistateOutputNode', () => {
     })
 
     it('should serialize via serializeNodeData', () => {
-      const node = new MultistateOutputNode(
-        mockBacnetConfig,
-        'multistate-output-node'
-      )
+      const node = new MultistateOutputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'multistate-output-node',
+      })
 
       const result = serializeNodeData(node)
 
@@ -138,18 +156,18 @@ describe('MultistateOutputNode', () => {
         nodeType: NodeType.MULTISTATE_OUTPUT,
         serializedData: {
           id: 'multistate-output-node',
-          type: 'multistate-output',
+          type: 'multi-state-output',
           category: 'bacnet',
           label: 'VAV Box Mode',
           metadata: {
             pointId: 'MSO_001',
-            objectType: 'multistate-output',
+            objectType: 'multi-state-output',
             objectId: 456,
             supervisorId: 'supervisor-1',
             controllerId: 'controller-1',
             name: 'VAV Box Mode',
             discoveredProperties: {
-              presentValue: 1,
+              presentValue: 'Off',
               stateText: [null, 'Off', 'Heat', 'Cool'],
               numberOfStates: 3,
               description: 'VAV box operating mode',
@@ -165,10 +183,12 @@ describe('MultistateOutputNode', () => {
     it('should create via factory with BacnetConfig', () => {
       const node = factory.createDataNodeFromBacnetConfig({
         config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       }) as MultistateOutputNode
 
       expect(node.pointId).toBe('MSO_001')
-      expect(node.objectType).toBe('multistate-output')
+      expect(node.objectType).toBe('multi-state-output')
       expect(node.name).toBe('VAV Box Mode')
       expect(node.label).toBe('VAV Box Mode')
     })
@@ -176,7 +196,7 @@ describe('MultistateOutputNode', () => {
     it('should create via factory with different config', () => {
       const config: BacnetConfig = {
         pointId: 'MSO_004',
-        objectType: 'multistate-output',
+        objectType: 'multi-state-output',
         objectId: 999,
         supervisorId: 'supervisor-3',
         controllerId: 'controller-3',
@@ -189,6 +209,8 @@ describe('MultistateOutputNode', () => {
       }
       const node = factory.createDataNodeFromBacnetConfig({
         config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       }) as MultistateOutputNode
 
       expect(node.pointId).toBe('MSO_004')
@@ -201,12 +223,12 @@ describe('MultistateOutputNode', () => {
     it('should deserialize correctly via nodeFactory', () => {
       const serializedData = {
         id: 'deserialized-multistate-output',
-        type: 'multistate-output',
+        type: 'multi-state-output',
         category: 'bacnet',
         label: 'Restored Multistate Output',
         metadata: {
           pointId: 'MSO_999',
-          objectType: 'multistate-output',
+          objectType: 'multi-state-output',
           objectId: 999,
           supervisorId: 'supervisor-restored',
           controllerId: 'controller-restored',
@@ -224,7 +246,7 @@ describe('MultistateOutputNode', () => {
         if (nodeType === NodeType.MULTISTATE_OUTPUT) {
           const metadata = data.metadata as {
             pointId: string
-            objectType: 'multistate-output'
+            objectType: 'multi-state-output'
             objectId: number
             supervisorId: string
             controllerId: string
@@ -243,6 +265,8 @@ describe('MultistateOutputNode', () => {
               discoveredProperties: metadata.discoveredProperties,
               position: metadata.position,
             },
+            mqttBus: mockMqttBus as any,
+            onDataChange: mockOnDataChange,
           })
         }
         throw new Error(`Unknown node type: ${nodeType}`)
@@ -259,16 +283,18 @@ describe('MultistateOutputNode', () => {
       expect(result.objectId).toBe(999)
       expect(result.discoveredProperties.presentValue).toBe(2)
       expect(result.position).toEqual({ x: 400, y: 500 })
-      expect(result.type).toBe('multistate-output')
+      expect(result.type).toBe('multi-state-output')
     })
   })
 
   describe('Round-trip serialization', () => {
     it('should preserve all properties through serialize/deserialize cycle', () => {
-      const original = new MultistateOutputNode(
-        mockBacnetConfig,
-        'round-trip-id'
-      )
+      const original = new MultistateOutputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'round-trip-id',
+      })
 
       const serialized = serializeNodeData(original)
 
@@ -276,7 +302,7 @@ describe('MultistateOutputNode', () => {
         if (nodeType === NodeType.MULTISTATE_OUTPUT) {
           const metadata = data.metadata as {
             pointId: string
-            objectType: 'multistate-output'
+            objectType: 'multi-state-output'
             objectId: number
             supervisorId: string
             controllerId: string
@@ -295,6 +321,8 @@ describe('MultistateOutputNode', () => {
               discoveredProperties: metadata.discoveredProperties,
               position: metadata.position,
             },
+            mqttBus: mockMqttBus as any,
+            onDataChange: mockOnDataChange,
           })
         }
         throw new Error(`Unknown node type: ${nodeType}`)

@@ -59,6 +59,7 @@ export const projectsApi = {
       const response = await fetch(
         `/api/organizations/${orgId}/sites/${siteId}/projects/${projectId}`
       )
+
       return handleResponse(response)
     })
 

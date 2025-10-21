@@ -27,9 +27,10 @@ export const SwitchNode = memo(({ data, id }: NodeProps) => {
   // Subscribe to the input value specifically
   const inputValue = useFlowStore((state) => {
     const node = state.nodes.find((n) => n.id === id)
-    const nodeData = node?.data
-    return nodeData?.inputValue as ComputeValue | undefined
+    const nodeData = node?.data as SwitchNodeData | undefined
+    return nodeData?.inputValue
   })
+
   const [isEditingThreshold, setIsEditingThreshold] = useState(false)
   const [tempThreshold, setTempThreshold] = useState(
     typedData.threshold.toString()
@@ -77,11 +78,13 @@ export const SwitchNode = memo(({ data, id }: NodeProps) => {
     return undefined
   })
 
-  const formatValue = (value: unknown): string => {
-    if (value === undefined || value === null) return 'N/A'
-    if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE'
-    if (typeof value === 'number') return value.toFixed(2)
-    return String(value)
+  const formatValue = (val: ComputeValue | undefined): string => {
+    if (val === undefined) return 'N/A'
+    if (val.type === 'boolean') return val.value ? 'TRUE' : 'FALSE'
+    if (val.type === 'number' && typeof val.value === 'number') {
+      return val.value.toFixed(2)
+    }
+    return String(val.value)
   }
 
   return (

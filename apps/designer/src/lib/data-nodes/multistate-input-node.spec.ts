@@ -16,9 +16,12 @@ jest.mock('@/types/infrastructure', () => ({
 }))
 
 describe('MultistateInputNode', () => {
+  const mockMqttBus = { pointBulkStream$: { subscribe: jest.fn() } }
+  const mockOnDataChange = jest.fn()
+
   const mockBacnetConfig: BacnetConfig = {
     pointId: 'MSI_001',
-    objectType: 'multistate-input',
+    objectType: 'multi-state-input',
     objectId: 123,
     supervisorId: 'supervisor-1',
     controllerId: 'controller-1',
@@ -34,19 +37,24 @@ describe('MultistateInputNode', () => {
 
   describe('Constructor and basic properties', () => {
     it('should create node with BacnetConfig properties', () => {
-      const node = new MultistateInputNode(mockBacnetConfig, 'explicit-test-id')
+      const node = new MultistateInputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'explicit-test-id',
+      })
 
       expect(node.id).toBe('explicit-test-id')
       expect(node.pointId).toBe('MSI_001')
-      expect(node.objectType).toBe('multistate-input')
-      expect(node.type).toBe('multistate-input')
+      expect(node.objectType).toBe('multi-state-input')
+      expect(node.type).toBe('multi-state-input')
       expect(node.objectId).toBe(123)
       expect(node.supervisorId).toBe('supervisor-1')
       expect(node.controllerId).toBe('controller-1')
       expect(node.name).toBe('VAV Damper Position')
       expect(node.label).toBe('VAV Damper Position')
       expect(node.discoveredProperties).toEqual({
-        presentValue: 2,
+        presentValue: 'Open',
         stateText: [null, 'Closed', 'Open', 'Modulating'],
         numberOfStates: 3,
         description: 'VAV damper position feedback',
@@ -61,7 +69,12 @@ describe('MultistateInputNode', () => {
         pointId: 'MSI_002',
         name: 'Fan Speed Status',
       }
-      const node = new MultistateInputNode(config, 'custom-multistate-input-id')
+      const node = new MultistateInputNode({
+        config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'custom-multistate-input-id',
+      })
 
       expect(node.id).toBe('custom-multistate-input-id')
       expect(node.pointId).toBe('MSI_002')
@@ -72,7 +85,7 @@ describe('MultistateInputNode', () => {
     it('should handle different configurations', () => {
       const config: BacnetConfig = {
         pointId: 'MSI_003',
-        objectType: 'multistate-input',
+        objectType: 'multi-state-input',
         objectId: 456,
         supervisorId: 'supervisor-2',
         controllerId: 'controller-2',
@@ -83,34 +96,43 @@ describe('MultistateInputNode', () => {
           numberOfStates: 4,
         },
       }
-      const node = new MultistateInputNode(config)
+      const node = new MultistateInputNode({
+        config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+      })
 
       expect(node.objectId).toBe(456)
-      expect(node.discoveredProperties.presentValue).toBe(1)
+      expect(node.discoveredProperties.presentValue).toBe('Off')
       expect(node.discoveredProperties.numberOfStates).toBe(4)
     })
   })
 
   describe('Serialization', () => {
     it('should implement toSerializable correctly', () => {
-      const node = new MultistateInputNode(mockBacnetConfig, 'test-id-456')
+      const node = new MultistateInputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'test-id-456',
+      })
 
       const serialized = node.toSerializable()
 
       expect(serialized).toEqual({
         id: 'test-id-456',
-        type: 'multistate-input',
+        type: 'multi-state-input',
         category: 'bacnet',
         label: 'VAV Damper Position',
         metadata: {
           pointId: 'MSI_001',
-          objectType: 'multistate-input',
+          objectType: 'multi-state-input',
           objectId: 123,
           supervisorId: 'supervisor-1',
           controllerId: 'controller-1',
           name: 'VAV Damper Position',
           discoveredProperties: {
-            presentValue: 2,
+            presentValue: 'Open',
             stateText: [null, 'Closed', 'Open', 'Modulating'],
             numberOfStates: 3,
             description: 'VAV damper position feedback',
@@ -121,10 +143,12 @@ describe('MultistateInputNode', () => {
     })
 
     it('should serialize via serializeNodeData', () => {
-      const node = new MultistateInputNode(
-        mockBacnetConfig,
-        'multistate-input-node'
-      )
+      const node = new MultistateInputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'multistate-input-node',
+      })
 
       const result = serializeNodeData(node)
 
@@ -132,18 +156,18 @@ describe('MultistateInputNode', () => {
         nodeType: NodeType.MULTISTATE_INPUT,
         serializedData: {
           id: 'multistate-input-node',
-          type: 'multistate-input',
+          type: 'multi-state-input',
           category: 'bacnet',
           label: 'VAV Damper Position',
           metadata: {
             pointId: 'MSI_001',
-            objectType: 'multistate-input',
+            objectType: 'multi-state-input',
             objectId: 123,
             supervisorId: 'supervisor-1',
             controllerId: 'controller-1',
             name: 'VAV Damper Position',
             discoveredProperties: {
-              presentValue: 2,
+              presentValue: 'Open',
               stateText: [null, 'Closed', 'Open', 'Modulating'],
               numberOfStates: 3,
               description: 'VAV damper position feedback',
@@ -159,10 +183,12 @@ describe('MultistateInputNode', () => {
     it('should create via factory with BacnetConfig', () => {
       const node = factory.createDataNodeFromBacnetConfig({
         config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       }) as MultistateInputNode
 
       expect(node.pointId).toBe('MSI_001')
-      expect(node.objectType).toBe('multistate-input')
+      expect(node.objectType).toBe('multi-state-input')
       expect(node.name).toBe('VAV Damper Position')
       expect(node.label).toBe('VAV Damper Position')
     })
@@ -170,7 +196,7 @@ describe('MultistateInputNode', () => {
     it('should create via factory with different config', () => {
       const config: BacnetConfig = {
         pointId: 'MSI_004',
-        objectType: 'multistate-input',
+        objectType: 'multi-state-input',
         objectId: 789,
         supervisorId: 'supervisor-3',
         controllerId: 'controller-3',
@@ -183,6 +209,8 @@ describe('MultistateInputNode', () => {
       }
       const node = factory.createDataNodeFromBacnetConfig({
         config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       }) as MultistateInputNode
 
       expect(node.pointId).toBe('MSI_004')
@@ -195,12 +223,12 @@ describe('MultistateInputNode', () => {
     it('should deserialize correctly via nodeFactory', () => {
       const serializedData = {
         id: 'deserialized-multistate-input',
-        type: 'multistate-input',
+        type: 'multi-state-input',
         category: 'bacnet',
         label: 'Restored Multistate Input',
         metadata: {
           pointId: 'MSI_999',
-          objectType: 'multistate-input',
+          objectType: 'multi-state-input',
           objectId: 999,
           supervisorId: 'supervisor-restored',
           controllerId: 'controller-restored',
@@ -218,7 +246,7 @@ describe('MultistateInputNode', () => {
         if (nodeType === NodeType.MULTISTATE_INPUT) {
           const metadata = data.metadata as {
             pointId: string
-            objectType: 'multistate-input'
+            objectType: 'multi-state-input'
             objectId: number
             supervisorId: string
             controllerId: string
@@ -237,6 +265,8 @@ describe('MultistateInputNode', () => {
               discoveredProperties: metadata.discoveredProperties,
               position: metadata.position,
             },
+            mqttBus: mockMqttBus as any,
+            onDataChange: mockOnDataChange,
           })
         }
         throw new Error(`Unknown node type: ${nodeType}`)
@@ -251,18 +281,20 @@ describe('MultistateInputNode', () => {
       expect(result.pointId).toBe('MSI_999')
       expect(result.name).toBe('Restored Multistate Input')
       expect(result.objectId).toBe(999)
-      expect(result.discoveredProperties.presentValue).toBe(1)
+      expect(result.discoveredProperties.presentValue).toBe('State1')
       expect(result.position).toEqual({ x: 300, y: 400 })
-      expect(result.type).toBe('multistate-input')
+      expect(result.type).toBe('multi-state-input')
     })
   })
 
   describe('Round-trip serialization', () => {
     it('should preserve all properties through serialize/deserialize cycle', () => {
-      const original = new MultistateInputNode(
-        mockBacnetConfig,
-        'round-trip-id'
-      )
+      const original = new MultistateInputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'round-trip-id',
+      })
 
       const serialized = serializeNodeData(original)
 
@@ -270,7 +302,7 @@ describe('MultistateInputNode', () => {
         if (nodeType === NodeType.MULTISTATE_INPUT) {
           const metadata = data.metadata as {
             pointId: string
-            objectType: 'multistate-input'
+            objectType: 'multi-state-input'
             objectId: number
             supervisorId: string
             controllerId: string
@@ -289,6 +321,8 @@ describe('MultistateInputNode', () => {
               discoveredProperties: metadata.discoveredProperties,
               position: metadata.position,
             },
+            mqttBus: mockMqttBus as any,
+            onDataChange: mockOnDataChange,
           })
         }
         throw new Error(`Unknown node type: ${nodeType}`)

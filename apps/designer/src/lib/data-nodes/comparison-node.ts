@@ -12,6 +12,7 @@ import {
 import { Message, SendCallback } from '@/lib/message-system/types'
 import { v4 as uuidv4 } from 'uuid'
 import { makeSerializable } from '@/lib/workflow/serialization-utils'
+import { toNumber } from './bacnet-utils'
 
 export type ComparisonOperation =
   | 'equals'
@@ -52,7 +53,11 @@ export class ComparisonNode
   }
 
   getValue(): ComputeValue | undefined {
-    return this._computedValue
+    if (this._computedValue === undefined) return undefined
+    return {
+      value: this._computedValue,
+      type: 'boolean',
+    }
   }
 
   getInputValues(): ComputeValue[] {
@@ -75,22 +80,25 @@ export class ComparisonNode
       return false
     }
 
+    const num1 = toNumber(v1)
+    const num2 = toNumber(v2)
+
     let result: boolean
     switch (this.metadata.operation) {
       case 'equals':
-        result = v1 === v2
+        result = num1 === num2
         break
       case 'greater':
-        result = v1 > v2
+        result = num1 > num2
         break
       case 'less':
-        result = v1 < v2
+        result = num1 < num2
         break
       case 'greater-equal':
-        result = v1 >= v2
+        result = num1 >= num2
         break
       case 'less-equal':
-        result = v1 <= v2
+        result = num1 <= num2
         break
       default:
         result = false
@@ -153,7 +161,8 @@ export class ComparisonNode
 
       // Collect and execute
       const inputs: ComputeValue[] = requiredHandles.map(
-        (h) => this.messageBuffer.get(h)?.payload ?? 0
+        (h) =>
+          this.messageBuffer.get(h)?.payload ?? { value: 0, type: 'number' }
       )
 
       const result = this.execute(inputs)
@@ -177,7 +186,7 @@ export class ComparisonNode
       // Send result - this triggers downstream nodes!
       await this.send(
         {
-          payload: result,
+          payload: { value: result, type: 'boolean' },
           _msgid: uuidv4(),
           timestamp: Date.now(),
           metadata: { source: this.id, operation: this.metadata.operation },

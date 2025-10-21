@@ -45,12 +45,12 @@ export const ComparisonNode = memo(({ data, id }: NodeProps) => {
 
   const operation = metadata?.operation
 
-  const formatValue = (value: ComputeValue | undefined): string => {
-    if (value === undefined) return '-'
-    if (typeof value === 'number') {
-      return isNaN(value) ? 'NaN' : value.toFixed(2)
+  const formatValue = (val: ComputeValue | undefined): string => {
+    if (val === undefined) return '-'
+    if (val.type === 'number' && typeof val.value === 'number') {
+      return isNaN(val.value) ? 'NaN' : val.value.toFixed(2)
     }
-    return value ? 'true' : 'false'
+    return val.value ? 'true' : 'false'
   }
 
   const formatOperation = (op: string | undefined): string => {

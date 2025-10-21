@@ -218,14 +218,6 @@ export function FlowCanvas({
           showFitView={true}
           showInteractive={false}
         />
-        {/* MiniMap disabled temporarily - causing node rendering issues
-        <MiniMap
-          className="bg-card border border-border"
-          maskColor="rgba(0, 0, 0, 0.1)"
-          pannable
-          zoomable
-        />
-        */}
         <Background
           variant={BackgroundVariant.Dots}
           gap={20}

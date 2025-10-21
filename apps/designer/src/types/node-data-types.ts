@@ -66,6 +66,8 @@ export interface BacnetNodeData extends BacnetInputOutput, BaseNodeData {
 export interface CalculationNodeData extends LogicNode, BaseNodeData {
   category: NodeCategory.LOGIC
   type: NodeType.CALCULATION
+  inputValues?: ComputeValue[]
+  computedValue?: number
   metadata?: {
     operation?: string
   }
@@ -112,6 +114,7 @@ export interface SwitchNodeData extends ControlFlowNode, BaseNodeData {
   threshold: number
   activeLabel: string
   inactiveLabel: string
+  inputValue?: ComputeValue
 }
 
 export interface TimerNodeData extends ControlFlowNode, BaseNodeData {
