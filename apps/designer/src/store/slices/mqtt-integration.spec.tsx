@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, act } from '@testing-library/react'
 import { renderWithProviders as render } from '@test-utils/render'
 import mqtt from 'mqtt'
 import { SupervisorsTab } from '@/components/sidebar/supervisors-tab'
@@ -346,6 +346,11 @@ describe('MQTT Integration - Full Lifecycle', () => {
 
       errorHandler(new Error('Connection failed'))
 
+      // Allow RxJS subscriptions to process
+      await act(async () => {
+        await Promise.resolve()
+      })
+
       // Should show error status
       await waitFor(() => {
         expect(useFlowStore.getState().connectionStatus).toBe('error')
@@ -364,6 +369,11 @@ describe('MQTT Integration - Full Lifecycle', () => {
         organizationId: 'org_test',
         siteId: 'site-123',
         iotDeviceId: 'device-456',
+      })
+
+      // Allow bridge subscriptions to be set up
+      await act(async () => {
+        await Promise.resolve()
       })
 
       // Simulate connection
@@ -399,8 +409,15 @@ describe('MQTT Integration - Full Lifecycle', () => {
         { properties: {} }
       )
 
+      // Allow message to propagate through bridge
+      await act(async () => {
+        await Promise.resolve()
+      })
+
       // Verify point_bulk message was received
-      expect(pointBulkMessages).toHaveLength(1)
+      await waitFor(() => {
+        expect(pointBulkMessages).toHaveLength(1)
+      })
       expect(pointBulkMessages[0]).toEqual(pointBulkPayload)
 
       subscription.unsubscribe()

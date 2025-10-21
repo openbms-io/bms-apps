@@ -30,7 +30,12 @@ export interface BrokerHealth {
 }
 
 export interface MQTTSlice {
-  connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error'
+  connectionStatus:
+    | 'disconnected'
+    | 'connecting'
+    | 'connected'
+    | 'error'
+    | 'unavailable'
   brokerHealth: BrokerHealth
   lastError?: string
   startMqtt: ({
