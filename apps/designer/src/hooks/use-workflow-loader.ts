@@ -62,12 +62,6 @@ export function useWorkflowLoader({
       return
     }
 
-    // Wait for MQTT to start before loading workflow
-    if (connectionStatus === 'disconnected') {
-      setIsLoading(true)
-      return
-    }
-
     setIsLoading(true)
     setError(null)
     try {
