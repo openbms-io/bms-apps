@@ -10,8 +10,7 @@ from src.network.mqtt_client import MQTTClient
 import asyncio
 import paho.mqtt.client as mqtt
 from src.models.controller_points import ControllerPointsModel
-from datetime import datetime
-import json
+from src.dto import ControllerPointDTO
 
 from src.utils.logger import logger
 
@@ -24,50 +23,10 @@ def _serialize_point(point: ControllerPointsModel):
     """
     Serialize ControllerPointsModel for MQTT transmission.
 
-    Converts SQLite storage format to structured MQTT payload format,
-    including parsing JSON strings for complex BACnet properties.
+    Converts SQLite storage format (snake_case, JSON strings) to
+    structured MQTT payload format (camelCase, typed objects).
     """
-    data = point.model_dump()
-    for k, v in data.items():
-        if isinstance(v, datetime):
-            data[k] = v.isoformat()
-
-    # Decode health data from semicolon-separated strings to arrays for MQTT
-    if data.get("status_flags"):
-        try:
-            # Convert "fault;overridden" to ["fault", "overridden"]
-            data["status_flags"] = [
-                flag.strip() for flag in data["status_flags"].split(";") if flag.strip()
-            ]
-        except Exception as e:
-            logger.warning(
-                f"Failed to decode status_flags '{data['status_flags']}': {e}"
-            )
-            data["status_flags"] = None
-
-    # Parse JSON strings for complex BACnet optional properties
-    json_properties = [
-        "priority_array",
-        "limit_enable",
-        "event_enable",
-        "acked_transitions",
-        "event_time_stamps",
-        "event_message_texts",
-        "event_message_texts_config",
-        "event_algorithm_inhibit_ref",
-    ]
-
-    for prop in json_properties:
-        if data.get(prop):
-            try:
-                data[prop] = json.loads(data[prop])
-            except (json.JSONDecodeError, TypeError) as e:
-                logger.warning(f"Failed to parse JSON for {prop} '{data[prop]}': {e}")
-                data[prop] = None
-
-    # Add unix milli timestamp to the payload for influxDB.
-    data["created_at_unix_milli_timestamp"] = point.created_at_unix_milli_timestamp
-    return data
+    return ControllerPointDTO.from_model(point).model_dump()
 
 
 class MqttCommandDispatcher:

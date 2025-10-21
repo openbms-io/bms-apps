@@ -13,7 +13,12 @@ import { ConstantNode } from '@/lib/data-nodes/constant-node'
 import { AnalogInputNode } from '@/lib/data-nodes/analog-input-node'
 
 describe('WorkflowSerializer factory compatibility', () => {
-  const nodeFactory = createNodeFactory()
+  const mockMqttBus = { pointBulkStream$: { subscribe: jest.fn() } }
+  const mockOnDataChange = jest.fn()
+  const nodeFactory = createNodeFactory({
+    mqttBus: mockMqttBus as any,
+    onDataChange: mockOnDataChange,
+  })
 
   function versionedOf(
     data: VersionedWorkflowConfig['data']

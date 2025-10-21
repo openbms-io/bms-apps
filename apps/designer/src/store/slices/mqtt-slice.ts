@@ -142,7 +142,6 @@ export const createMQTTSlice: StateCreator<MQTTSlice> = (set, get) => {
         .pipe(takeUntil(mqttStop$))
         .subscribe(() => {
           const { brokerHealth } = get()
-          console.log('heartbeat check', brokerHealth)
 
           if (!brokerHealth.lastHeartbeatTimestamp) return
           const silentFor = Date.now() - brokerHealth.lastHeartbeatTimestamp

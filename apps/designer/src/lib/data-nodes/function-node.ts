@@ -295,14 +295,16 @@ export class FunctionNode implements LogicNode {
       // Store console logs
       this._consoleLogs = logs
 
-      // Validate return type
-      if (typeof result !== 'number' && typeof result !== 'boolean') {
+      // Validate and wrap return value
+      if (typeof result === 'number') {
+        return { value: result, type: 'number' }
+      } else if (typeof result === 'boolean') {
+        return { value: result, type: 'boolean' }
+      } else {
         throw new Error(
           `Function must return number or boolean, got ${typeof result}`
         )
       }
-
-      return result as ComputeValue
     } catch (error) {
       throw new Error(
         `Function execution failed: ${

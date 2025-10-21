@@ -58,7 +58,12 @@ describe('WorkflowSerializer', () => {
     },
   ]
 
-  const nodeFactory = createNodeFactory()
+  const mockMqttBus = { pointBulkStream$: { subscribe: jest.fn() } }
+  const mockOnDataChange = jest.fn()
+  const nodeFactory = createNodeFactory({
+    mqttBus: mockMqttBus as any,
+    onDataChange: mockOnDataChange,
+  })
 
   const mockMetadata: WorkflowMetadata = {
     lastModified: '2025-09-19T10:30:00Z',

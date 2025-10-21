@@ -16,6 +16,9 @@ jest.mock('@/types/infrastructure', () => ({
 }))
 
 describe('BinaryOutputNode', () => {
+  const mockMqttBus = { pointBulkStream$: { subscribe: jest.fn() } }
+  const mockOnDataChange = jest.fn()
+
   const mockBacnetConfig: BacnetConfig = {
     pointId: 'BO_001',
     objectType: 'binary-output',
@@ -32,7 +35,12 @@ describe('BinaryOutputNode', () => {
 
   describe('Constructor and basic properties', () => {
     it('should create node with BacnetConfig properties', () => {
-      const node = new BinaryOutputNode(mockBacnetConfig, 'explicit-test-id')
+      const node = new BinaryOutputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'explicit-test-id',
+      })
 
       expect(node.id).toBe('explicit-test-id')
       expect(node.pointId).toBe('BO_001')
@@ -57,7 +65,12 @@ describe('BinaryOutputNode', () => {
         pointId: 'BO_002',
         name: 'Pump Control',
       }
-      const node = new BinaryOutputNode(config, 'custom-binary-output-id')
+      const node = new BinaryOutputNode({
+        config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'custom-binary-output-id',
+      })
 
       expect(node.id).toBe('custom-binary-output-id')
       expect(node.pointId).toBe('BO_002')
@@ -77,7 +90,11 @@ describe('BinaryOutputNode', () => {
           presentValue: false,
         },
       }
-      const node = new BinaryOutputNode(config)
+      const node = new BinaryOutputNode({
+        config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+      })
 
       expect(node.objectId).toBe(789)
       expect(node.discoveredProperties.presentValue).toBe(false)
@@ -86,7 +103,12 @@ describe('BinaryOutputNode', () => {
 
   describe('Serialization', () => {
     it('should implement toSerializable correctly', () => {
-      const node = new BinaryOutputNode(mockBacnetConfig, 'test-id-456')
+      const node = new BinaryOutputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'test-id-456',
+      })
 
       const serialized = node.toSerializable()
 
@@ -112,7 +134,12 @@ describe('BinaryOutputNode', () => {
     })
 
     it('should serialize via serializeNodeData', () => {
-      const node = new BinaryOutputNode(mockBacnetConfig, 'binary-output-node')
+      const node = new BinaryOutputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'binary-output-node',
+      })
 
       const result = serializeNodeData(node)
 
@@ -145,6 +172,8 @@ describe('BinaryOutputNode', () => {
     it('should create via factory with BacnetConfig', () => {
       const node = factory.createDataNodeFromBacnetConfig({
         config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       }) as BinaryOutputNode
 
       expect(node.pointId).toBe('BO_001')
@@ -168,6 +197,8 @@ describe('BinaryOutputNode', () => {
       }
       const node = factory.createDataNodeFromBacnetConfig({
         config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       }) as BinaryOutputNode
 
       expect(node.pointId).toBe('BO_004')
@@ -221,6 +252,8 @@ describe('BinaryOutputNode', () => {
               discoveredProperties: metadata.discoveredProperties,
               position: metadata.position,
             },
+            mqttBus: mockMqttBus as any,
+            onDataChange: mockOnDataChange,
           })
         }
         throw new Error(`Unknown node type: ${nodeType}`)
@@ -243,7 +276,12 @@ describe('BinaryOutputNode', () => {
 
   describe('Round-trip serialization', () => {
     it('should preserve all properties through serialize/deserialize cycle', () => {
-      const original = new BinaryOutputNode(mockBacnetConfig, 'round-trip-id')
+      const original = new BinaryOutputNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'round-trip-id',
+      })
 
       const serialized = serializeNodeData(original)
 
@@ -270,6 +308,8 @@ describe('BinaryOutputNode', () => {
               discoveredProperties: metadata.discoveredProperties,
               position: metadata.position,
             },
+            mqttBus: mockMqttBus as any,
+            onDataChange: mockOnDataChange,
           })
         }
         throw new Error(`Unknown node type: ${nodeType}`)

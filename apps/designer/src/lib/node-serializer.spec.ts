@@ -16,6 +16,9 @@ jest.mock('@/types/infrastructure', () => ({
 }))
 
 describe('NodeSerializer', () => {
+  const mockMqttBus = { pointBulkStream$: { subscribe: jest.fn() } }
+  const mockOnDataChange = jest.fn()
+
   describe('serializeNodeData', () => {
     it('should use type property from toSerializable, not constructor.name', () => {
       const node = new CalculationNode('Test Calc', 'add', 'test-id-123')
@@ -112,7 +115,10 @@ describe('NodeSerializer', () => {
     })
 
     it('should handle calculation node deserialization', () => {
-      const nodeFactory = createNodeFactory()
+      const nodeFactory = createNodeFactory({
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+      })
       const serializedData = {
         id: 'calc-123',
         type: 'calculation',
@@ -163,7 +169,10 @@ describe('NodeSerializer', () => {
         'divide',
         'roundtrip-456'
       )
-      const nodeFactory = createNodeFactory()
+      const nodeFactory = createNodeFactory({
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+      })
 
       // Serialize
       const serialized = serializeNodeData(originalNode)
@@ -198,7 +207,10 @@ describe('NodeSerializer', () => {
       }
 
       const serialized = serializeNodeData(mockMinifiedNode)
-      const nodeFactory = createNodeFactory()
+      const nodeFactory = createNodeFactory({
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+      })
 
       // This should NOT throw "Unknown node type: aH"
       expect(() =>

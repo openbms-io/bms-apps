@@ -34,10 +34,10 @@ export class ConstantNode implements LogicNode<never, LogicOutputHandle> {
   }
 
   get computedValue(): ComputeValue | undefined {
-    const value = this._metadata.value
-    return typeof value === 'number' || typeof value === 'boolean'
-      ? value
-      : undefined
+    return {
+      value: this._metadata.value,
+      type: this._metadata.valueType,
+    }
   }
 
   constructor(
@@ -52,10 +52,10 @@ export class ConstantNode implements LogicNode<never, LogicOutputHandle> {
   }
 
   getValue(): ComputeValue | undefined {
-    const value = this._metadata.value
-    return typeof value === 'number' || typeof value === 'boolean'
-      ? value
-      : undefined
+    return {
+      value: this._metadata.value,
+      type: this._metadata.valueType,
+    }
   }
 
   canConnectWith(target: DataNode): boolean {
@@ -117,12 +117,15 @@ export class ConstantNode implements LogicNode<never, LogicOutputHandle> {
   }
 
   private async trigger(): Promise<void> {
-    const value = this.getValue()
-    if (value !== undefined) {
-      console.log(`🔢 [${this.id}] Triggered, sending constant value:`, value)
+    const computeValue = this.getValue()
+    if (computeValue !== undefined) {
+      console.log(
+        `🔢 [${this.id}] Triggered, sending constant value:`,
+        computeValue
+      )
       await this.send(
         {
-          payload: value,
+          payload: computeValue,
           _msgid: uuidv4(),
           timestamp: Date.now(),
           metadata: { source: this.id, type: this.type },

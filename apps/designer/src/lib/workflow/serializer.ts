@@ -21,6 +21,7 @@ import { type TimerNodeMetadata } from '@/lib/data-nodes/timer-node'
 import { type ScheduleNodeMetadata } from '@/lib/data-nodes/schedule-node'
 import { type BacnetConfig } from '@/types/infrastructure'
 import { type SwitchNodeMetadata } from '@/lib/data-nodes/switch-node'
+import { MqttBusManager } from '@/lib/mqtt/mqtt-bus'
 
 export interface WorkflowMetadata {
   readonly lastModified: string
@@ -228,10 +229,13 @@ export function prepareForReactFlow({
   return deserializeWorkflow({ versionedConfig, nodeFactory })
 }
 
-export function createNodeFactory(): (
-  nodeType: string,
-  data: Record<string, unknown>
-) => unknown {
+export function createNodeFactory({
+  mqttBus,
+  onDataChange,
+}: {
+  mqttBus: MqttBusManager
+  onDataChange: () => void
+}): (nodeType: string, data: Record<string, unknown>) => unknown {
   return function nodeFactory(
     nodeType: string,
     data: Record<string, unknown>
@@ -379,92 +383,128 @@ export function createNodeFactory(): (
       case 'AnalogInputNode':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       // BACnet nodes (enum string values)
       case 'analog-input':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'AnalogOutputNode':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'analog-output':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'AnalogValueNode':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'analog-value':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'BinaryInputNode':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'binary-input':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'BinaryOutputNode':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'binary-output':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'BinaryValueNode':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'binary-value':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'MultistateInputNode':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
-      case 'multistate-input':
+      case 'multi-state-input':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'MultistateOutputNode':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
-      case 'multistate-output':
+      case 'multi-state-output':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'MultistateValueNode':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
-      case 'multistate-value':
+      case 'multi-state-value':
         return factory.createDataNodeFromBacnetConfig({
           config: data.metadata as BacnetConfig,
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       default:

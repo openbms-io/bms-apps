@@ -24,9 +24,9 @@ export enum NodeType {
   BINARY_INPUT = 'binary-input',
   BINARY_OUTPUT = 'binary-output',
   BINARY_VALUE = 'binary-value',
-  MULTISTATE_INPUT = 'multistate-input',
-  MULTISTATE_OUTPUT = 'multistate-output',
-  MULTISTATE_VALUE = 'multistate-value',
+  MULTISTATE_INPUT = 'multi-state-input',
+  MULTISTATE_OUTPUT = 'multi-state-output',
+  MULTISTATE_VALUE = 'multi-state-value',
 
   // Logic nodes (4 types)
   CONSTANT = 'constant',
@@ -51,9 +51,9 @@ export type BacnetObjectType =
   | 'binary-input'
   | 'binary-output'
   | 'binary-value'
-  | 'multistate-input'
-  | 'multistate-output'
-  | 'multistate-value'
+  | 'multi-state-input'
+  | 'multi-state-output'
+  | 'multi-state-value'
 
 // All node types (BACnet + logic + control flow)
 export type NodeTypeString = (typeof NodeType)[keyof typeof NodeType]
@@ -82,7 +82,10 @@ export interface DataNode<
 }
 
 // Computation value types - what logic nodes can work with
-export type ComputeValue = number | boolean
+export type ComputeValue = {
+  value: string | number | boolean
+  type: 'number' | 'boolean' | 'string'
+}
 
 // Logic node interface with clean API and typed handles
 export interface LogicNode<
@@ -258,4 +261,26 @@ export function isCommandNode(node: DataNode): node is CommandNode {
 
 export function isBacnetNode(node: DataNode): node is BacnetInputOutput {
   return node.category === NodeCategory.BACNET
+}
+
+// Parse individual status flag from array [0, 0, 0, 0]
+const parseStatusFlag = (
+  flags: number[] | undefined,
+  index: number
+): boolean | undefined => {
+  if (!flags || !Array.isArray(flags)) return undefined
+  return flags[index] === 1
+}
+
+export function convertStatusFlagsToIndividualProperties({
+  statusFlags,
+}: {
+  statusFlags?: number[]
+}) {
+  return {
+    inAlarm: parseStatusFlag(statusFlags, 0),
+    fault: parseStatusFlag(statusFlags, 1),
+    overridden: parseStatusFlag(statusFlags, 2),
+    outOfService: parseStatusFlag(statusFlags, 3),
+  }
 }

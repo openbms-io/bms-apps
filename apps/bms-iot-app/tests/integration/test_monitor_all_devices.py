@@ -43,7 +43,12 @@ def create_mock_bac0_instance_for_success():
                 (
                     MockPropertyIdentifier("status-flags"),
                     (
-                        MockStatusFlags("in-alarm"),
+                        [
+                            1,
+                            0,
+                            0,
+                            0,
+                        ],  # BACnet StatusFlags: [IN_ALARM, FAULT, OVERRIDDEN, OUT_OF_SERVICE]
                         MockPropertyIdentifier("status-flags"),
                     ),
                 ),
@@ -63,7 +68,10 @@ def create_mock_bac0_instance_for_success():
                 ),
                 (
                     MockPropertyIdentifier("status-flags"),
-                    (MockStatusFlags("normal"), MockPropertyIdentifier("status-flags")),
+                    (
+                        [0, 0, 0, 0],
+                        MockPropertyIdentifier("status-flags"),
+                    ),  # All normal
                 ),
                 (
                     MockPropertyIdentifier("event-state"),
@@ -164,7 +172,7 @@ class TestMonitorAllDevicesIntegration:
                     type="analogInput",
                     point_id=1,
                     iot_device_point_id="point-1",
-                    properties={"presentValue": 72.5, "statusFlags": "in-alarm"},
+                    properties={"presentValue": 72.5, "statusFlags": [1, 0, 0, 0]},
                 ),
                 BacnetObjectInfo(
                     type="analogOutput",
@@ -203,7 +211,7 @@ class TestMonitorAllDevicesIntegration:
 
         point_1 = next(p for p in points if p.point_id == 1)
         assert point_1.present_value == "72.5"
-        assert point_1.status_flags == "in-alarm"
+        assert point_1.status_flags == "[1, 0, 0, 0]"
         assert point_1.controller_id == "test-controller"
 
         mock_bac0_instance.readMultiple.assert_called()

@@ -24,7 +24,6 @@ export const CalculationNode = memo(({ data, id }: NodeProps) => {
   const INPUT_HANDLES: CalculationInputHandle[] = ['input1', 'input2']
   const OUTPUT_HANDLE: LogicOutputHandle = 'output'
 
-  // Use separate selectors to avoid infinite loop
   const inputs = useFlowStore((state) => {
     const node = state.nodes.find((n) => n.id === id)
     if (node?.data?.category === NodeCategory.LOGIC) {
@@ -38,19 +37,20 @@ export const CalculationNode = memo(({ data, id }: NodeProps) => {
     const node = state.nodes.find((n) => n.id === id)
     if (node?.data?.category === NodeCategory.LOGIC) {
       const logicData = node.data as CalculationNodeData
-      return logicData.computedValue
+      return logicData.computedValue as number
     }
     return undefined
   })
 
   const operation = metadata?.operation
 
-  const formatValue = (value: ComputeValue | undefined): string => {
-    if (value === undefined) return '-'
-    if (typeof value === 'number') {
-      return isNaN(value) ? 'NaN' : value.toFixed(2)
+  const formatValue = (val: ComputeValue | undefined): string => {
+    if (val === undefined) return '-'
+    if (val.type === 'number' && typeof val.value === 'number') {
+      return isNaN(val.value) ? 'NaN' : val.value.toFixed(2)
     }
-    return value ? 'true' : 'false'
+
+    return val.value ? 'true' : 'false'
   }
 
   return (
@@ -83,9 +83,7 @@ export const CalculationNode = memo(({ data, id }: NodeProps) => {
         <div className="border-t pt-2">
           <div className="flex justify-between items-center">
             <span className="text-xs text-muted-foreground">Result:</span>
-            <span className="text-lg font-bold text-blue-600">
-              {formatValue(result as ComputeValue | undefined)}
-            </span>
+            <span className="text-lg font-bold text-blue-600">{result}</span>
           </div>
         </div>
       </div>

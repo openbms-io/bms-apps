@@ -34,6 +34,8 @@ export async function GET(
       project,
     }
 
+    console.log(JSON.stringify(response))
+
     return NextResponse.json(response)
   } catch (error) {
     return handleApiError(error, 'fetch project')
@@ -48,6 +50,7 @@ export async function PUT(
     const { projectId } = await params
     const body = await request.json()
 
+    console.log(JSON.stringify(body))
     const dto = UpdateProjectRequestSchema.parse(body)
 
     const dbUpdate = ProjectMapper.toDbUpdate(dto)

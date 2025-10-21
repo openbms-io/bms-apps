@@ -85,7 +85,7 @@ class TestOptionalPropertiesEndToEnd:
         )
 
         # Verify health properties are correctly processed
-        assert point.status_flags == "fault;out-of-service"
+        assert point.status_flags == "[0, 1, 0, 1]"
         assert point.event_state == "normal"
         assert point.out_of_service is False
         assert point.reliability == "noFaultDetected"
@@ -131,7 +131,7 @@ class TestOptionalPropertiesEndToEnd:
             present_value="22.5",
             units="degreesCelsius",
             # Health properties
-            status_flags="fault;overridden",
+            status_flags="[0, 1, 1, 0]",  # BACnet StatusFlags: [IN_ALARM, FAULT, OVERRIDDEN, OUT_OF_SERVICE]
             event_state="normal",
             out_of_service=False,
             reliability="noFaultDetected",
@@ -163,47 +163,48 @@ class TestOptionalPropertiesEndToEnd:
                 {"toFault": True, "toNormal": True, "toOffnormal": False}
             ),
             event_detection_enable=True,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         # Serialize for MQTT
         mqtt_payload = _serialize_point(point)
 
         # Verify basic properties
-        assert mqtt_payload["present_value"] == "22.5"
+        assert mqtt_payload["presentValue"] == "22.5"
         assert mqtt_payload["units"] == "degreesCelsius"
 
         # Verify health properties are properly formatted
-        assert mqtt_payload["status_flags"] == ["fault", "overridden"]
-        assert mqtt_payload["event_state"] == "normal"
-        assert mqtt_payload["out_of_service"] is False
+        assert mqtt_payload["statusFlags"] == [0, 1, 1, 0]
+        assert mqtt_payload["eventState"] == "normal"
+        assert mqtt_payload["outOfService"] is False
         assert mqtt_payload["reliability"] == "noFaultDetected"
 
         # Verify optional scalar properties
-        assert mqtt_payload["high_limit"] == 85.0
-        assert mqtt_payload["low_limit"] == 15.0
-        assert mqtt_payload["event_detection_enable"] is True
+        assert mqtt_payload["highLimit"] == 85.0
+        assert mqtt_payload["lowLimit"] == 15.0
+        assert mqtt_payload["eventDetectionEnable"] is True
 
         # Verify JSON properties are parsed to structured data for MQTT
-        assert isinstance(mqtt_payload["priority_array"], list)
-        assert len(mqtt_payload["priority_array"]) == 16
-        assert mqtt_payload["priority_array"][2] == 25.0
-        assert mqtt_payload["priority_array"][8] == 50.0
-        assert mqtt_payload["priority_array"][15] == 20.0
+        assert isinstance(mqtt_payload["priorityArray"], list)
+        assert len(mqtt_payload["priorityArray"]) == 16
+        assert mqtt_payload["priorityArray"][2] == 25.0
+        assert mqtt_payload["priorityArray"][8] == 50.0
+        assert mqtt_payload["priorityArray"][15] == 20.0
 
-        assert isinstance(mqtt_payload["limit_enable"], dict)
-        assert mqtt_payload["limit_enable"]["lowLimitEnable"] is True
-        assert mqtt_payload["limit_enable"]["highLimitEnable"] is True
+        assert isinstance(mqtt_payload["limitEnable"], dict)
+        assert mqtt_payload["limitEnable"]["lowLimitEnable"] is True
+        assert mqtt_payload["limitEnable"]["highLimitEnable"] is True
 
-        assert isinstance(mqtt_payload["event_enable"], dict)
-        assert mqtt_payload["event_enable"]["toFault"] is True
-        assert mqtt_payload["event_enable"]["toNormal"] is True
-        assert mqtt_payload["event_enable"]["toOffnormal"] is False
+        assert isinstance(mqtt_payload["eventEnable"], dict)
+        assert mqtt_payload["eventEnable"]["toFault"] is True
+        assert mqtt_payload["eventEnable"]["toNormal"] is True
+        assert mqtt_payload["eventEnable"]["toOffnormal"] is False
 
         # Verify unix timestamp is included
-        assert "created_at_unix_milli_timestamp" in mqtt_payload
-        # The computed field might be None without database, so check if present or None
-        timestamp_value = mqtt_payload["created_at_unix_milli_timestamp"]
-        assert timestamp_value is None or isinstance(timestamp_value, int)
+        assert "createdAtUnixMilliTimestamp" in mqtt_payload
+        # The computed field should have the value we explicitly set
+        timestamp_value = mqtt_payload["createdAtUnixMilliTimestamp"]
+        assert timestamp_value == 1704103200000
 
     def test_complete_data_flow_simulation(self):
         """Test: Simulate complete data flow from BACnet reading to MQTT publishing."""
@@ -246,6 +247,7 @@ class TestOptionalPropertiesEndToEnd:
             present_value=str(raw_bacnet_data["presentValue"]),
             units=raw_bacnet_data["units"],
             **combined_data,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         # Step 4: Publish to MQTT (serialization)
@@ -254,38 +256,41 @@ class TestOptionalPropertiesEndToEnd:
         # Step 5: Verify end-to-end data integrity
 
         # Original BACnet data should be preserved
-        assert float(mqtt_payload["present_value"]) == raw_bacnet_data["presentValue"]
+        assert float(mqtt_payload["presentValue"]) == raw_bacnet_data["presentValue"]
         assert mqtt_payload["units"] == raw_bacnet_data["units"]
 
         # Health data should be properly formatted
-        assert mqtt_payload["status_flags"] == ["overridden"]  # Only the set flag
-        assert mqtt_payload["event_state"] == raw_bacnet_data["eventState"]
-        assert mqtt_payload["out_of_service"] == raw_bacnet_data["outOfService"]
+        assert mqtt_payload["statusFlags"] == [
+            0,
+            0,
+            1,
+            0,
+        ]  # BACnet StatusFlags: [IN_ALARM, FAULT, OVERRIDDEN, OUT_OF_SERVICE]
+        assert mqtt_payload["eventState"] == raw_bacnet_data["eventState"]
+        assert mqtt_payload["outOfService"] == raw_bacnet_data["outOfService"]
         assert mqtt_payload["reliability"] == raw_bacnet_data["reliability"]
 
         # Optional properties should be preserved
-        assert mqtt_payload["high_limit"] == raw_bacnet_data["highLimit"]
-        assert mqtt_payload["low_limit"] == raw_bacnet_data["lowLimit"]
+        assert mqtt_payload["highLimit"] == raw_bacnet_data["highLimit"]
+        assert mqtt_payload["lowLimit"] == raw_bacnet_data["lowLimit"]
         assert mqtt_payload["resolution"] == raw_bacnet_data["resolution"]
-        assert mqtt_payload["cov_increment"] == raw_bacnet_data["covIncrement"]
-        assert mqtt_payload["time_delay"] == raw_bacnet_data["timeDelay"]
+        assert mqtt_payload["covIncrement"] == raw_bacnet_data["covIncrement"]
+        assert mqtt_payload["timeDelay"] == raw_bacnet_data["timeDelay"]
+        assert mqtt_payload["notificationClass"] == raw_bacnet_data["notificationClass"]
         assert (
-            mqtt_payload["notification_class"] == raw_bacnet_data["notificationClass"]
-        )
-        assert (
-            mqtt_payload["event_detection_enable"]
+            mqtt_payload["eventDetectionEnable"]
             == raw_bacnet_data["eventDetectionEnable"]
         )
         assert (
-            mqtt_payload["event_algorithm_inhibit"]
+            mqtt_payload["eventAlgorithmInhibit"]
             == raw_bacnet_data["eventAlgorithmInhibit"]
         )
 
         # Metadata should be preserved
-        assert mqtt_payload["point_id"] == 5
-        assert mqtt_payload["iot_device_point_id"] == "floor2-temp-sensor"
-        assert mqtt_payload["controller_id"] == "hvac-controller-01"
-        assert mqtt_payload["controller_device_id"] == "bacnet-device-123"
+        assert mqtt_payload["pointId"] == 5
+        assert mqtt_payload["iotDevicePointId"] == "floor2-temp-sensor"
+        assert mqtt_payload["controllerId"] == "hvac-controller-01"
+        assert mqtt_payload["controllerDeviceId"] == "bacnet-device-123"
 
     def test_backwards_compatibility_with_existing_health_only(self):
         """Test: System still works with devices that only have basic health properties."""
@@ -321,32 +326,31 @@ class TestOptionalPropertiesEndToEnd:
             present_value=str(legacy_bacnet_data["presentValue"]),
             units=legacy_bacnet_data["units"],
             **combined_data,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         # Serialize for MQTT
         mqtt_payload = _serialize_point(point)
 
         # Basic functionality should work perfectly
-        assert (
-            float(mqtt_payload["present_value"]) == legacy_bacnet_data["presentValue"]
-        )
+        assert float(mqtt_payload["presentValue"]) == legacy_bacnet_data["presentValue"]
         assert mqtt_payload["units"] == legacy_bacnet_data["units"]
-        assert mqtt_payload["status_flags"] is None  # No flags set, so None
-        assert mqtt_payload["event_state"] == "normal"
-        assert mqtt_payload["out_of_service"] is False
+        assert mqtt_payload["statusFlags"] == [0, 0, 0, 0]  # All normal
+        assert mqtt_payload["eventState"] == "normal"
+        assert mqtt_payload["outOfService"] is False
         assert mqtt_payload["reliability"] == "noFaultDetected"
 
         # Optional properties should be None (not causing errors)
-        assert mqtt_payload["high_limit"] is None
-        assert mqtt_payload["low_limit"] is None
-        assert mqtt_payload["priority_array"] is None
-        assert mqtt_payload["event_enable"] is None
-        assert mqtt_payload["limit_enable"] is None
-        assert mqtt_payload["event_detection_enable"] is None
+        assert mqtt_payload["highLimit"] is None
+        assert mqtt_payload["lowLimit"] is None
+        assert mqtt_payload["priorityArray"] is None
+        assert mqtt_payload["eventEnable"] is None
+        assert mqtt_payload["limitEnable"] is None
+        assert mqtt_payload["eventDetectionEnable"] is None
 
         # Should still have required metadata
-        assert mqtt_payload["point_id"] == 10
-        assert mqtt_payload["iot_device_point_id"] == "legacy-sensor"
+        assert mqtt_payload["pointId"] == 10
+        assert mqtt_payload["iotDevicePointId"] == "legacy-sensor"
 
     def test_complex_properties_round_trip_integrity(self):
         """Test: Complex BACnet properties maintain integrity through full pipeline."""
@@ -418,6 +422,7 @@ class TestOptionalPropertiesEndToEnd:
             present_value=str(complex_bacnet_data["presentValue"]),
             units=complex_bacnet_data["units"],
             **combined_data,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         mqtt_payload = _serialize_point(point)
@@ -425,7 +430,7 @@ class TestOptionalPropertiesEndToEnd:
         # Verify complex properties maintain exact values
 
         # Priority array should preserve exact values and positions
-        priority_result = mqtt_payload["priority_array"]
+        priority_result = mqtt_payload["priorityArray"]
         assert isinstance(priority_result, list)
         assert len(priority_result) == 16
         assert priority_result[7] == 25.5  # Manual override preserved
@@ -434,20 +439,20 @@ class TestOptionalPropertiesEndToEnd:
         assert priority_result[5] is None  # Null values preserved
 
         # Limit enable should preserve specific bit settings
-        limit_result = mqtt_payload["limit_enable"]
+        limit_result = mqtt_payload["limitEnable"]
         assert isinstance(limit_result, dict)
         assert limit_result["lowLimitEnable"] is True  # Bit 0 was 1
         assert limit_result["highLimitEnable"] is False  # Bit 1 was 0
 
         # Event enable should preserve specific bit settings
-        event_result = mqtt_payload["event_enable"]
+        event_result = mqtt_payload["eventEnable"]
         assert isinstance(event_result, dict)
         assert event_result["toFault"] is True  # Bit 0 was 1
         assert event_result["toNormal"] is True  # Bit 1 was 1
         assert event_result["toOffnormal"] is False  # Bit 2 was 0
 
         # Timestamps should preserve exact values and nulls
-        timestamps_result = mqtt_payload["event_time_stamps"]
+        timestamps_result = mqtt_payload["eventTimeStamps"]
         assert isinstance(timestamps_result, list)
         assert len(timestamps_result) == 3
         assert timestamps_result[0] == "2024-01-01T10:30:00Z"
@@ -455,7 +460,7 @@ class TestOptionalPropertiesEndToEnd:
         assert timestamps_result[2] == "2024-01-01T12:15:00Z"
 
         # Messages should preserve exact strings
-        messages_result = mqtt_payload["event_message_texts"]
+        messages_result = mqtt_payload["eventMessageTexts"]
         assert isinstance(messages_result, list)
         assert len(messages_result) == 3
         assert messages_result[0] == "Temperature high"

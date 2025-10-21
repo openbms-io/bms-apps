@@ -3,6 +3,7 @@ import {
   BacnetConfig,
   BacnetInputOutput,
 } from '@/types/infrastructure'
+import { MqttBusManager } from '@/lib/mqtt/mqtt-bus'
 import { AnalogInputNode } from './analog-input-node'
 import { AnalogOutputNode } from './analog-output-node'
 import { AnalogValueNode } from './analog-value-node'
@@ -26,9 +27,13 @@ class DataNodeFactory {
   // Create appropriate node from BACnet config
   createDataNodeFromBacnetConfig({
     config,
+    mqttBus,
+    onDataChange,
     id,
   }: {
     config: BacnetConfig
+    mqttBus: MqttBusManager
+    onDataChange: () => void
     id?: string
   }): BacnetInputOutput {
     const { objectType } = config
@@ -36,23 +41,23 @@ class DataNodeFactory {
     // Create appropriate node based on object type
     switch (objectType) {
       case 'analog-input':
-        return new AnalogInputNode(config, id)
+        return new AnalogInputNode({ config, mqttBus, onDataChange, id })
       case 'binary-input':
-        return new BinaryInputNode(config, id)
-      case 'multistate-input':
-        return new MultistateInputNode(config, id)
+        return new BinaryInputNode({ config, mqttBus, onDataChange, id })
+      case 'multi-state-input':
+        return new MultistateInputNode({ config, mqttBus, onDataChange, id })
       case 'analog-output':
-        return new AnalogOutputNode(config, id)
+        return new AnalogOutputNode({ config, mqttBus, onDataChange, id })
       case 'binary-output':
-        return new BinaryOutputNode(config, id)
-      case 'multistate-output':
-        return new MultistateOutputNode(config, id)
+        return new BinaryOutputNode({ config, mqttBus, onDataChange, id })
+      case 'multi-state-output':
+        return new MultistateOutputNode({ config, mqttBus, onDataChange, id })
       case 'analog-value':
-        return new AnalogValueNode(config, id)
+        return new AnalogValueNode({ config, mqttBus, onDataChange, id })
       case 'binary-value':
-        return new BinaryValueNode(config, id)
-      case 'multistate-value':
-        return new MultistateValueNode(config, id)
+        return new BinaryValueNode({ config, mqttBus, onDataChange, id })
+      case 'multi-state-value':
+        return new MultistateValueNode({ config, mqttBus, onDataChange, id })
       default:
         throw new Error(`Unsupported BACnet object type: ${objectType}`)
     }

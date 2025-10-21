@@ -14,8 +14,6 @@ from src.controllers.uploader.upload import upload_config, get_points_to_publish
 import asyncio
 from src.controllers.uploader.upload import mark_points_as_uploaded_in_db
 
-logger
-
 
 class UploaderActor:
     def __init__(self, actor_queue_registry: ActorQueueRegistry):

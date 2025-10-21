@@ -27,21 +27,22 @@ class TestMQTTSerializationOptionalProperties:
             controller_device_id="test-device",
             present_value="22.5",
             units="degreesCelsius",
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
-        assert serialized["controller_ip_address"] == "192.168.1.100"
-        assert serialized["present_value"] == "22.5"
+        assert serialized["controllerIpAddress"] == "192.168.1.100"
+        assert serialized["presentValue"] == "22.5"
         assert serialized["units"] == "degreesCelsius"
 
         # Optional properties should be None
-        assert serialized["high_limit"] is None
-        assert serialized["priority_array"] is None
-        assert serialized["event_enable"] is None
+        assert serialized["highLimit"] is None
+        assert serialized["priorityArray"] is None
+        assert serialized["eventEnable"] is None
 
     def test_serialize_point_with_status_flags_parsing(self):
-        """Test: Status flags semicolon-separated string to array conversion."""
+        """Test: Status flags JSON array string to array conversion."""
         point = ControllerPointsModel(
             controller_ip_address="192.168.1.100",
             bacnet_object_type="analogValue",
@@ -49,13 +50,14 @@ class TestMQTTSerializationOptionalProperties:
             iot_device_point_id="test-point-id",
             controller_id="test-controller",
             controller_device_id="test-device",
-            status_flags="fault;overridden;out-of-service",
+            status_flags="[0, 1, 1, 1]",  # BACnet StatusFlags: [IN_ALARM, FAULT, OVERRIDDEN, OUT_OF_SERVICE]
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
-        # Should convert semicolon-separated to array
-        assert serialized["status_flags"] == ["fault", "overridden", "out-of-service"]
+        # Should parse JSON string to integer array
+        assert serialized["statusFlags"] == [0, 1, 1, 1]
 
     def test_serialize_point_with_empty_status_flags(self):
         """Test: Empty or None status flags handling."""
@@ -67,10 +69,11 @@ class TestMQTTSerializationOptionalProperties:
             controller_id="test-controller",
             controller_device_id="test-device",
             status_flags=None,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
-        assert serialized["status_flags"] is None
+        assert serialized["statusFlags"] is None
 
     def test_serialize_point_with_priority_array_json(self):
         """Test: Priority array JSON string parsing to structured data."""
@@ -103,17 +106,18 @@ class TestMQTTSerializationOptionalProperties:
             controller_id="test-controller",
             controller_device_id="test-device",
             priority_array=priority_array_json,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # Should parse JSON string to structured data
-        assert isinstance(serialized["priority_array"], list)
-        assert len(serialized["priority_array"]) == 16
-        assert serialized["priority_array"][2] == 25.0
-        assert serialized["priority_array"][8] == 50.0
-        assert serialized["priority_array"][15] == 20.0
-        assert serialized["priority_array"][0] is None
+        assert isinstance(serialized["priorityArray"], list)
+        assert len(serialized["priorityArray"]) == 16
+        assert serialized["priorityArray"][2] == 25.0
+        assert serialized["priorityArray"][8] == 50.0
+        assert serialized["priorityArray"][15] == 20.0
+        assert serialized["priorityArray"][0] is None
 
     def test_serialize_point_with_limit_enable_json(self):
         """Test: Limit enable JSON string parsing to structured data."""
@@ -129,14 +133,15 @@ class TestMQTTSerializationOptionalProperties:
             controller_id="test-controller",
             controller_device_id="test-device",
             limit_enable=limit_enable_json,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # Should parse JSON string to structured object
-        assert isinstance(serialized["limit_enable"], dict)
-        assert serialized["limit_enable"]["lowLimitEnable"] is True
-        assert serialized["limit_enable"]["highLimitEnable"] is False
+        assert isinstance(serialized["limitEnable"], dict)
+        assert serialized["limitEnable"]["lowLimitEnable"] is True
+        assert serialized["limitEnable"]["highLimitEnable"] is False
 
     def test_serialize_point_with_event_enable_json(self):
         """Test: Event enable JSON string parsing to structured data."""
@@ -152,15 +157,16 @@ class TestMQTTSerializationOptionalProperties:
             controller_id="test-controller",
             controller_device_id="test-device",
             event_enable=event_enable_json,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # Should parse JSON string to structured object
-        assert isinstance(serialized["event_enable"], dict)
-        assert serialized["event_enable"]["toFault"] is True
-        assert serialized["event_enable"]["toNormal"] is True
-        assert serialized["event_enable"]["toOffnormal"] is False
+        assert isinstance(serialized["eventEnable"], dict)
+        assert serialized["eventEnable"]["toFault"] is True
+        assert serialized["eventEnable"]["toNormal"] is True
+        assert serialized["eventEnable"]["toOffnormal"] is False
 
     def test_serialize_point_with_event_timestamps_json(self):
         """Test: Event timestamps JSON array parsing."""
@@ -176,16 +182,17 @@ class TestMQTTSerializationOptionalProperties:
             controller_id="test-controller",
             controller_device_id="test-device",
             event_time_stamps=timestamps_json,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # Should parse JSON string to array
-        assert isinstance(serialized["event_time_stamps"], list)
-        assert len(serialized["event_time_stamps"]) == 3
-        assert serialized["event_time_stamps"][0] == "2024-01-01T10:00:00Z"
-        assert serialized["event_time_stamps"][1] is None
-        assert serialized["event_time_stamps"][2] == "2024-01-01T12:00:00Z"
+        assert isinstance(serialized["eventTimeStamps"], list)
+        assert len(serialized["eventTimeStamps"]) == 3
+        assert serialized["eventTimeStamps"][0] == "2024-01-01T10:00:00Z"
+        assert serialized["eventTimeStamps"][1] is None
+        assert serialized["eventTimeStamps"][2] == "2024-01-01T12:00:00Z"
 
     def test_serialize_point_with_event_messages_json(self):
         """Test: Event message texts JSON array parsing."""
@@ -201,16 +208,17 @@ class TestMQTTSerializationOptionalProperties:
             controller_id="test-controller",
             controller_device_id="test-device",
             event_message_texts=messages_json,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # Should parse JSON string to array
-        assert isinstance(serialized["event_message_texts"], list)
-        assert len(serialized["event_message_texts"]) == 3
-        assert serialized["event_message_texts"][0] == "High alarm condition"
-        assert serialized["event_message_texts"][1] == "Normal operation"
-        assert serialized["event_message_texts"][2] == "Warning threshold"
+        assert isinstance(serialized["eventMessageTexts"], list)
+        assert len(serialized["eventMessageTexts"]) == 3
+        assert serialized["eventMessageTexts"][0] == "High alarm condition"
+        assert serialized["eventMessageTexts"][1] == "Normal operation"
+        assert serialized["eventMessageTexts"][2] == "Warning threshold"
 
     def test_serialize_point_with_object_property_reference_json(self):
         """Test: Object property reference JSON parsing."""
@@ -230,21 +238,22 @@ class TestMQTTSerializationOptionalProperties:
             controller_id="test-controller",
             controller_device_id="test-device",
             event_algorithm_inhibit_ref=ref_json,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # Should parse JSON string to structured object
-        assert isinstance(serialized["event_algorithm_inhibit_ref"], dict)
+        assert isinstance(serialized["eventAlgorithmInhibitRef"], dict)
         assert (
-            serialized["event_algorithm_inhibit_ref"]["objectIdentifier"]
+            serialized["eventAlgorithmInhibitRef"]["objectIdentifier"]
             == "analogInput:1"
         )
         assert (
-            serialized["event_algorithm_inhibit_ref"]["propertyIdentifier"]
+            serialized["eventAlgorithmInhibitRef"]["propertyIdentifier"]
             == "presentValue"
         )
-        assert serialized["event_algorithm_inhibit_ref"]["arrayIndex"] is None
+        assert serialized["eventAlgorithmInhibitRef"]["arrayIndex"] is None
 
     def test_serialize_point_with_all_json_properties(self):
         """Test: Serialization with all JSON properties populated."""
@@ -269,19 +278,20 @@ class TestMQTTSerializationOptionalProperties:
             event_algorithm_inhibit_ref=json.dumps(
                 {"objectIdentifier": "test", "propertyIdentifier": "test"}
             ),
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # All JSON properties should be parsed to structured data
-        assert isinstance(serialized["priority_array"], list)
-        assert isinstance(serialized["limit_enable"], dict)
-        assert isinstance(serialized["event_enable"], dict)
-        assert isinstance(serialized["acked_transitions"], dict)
-        assert isinstance(serialized["event_time_stamps"], list)
-        assert isinstance(serialized["event_message_texts"], list)
-        assert isinstance(serialized["event_message_texts_config"], list)
-        assert isinstance(serialized["event_algorithm_inhibit_ref"], dict)
+        assert isinstance(serialized["priorityArray"], list)
+        assert isinstance(serialized["limitEnable"], dict)
+        assert isinstance(serialized["eventEnable"], dict)
+        assert isinstance(serialized["ackedTransitions"], dict)
+        assert isinstance(serialized["eventTimeStamps"], list)
+        assert isinstance(serialized["eventMessageTexts"], list)
+        assert isinstance(serialized["eventMessageTextsConfig"], list)
+        assert isinstance(serialized["eventAlgorithmInhibitRef"], dict)
 
     def test_serialize_point_with_invalid_json_properties(self):
         """Test: Graceful handling of invalid JSON in properties."""
@@ -295,6 +305,7 @@ class TestMQTTSerializationOptionalProperties:
             priority_array="invalid json {{{",
             limit_enable="not json at all",
             event_enable=None,  # None should be handled gracefully
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         with patch("src.utils.logger.logger.warning") as mock_warning:
@@ -304,9 +315,9 @@ class TestMQTTSerializationOptionalProperties:
             assert mock_warning.call_count >= 2  # At least 2 invalid JSON strings
 
             # Invalid JSON should result in None values
-            assert serialized["priority_array"] is None
-            assert serialized["limit_enable"] is None
-            assert serialized["event_enable"] is None
+            assert serialized["priorityArray"] is None
+            assert serialized["limitEnable"] is None
+            assert serialized["eventEnable"] is None
 
     def test_serialize_point_with_datetime_fields(self):
         """Test: Datetime fields are properly converted to ISO format."""
@@ -320,15 +331,16 @@ class TestMQTTSerializationOptionalProperties:
             controller_device_id="test-device",
             created_at=now,
             updated_at=now,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # Datetime fields should be ISO formatted strings
-        assert isinstance(serialized["created_at"], str)
-        assert isinstance(serialized["updated_at"], str)
-        assert "T" in serialized["created_at"]  # ISO format marker
-        assert "T" in serialized["updated_at"]  # ISO format marker
+        assert isinstance(serialized["createdAt"], str)
+        assert isinstance(serialized["updatedAt"], str)
+        assert "T" in serialized["createdAt"]  # ISO format marker
+        assert "T" in serialized["updatedAt"]  # ISO format marker
 
     def test_serialize_point_unix_timestamp_included(self):
         """Test: Unix millisecond timestamp is included in serialized data."""
@@ -339,15 +351,16 @@ class TestMQTTSerializationOptionalProperties:
             iot_device_point_id="test-point-id",
             controller_id="test-controller",
             controller_device_id="test-device",
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # Unix timestamp should be included for InfluxDB
-        assert "created_at_unix_milli_timestamp" in serialized
-        # The computed field might be None without database, so check if present or None
-        timestamp_value = serialized["created_at_unix_milli_timestamp"]
-        assert timestamp_value is None or isinstance(timestamp_value, int)
+        assert "createdAtUnixMilliTimestamp" in serialized
+        # The computed field should now have the value we explicitly set
+        timestamp_value = serialized["createdAtUnixMilliTimestamp"]
+        assert timestamp_value == 1704103200000
 
     def test_serialize_point_with_mixed_properties(self):
         """Test: Serialization with mix of basic, health, and optional properties."""
@@ -362,7 +375,7 @@ class TestMQTTSerializationOptionalProperties:
             present_value="22.5",
             units="degreesCelsius",
             # Health properties
-            status_flags="fault;overridden",
+            status_flags="[0, 1, 1, 0]",  # BACnet StatusFlags: [IN_ALARM, FAULT, OVERRIDDEN, OUT_OF_SERVICE]
             event_state="normal",
             out_of_service=False,
             reliability="noFaultDetected",
@@ -371,18 +384,19 @@ class TestMQTTSerializationOptionalProperties:
             low_limit=10.0,
             priority_array=json.dumps([None, None, 25.0]),
             event_detection_enable=True,
+            created_at_unix_milli_timestamp=1704103200000,
         )
 
         serialized = _serialize_point(point)
 
         # All property types should be present and correctly formatted
-        assert serialized["present_value"] == "22.5"
+        assert serialized["presentValue"] == "22.5"
         assert serialized["units"] == "degreesCelsius"
-        assert serialized["status_flags"] == ["fault", "overridden"]
-        assert serialized["event_state"] == "normal"
-        assert serialized["out_of_service"] is False
+        assert serialized["statusFlags"] == [0, 1, 1, 0]
+        assert serialized["eventState"] == "normal"
+        assert serialized["outOfService"] is False
         assert serialized["reliability"] == "noFaultDetected"
-        assert serialized["high_limit"] == 30.0
-        assert serialized["low_limit"] == 10.0
-        assert isinstance(serialized["priority_array"], list)
-        assert serialized["event_detection_enable"] is True
+        assert serialized["highLimit"] == 30.0
+        assert serialized["lowLimit"] == 10.0
+        assert isinstance(serialized["priorityArray"], list)
+        assert serialized["eventDetectionEnable"] is True

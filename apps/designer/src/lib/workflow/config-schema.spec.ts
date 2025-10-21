@@ -43,9 +43,9 @@ describe('Workflow Config Schema', () => {
       { nt: NodeType.BINARY_INPUT, ot: 'binary-input' },
       { nt: NodeType.BINARY_OUTPUT, ot: 'binary-output' },
       { nt: NodeType.BINARY_VALUE, ot: 'binary-value' },
-      { nt: NodeType.MULTISTATE_INPUT, ot: 'multistate-input' },
-      { nt: NodeType.MULTISTATE_OUTPUT, ot: 'multistate-output' },
-      { nt: NodeType.MULTISTATE_VALUE, ot: 'multistate-value' },
+      { nt: NodeType.MULTISTATE_INPUT, ot: 'multi-state-input' },
+      { nt: NodeType.MULTISTATE_OUTPUT, ot: 'multi-state-output' },
+      { nt: NodeType.MULTISTATE_VALUE, ot: 'multi-state-value' },
     ]
 
     for (const { nt, ot } of objectTypes) {

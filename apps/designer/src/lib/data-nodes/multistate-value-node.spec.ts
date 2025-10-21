@@ -16,9 +16,12 @@ jest.mock('@/types/infrastructure', () => ({
 }))
 
 describe('MultistateValueNode', () => {
+  const mockMqttBus = { pointBulkStream$: { subscribe: jest.fn() } }
+  const mockOnDataChange = jest.fn()
+
   const mockBacnetConfig: BacnetConfig = {
     pointId: 'MSV_001',
-    objectType: 'multistate-value',
+    objectType: 'multi-state-value',
     objectId: 789,
     supervisorId: 'supervisor-1',
     controllerId: 'controller-1',
@@ -34,19 +37,24 @@ describe('MultistateValueNode', () => {
 
   describe('Constructor and basic properties', () => {
     it('should create node with BacnetConfig properties', () => {
-      const node = new MultistateValueNode(mockBacnetConfig, 'explicit-test-id')
+      const node = new MultistateValueNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'explicit-test-id',
+      })
 
       expect(node.id).toBe('explicit-test-id')
       expect(node.pointId).toBe('MSV_001')
-      expect(node.objectType).toBe('multistate-value')
-      expect(node.type).toBe('multistate-value')
+      expect(node.objectType).toBe('multi-state-value')
+      expect(node.type).toBe('multi-state-value')
       expect(node.objectId).toBe(789)
       expect(node.supervisorId).toBe('supervisor-1')
       expect(node.controllerId).toBe('controller-1')
       expect(node.name).toBe('System Status')
       expect(node.label).toBe('System Status')
       expect(node.discoveredProperties).toEqual({
-        presentValue: 2,
+        presentValue: 'Warning',
         stateText: [null, 'Normal', 'Warning', 'Alarm'],
         numberOfStates: 3,
         description: 'Overall system status indicator',
@@ -61,7 +69,12 @@ describe('MultistateValueNode', () => {
         pointId: 'MSV_002',
         name: 'Priority Override',
       }
-      const node = new MultistateValueNode(config, 'custom-multistate-value-id')
+      const node = new MultistateValueNode({
+        config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'custom-multistate-value-id',
+      })
 
       expect(node.id).toBe('custom-multistate-value-id')
       expect(node.pointId).toBe('MSV_002')
@@ -72,7 +85,7 @@ describe('MultistateValueNode', () => {
     it('should handle different configurations', () => {
       const config: BacnetConfig = {
         pointId: 'MSV_003',
-        objectType: 'multistate-value',
+        objectType: 'multi-state-value',
         objectId: 456,
         supervisorId: 'supervisor-2',
         controllerId: 'controller-2',
@@ -83,7 +96,11 @@ describe('MultistateValueNode', () => {
           numberOfStates: 3,
         },
       }
-      const node = new MultistateValueNode(config)
+      const node = new MultistateValueNode({
+        config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+      })
 
       expect(node.objectId).toBe(456)
       expect(node.discoveredProperties.presentValue).toBe(0)
@@ -93,24 +110,29 @@ describe('MultistateValueNode', () => {
 
   describe('Serialization', () => {
     it('should implement toSerializable correctly', () => {
-      const node = new MultistateValueNode(mockBacnetConfig, 'test-id-456')
+      const node = new MultistateValueNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'test-id-456',
+      })
 
       const serialized = node.toSerializable()
 
       expect(serialized).toEqual({
         id: 'test-id-456',
-        type: 'multistate-value',
+        type: 'multi-state-value',
         category: 'bacnet',
         label: 'System Status',
         metadata: {
           pointId: 'MSV_001',
-          objectType: 'multistate-value',
+          objectType: 'multi-state-value',
           objectId: 789,
           supervisorId: 'supervisor-1',
           controllerId: 'controller-1',
           name: 'System Status',
           discoveredProperties: {
-            presentValue: 2,
+            presentValue: 'Warning',
             stateText: [null, 'Normal', 'Warning', 'Alarm'],
             numberOfStates: 3,
             description: 'Overall system status indicator',
@@ -121,10 +143,12 @@ describe('MultistateValueNode', () => {
     })
 
     it('should serialize via serializeNodeData', () => {
-      const node = new MultistateValueNode(
-        mockBacnetConfig,
-        'multistate-value-node'
-      )
+      const node = new MultistateValueNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'multistate-value-node',
+      })
 
       const result = serializeNodeData(node)
 
@@ -132,18 +156,18 @@ describe('MultistateValueNode', () => {
         nodeType: NodeType.MULTISTATE_VALUE,
         serializedData: {
           id: 'multistate-value-node',
-          type: 'multistate-value',
+          type: 'multi-state-value',
           category: 'bacnet',
           label: 'System Status',
           metadata: {
             pointId: 'MSV_001',
-            objectType: 'multistate-value',
+            objectType: 'multi-state-value',
             objectId: 789,
             supervisorId: 'supervisor-1',
             controllerId: 'controller-1',
             name: 'System Status',
             discoveredProperties: {
-              presentValue: 2,
+              presentValue: 'Warning',
               stateText: [null, 'Normal', 'Warning', 'Alarm'],
               numberOfStates: 3,
               description: 'Overall system status indicator',
@@ -159,10 +183,12 @@ describe('MultistateValueNode', () => {
     it('should create via factory with BacnetConfig', () => {
       const node = factory.createDataNodeFromBacnetConfig({
         config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       }) as MultistateValueNode
 
       expect(node.pointId).toBe('MSV_001')
-      expect(node.objectType).toBe('multistate-value')
+      expect(node.objectType).toBe('multi-state-value')
       expect(node.name).toBe('System Status')
       expect(node.label).toBe('System Status')
     })
@@ -170,7 +196,7 @@ describe('MultistateValueNode', () => {
     it('should create via factory with different config', () => {
       const config: BacnetConfig = {
         pointId: 'MSV_004',
-        objectType: 'multistate-value',
+        objectType: 'multi-state-value',
         objectId: 321,
         supervisorId: 'supervisor-3',
         controllerId: 'controller-3',
@@ -183,6 +209,8 @@ describe('MultistateValueNode', () => {
       }
       const node = factory.createDataNodeFromBacnetConfig({
         config,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       }) as MultistateValueNode
 
       expect(node.pointId).toBe('MSV_004')
@@ -195,12 +223,12 @@ describe('MultistateValueNode', () => {
     it('should deserialize correctly via nodeFactory', () => {
       const serializedData = {
         id: 'deserialized-multistate-value',
-        type: 'multistate-value',
+        type: 'multi-state-value',
         category: 'bacnet',
         label: 'Restored Multistate Value',
         metadata: {
           pointId: 'MSV_999',
-          objectType: 'multistate-value',
+          objectType: 'multi-state-value',
           objectId: 999,
           supervisorId: 'supervisor-restored',
           controllerId: 'controller-restored',
@@ -218,7 +246,7 @@ describe('MultistateValueNode', () => {
         if (nodeType === NodeType.MULTISTATE_VALUE) {
           const metadata = data.metadata as {
             pointId: string
-            objectType: 'multistate-value'
+            objectType: 'multi-state-value'
             objectId: number
             supervisorId: string
             controllerId: string
@@ -237,6 +265,8 @@ describe('MultistateValueNode', () => {
               discoveredProperties: metadata.discoveredProperties,
               position: metadata.position,
             },
+            mqttBus: mockMqttBus as any,
+            onDataChange: mockOnDataChange,
           })
         }
         throw new Error(`Unknown node type: ${nodeType}`)
@@ -253,16 +283,18 @@ describe('MultistateValueNode', () => {
       expect(result.objectId).toBe(999)
       expect(result.discoveredProperties.presentValue).toBe(1)
       expect(result.position).toEqual({ x: 500, y: 600 })
-      expect(result.type).toBe('multistate-value')
+      expect(result.type).toBe('multi-state-value')
     })
   })
 
   describe('Round-trip serialization', () => {
     it('should preserve all properties through serialize/deserialize cycle', () => {
-      const original = new MultistateValueNode(
-        mockBacnetConfig,
-        'round-trip-id'
-      )
+      const original = new MultistateValueNode({
+        config: mockBacnetConfig,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
+        id: 'round-trip-id',
+      })
 
       const serialized = serializeNodeData(original)
 
@@ -270,7 +302,7 @@ describe('MultistateValueNode', () => {
         if (nodeType === NodeType.MULTISTATE_VALUE) {
           const metadata = data.metadata as {
             pointId: string
-            objectType: 'multistate-value'
+            objectType: 'multi-state-value'
             objectId: number
             supervisorId: string
             controllerId: string
@@ -289,6 +321,8 @@ describe('MultistateValueNode', () => {
               discoveredProperties: metadata.discoveredProperties,
               position: metadata.position,
             },
+            mqttBus: mockMqttBus as any,
+            onDataChange: mockOnDataChange,
           })
         }
         throw new Error(`Unknown node type: ${nodeType}`)

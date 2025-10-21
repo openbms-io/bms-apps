@@ -2,10 +2,11 @@ import { BacnetObjectType } from './infrastructure'
 
 // Define all possible property value types
 export type PropertyValue = number | boolean | string | null
+export type PresentValue = number | boolean | string
 
 // All possible BACnet properties with their types
 export interface BacnetProperties {
-  presentValue?: number | boolean | string
+  presentValue?: PresentValue
 
   // Metadata properties
   objectIdentifier?: [string, number]
@@ -31,25 +32,48 @@ export interface BacnetProperties {
   highLimit?: number
   lowLimit?: number
   deadband?: number
-  priorityArray?: Array<{ type: string; value: number }>
+  priorityArray?: Array<number | null>
   relinquishDefault?: number | boolean | string
+
+  // Binary BacnetType
+  activeText?: string
+  inactiveText?: string
 
   // Event/Alarm properties
   notifyType?: string
   notificationClass?: number
-  limitEnable?: number[]
-  eventEnable?: number[]
-  eventAlgorithmInhibit?: number
-  eventDetectionEnable?: number
-  reliabilityEvaluationInhibit?: number
-  ackedTransitions?: number[]
-  eventTimeStamps?: Array<{ type: string; value: string }>
-  eventMessageTexts?: string[]
-  eventMessageTextsConfig?: string[]
+  limitEnable?: { lowLimitEnable: boolean; highLimitEnable: boolean } | null
+  eventEnable?: {
+    toFault: boolean
+    toNormal: boolean
+    toOffnormal: boolean
+  } | null
+  eventAlgorithmInhibit?: boolean
+  eventDetectionEnable?: boolean
+  reliabilityEvaluationInhibit?: boolean
+  ackedTransitions?: {
+    toFault: boolean
+    toNormal: boolean
+    toOffnormal: boolean
+  } | null
+  eventTimeStamps?: Array<string | null>
+  eventMessageTexts?: string[] | null
+  eventMessageTextsConfig?: string[] | null
 
   // Multistate-specific properties
   numberOfStates?: number
   stateText?: (string | null)[]
+}
+
+// Type-safe multistate check
+const MULTISTATE_TYPES = new Set<BacnetObjectType>([
+  'multi-state-input',
+  'multi-state-output',
+  'multi-state-value',
+] as const)
+
+export function isMultistateObjectType(objectType: BacnetObjectType): boolean {
+  return MULTISTATE_TYPES.has(objectType)
 }
 
 // Property metadata interface
@@ -207,11 +231,12 @@ const OBJECT_TYPE_METADATA: Record<
       writable: true,
     },
   },
-  'multistate-input': {
+  'multi-state-input': {
     presentValue: { name: 'Present Value', readable: true, writable: false },
+
     ...MULTISTATE_PROPERTIES,
   },
-  'multistate-output': {
+  'multi-state-output': {
     presentValue: { name: 'Present Value', readable: true, writable: true },
     relinquishDefault: {
       name: 'Relinquish Default',
@@ -220,7 +245,7 @@ const OBJECT_TYPE_METADATA: Record<
     },
     ...MULTISTATE_PROPERTIES,
   },
-  'multistate-value': {
+  'multi-state-value': {
     presentValue: { name: 'Present Value', readable: true, writable: true },
     relinquishDefault: {
       name: 'Relinquish Default',

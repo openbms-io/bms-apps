@@ -10,6 +10,7 @@ import { BacnetInputOutput } from '@/types/infrastructure'
 import {
   getPropertyMetadata,
   BacnetProperties,
+  isMultistateObjectType,
 } from '@/types/bacnet-properties'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -109,7 +110,7 @@ function formatPropertyValue(
   // Handle multistate presentValue with stateText lookup
   if (
     propertyName === 'presentValue' &&
-    data.objectType.includes('multistate') &&
+    isMultistateObjectType(data.objectType) &&
     typeof value === 'number'
   ) {
     const stateText = data.discoveredProperties.stateText as
@@ -124,7 +125,7 @@ function formatPropertyValue(
   // Handle units if present (for non-multistate objects)
   if (
     propertyName === 'presentValue' &&
-    !data.objectType.includes('multistate')
+    !isMultistateObjectType(data.objectType)
   ) {
     const units = data.discoveredProperties.units
     if (units) {

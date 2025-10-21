@@ -30,6 +30,7 @@ import { TimerNode } from '@/lib/data-nodes/timer-node'
 import { ScheduleNode, DayOfWeek } from '@/lib/data-nodes/schedule-node'
 import { FunctionInput, FunctionNode } from '@/lib/data-nodes/function-node'
 import factory from '@/lib/data-nodes/factory'
+import { getMqttBus } from '@/lib/mqtt/mqtt-bus'
 import { projectsApi } from '@/lib/api/projects'
 import {
   serializeWorkflow,
@@ -206,11 +207,18 @@ export interface FlowSlice {
 // For now, we'll create a placeholder
 async function createDataNodeFromBacnetConfig({
   config,
+  mqttBus,
+  onDataChange,
 }: {
   config: BacnetConfig
+  mqttBus: ReturnType<typeof getMqttBus>
+  onDataChange: () => void
 }): Promise<DataNode> {
-  // Placeholder - will be replaced with actual implementation
-  return factory.createDataNodeFromBacnetConfig({ config })
+  return factory.createDataNodeFromBacnetConfig({
+    config,
+    mqttBus,
+    onDataChange,
+  })
 }
 
 export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
@@ -231,7 +239,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
       currentNodes
     ) as Node<NodeDataRecord>[]
 
-    get().dataGraph.setNodesArray(updatedNodes)
+    get().dataGraph.updateNodesArray(updatedNodes)
 
     set({ nodes: updatedNodes })
   },
@@ -253,7 +261,11 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
   addNodeFromInfrastructure: async (draggedPoint, position) => {
     const { config } = draggedPoint
 
-    const dataNode = await createDataNodeFromBacnetConfig({ config })
+    const dataNode = await createDataNodeFromBacnetConfig({
+      config,
+      mqttBus: getMqttBus(),
+      onDataChange: () => set({ nodes: [...get().nodes] }),
+    })
 
     get().dataGraph.addNode(dataNode, position)
 
@@ -668,7 +680,10 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
       console.log('🚀 [FlowStore] Loaded project:', project)
       if (project.workflowConfig) {
         const versionedConfig = project.workflowConfig
-        const nodeFactory = createNodeFactory()
+        const nodeFactory = createNodeFactory({
+          mqttBus: getMqttBus(),
+          onDataChange: () => set({ nodes: [...get().nodes] }),
+        })
 
         const { nodes, edges } = deserializeWorkflow({
           versionedConfig,
@@ -677,7 +692,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
 
         // Update store and DataGraph
         const dataGraph = get().dataGraph
-        dataGraph.setNodesArray(nodes as Node<NodeDataRecord>[])
+        dataGraph.loadNodes(nodes as Node<NodeDataRecord>[])
         dataGraph.setEdgesArray(edges as Edge<EdgeData>[])
 
         console.log('🚀 [FlowStore] Loaded project:', nodes, edges)
@@ -689,7 +704,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
       } else {
         // Empty workflow config - set to default state
         const dataGraph = get().dataGraph
-        dataGraph.setNodesArray([])
+        dataGraph.updateNodesArray([])
         dataGraph.setEdgesArray([])
 
         set({

@@ -43,14 +43,6 @@ export class DataGraph {
     return Array.from(this.edgesMap.values())
   }
 
-  // Setter for React Flow's applyNodeChanges
-  setNodesArray(nodes: Node<NodeDataRecord>[]): void {
-    this.nodesMap.clear()
-    nodes.forEach((node) => {
-      this.nodesMap.set(node.id, node)
-    })
-  }
-
   // Setter for React Flow's applyEdgeChanges
   setEdgesArray(edges: Edge<EdgeData>[]): void {
     this.edgesMap.clear()
@@ -59,21 +51,15 @@ export class DataGraph {
     })
   }
 
-  addNode(node: DataNode, position: { x: number; y: number }): void {
-    // Inject routing callback for message system
+  private setupMessageCallback(node: DataNode): void {
     const callback = async (
       message: Message,
       nodeId: string,
       handle: string
     ) => {
-      // Activate only the edges from this specific handle
       this.edgeManager.activateSpecificOutputEdges(nodeId, handle)
-
-      // Get fresh arrays each time for pure router
       const nodes = this.getNodesArray()
       const edges = this.getEdgesArray()
-
-      // Use pure router function
       await this.messageRouter.routeMessage(
         message,
         nodeId,
@@ -84,6 +70,26 @@ export class DataGraph {
     }
 
     node.setSendCallback(callback)
+  }
+
+  updateNodesArray(nodes: Node<NodeDataRecord>[]): void {
+    this.nodesMap.clear()
+    nodes.forEach((node) => {
+      this.nodesMap.set(node.id, node)
+    })
+  }
+
+  loadNodes(nodes: Node<NodeDataRecord>[]): void {
+    this.nodesMap.clear()
+    nodes.forEach((node) => {
+      const dataNode = node.data as DataNode
+      this.setupMessageCallback(dataNode)
+      this.nodesMap.set(node.id, node)
+    })
+  }
+
+  addNode(node: DataNode, position: { x: number; y: number }): void {
+    this.setupMessageCallback(node)
 
     // For nodes without category, use type as-is. For custom nodes, prepend category
     const nodeType = !node.category
@@ -107,6 +113,10 @@ export class DataGraph {
       // CRITICAL: Call destroy() FIRST to cleanup MQTT subscriptions
       if ('destroy' in dataNode && typeof dataNode.destroy === 'function') {
         dataNode.destroy()
+      }
+      // Call dispose() for BACnet nodes to cleanup MQTT subscriptions
+      if ('dispose' in dataNode && typeof dataNode.dispose === 'function') {
+        dataNode.dispose()
       }
       // Then call reset() to cleanup timers/intervals
       if ('reset' in dataNode && typeof dataNode.reset === 'function') {
@@ -321,7 +331,7 @@ export class DataGraph {
           {
             _msgid: uuidv4(),
             timestamp: Date.now(),
-            payload: true,
+            payload: { value: true, type: 'boolean' },
             metadata: { trigger: true },
           },
           DEFAULT_INPUT_HANDLE,

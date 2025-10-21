@@ -1,11 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
 import { Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useFlowStore } from '@/store/use-flow-store'
 import { useProject } from '@/hooks/use-projects'
 import { useIotDevice } from '@/hooks/use-iot-device'
+import { useWorkflowLoader } from '@/hooks/use-workflow-loader'
 
 interface WorkflowLoaderProps {
   orgId: string
@@ -30,69 +29,13 @@ export function WorkflowLoader({
     project?.iotDeviceId ?? undefined
   )
 
-  const loadWorkflowIntoCanvas = useFlowStore((s) => s.loadWorkflowIntoCanvas)
-  const showError = useFlowStore((s) => s.showError)
-  const startMqtt = useFlowStore((s) => s.startMqtt)
-  const stopMqtt = useFlowStore((s) => s.stopMqtt)
-  const clearAllNodes = useFlowStore((s) => s.clearAllNodes)
-
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // MQTT lifecycle management - stop/start when iot device changes
-  useEffect(() => {
-    if (!iotDevice) return
-
-    startMqtt({
-      organizationId: iotDevice.organizationId,
-      siteId: iotDevice.siteId,
-      iotDeviceId: iotDevice.id,
-    })
-
-    return () => {
-      clearAllNodes()
-      stopMqtt()
-    }
-  }, [
-    iotDevice?.organizationId,
-    iotDevice?.siteId,
-    iotDevice?.id,
-    startMqtt,
-    stopMqtt,
-    clearAllNodes,
-    iotDevice,
-  ])
-
-  const doLoad = useCallback(async () => {
-    if (isLoadingProject) {
-      setIsLoading(true)
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-    try {
-      await loadWorkflowIntoCanvas({ orgId, siteId, projectId })
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Failed to load workflow'
-      setError(msg)
-      showError('Load Failed', msg)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [
-    loadWorkflowIntoCanvas,
+  const { isLoading, error, retry } = useWorkflowLoader({
     orgId,
     siteId,
     projectId,
-    showError,
+    iotDevice,
     isLoadingProject,
-  ])
-
-  // Load workflow when project is ready
-  useEffect(() => {
-    doLoad()
-  }, [doLoad])
+  })
 
   return (
     <>
@@ -115,7 +58,7 @@ export function WorkflowLoader({
                 {error}
               </div>
               <div className="mt-3 flex gap-2">
-                <Button size="sm" onClick={() => void doLoad()}>
+                <Button size="sm" onClick={() => void retry()}>
                   Retry
                 </Button>
               </div>

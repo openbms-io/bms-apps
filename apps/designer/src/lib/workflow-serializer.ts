@@ -11,6 +11,7 @@ import { type ConstantNodeMetadata } from '@/lib/data-nodes/constant-node'
 import { type CalculationOperation } from '@/lib/data-nodes/calculation-node'
 import { type ComparisonOperation } from '@/lib/data-nodes/comparison-node'
 import { type DayOfWeek } from '@/lib/data-nodes/schedule-node'
+import { getMqttBus } from '@/lib/mqtt/mqtt-bus'
 
 export interface WorkflowMetadata {
   readonly lastModified: string
@@ -251,10 +252,10 @@ export function prepareForReactFlow({
   return deserializeWorkflow({ versionedConfig, nodeFactory })
 }
 
-export function createNodeFactory(): (
-  nodeType: string,
-  data: Record<string, unknown>
-) => unknown {
+export function createNodeFactory(
+  mqttBus: ReturnType<typeof getMqttBus>,
+  onDataChange: () => void
+): (nodeType: string, data: Record<string, unknown>) => unknown {
   return function nodeFactory(
     nodeType: string,
     data: Record<string, unknown>
@@ -361,6 +362,8 @@ export function createNodeFactory(): (
             discoveredProperties: analogInputMetadata.discoveredProperties,
             position: analogInputMetadata.position,
           },
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'AnalogOutputNode':
@@ -385,6 +388,8 @@ export function createNodeFactory(): (
             discoveredProperties: analogOutputMetadata.discoveredProperties,
             position: analogOutputMetadata.position,
           },
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'AnalogValueNode':
@@ -409,6 +414,8 @@ export function createNodeFactory(): (
             discoveredProperties: analogValueMetadata.discoveredProperties,
             position: analogValueMetadata.position,
           },
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'BinaryInputNode':
@@ -433,6 +440,8 @@ export function createNodeFactory(): (
             discoveredProperties: binaryInputMetadata.discoveredProperties,
             position: binaryInputMetadata.position,
           },
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'BinaryOutputNode':
@@ -457,6 +466,8 @@ export function createNodeFactory(): (
             discoveredProperties: binaryOutputMetadata.discoveredProperties,
             position: binaryOutputMetadata.position,
           },
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'BinaryValueNode':
@@ -481,12 +492,14 @@ export function createNodeFactory(): (
             discoveredProperties: binaryValueMetadata.discoveredProperties,
             position: binaryValueMetadata.position,
           },
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'MultistateInputNode':
         const multistateInputMetadata = data.metadata as {
           pointId: string
-          objectType: 'multistate-input'
+          objectType: 'multi-state-input'
           objectId: number
           supervisorId: string
           controllerId: string
@@ -505,12 +518,14 @@ export function createNodeFactory(): (
             discoveredProperties: multistateInputMetadata.discoveredProperties,
             position: multistateInputMetadata.position,
           },
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'MultistateOutputNode':
         const multistateOutputMetadata = data.metadata as {
           pointId: string
-          objectType: 'multistate-output'
+          objectType: 'multi-state-output'
           objectId: number
           supervisorId: string
           controllerId: string
@@ -529,12 +544,14 @@ export function createNodeFactory(): (
             discoveredProperties: multistateOutputMetadata.discoveredProperties,
             position: multistateOutputMetadata.position,
           },
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       case 'MultistateValueNode':
         const multistateValueMetadata = data.metadata as {
           pointId: string
-          objectType: 'multistate-value'
+          objectType: 'multi-state-value'
           objectId: number
           supervisorId: string
           controllerId: string
@@ -553,6 +570,8 @@ export function createNodeFactory(): (
             discoveredProperties: multistateValueMetadata.discoveredProperties,
             position: multistateValueMetadata.position,
           },
+          mqttBus,
+          onDataChange,
           id: data.id as string,
         })
       default:
