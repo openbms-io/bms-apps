@@ -81,6 +81,34 @@ export function toComputeValue(value: unknown): ComputeValue | undefined {
 }
 
 /**
+ * Convert a raw value to ComputeValue with type metadata,
+ * parsing numeric strings to numbers.
+ *
+ * Use this for BACnet data that may arrive as stringified numbers from MQTT.
+ */
+export function toComputeValueWithParsing(
+  value: unknown
+): ComputeValue | undefined {
+  if (typeof value === 'number') {
+    return { value, type: 'number' }
+  }
+  if (typeof value === 'boolean') {
+    return { value, type: 'boolean' }
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (trimmed !== '') {
+      const parsed = Number(value)
+      if (!isNaN(parsed)) {
+        return { value: parsed, type: 'number' }
+      }
+    }
+    return { value, type: 'string' }
+  }
+  return undefined
+}
+
+/**
  * Convert ComputeValue to number for calculations
  */
 export function toNumber(cv: ComputeValue): number {
