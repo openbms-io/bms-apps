@@ -16,7 +16,10 @@ import {
 } from '@/types/bacnet-properties'
 import { Message, SendCallback } from '@/lib/message-system/types'
 import { v4 as uuidv4 } from 'uuid'
-import { toComputeValue, convertMultistatePresentValue } from './bacnet-utils'
+import {
+  toComputeValueWithParsing,
+  convertMultistatePresentValue,
+} from './bacnet-utils'
 import { makeSerializable } from '@/lib/workflow/serialization-utils'
 import { Subscription } from 'rxjs'
 import { MqttBusManager } from '@/lib/mqtt/mqtt-bus'
@@ -182,7 +185,7 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
       for (const propertyHandle of outputHandles) {
         const currentValue = this.discoveredProperties[propertyHandle]
         if (currentValue !== undefined) {
-          const computeValue = toComputeValue(currentValue)
+          const computeValue = toComputeValueWithParsing(currentValue)
           if (computeValue) {
             await this.send(
               {
