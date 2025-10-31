@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { Node, Edge } from '@xyflow/react'
-import { withVersion, getVersionMetadata, type Version } from 'bms-schemas'
+import { withVersion, getVersionMetadata, type Version } from '@/lib/schemas'
 import {
   serializeNodeData,
   deserializeNodeData,

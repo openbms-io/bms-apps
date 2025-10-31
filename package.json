@@ -13,7 +13,6 @@
     "test:python": "pnpm bms-iot:test && pnpm mqtt-topics:test",
     "lint": "pnpm --recursive run lint",
     "clean": "pnpm --recursive run clean",
-    "schema:generate": "pnpm --filter bms-schemas run generate",
     "format": "pnpm --recursive run format",
     "format:check": "pnpm --recursive run format:check",
     "bms-iot:install": "cd apps/bms-iot-app && pip install -e '.[test]'",

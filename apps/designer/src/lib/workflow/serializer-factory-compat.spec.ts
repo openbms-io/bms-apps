@@ -3,7 +3,7 @@ import {
   createNodeFactory,
   type VersionedWorkflowConfig,
 } from './serializer'
-import { SCHEMA_VERSION } from 'bms-schemas'
+import { SCHEMA_VERSION } from '@/lib/schemas'
 import {
   NodeType,
   NodeCategory,

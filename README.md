@@ -32,9 +32,8 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed contribution guidelines
 
 This is a **PNPM monorepo** with two main applications and a shared schema package:
 
-- **🎨 Designer App** (`apps/designer/`) - Next.js 15.5 visual programming interface
+- **🎨 Designer App** (`apps/designer/`) - Next.js 15.5 visual programming interface with Zod schema validation
 - **🔧 BMS IoT App** (`apps/bms-iot-app/`) - BACnet/MQTT runtime for IoT devices
-- **📋 BMS Schemas** (`packages/bms-schemas/`) - Shared schema validation (Zod → JSON Schema → Pydantic)
 
 ## 🚀 Quick Start
 
@@ -53,9 +52,6 @@ cd bms-supervisor-controller
 
 # Install all dependencies
 pnpm install
-
-# Generate schemas (first time setup)
-pnpm run schema:generate
 ```
 
 ### Development
@@ -73,35 +69,33 @@ pnpm bms-iot:run                        # BMS IoT App
 
 ### Schema Development Workflow
 
-1. **Edit schemas** in `packages/bms-schemas/src/`
-2. **Run tests** to validate changes: `pnpm --filter bms-schemas test`
-3. **Generate outputs** for both apps: `pnpm run schema:generate`
-4. **Test integration** in both Designer and IoT Supervisor apps
+Schemas are managed within the Designer app using Zod for validation:
+
+1. **Edit schemas** in `apps/designer/src/lib/schemas/`
+2. **Run tests** to validate changes: `pnpm --filter designer test`
+3. **Test integration** in Designer app
 
 ### Schema Structure
 
 ```
-packages/bms-schemas/src/
+apps/designer/src/lib/schemas/
 ├── version.ts              # Schema versioning system
 ├── common/
 │   ├── position.ts         # PositionSchema + tests
 │   └── position.spec.ts
-├── nodes/
-│   ├── types.ts           # NodeTypeSchema + tests
-│   ├── types.spec.ts
-│   ├── flow-node.ts       # FlowNodeSchema + tests
-│   └── flow-node.spec.ts
-└── __tests__/
-    └── integration.spec.ts # Cross-schema tests
+└── nodes/
+    ├── types.ts           # NodeTypeSchema + tests
+    ├── types.spec.ts
+    ├── flow-node.ts       # FlowNodeSchema + tests
+    └── flow-node.spec.ts
 ```
 
 ### Adding New Schemas
 
-1. Create new schema file in appropriate directory (`src/common/` or `src/nodes/`)
+1. Create new schema file in appropriate directory (`common/` or `nodes/`)
 2. Create corresponding `.spec.ts` test file
-3. Add export to `src/index.ts`
-4. Update generation scripts if needed
-5. Run `pnpm run schema:generate` to update outputs
+3. Add export to `index.ts`
+4. Run `pnpm --filter designer test` to validate
 
 ## 🛠️ Commands
 
@@ -114,9 +108,6 @@ pnpm run build                  # Build all apps
 pnpm run test                   # Run all tests
 pnpm run lint                   # Lint all code
 pnpm run clean                  # Clean all build outputs
-
-# Schema Management
-pnpm run schema:generate        # Generate schemas for all apps
 
 # Code Formatting (Python)
 pnpm run python:format          # Format Python code with black
@@ -208,71 +199,65 @@ npm run clean                  # Clean all generated files
 # All tests
 pnpm run test
 
-# Per package
-pnpm --filter designer test           # React component tests
-pnpm --filter bms-schemas test        # Schema validation tests
-pnpm --filter iot-supervisor-app pytest tests/  # Python API tests
+# Per app
+pnpm --filter designer test           # React component + schema tests
+pnpm bms-iot:test                     # Python IoT supervisor tests
 ```
 
 ### Integration Tests
 
 ```bash
-# Schema integration (requires IoT Supervisor running on port 8081)
-pnpm --filter bms-schemas run test:integration
+# Run integration tests for Designer
+pnpm --filter designer test
+
+# Run integration tests for BMS IoT App
+pnpm bms-iot:test
 ```
 
 ## 📊 Manual Verification Steps
 
-### 1. Schema Pipeline Verification
+### 1. Schema Validation
 
 ```bash
-# 1. Test schema generation
-cd packages/bms-schemas
-npm run clean
-npm run build                   # Should pass all tests + generate outputs
-
-# 2. Verify outputs exist
-ls typescript/                  # Should have organized JS/TS files
-ls python/                     # Should have flow_node.py + index.py
-ls json-schema/                # Should have flow-node.json
+# Test schema validation
+pnpm --filter designer test    # Should pass all schema tests
 ```
 
 ### 2. Designer App Verification
 
 ```bash
-# 1. Start Designer app
-cd apps/designer
-npm run dev                    # http://localhost:3000
+# Start Designer app
+pnpm --filter designer dev    # http://localhost:3000
 
-# 2. Verify schema integration
-# - Visit http://localhost:3000
-# - Check "Schema Integration Test" component displays correctly
-# - Should show green "✅ Valid" status
+# Verify app functionality
+# - Visit http://localhost:3000/projects
+# - Test creating and editing workflows
+# - Verify schema validation works correctly
 ```
 
 ### 3. BMS IoT App Verification
 
 ```bash
-# 1. Test BMS IoT App CLI
+# Test BMS IoT App CLI
 pnpm bms-iot:help
 
-# 2. Run comprehensive tests
+# Run comprehensive tests
 pnpm bms-iot:test:verbose
 
-# 3. Test main functionality (requires MQTT configuration)
+# Test main functionality (requires MQTT configuration)
 pnpm bms-iot:run
 ```
 
 ### 4. End-to-End Integration
 
 ```bash
-# 1. Start both apps
-# Terminal 1: pnpm --filter designer run dev (port 3000)
+# Start both apps
+# Terminal 1: pnpm --filter designer dev (port 3000)
 # Terminal 2: pnpm bms-iot:run
 
-# 2. Run integration test
-cd packages/bms-schemas
-npm run test:integration       # Should pass all 3 test phases
+# Test full integration
+# - Create workflows in Designer
+# - Verify they can be deployed to BMS IoT App
 ```
 
 ## 🏗️ Project Structure
@@ -284,15 +269,11 @@ bms-supervisor-controller/
 ├── .npmrc                    # PNPM configuration
 ├── apps/
 │   ├── designer/             # Next.js visual programming interface
+│   │   └── src/lib/schemas/  # Zod schemas for validation
 │   ├── bms-iot-app/          # BACnet/MQTT IoT runtime
 │   └── bacnet-simulator/     # BACnet device simulator (git submodule)
 └── packages/
-    └── bms-schemas/          # Shared schema package
-        ├── src/              # Source Zod schemas (multi-file)
-        ├── typescript/       # Generated TypeScript output
-        ├── python/          # Generated Pydantic models
-        ├── json-schema/     # Generated JSON Schema
-        └── integration-tests/ # E2E schema tests
+    └── mqtt_topics/          # Shared MQTT topic management
 ```
 
 ## 🔧 Development Workflow
@@ -300,42 +281,40 @@ bms-supervisor-controller/
 ### Typical Development Session
 
 1. **Start development**: `pnpm run dev`
-2. **Make schema changes**: Edit files in `packages/bms-schemas/src/`
-3. **Test schemas**: `pnpm --filter bms-schemas test`
-4. **Regenerate outputs**: `pnpm run schema:generate`
-5. **Verify integration**: Both apps should reflect changes automatically
+2. **Make schema changes**: Edit files in `apps/designer/src/lib/schemas/`
+3. **Test schemas**: `pnpm --filter designer test`
+4. **Verify integration**: Designer app should reflect changes automatically
 
 ### Adding New Features
 
 1. **Designer changes**: Edit React components in `apps/designer/src/`
 2. **BMS IoT App changes**: Edit Python modules in `apps/bms-iot-app/src/`
-3. **Schema changes**: Add/modify schemas in `packages/bms-schemas/src/`
+3. **Schema changes**: Add/modify schemas in `apps/designer/src/lib/schemas/`
 4. **Always run tests**: `pnpm run test` before committing
 
 ## 🚨 Troubleshooting
 
 ### Common Issues
 
-**Schema generation fails**:
+**Schema validation fails**:
 
 ```bash
-cd packages/bms-schemas
-npm run clean && npm run build
+pnpm --filter designer test
 ```
 
-**Import errors in apps**:
+**Import errors in Designer**:
 
 ```bash
-# Rebuild schema package
-pnpm run schema:generate
+# Rebuild Designer
+pnpm --filter designer dev
 ```
 
 **Test failures**:
 
 ```bash
 # Check individual test suites
-pnpm --filter bms-schemas test
 pnpm --filter designer test
+pnpm bms-iot:test
 ```
 
 **TypeScript errors**:
@@ -344,7 +323,6 @@ pnpm --filter designer test
 # Clean and rebuild everything
 pnpm run clean
 pnpm install
-pnpm run schema:generate
 pnpm run build
 ```
 
@@ -375,11 +353,10 @@ pnpm run hooks:run            # Run hooks on all files
 
 ## 📚 Technologies Used
 
-- **Frontend**: Next.js 15.5, TypeScript, Tailwind CSS v4, React Flow, Zustand
+- **Frontend**: Next.js 15.5, TypeScript, Tailwind CSS v4, React Flow, Zustand, Zod
 - **Backend**: FastAPI, Typer, uvicorn, BACnet (BAC0, bacpypes)
-- **Schema**: Zod (source), JSON Schema (intermediate), Pydantic (Python)
 - **Testing**: Jest, React Testing Library, pytest
-- **Build**: PNPM workspaces, TypeScript, tsx, datamodel-code-generator
+- **Build**: PNPM workspaces, TypeScript
 - **Code Quality**: Prettier, ESLint, Black, Ruff, pre-commit hooks
 
 ## 📄 License
