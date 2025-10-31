@@ -1,6 +1,6 @@
 import { Node, Edge } from '@xyflow/react'
 import { ConstantNode } from '@/lib/data-nodes/constant-node'
-import { SCHEMA_VERSION } from 'bms-schemas'
+import { SCHEMA_VERSION } from '@/lib/schemas'
 
 // Mock UUID to avoid Jest issues
 jest.mock('uuid', () => ({

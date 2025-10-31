@@ -4,14 +4,13 @@
 
 Visual programming platform for building management systems with IoT device integration.
 
-**Architecture Flow**: Designer (Visual Programming) → Schema (Communication Protocol) → BMS IoT App (Execution Engine)
+**Architecture Flow**: Designer (Visual Programming with Zod Validation) → BMS IoT App (Execution Engine)
 
-## Schema Package Purpose
+## Schema Validation
 
-The `bms-schemas` package defines the data format used to send visual programming configurations from the Designer app to the BMS IoT App for execution on IoT devices.
+The Designer app includes Zod schemas for validating visual programming configurations before sending them to the BMS IoT App for execution on IoT devices.
 
-- **Designer App**: Creates visual flow configurations using drag-and-drop interface
-- **Schema Package**: Validates and transforms configurations (Zod → JSON Schema → Pydantic)
+- **Designer App**: Creates and validates visual flow configurations using drag-and-drop interface with Zod schemas
 - **BMS IoT App**: Receives validated configurations and executes the control logic with BACnet/MQTT integration
 
 ## Development Philosophy
@@ -54,20 +53,17 @@ The `bms-schemas` package defines the data format used to send visual programmin
 
 ```bash
 # 1. Write failing test
-cd packages/bms-schemas
-# Edit .spec.ts file with new test case
+cd apps/designer
+# Edit .spec.ts file in src/lib/schemas/ with new test case
 
 # 2. Run test (should fail)
-npm test
+pnpm test
 
 # 3. Implement schema to make test pass
-# Edit schema .ts file
+# Edit schema .ts file in src/lib/schemas/
 
 # 4. Verify test passes
 pnpm test
-
-# 5. Regenerate outputs
-pnpm run generate
 ```
 
 #### BMS IoT App Development (TDD)
@@ -114,7 +110,6 @@ pnpm test
 ```bash
 # Initial setup
 pnpm install
-pnpm run schema:generate
 pnpm run setup:hooks
 
 # Development
@@ -122,13 +117,12 @@ pnpm run dev                    # Start both apps
 pnpm run test                   # Run all tests
 ```
 
-### Schema Workflow
+### Schema Development
 
 ```bash
-cd packages/bms-schemas
-pnpm test                        # Run schema tests
-pnpm run generate               # Generate all outputs
-pnpm run test:integration       # E2E schema test
+cd apps/designer
+pnpm test                        # Run schema + component tests
+# Schemas are in src/lib/schemas/
 ```
 
 ### BMS IoT App Setup
@@ -169,12 +163,10 @@ pnpm test                       # React component tests
 - **SQLModel** for database operations
 - **pytest** with extensive test coverage (800+ tests)
 
-### Schema Pipeline
+### Schema Validation
 
-- **Source**: Zod schemas (TypeScript)
-- **Intermediate**: JSON Schema
-- **Target**: Pydantic models (Python)
-- **Testing**: Jest (TypeScript) + pytest (Python) + E2E integration
+- **Schemas**: Zod schemas in Designer app (TypeScript)
+- **Testing**: Jest (TypeScript) for schema validation
 
 ## File Structure
 
@@ -185,13 +177,9 @@ bms-supervisor-controller/
 ├── docs/coding-standards.md   # Development standards
 ├── apps/
 │   ├── designer/             # Visual programming interface
+│   │   └── src/lib/schemas/  # Zod schemas for validation
 │   └── bms-iot-app/          # BACnet/MQTT execution engine
 └── packages/
-    ├── bms-schemas/          # Integration schemas
-    │   ├── src/              # Source Zod schemas
-    │   ├── typescript/       # Generated TS (for Designer)
-    │   ├── python/          # Generated Python (for BMS IoT App)
-    │   └── json-schema/     # Intermediate format
     └── mqtt_topics/          # MQTT topic management (Python + TypeScript)
 ```
 
@@ -201,18 +189,17 @@ bms-supervisor-controller/
 
 ```bash
 # 1. TDD: Write test first
-cd packages/bms-schemas
-# Add test case to src/nodes/types.spec.ts
+cd apps/designer
+# Add test case to src/lib/schemas/nodes/types.spec.ts
 
 # 2. Implement schema
-# Add to NodeTypeSchema enum in src/nodes/types.ts
+# Add to NodeTypeSchema enum in src/lib/schemas/nodes/types.ts
 
-# 3. Regenerate for both apps
-pnpm run generate
+# 3. Test the changes
+pnpm test
 
-# 4. Test integration in both apps
-pnpm --filter designer run dev
-pnpm bms-iot:run
+# 4. Test integration in Designer
+pnpm dev
 ```
 
 ### Adding New UI Components (shadcn/ui)
@@ -247,21 +234,17 @@ Python -> pip
 #### Schema Issues
 
 ```bash
-# Clean and regenerate everything
-cd packages/bms-schemas
-npm run clean
-npm run build                   # Tests + generation
+# Test schema validation
+cd apps/designer
+pnpm test                       # Tests schema validation
 ```
 
-#### Import Errors
+#### Import Errors in Designer
 
 ```bash
-# Check if schemas are generated
-ls packages/bms-schemas/python/
-ls packages/bms-schemas/typescript/
-
-# Regenerate if missing
-pnpm run schema:generate
+# Test imports and schemas
+cd apps/designer
+pnpm test
 ```
 
 #### BMS IoT App Import Issues
@@ -275,10 +258,10 @@ pnpm bms-iot:test                 # Run import tests
 
 ### Designer → BMS IoT App
 
-1. **Designer** creates FlowNode configurations
-2. **Schema** validates and serializes to JSON
+1. **Designer** creates and validates FlowNode configurations using Zod schemas
+2. **Designer** serializes to JSON
 3. **MQTT message** sends JSON configuration to BMS IoT App
-4. **BMS IoT App** deserializes using Pydantic models
+4. **BMS IoT App** receives and executes the configuration
 5. **BACnet execution engine** runs the configuration on IoT devices
 
 ### Testing Integration
@@ -287,9 +270,12 @@ pnpm bms-iot:test                 # Run import tests
 # Start both apps
 pnpm run dev
 
-# Run E2E test
-cd packages/bms-schemas
-npm run test:integration
+# Test Designer schemas
+cd apps/designer
+pnpm test
+
+# Test BMS IoT App
+pnpm bms-iot:test
 ```
 
 ## Zustand gotcha
