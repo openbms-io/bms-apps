@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { mockAISuggestionService } from '../services'
-import { queryKeys223p } from './query-keys'
+import { semanticQueryKeys } from './query-keys'
 import type { BACnetPointData } from '../../schemas'
 
 export function useAISuggestionQuery(
@@ -8,7 +8,7 @@ export function useAISuggestionQuery(
   point: BACnetPointData | null
 ) {
   return useQuery({
-    queryKey: queryKeys223p.aiSuggestions.detail(
+    queryKey: semanticQueryKeys.aiSuggestions.detail(
       point?.pointId ?? 'none',
       projectId ?? 'none'
     ),

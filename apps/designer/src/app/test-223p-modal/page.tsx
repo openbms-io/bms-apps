@@ -159,7 +159,7 @@ export default function Test223PModalPage() {
         [selectedPoint.pointId]: mapping,
       }))
       sessionStorage.setItem(
-        `223p-${selectedPoint.pointId}`,
+        `semantic-${selectedPoint.pointId}`,
         JSON.stringify(mapping)
       )
     }

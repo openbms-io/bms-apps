@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { spaces223pApi } from '../spaces.api'
-import { queryKeys223p } from './query-keys'
+import { semanticQueryKeys } from './query-keys'
 import type { SpaceType } from '../../schemas'
 
 export function useSpacesQuery(projectId: string | undefined) {
   return useQuery({
-    queryKey: queryKeys223p.spaces.list(projectId || 'none'),
+    queryKey: semanticQueryKeys.spaces.list(projectId || 'none'),
     queryFn: () => spaces223pApi.listSpaces(projectId!),
     enabled: !!projectId,
   })
@@ -26,7 +26,7 @@ export function useCreateSpaceMutation() {
     }) => spaces223pApi.createSpace(projectId, rdfsLabel, spaceType),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys223p.spaces.list(variables.projectId),
+        queryKey: semanticQueryKeys.spaces.list(variables.projectId),
       })
     },
   })
@@ -47,7 +47,7 @@ export function useAddPointToSpaceMutation() {
     }) => spaces223pApi.addPointToSpace(projectId, spaceId, pointId),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys223p.spaces.list(variables.projectId),
+        queryKey: semanticQueryKeys.spaces.list(variables.projectId),
       })
     },
   })

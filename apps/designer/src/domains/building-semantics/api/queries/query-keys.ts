@@ -1,6 +1,6 @@
-const all = ['223p'] as const
+const all = ['building-semantics'] as const
 
-export const queryKeys223p = {
+export const semanticQueryKeys = {
   all,
 
   mappings: {
