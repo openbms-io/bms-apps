@@ -1,5 +1,5 @@
 import type { ISpaceService } from './space.service.interface'
-import type { SpaceDTO, SpaceType } from '../../schemas'
+import type { SpaceDTO, SpaceType } from '../schemas'
 
 /**
  * Mock Space Service

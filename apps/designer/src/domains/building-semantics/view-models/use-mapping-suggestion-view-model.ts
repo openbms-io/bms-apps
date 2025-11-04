@@ -2,7 +2,11 @@ import { useMemo } from 'react'
 import { useAISuggestionQuery } from '../api/queries/use-ai-suggestion-query'
 import { useMappingsQuery } from '../api/queries/use-mappings-query'
 import { useSpacesQuery } from '../api/queries/use-spaces-query'
-import type { BACnetPointData, SemanticEquipment, SpaceDTO } from '../schemas'
+import type {
+  BACnetPointData,
+  SemanticEquipment,
+  SpaceDTO,
+} from '../adapters/ashrae-223p/schemas'
 import type {
   Equipment223PRecommendation,
   FieldRecommendation,

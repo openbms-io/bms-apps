@@ -24,7 +24,7 @@ import { makeSerializable } from '@/lib/workflow/serialization-utils'
 import { Subscription } from 'rxjs'
 import { MqttBusManager } from '@/lib/mqtt/mqtt-bus'
 import { PointBulkPayload, ControllerPoint } from 'mqtt-topics'
-import type { SemanticEquipment } from '@/domains/building-semantics/schemas'
+import type { SemanticEquipment } from '@/domains/building-semantics'
 
 export abstract class BaseBacnetNode implements BacnetInputOutput {
   // From BacnetConfig

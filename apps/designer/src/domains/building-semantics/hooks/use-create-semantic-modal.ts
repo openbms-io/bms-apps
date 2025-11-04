@@ -1,7 +1,10 @@
 import { useState, useCallback } from 'react'
 import type { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 import type { ControllerPoint } from '@/lib/domain/models/controller-point'
-import type { BACnetPointData, BACnetControllerData } from '../schemas'
+import type {
+  BACnetPointData,
+  BACnetControllerData,
+} from '../adapters/ashrae-223p/schemas'
 
 interface CreateSemanticModalState {
   point: BACnetPointData | null

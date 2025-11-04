@@ -1,6 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import type { BACnetPointData, BACnetControllerData } from '../schemas'
+import type {
+  BACnetPointData,
+  BACnetControllerData,
+} from '../adapters/ashrae-223p/schemas'
 
 interface PointContextCardProps {
   point: BACnetPointData

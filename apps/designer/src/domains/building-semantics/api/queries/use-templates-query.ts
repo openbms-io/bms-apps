@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { mockBuildingMOTIFService } from '../services/mock-buildingmotif.service'
+import { mockBuildingMOTIFService } from '../../services'
 import { semanticQueryKeys } from './query-keys'
 
 export function useEquipmentTypesQuery() {

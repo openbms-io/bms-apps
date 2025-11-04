@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { mockAISuggestionService } from '../services'
+import { mockAISuggestionService } from '../../services'
 import { semanticQueryKeys } from './query-keys'
-import type { BACnetPointData } from '../../schemas'
+import type { BACnetPointData } from '../../adapters/ashrae-223p/schemas'
 
 export function useAISuggestionQuery(
   projectId: string | undefined,

@@ -1,4 +1,4 @@
-import type { SpaceDTO } from '../../schemas'
+import type { SpaceDTO } from '../schemas'
 
 /**
  * Space Service Interface

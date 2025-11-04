@@ -5,7 +5,7 @@ import type {
   SemanticEquipment,
   BACnetPointData,
   BACnetControllerData,
-} from '@/domains/building-semantics/schemas'
+} from '@/domains/building-semantics'
 import type { DraggedPoint } from '@/store/slices/flow-slice'
 import type { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 import type { ControllerPoint } from '@/lib/domain/models/controller-point'

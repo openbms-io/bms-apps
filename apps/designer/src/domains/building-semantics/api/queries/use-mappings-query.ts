@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { semanticMappingsApi } from '../mappings.api'
 import { semanticQueryKeys } from './query-keys'
-import type { SemanticEquipment } from '../../schemas'
+import type { SemanticEquipment } from '../../adapters/ashrae-223p/schemas'
 
 export function useMappingsQuery(projectId: string | undefined) {
   return useQuery({

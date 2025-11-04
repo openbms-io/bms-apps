@@ -5,7 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import type { SemanticEquipment } from '../schemas'
+import type { SemanticEquipment } from '../adapters/ashrae-223p/schemas'
 
 interface SemanticBadgeProps {
   mapping: SemanticEquipment

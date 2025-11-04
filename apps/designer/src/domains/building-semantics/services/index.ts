@@ -1,30 +1,30 @@
 /**
  * ASHRAE 223P Services - Public API
  *
- * Re-exports service interfaces and implementations from api/services.
- * Validation service stays here (UI-only, not swappable).
+ * Re-exports service interfaces and implementations from adapters/ashrae-223p/services.
+ * These are adapter-specific implementations.
  */
 
-export type { IBuildingMOTIFService } from '../api/services/interfaces/buildingmotif'
+export type { IBuildingMOTIFService } from '../adapters/ashrae-223p/services/interfaces/buildingmotif'
 export {
   MockBuildingMOTIFService,
   mockBuildingMOTIFService,
-} from '../api/services/mock-buildingmotif.service'
+} from '../adapters/ashrae-223p/services/mock-buildingmotif.service'
 
-export type { IAISuggestionService } from '../api/services/interfaces/ai-suggestion'
+export type { IAISuggestionService } from '../adapters/ashrae-223p/services/interfaces/ai-suggestion'
 export {
   MockAISuggestionService,
   mockAISuggestionService,
-} from '../api/services/mock-ai-suggestion.service'
+} from '../adapters/ashrae-223p/services/mock-ai-suggestion.service'
 
-export type { ISpaceService } from '../api/services/space.service.interface'
+export type { ISpaceService } from '../adapters/ashrae-223p/services/space.service.interface'
 export {
   MockSpaceService,
   mockSpaceService,
-} from '../api/services/mock-space.service'
+} from '../adapters/ashrae-223p/services/mock-space.service'
 
-export type { IValidationService } from '../api/services/validation.service.interface'
+export type { IValidationService } from '../adapters/ashrae-223p/services/validation.service.interface'
 export {
   MockValidationService,
   mockValidationService,
-} from '../api/services/mock-validation.service'
+} from '../adapters/ashrae-223p/services/mock-validation.service'

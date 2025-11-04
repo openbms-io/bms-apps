@@ -1,4 +1,4 @@
-import type { SpaceDTO } from '../../schemas'
+import type { SpaceDTO } from '../../adapters/ashrae-223p/schemas'
 import type { SpaceViewModel } from '../types'
 
 export function mapSpaceDTOToViewModel(dto: SpaceDTO): SpaceViewModel {

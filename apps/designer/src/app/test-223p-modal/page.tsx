@@ -8,7 +8,7 @@ import type {
   BACnetPointData,
   SemanticEquipment,
   BACnetControllerData,
-} from '@/domains/building-semantics/schemas'
+} from '@/domains/building-semantics'
 
 const samplePoints: BACnetPointData[] = [
   {

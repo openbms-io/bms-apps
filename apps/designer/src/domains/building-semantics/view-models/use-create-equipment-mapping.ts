@@ -5,7 +5,10 @@ import {
 } from '../api/queries/use-spaces-query'
 import { spaces223pApi } from '../api/spaces.api'
 import type { CreateMappingParams } from './types'
-import { SemanticEquipmentSchema, type SemanticEquipment } from '../schemas'
+import {
+  SemanticEquipmentSchema,
+  type SemanticEquipment,
+} from '../adapters/ashrae-223p/schemas'
 
 export function useCreateEquipmentMapping() {
   const createMapping = useCreateMappingMutation()

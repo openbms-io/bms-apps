@@ -1,8 +1,4 @@
-import type {
-  SystemType,
-  DeviceType,
-  ObservableProperty,
-} from '../../../schemas'
+import type { SystemType, DeviceType, ObservableProperty } from '../../schemas'
 
 /**
  * BuildingMOTIF Service Interface

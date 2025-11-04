@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { spaces223pApi } from '../spaces.api'
 import { semanticQueryKeys } from './query-keys'
-import type { SpaceType } from '../../schemas'
+import type { SpaceType } from '../../adapters/ashrae-223p/schemas'
 
 export function useSpacesQuery(projectId: string | undefined) {
   return useQuery({

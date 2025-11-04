@@ -4,7 +4,7 @@ import type {
   SystemType,
   DeviceType,
   ObservableProperty,
-} from '../../schemas'
+} from '../schemas'
 import type { Equipment223PRecommendation } from '@/lib/ai'
 
 export class MockAISuggestionService implements IAISuggestionService {

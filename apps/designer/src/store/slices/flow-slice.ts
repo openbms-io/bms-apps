@@ -18,7 +18,7 @@ import {
   EdgeData,
   NodeTypeString,
 } from '@/types/infrastructure'
-import type { SemanticEquipment } from '@/domains/building-semantics/schemas'
+import type { SemanticEquipment } from '@/domains/building-semantics'
 import { createCompositeKey } from '@/domains/building-semantics/utils/bacnet-keys'
 import { NodeData } from '@/types/node-data-types'
 import type {

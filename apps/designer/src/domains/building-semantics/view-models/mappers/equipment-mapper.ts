@@ -1,4 +1,7 @@
-import type { SemanticEquipment, SpaceDTO } from '../../schemas'
+import type {
+  SemanticEquipment,
+  SpaceDTO,
+} from '../../adapters/ashrae-223p/schemas'
 import type { EquipmentViewModel } from '../types'
 
 export function mapEquipmentDTOToViewModel(

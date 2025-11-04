@@ -1,6 +1,6 @@
 import type { IBuildingMOTIFService } from './interfaces/buildingmotif'
-import type { SystemType, DeviceType, ObservableProperty } from '../../schemas'
-import mockData from '../../mocks/buildingmotif-templates.json'
+import type { SystemType, DeviceType, ObservableProperty } from '../schemas'
+import mockData from '../mocks/buildingmotif-templates.json'
 
 /**
  * Mock BuildingMOTIF Service

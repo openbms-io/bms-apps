@@ -2,7 +2,7 @@ import { StateCreator } from 'zustand'
 import { TreeNode } from '@/types/infrastructure'
 import { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
-import type { SemanticEquipment } from '@/domains/building-semantics/schemas'
+import type { SemanticEquipment } from '@/domains/building-semantics'
 import { createCompositeKey } from '@/domains/building-semantics/utils/bacnet-keys'
 
 export interface TreeUISlice {

@@ -26,7 +26,7 @@ import type {
   BACnetPointData,
   BACnetControllerData,
   SemanticEquipment,
-} from '@/domains/building-semantics/schemas'
+} from '@/domains/building-semantics'
 import { useGetConfigPayload } from '@/hooks/use-get-config-payload'
 import { useEditMapping } from '@/domains/building-semantics/hooks/use-edit-mapping'
 import { useCreateSemanticModal } from '@/domains/building-semantics/hooks/use-create-semantic-modal'

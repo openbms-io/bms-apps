@@ -4,7 +4,7 @@ import type {
   DeviceType,
   ValidationResultDTO,
   ValidationErrorDTO,
-} from '../../schemas'
+} from '../schemas'
 
 /**
  * Mock Validation Service

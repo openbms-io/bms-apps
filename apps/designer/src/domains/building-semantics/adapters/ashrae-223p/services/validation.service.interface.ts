@@ -2,7 +2,7 @@ import type {
   BACnetPointData,
   DeviceType,
   ValidationResultDTO,
-} from '../../schemas'
+} from '../schemas'
 
 /**
  * Validation Service Interface

@@ -22,7 +22,7 @@ import { OverallConfidenceBar } from './overall-confidence-bar'
 import { SearchableSelect } from './searchable-select'
 import { SpaceComboBox } from './space-combobox'
 import { SpaceMultiComboBox } from './space-multi-combobox'
-import { mockValidationService } from '../api/services'
+import { mockValidationService } from '../adapters/ashrae-223p/services'
 import {
   useEquipmentTypesQuery,
   useDeviceTypesQuery,
@@ -38,7 +38,7 @@ import type {
   SemanticEquipment,
   ValidationResultDTO,
   BACnetControllerData,
-} from '../schemas'
+} from '../adapters/ashrae-223p/schemas'
 import {
   createDeviceIdentifier,
   createObjectIdentifier,

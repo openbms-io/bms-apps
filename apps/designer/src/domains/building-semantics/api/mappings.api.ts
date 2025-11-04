@@ -1,4 +1,4 @@
-import type { SemanticEquipment } from '../schemas'
+import type { SemanticEquipment } from '../adapters/ashrae-223p/schemas'
 
 const STORAGE_KEY_PREFIX = '223p-mappings-'
 

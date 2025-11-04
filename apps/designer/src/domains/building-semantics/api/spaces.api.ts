@@ -1,4 +1,4 @@
-import type { SpaceDTO, SpaceType } from '../schemas'
+import type { SpaceDTO, SpaceType } from '../adapters/ashrae-223p/schemas'
 
 const STORAGE_KEY_PREFIX = '223p-spaces:'
 

@@ -5,7 +5,7 @@ import type {
   SemanticEquipment,
   BACnetPointData,
   BACnetControllerData,
-} from '../schemas'
+} from '../adapters/ashrae-223p/schemas'
 import { createCompositeKey } from '../utils/bacnet-keys'
 
 interface EditMappingState {

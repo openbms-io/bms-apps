@@ -3,7 +3,7 @@ import type {
   BACnetPointData,
   SemanticEquipment,
   SpaceDTO,
-} from '../../../schemas'
+} from '../../schemas'
 
 /**
  * AI Suggestion Service Interface
