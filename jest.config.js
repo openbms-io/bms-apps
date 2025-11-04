@@ -1,9 +1,6 @@
 /** @type {import('jest').Config} */
 export default {
-  projects: [
-    "<rootDir>/packages/bms-schemas",
-    "<rootDir>/packages/mqtt_topics",
-  ],
+  projects: ["<rootDir>/packages/mqtt_topics"],
   collectCoverageFrom: [
     "packages/*/src/**/*.ts",
     "packages/*/*.ts",
