@@ -7,11 +7,11 @@ import {
 } from '@/components/ui/tooltip'
 import type { SemanticEquipment } from '../schemas'
 
-interface Point223PBadgeProps {
+interface SemanticBadgeProps {
   mapping: SemanticEquipment
 }
 
-export function Point223PBadge({ mapping }: Point223PBadgeProps) {
+export function SemanticBadge({ mapping }: SemanticBadgeProps) {
   // Format: "Equipment | Device | Property"
   // Example: "VAV Reheat Terminal Unit | Sensor | air-temperature"
   const tooltipText = `${mapping.equipmentType} | ${mapping.deviceType} | ${mapping.observableProperty}`

@@ -3,7 +3,7 @@
 import { ChevronRight, ChevronDown, Trash2, Pencil, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TreeNode as TreeNodeType } from '@/types/infrastructure'
-import { Point223PBadge } from '@/domains/building-semantics/components/point-223p-badge'
+import { SemanticBadge } from '@/domains/building-semantics/components/semantic-badge'
 
 interface TreeNodeProps {
   node: TreeNodeType
@@ -119,7 +119,7 @@ export function TreeNode({
           </span>
 
           {node.type === 'point' && node.semanticMapping && (
-            <Point223PBadge mapping={node.semanticMapping} />
+            <SemanticBadge mapping={node.semanticMapping} />
           )}
         </div>
 
