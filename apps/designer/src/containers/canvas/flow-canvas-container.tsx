@@ -47,7 +47,7 @@ export function FlowCanvasContainer({
     controllerIds
   )
 
-  const { data: mappings223p = new Map() } = useMappingsQuery(projectId)
+  const { data: semanticMappings = new Map() } = useMappingsQuery(projectId)
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -74,7 +74,7 @@ export function FlowCanvasContainer({
   } = useCanvasOrchestration(
     projectId,
     reactFlowInstanceRef,
-    mappings223p,
+    semanticMappings,
     controllers,
     pointsByController,
     project?.iotDeviceId

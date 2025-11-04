@@ -6,7 +6,7 @@ function getStorageKey(projectId: string): string {
   return `${STORAGE_KEY_PREFIX}${projectId}`
 }
 
-export const mappings223pApi = {
+export const semanticMappingsApi = {
   async listMappings(
     projectId: string
   ): Promise<Map<string, SemanticEquipment>> {

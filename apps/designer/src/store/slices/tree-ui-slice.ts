@@ -21,7 +21,7 @@ export interface TreeUISlice {
     controllers: IotDeviceController[],
     iotDevice: { id: string; name: string } | undefined,
     pointsByController: Record<string, ControllerPoint[]>,
-    mappings223p: Map<string, SemanticEquipment>
+    semanticMappings: Map<string, SemanticEquipment>
   ) => TreeNode[]
 }
 
@@ -62,7 +62,7 @@ export const createTreeUISlice: StateCreator<
     controllers: IotDeviceController[],
     iotDevice: { id: string; name: string } | undefined,
     pointsByController: Record<string, ControllerPoint[]>,
-    mappings223p: Map<string, SemanticEquipment>
+    semanticMappings: Map<string, SemanticEquipment>
   ) => {
     const { expandedNodes } = get()
 
@@ -128,8 +128,8 @@ export const createTreeUISlice: StateCreator<
                 )
               : null
 
-            const mapping223p = compositeKey
-              ? mappings223p.get(compositeKey)
+            const semanticMapping = compositeKey
+              ? semanticMappings.get(compositeKey)
               : undefined
 
             const pointNode: TreeNode = {
@@ -143,7 +143,7 @@ export const createTreeUISlice: StateCreator<
               isExpanded: false,
               data: point,
               children: [],
-              mapping223p,
+              semanticMapping,
             }
 
             controllerNode.children!.push(pointNode)

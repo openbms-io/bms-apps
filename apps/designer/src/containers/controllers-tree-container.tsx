@@ -139,13 +139,13 @@ export function ControllersTreeContainer({
     controllerIds
   )
 
-  const { data: mappings223p = new Map() } = useMappingsQuery(projectId)
+  const { data: semanticMappings = new Map() } = useMappingsQuery(projectId)
 
   const { editState, openEdit, closeEdit } = useEditMapping(
     projectId,
     controllers,
     pointsByController,
-    mappings223p,
+    semanticMappings,
     project?.iotDeviceId
   )
 
@@ -189,7 +189,7 @@ export function ControllersTreeContainer({
     controllers,
     iotDevice ? { id: iotDevice.id, name: iotDevice.name } : undefined,
     pointsByController,
-    mappings223p
+    semanticMappings
   )
 
   const filteredTreeData = searchValue

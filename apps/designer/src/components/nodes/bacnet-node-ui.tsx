@@ -28,10 +28,10 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
   const [showProperties, setShowProperties] = useState(false)
 
   const projectId = useFlowStore((s) => s.projectId)
-  const { data: mappings223p = new Map() } = useMappingsQuery(projectId)
+  const { data: semanticMappings = new Map() } = useMappingsQuery(projectId)
 
   const mapping = typedData.mapping223pKey
-    ? mappings223p.get(typedData.mapping223pKey)
+    ? semanticMappings.get(typedData.mapping223pKey)
     : undefined
 
   const discoveredProperties = useFlowStore(

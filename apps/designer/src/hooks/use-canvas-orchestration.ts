@@ -15,7 +15,7 @@ import { useCreateSemanticModal } from '@/domains/building-semantics/hooks/use-c
 export function useCanvasOrchestration(
   projectId: string,
   reactFlowInstanceRef: React.RefObject<ReactFlowInstance | null>,
-  mappings223p: Map<string, SemanticEquipment>,
+  semanticMappings: Map<string, SemanticEquipment>,
   controllers: IotDeviceController[],
   pointsByController: Record<string, ControllerPoint[]>,
   iotDeviceId: string | undefined
@@ -75,7 +75,7 @@ export function useCanvasOrchestration(
               config.objectType,
               config.objectId
             )
-            const existingMapping = mappings223p.get(compositeKey)
+            const existingMapping = semanticMappings.get(compositeKey)
 
             if (existingMapping) {
               // Skip modal - add node directly with existing mapping
@@ -135,7 +135,7 @@ export function useCanvasOrchestration(
       addLogicNode,
       addCommandNode,
       addControlFlowNode,
-      mappings223p,
+      semanticMappings,
       openSemanticModal,
     ]
   )

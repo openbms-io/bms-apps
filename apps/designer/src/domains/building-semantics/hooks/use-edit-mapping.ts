@@ -19,7 +19,7 @@ export function useEditMapping(
   projectId: string,
   controllers: IotDeviceController[],
   pointsByController: Record<string, ControllerPoint[]>,
-  mappings223p: Map<string, SemanticEquipment>,
+  semanticMappings: Map<string, SemanticEquipment>,
   iotDeviceId: string | undefined
 ) {
   const [editState, setEditState] = useState<EditMappingState>({
@@ -59,7 +59,7 @@ export function useEditMapping(
         foundPoint.pointType,
         foundPoint.instanceNumber
       )
-      const mapping = mappings223p.get(compositeKey)
+      const mapping = semanticMappings.get(compositeKey)
 
       if (!mapping) {
         console.error('Mapping not found for point')
@@ -89,7 +89,7 @@ export function useEditMapping(
         isOpen: true,
       })
     },
-    [controllers, pointsByController, mappings223p, iotDeviceId]
+    [controllers, pointsByController, semanticMappings, iotDeviceId]
   )
 
   const closeEdit = useCallback(() => {

@@ -143,7 +143,7 @@ export interface FlowSlice {
   addNodeFromInfrastructure: (
     draggedPoint: DraggedPoint,
     position: XYPosition,
-    mapping223p?: SemanticEquipment
+    semanticMapping?: SemanticEquipment
   ) => void
   addLogicNode: (
     nodeType: NodeTypeString,
@@ -268,12 +268,16 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
     set({ edges: updatedEdges })
   },
 
-  addNodeFromInfrastructure: async (draggedPoint, position, mapping223p) => {
+  addNodeFromInfrastructure: async (
+    draggedPoint,
+    position,
+    semanticMapping
+  ) => {
     const { config, controller } = draggedPoint
 
     // Compute composite key for lookup
     const mapping223pKey =
-      mapping223p && controller
+      semanticMapping && controller
         ? createCompositeKey(
             controller.deviceId,
             config.objectType,

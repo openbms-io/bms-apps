@@ -222,7 +222,7 @@ export interface TreeNode {
   isExpanded: boolean
   data: Supervisor | Controller | PointGroup | BacnetConfig | ControllerPoint
   children?: TreeNode[]
-  mapping223p?: SemanticEquipment
+  semanticMapping?: SemanticEquipment
 }
 
 export interface PointGroup {

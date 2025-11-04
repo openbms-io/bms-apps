@@ -118,8 +118,8 @@ export function TreeNode({
             {node.label}
           </span>
 
-          {node.type === 'point' && node.mapping223p && (
-            <Point223PBadge mapping={node.mapping223p} />
+          {node.type === 'point' && node.semanticMapping && (
+            <Point223PBadge mapping={node.semanticMapping} />
           )}
         </div>
 
@@ -130,7 +130,7 @@ export function TreeNode({
         )}
       </div>
 
-      {node.type === 'point' && !node.mapping223p && onAdd223PMapping && (
+      {node.type === 'point' && !node.semanticMapping && onAdd223PMapping && (
         <button
           onClick={handleAdd223PMapping}
           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-primary/10 rounded transition-opacity"
@@ -140,7 +140,7 @@ export function TreeNode({
         </button>
       )}
 
-      {node.type === 'point' && node.mapping223p && onEdit223PMapping && (
+      {node.type === 'point' && node.semanticMapping && onEdit223PMapping && (
         <button
           onClick={handleEdit223PMapping}
           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-primary/10 rounded transition-opacity"

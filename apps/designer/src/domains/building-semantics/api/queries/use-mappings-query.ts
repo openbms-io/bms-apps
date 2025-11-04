@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { mappings223pApi } from '../mappings.api'
+import { semanticMappingsApi } from '../mappings.api'
 import { queryKeys223p } from './query-keys'
 import type { SemanticEquipment } from '../../schemas'
 
 export function useMappingsQuery(projectId: string | undefined) {
   return useQuery({
     queryKey: queryKeys223p.mappings.list(projectId || 'none'),
-    queryFn: () => mappings223pApi.listMappings(projectId!),
+    queryFn: () => semanticMappingsApi.listMappings(projectId!),
     enabled: !!projectId,
   })
 }
@@ -17,7 +17,7 @@ export function useMappingQuery(
 ) {
   return useQuery({
     queryKey: queryKeys223p.mappings.detail(projectId || 'none', pointId || ''),
-    queryFn: () => mappings223pApi.getMapping(projectId!, pointId!),
+    queryFn: () => semanticMappingsApi.getMapping(projectId!, pointId!),
     enabled: !!projectId && !!pointId,
   })
 }
@@ -34,7 +34,7 @@ export function useCreateMappingMutation() {
       projectId: string
       pointId: string
       mapping: SemanticEquipment
-    }) => mappings223pApi.createMapping(projectId, pointId, mapping),
+    }) => semanticMappingsApi.createMapping(projectId, pointId, mapping),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys223p.mappings.list(variables.projectId),
@@ -59,7 +59,7 @@ export function useDeleteMappingMutation() {
     }: {
       projectId: string
       compositeKey: string
-    }) => mappings223pApi.deleteMapping(projectId, compositeKey),
+    }) => semanticMappingsApi.deleteMapping(projectId, compositeKey),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys223p.mappings.list(variables.projectId),
