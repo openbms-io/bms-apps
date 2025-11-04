@@ -110,7 +110,7 @@ const BacnetConfigSchema = z.object({
   discoveredProperties: BacnetPropertiesSchema,
   name: z.string(),
   position: PositionSchema.optional(),
-  mapping223pKey: z.string().optional(),
+  semanticMappingKey: z.string().optional(),
 })
 
 // Edge data schema (validates our additional data field; keeps passthrough on edges)

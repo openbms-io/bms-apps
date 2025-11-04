@@ -18,6 +18,7 @@ export class MultistateInputNode extends BaseBacnetNode {
     mqttBus: MqttBusManager
     onDataChange: () => void
     id?: string
+    semanticMappingKey?: string
   }) {
     super(params)
     // Override discoveredProperties with 1-based indexing for multistate

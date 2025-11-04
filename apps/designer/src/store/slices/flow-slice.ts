@@ -216,18 +216,18 @@ async function createDataNodeFromBacnetConfig({
   config,
   mqttBus,
   onDataChange,
-  mapping223pKey,
+  semanticMappingKey,
 }: {
   config: BacnetConfig
   mqttBus: ReturnType<typeof getMqttBus>
   onDataChange: () => void
-  mapping223pKey?: string
+  semanticMappingKey?: string
 }): Promise<DataNode> {
   return factory.createDataNodeFromBacnetConfig({
     config,
     mqttBus,
     onDataChange,
-    mapping223pKey,
+    semanticMappingKey,
   })
 }
 
@@ -276,7 +276,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
     const { config, controller } = draggedPoint
 
     // Compute composite key for lookup
-    const mapping223pKey =
+    const semanticMappingKey =
       semanticMapping && controller
         ? createCompositeKey(
             controller.deviceId,
@@ -289,7 +289,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
       config,
       mqttBus: getMqttBus(),
       onDataChange: () => set({ nodes: [...get().nodes] }),
-      mapping223pKey,
+      semanticMappingKey,
     })
 
     get().dataGraph.addNode(dataNode, position)

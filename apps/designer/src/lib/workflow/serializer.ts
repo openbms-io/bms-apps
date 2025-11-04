@@ -300,14 +300,14 @@ export function createNodeFactory({
       case 'multi-state-output':
       case 'multi-state-value': {
         const metadata = data.metadata as BacnetConfig & {
-          mapping223pKey?: string
+          semanticMappingKey?: string
         }
         return factory.createDataNodeFromBacnetConfig({
           config: metadata,
           mqttBus,
           onDataChange,
           id: data.id as string,
-          mapping223pKey: metadata.mapping223pKey,
+          semanticMappingKey: metadata.semanticMappingKey,
         })
       }
       default:

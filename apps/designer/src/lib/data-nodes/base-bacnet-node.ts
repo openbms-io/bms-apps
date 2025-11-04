@@ -37,7 +37,7 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
   readonly position?: { x: number; y: number }
 
   // 223P composite key for lookup
-  readonly mapping223pKey?: string
+  readonly semanticMappingKey?: string
 
   // From DataNode
   readonly id: string
@@ -59,7 +59,7 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
     mqttBus: MqttBusManager
     onDataChange: () => void
     id?: string
-    mapping223pKey?: string
+    semanticMappingKey?: string
   }) {
     const { config, id, mqttBus, onDataChange } = params
 
@@ -75,7 +75,7 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
     this.position = config.position
 
     // 223P composite key
-    this.mapping223pKey = params.mapping223pKey
+    this.semanticMappingKey = params.semanticMappingKey
 
     // DataNode properties
     this.id = id ?? generateInstanceId()
@@ -89,7 +89,7 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
   abstract canConnectWith(target: DataNode): boolean
 
   toSerializable() {
-    const metadata: BacnetConfig & { mapping223pKey?: string } = {
+    const metadata: BacnetConfig & { semanticMappingKey?: string } = {
       pointId: this.pointId,
       objectType: this.objectType,
       objectId: this.objectId,
@@ -100,8 +100,8 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
       position: this.position,
     }
 
-    if (this.mapping223pKey) {
-      metadata.mapping223pKey = this.mapping223pKey
+    if (this.semanticMappingKey) {
+      metadata.semanticMappingKey = this.semanticMappingKey
     }
 
     return makeSerializable({

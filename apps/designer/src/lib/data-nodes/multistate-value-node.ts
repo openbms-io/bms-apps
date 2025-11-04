@@ -18,6 +18,7 @@ export class MultistateValueNode extends BaseBacnetNode {
     mqttBus: MqttBusManager
     onDataChange: () => void
     id?: string
+    semanticMappingKey?: string
   }) {
     super(params)
     this.discoveredProperties = prepareMultistateProperties(

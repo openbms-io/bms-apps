@@ -60,7 +60,7 @@ export type BaseNodeData = Record<string, unknown>
 // BACnet node data with specific object type
 export interface BacnetNodeData extends BacnetInputOutput, BaseNodeData {
   category: NodeCategory.BACNET
-  mapping223pKey?: string
+  semanticMappingKey?: string
 }
 
 // Logic node data types

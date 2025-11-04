@@ -30,13 +30,13 @@ class DataNodeFactory {
     mqttBus,
     onDataChange,
     id,
-    mapping223pKey,
+    semanticMappingKey,
   }: {
     config: BacnetConfig
     mqttBus: MqttBusManager
     onDataChange: () => void
     id?: string
-    mapping223pKey?: string
+    semanticMappingKey?: string
   }): BacnetInputOutput {
     const { objectType } = config
 
@@ -48,7 +48,7 @@ class DataNodeFactory {
           mqttBus,
           onDataChange,
           id,
-          mapping223pKey,
+          semanticMappingKey,
         })
       case 'binary-input':
         return new BinaryInputNode({
@@ -56,7 +56,7 @@ class DataNodeFactory {
           mqttBus,
           onDataChange,
           id,
-          mapping223pKey,
+          semanticMappingKey,
         })
       case 'multi-state-input':
         return new MultistateInputNode({
@@ -64,7 +64,7 @@ class DataNodeFactory {
           mqttBus,
           onDataChange,
           id,
-          mapping223pKey,
+          semanticMappingKey,
         })
       case 'analog-output':
         return new AnalogOutputNode({
@@ -72,7 +72,7 @@ class DataNodeFactory {
           mqttBus,
           onDataChange,
           id,
-          mapping223pKey,
+          semanticMappingKey,
         })
       case 'binary-output':
         return new BinaryOutputNode({
@@ -80,7 +80,7 @@ class DataNodeFactory {
           mqttBus,
           onDataChange,
           id,
-          mapping223pKey,
+          semanticMappingKey,
         })
       case 'multi-state-output':
         return new MultistateOutputNode({
@@ -88,7 +88,7 @@ class DataNodeFactory {
           mqttBus,
           onDataChange,
           id,
-          mapping223pKey,
+          semanticMappingKey,
         })
       case 'analog-value':
         return new AnalogValueNode({
@@ -96,7 +96,7 @@ class DataNodeFactory {
           mqttBus,
           onDataChange,
           id,
-          mapping223pKey,
+          semanticMappingKey,
         })
       case 'binary-value':
         return new BinaryValueNode({
@@ -104,7 +104,7 @@ class DataNodeFactory {
           mqttBus,
           onDataChange,
           id,
-          mapping223pKey,
+          semanticMappingKey,
         })
       case 'multi-state-value':
         return new MultistateValueNode({
@@ -112,7 +112,7 @@ class DataNodeFactory {
           mqttBus,
           onDataChange,
           id,
-          mapping223pKey,
+          semanticMappingKey,
         })
       default:
         throw new Error(`Unsupported BACnet object type: ${objectType}`)
