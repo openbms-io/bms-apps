@@ -20,7 +20,14 @@ import { useAllControllerPoints } from '@/hooks/use-all-controller-points'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-client'
 import { AddControllerDialog } from '@/components/modals/add-controller-dialog'
+import { useMappingsQuery } from '@/domains/223p/api/queries/use-mappings-query'
+import { MappingPopupModal } from '@/domains/223p/components'
+import type {
+  BACnetPointData,
+  BACnetControllerData,
+} from '@/domains/223p/schemas'
 import { useGetConfigPayload } from '@/hooks/use-get-config-payload'
+import { useEditMapping } from '@/domains/223p/hooks/use-edit-mapping'
 import { useFlowStore } from '@/store/use-flow-store'
 import { CommandNameEnum } from 'mqtt-topics'
 import { toast } from 'sonner'
@@ -104,6 +111,16 @@ export function ControllersTreeContainer({
     controllerIds
   )
 
+  const { data: mappings223p = new Map() } = useMappingsQuery(projectId)
+
+  const { editState, openEdit, closeEdit } = useEditMapping(
+    projectId,
+    controllers,
+    pointsByController,
+    mappings223p,
+    project?.iotDeviceId || ''
+  )
+
   const queryClient = useQueryClient()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -139,7 +156,8 @@ export function ControllersTreeContainer({
   const treeData = getTreeData(
     controllers,
     iotDevice ? { id: iotDevice.id, name: iotDevice.name } : undefined,
-    pointsByController
+    pointsByController,
+    mappings223p
   )
 
   // Filter tree data based on search
@@ -156,17 +174,26 @@ export function ControllersTreeContainer({
           project.iotDeviceId
         )
 
+        const controller = controllers.find((c) => c.id === point.controllerId)
+
         const draggedPoint: DraggedPoint = {
           type: 'bacnet-point',
           config: bacnetConfig,
           draggedFrom: 'controllers-tree',
+          controller: controller
+            ? {
+                id: controller.id,
+                name: controller.name,
+                deviceId: controller.deviceId,
+              }
+            : undefined,
         }
 
         e.dataTransfer.effectAllowed = 'copy'
         e.dataTransfer.setData('application/json', JSON.stringify(draggedPoint))
       }
     },
-    [project?.iotDeviceId]
+    [project?.iotDeviceId, controllers]
   )
 
   const handleExpandAll = useCallback(() => {
@@ -299,6 +326,7 @@ export function ControllersTreeContainer({
             onToggle={toggleNode}
             onSelect={selectPoint}
             onDelete={handleDeleteClick}
+            onEdit223PMapping={openEdit}
             isDraggable={true}
             onDragStart={handleDragStart}
             className="min-h-0"
@@ -349,6 +377,18 @@ export function ControllersTreeContainer({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <MappingPopupModal
+        projectId={projectId}
+        open={editState.isOpen}
+        point={editState.point}
+        controller={editState.controller}
+        existingMapping={editState.mapping}
+        mode="edit"
+        onConfirm={closeEdit}
+        onSkip={closeEdit}
+        onOpenChange={closeEdit}
+      />
     </div>
   )
 }

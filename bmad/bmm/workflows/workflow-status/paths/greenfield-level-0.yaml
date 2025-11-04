@@ -1,0 +1,45 @@
+# Greenfield Level 0 - Single Atomic Change
+# The simplest possible workflow - one change, one story
+
+project_type: "software"
+level: 0
+field_type: "greenfield"
+description: "Single atomic change - bug fix, tiny feature, one story"
+
+phases:
+  - phase: 1
+    name: "Analysis"
+    optional: true
+    workflows:
+      - id: "brainstorm-project"
+        optional: true
+        agent: "analyst"
+        command: "brainstorm-project"
+      - id: "product-brief"
+        optional: true
+        agent: "analyst"
+        command: "product-brief"
+
+  - phase: 2
+    name: "Planning"
+    required: true
+    workflows:
+      - id: "tech-spec"
+        required: true
+        agent: "pm"
+        command: "tech-spec"
+        output: "Creates Technical Specification with single story file"
+
+  - phase: 3
+    name: "Solutioning"
+    skip: true
+
+  - phase: 4
+    name: "Implementation"
+    required: true
+    workflows:
+      - id: "sprint-planning"
+        required: true
+        agent: "sm"
+        command: "sprint-planning"
+        note: "Creates sprint plan with all stories - subsequent work tracked in sprint plan output, not workflow-status"

@@ -1,6 +1,6 @@
 import { MainLayout } from '@/components/layout/main-layout'
 import { InfrastructureSidebar } from '@/components/sidebar/infrastructure-sidebar'
-import { FlowCanvas } from '@/components/canvas/flow-canvas'
+import { FlowCanvasContainer } from '@/containers/canvas/flow-canvas-container'
 import { WorkflowLoader } from '@/components/canvas/workflow-loader'
 
 interface ProjectPageProps {
@@ -22,7 +22,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       }
     >
       <WorkflowLoader orgId={orgId} siteId={siteId} projectId={projectId} />
-      <FlowCanvas orgId={orgId} siteId={siteId} projectId={projectId} />
+      <FlowCanvasContainer
+        orgId={orgId}
+        siteId={siteId}
+        projectId={projectId}
+      />
     </MainLayout>
   )
 }

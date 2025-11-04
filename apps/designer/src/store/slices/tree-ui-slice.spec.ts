@@ -144,13 +144,23 @@ describe('tree-ui-slice', () => {
 
   describe('getTreeData', () => {
     it('should return empty array when no iotDevice', () => {
-      const result = slice.getTreeData(mockControllers, undefined, {})
+      const result = slice.getTreeData(
+        mockControllers,
+        undefined,
+        {},
+        new Map()
+      )
 
       expect(result).toEqual([])
     })
 
     it('should create supervisor node with collapsed controllers', () => {
-      const result = slice.getTreeData(mockControllers, mockIotDevice, {})
+      const result = slice.getTreeData(
+        mockControllers,
+        mockIotDevice,
+        {},
+        new Map()
+      )
 
       expect(result).toHaveLength(1)
       expect(result[0].id).toBe('iot-device-1')
@@ -163,7 +173,12 @@ describe('tree-ui-slice', () => {
     it('should expand supervisor and show controllers when expanded', () => {
       slice.expandedNodes.add('iot-device-1')
 
-      const result = slice.getTreeData(mockControllers, mockIotDevice, {})
+      const result = slice.getTreeData(
+        mockControllers,
+        mockIotDevice,
+        {},
+        new Map()
+      )
 
       expect(result[0].isExpanded).toBe(true)
       expect(result[0].children).toHaveLength(2)
@@ -179,7 +194,8 @@ describe('tree-ui-slice', () => {
       const result = slice.getTreeData(
         mockControllers,
         mockIotDevice,
-        mockPoints
+        mockPoints,
+        new Map()
       )
 
       const controller = result[0].children![0]
@@ -198,7 +214,8 @@ describe('tree-ui-slice', () => {
       const result = slice.getTreeData(
         mockControllers,
         mockIotDevice,
-        mockPoints
+        mockPoints,
+        new Map()
       )
 
       const controller = result[0].children![1]
@@ -214,7 +231,8 @@ describe('tree-ui-slice', () => {
       const result = slice.getTreeData(
         mockControllers,
         mockIotDevice,
-        mockPoints
+        mockPoints,
+        new Map()
       )
 
       const pointNode = result[0].children![0].children![0]

@@ -1,0 +1,78 @@
+# Greenfield Level 2 - Medium Project
+# Multiple epics with 10+ stories total
+
+project_type: "software"
+level: 2
+field_type: "greenfield"
+description: "Medium project - multiple epics, 10+ stories"
+
+phases:
+  - phase: 1
+    name: "Analysis"
+    optional: true
+    workflows:
+      - id: "brainstorm-project"
+        optional: true
+        agent: "analyst"
+        command: "brainstorm-project"
+      - id: "research"
+        optional: true
+        agent: "analyst"
+        command: "research"
+        note: "Can have multiple research docs"
+      - id: "product-brief"
+        recommended: true
+        agent: "analyst"
+        command: "product-brief"
+
+  - phase: 2
+    name: "Planning"
+    required: true
+    workflows:
+      - id: "prd"
+        required: true
+        agent: "pm"
+        command: "prd"
+        output: "Creates PRD with epics.md and story list"
+      - id: "validate-prd"
+        optional: true
+        agent: "pm"
+        command: "validate-prd"
+      - id: "create-design"
+        conditional: "if_has_ui"
+        agent: "ux-designer"
+        command: "create-design"
+      - id: "tech-spec"
+        optional: true
+        agent: "pm"
+        command: "tech-spec"
+        note: "Lightweight Technical Specification planning"
+
+  - phase: 3
+    name: "Solutioning"
+    required: true
+    workflows:
+      - id: "create-architecture"
+        required: true
+        agent: "architect"
+        command: "create-architecture"
+        output: "System-wide architecture document"
+      - id: "validate-architecture"
+        optional: true
+        agent: "architect"
+        command: "validate-architecture"
+      - id: "solutioning-gate-check"
+        required: true
+        agent: "architect"
+        command: "solutioning-gate-check"
+        note: "Validate PRD + UX + architecture cohesion before implementation"
+
+  - phase: 4
+    name: "Implementation"
+    required: true
+    workflows:
+      - id: "sprint-planning"
+        required: true
+        agent: "sm"
+        command: "sprint-planning"
+        note: "Creates sprint plan with all stories - subsequent work tracked in sprint plan output, not workflow-status"

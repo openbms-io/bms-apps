@@ -1,0 +1,75 @@
+# Greenfield Level 4 - Enterprise Scale
+# Multiple products, enterprise architecture, 40+ stories
+
+project_type: "software"
+level: 4
+field_type: "greenfield"
+description: "Enterprise scale - multiple products, enterprise architecture"
+
+phases:
+  - phase: 1
+    name: "Analysis"
+    required: true
+    workflows:
+      - id: "brainstorm-project"
+        recommended: true
+        agent: "analyst"
+        command: "brainstorm-project"
+      - id: "research"
+        required: false
+        agent: "analyst"
+        command: "research"
+        note: "Extensive research across multiple domains"
+      - id: "product-brief"
+        required: true
+        agent: "analyst"
+        command: "product-brief"
+        note: "Strategic brief for enterprise scope"
+
+  - phase: 2
+    name: "Planning"
+    required: true
+    workflows:
+      - id: "prd"
+        required: true
+        agent: "pm"
+        command: "prd"
+        output: "Comprehensive product requirements document"
+      - id: "validate-prd"
+        optional: true
+        agent: "pm"
+        command: "validate-prd"
+      - id: "create-design"
+        required: true
+        agent: "ux-designer"
+        command: "create-design"
+        note: "Multiple UI/UX specifications needed"
+
+  - phase: 3
+    name: "Solutioning"
+    required: true
+    workflows:
+      - id: "create-architecture"
+        required: true
+        agent: "architect"
+        command: "create-architecture"
+        output: "Enterprise architecture documentation"
+      - id: "validate-architecture"
+        optional: true
+        agent: "architect"
+        command: "validate-architecture"
+      - id: "solutioning-gate-check"
+        required: true
+        agent: "architect"
+        command: "solutioning-gate-check"
+        note: "Validate PRD + UX + architecture cohesion before implementation"
+
+  - phase: 4
+    name: "Implementation"
+    required: true
+    workflows:
+      - id: "sprint-planning"
+        required: true
+        agent: "sm"
+        command: "sprint-planning"
+        note: "Creates sprint plan with all stories - subsequent work tracked in sprint plan output, not workflow-status"

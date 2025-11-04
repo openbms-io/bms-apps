@@ -18,10 +18,14 @@ services:
       - nanomq
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
     ports:
       - "${PROXY_PORT:-3000}:3000"
     volumes:
-      - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy/nginx.conf.template:/etc/nginx/nginx.conf.template:ro
+      - ./proxy/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+    entrypoint: ["/docker-entrypoint.sh"]
 
 networks:
   default:

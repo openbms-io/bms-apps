@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMS Apps - 223P + G36 UX Mockups</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .nav-bar {
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .nav-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .nav-tab:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .nav-tab.active {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .mockup-container {
+            display: none;
+            padding: 2rem;
+        }
+
+        .mockup-container.active {
+            display: block;
+        }
+
+        .mockup-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .mockup-description {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* App Layout */
+        .app-layout {
+            display: flex;
+            height: calc(100vh - 100px);
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Left Panel */
+        .left-panel {
+            width: 280px;
+            border-right: 1px solid #e0e0e0;
+            background: #fafafa;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-box {
+            margin: 1rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            width: calc(100% - 2rem);
+        }
+
+        .component-group {
+            margin-bottom: 1rem;
+        }
+
+        .group-title {
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .group-title:hover {
+            background: #f0f0f0;
+        }
+
+        .component-item {
+            padding: 0.75rem 1rem 0.75rem 2rem;
+            font-size: 0.875rem;
+            cursor: move;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .component-item:hover {
+            background: #f0f0f0;
+            border-left-color: #3b82f6;
+        }
+
+        .bacnet-point {
+            padding: 0.75rem 1rem 0.75rem 2rem;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: move;
+        }
+
+        .point-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .point-badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            background: #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #666;
+            margin-right: 0.25rem;
+        }
+
+        .point-tags {
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .tag-badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            background: #3b82f6;
+            color: #fff;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            margin-top: 0.25rem;
+            font-size: 0.7rem;
+        }
+
+        .tag-badge.success {
+            background: #10b981;
+        }
+
+        .tag-badge.warning {
+            background: #f59e0b;
+        }
+
+        .point-value {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .warning-text {
+            color: #f59e0b;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Canvas */
+        .canvas {
+            flex: 1;
+            background: #fafafa;
+            position: relative;
+            overflow: auto;
+            background-image:
+                linear-gradient(#e0e0e0 1px, transparent 1px),
+                linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Flow Nodes */
+        .flow-node {
+            position: absolute;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            min-width: 200px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .node-header {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .node-badge {
+            padding: 0.125rem 0.5rem;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .node-body {
+            padding: 0.75rem;
+        }
+
+        .port-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            font-size: 0.875rem;
+        }
+
+        .port-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .port-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .port-connector {
+            width: 12px;
+            height: 12px;
+            border: 2px solid #666;
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .port-connector.connected {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        .port-connector.error {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .port-label {
+            font-size: 0.875rem;
+        }
+
+        .port-connection {
+            font-size: 0.75rem;
+            color: #666;
+            margin-left: 1.5rem;
+        }
+
+        .connection-icon {
+            color: #10b981;
+        }
+
+        .node-status {
+            padding: 0.5rem 0.75rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.75rem;
+            color: #f59e0b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .node-status.success {
+            color: #10b981;
+        }
+
+        .configure-btn {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border: 1px dashed #ccc;
+            background: transparent;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #666;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .configure-btn:hover {
+            background: #f0f0f0;
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        /* 223P Popup Modal */
+        .popup-modal {
+            background: #fff;
+            border-radius: 12px;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 1.25rem;
+        }
+
+        .requirement-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .requirement-badge.optional {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        .requirement-badge.required {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .point-info {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .point-info-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .point-info-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .point-info-value {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .g36-context {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+
+        .g36-context-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #92400e;
+        }
+
+        .g36-context-info {
+            color: #78350f;
+        }
+
+        .form-field {
+            margin-bottom: 1rem;
+        }
+
+        .field-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .loading-spinner {
+            font-size: 0.75rem;
+            color: #3b82f6;
+        }
+
+        .field-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .field-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .confidence-bar {
+            margin: 1.5rem 0;
+        }
+
+        .confidence-label {
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+
+        .confidence-track {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: width 0.3s;
+        }
+
+        .info-message {
+            padding: 1rem;
+            background: #eff6ff;
+            border-left: 3px solid #3b82f6;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+        }
+
+        .info-message-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e40af;
+        }
+
+        .info-message ul {
+            list-style: none;
+            padding-left: 0;
+            font-size: 0.75rem;
+            color: #1e3a8a;
+        }
+
+        .info-message li {
+            margin-bottom: 0.25rem;
+            padding-left: 1.25rem;
+            position: relative;
+        }
+
+        .info-message li::before {
+            content: "•";
+            position: absolute;
+            left: 0.5rem;
+        }
+
+        .warning-message {
+            padding: 1rem;
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-message-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #92400e;
+        }
+
+        .warning-message-text {
+            font-size: 0.75rem;
+            color: #78350f;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-cancel:hover {
+            background: #f9fafb;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            margin: 1.5rem 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .chat-messages {
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #fff;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+        }
+
+        .chat-message-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #666;
+        }
+
+        .chat-message-text {
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .chat-message.ai .chat-message-text {
+            background: #f0f0f0;
+        }
+
+        .chat-message.user .chat-message-text {
+            background: #eff6ff;
+        }
+
+        .chat-input {
+            padding: 0.75rem;
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.875rem;
+            width: 100%;
+        }
+
+        .chat-input:focus {
+            outline: none;
+        }
+
+        .scenario-note {
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 6px;
+        }
+
+        .scenario-note-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #92400e;
+        }
+
+        .scenario-note-text {
+            font-size: 0.875rem;
+            color: #78350f;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <div class="nav-title">BMS Apps - 223P + G36 UX Design</div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showMockup(1)">Scenario 1: Optional Tagging</button>
+            <button class="nav-tab" onclick="showMockup(2)">Scenario 2: Required for G36</button>
+            <button class="nav-tab" onclick="showMockup(3)">Scenario 3: Chat Mode</button>
+            <button class="nav-tab" onclick="showMockup(4)">Scenario 4: G36 Connected</button>
+        </div>
+    </div>
+
+    <!-- Scenario 1: Optional Tagging -->
+    <div id="mockup-1" class="mockup-container active">
+        <div class="mockup-title">Scenario 1: Optional 223P Tagging</div>
+        <div class="mockup-description">User drags BACnet point to canvas. 223P popup appears with AI suggestions. User can confirm, edit, or skip.</div>
+
+        <div class="scenario-note">
+            <div class="scenario-note-title">📍 User Action</div>
+            <div class="scenario-note-text">Mike drags VAV-2-01_ZoneTemp from left panel to canvas → 223P popup appears automatically with AI analyzing...</div>
+        </div>
+
+        <div class="app-layout">
+            <div class="left-panel">
+                <div class="panel-header">
+                    Components
+                    <span style="font-size: 1rem; cursor: pointer;">🔍</span>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">▼ BACnet Points</div>
+                    <div class="bacnet-point">
+                        <div class="point-name">VAV-2-01_ZoneTemp</div>
+                        <span class="point-badge">analog-input</span>
+                        <div class="point-value">Present Value: 72.5°F</div>
+                    </div>
+                    <div class="bacnet-point">
+                        <div class="point-name">VAV-2-01_CoolingValve</div>
+                        <span class="point-badge">analog-output</span>
+                        <div class="point-value">Present Value: 45%</div>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">▼ G36 Sequences</div>
+                    <div class="component-item">G36 AHU Economizer</div>
+                    <div class="component-item">G36 VAV Cooling</div>
+                </div>
+            </div>
+
+            <div class="canvas">
+                <!-- Empty canvas with grid -->
+            </div>
+        </div>
+
+        <!-- 223P Popup Modal -->
+        <div class="modal-overlay active">
+            <div class="popup-modal">
+                <div class="modal-header">
+                    <div class="modal-title">223P Semantic Mapping</div>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="requirement-badge optional">ℹ️ Optional - Recommended</div>
+
+                    <div class="point-info">
+                        <div class="point-info-header">
+                            <span class="point-info-name">VAV-2-01_ZoneTemp</span>
+                            <span class="point-badge">analog-input</span>
+                        </div>
+                        <div class="point-info-value">Present Value: 72.5°F</div>
+                    </div>
+
+                    <div class="form-field">
+                        <div class="field-label">
+                            <span>System Type</span>
+                            <span class="loading-spinner">✓ 95%</span>
+                        </div>
+                        <select class="field-select">
+                            <option selected>VAV Reheat Terminal Unit</option>
+                            <option>Lab VAV Reheat Terminal Unit</option>
+                            <option>Makeup Air Unit</option>
+                            <option>Exhaust Air Unit</option>
+                            <option>Heat Recovery System</option>
+                            <option>Chilled Water System</option>
+                            <option>Hot Water System</option>
+                            <option>Process Chilled Water System</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <div class="field-label">
+                            <span>Space (Optional)</span>
+                            <span class="loading-spinner" style="color: #666;">Auto</span>
+                        </div>
+                        <select class="field-select">
+                            <option selected>PhysicalSpace</option>
+                            <option>DomainSpace</option>
+                        </select>
+                        <div style="position: relative; margin-top: 0.5rem;">
+                            <input
+                                type="text"
+                                class="field-select"
+                                placeholder="Type space name or select..."
+                                value="Room 201"
+                                style="font-size: 0.875rem; padding-right: 2rem;"
+                            >
+                            <span style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none;">🔍</span>
+                            <div style="
+                                position: absolute;
+                                top: 100%;
+                                left: 0;
+                                right: 0;
+                                margin-top: 0.25rem;
+                                background: #fff;
+                                border: 1px solid #d1d5db;
+                                border-radius: 8px;
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                max-height: 200px;
+                                overflow-y: auto;
+                                z-index: 100;
+                            ">
+                                <div style="padding: 0.5rem 0.75rem; font-size: 0.75rem; color: #666; font-weight: 600; border-bottom: 1px solid #e5e7eb;">
+                                    Recently used spaces
+                                </div>
+                                <div style="padding: 0.5rem 0.75rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3f4f6;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+                                    <span style="font-weight: 500; font-size: 0.875rem;">Room 201</span>
+                                    <span style="font-size: 0.75rem; color: #6b7280;">3 points</span>
+                                </div>
+                                <div style="padding: 0.5rem 0.75rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3f4f6;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+                                    <span style="font-weight: 500; font-size: 0.875rem;">Room 202</span>
+                                    <span style="font-size: 0.75rem; color: #6b7280;">2 points</span>
+                                </div>
+                                <div style="padding: 0.5rem 0.75rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3f4f6;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+                                    <span style="font-weight: 500; font-size: 0.875rem;">AHU-1 Mechanical Room</span>
+                                    <span style="font-size: 0.75rem; color: #6b7280;">8 points</span>
+                                </div>
+                                <div style="padding: 0.5rem 0.75rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+                                    <span style="font-weight: 500; font-size: 0.875rem;">3rd Floor Zone A</span>
+                                    <span style="font-size: 0.75rem; color: #6b7280;">5 points</span>
+                                </div>
+                                <div style="padding: 0.75rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; background: #f9fafb;">
+                                    Or type new space name...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <div class="field-label">
+                            <span>Device Type</span>
+                            <span class="loading-spinner">✓ 92%</span>
+                        </div>
+                        <select class="field-select">
+                            <optgroup label="🏷️ Sensors & Monitoring">
+                                <option selected>Sensor</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Air-side Equipment">
+                                <option>Damper</option>
+                                <option>Fan</option>
+                                <option>Exhaust Fan</option>
+                                <option>Filter</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Coils">
+                                <option>Chilled Water Coil</option>
+                                <option>Hot Water Coil</option>
+                                <option>Heat Recovery Coil</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Water-side Equipment">
+                                <option>Chilled Water Valve</option>
+                                <option>Hot Water Valve</option>
+                                <option>Chilled Water Pump</option>
+                                <option>Hot Water Pump</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Other Equipment">
+                                <option>Evaporative Cooler</option>
+                                <option>Heat Exchanger</option>
+                                <option>Fan Coil Unit</option>
+                                <option>Unit Heater</option>
+                                <option>Tank</option>
+                                <option>Domestic Water Heater</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <div class="field-label">
+                            <span>Observable Property</span>
+                            <span class="loading-spinner">✓ 95%</span>
+                        </div>
+                        <select class="field-select">
+                            <optgroup label="🏷️ Temperature (Quantifiable)">
+                                <option selected>air-temperature</option>
+                                <option>water-temperature</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Pressure (Quantifiable)">
+                                <option>static-pressure</option>
+                                <option>low-static-pressure</option>
+                                <option>water-static-pressure</option>
+                                <option>differential-pressure</option>
+                                <option>water-differential-pressure</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Flow (Quantifiable)">
+                                <option>air-flow</option>
+                                <option>water-flow</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Environmental (Quantifiable)">
+                                <option>relative-humidity</option>
+                            </optgroup>
+                            <optgroup label="🏷️ VFD Properties (Quantifiable)">
+                                <option>vfd-current</option>
+                                <option>vfd-frequency</option>
+                                <option>vfd-voltage</option>
+                                <option>vfd-power</option>
+                                <option>vfd-energy</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Status Properties (Enumerated)">
+                                <option>run-status</option>
+                                <option>flow-status</option>
+                                <option>vfd-fault</option>
+                                <option>condensate-overflow</option>
+                                <option>occupancy-override</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="confidence-bar">
+                        <div class="confidence-label">Overall AI Confidence: 94%</div>
+                        <div class="confidence-track">
+                            <div class="confidence-fill" style="width: 94%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="info-message">
+                        <div class="info-message-title">ℹ️ Why tag?</div>
+                        <ul>
+                            <li>Enables analytics and FDD integration</li>
+                            <li>Prepares points for G36 sequences</li>
+                            <li>Takes 30 sec vs 5 min manual</li>
+                        </ul>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="btn btn-primary">Confirm</button>
+                        <button class="btn btn-secondary">Not Sure - Ask AI</button>
+                        <button class="btn btn-cancel">Skip</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario 2: Required for G36 -->
+    <div id="mockup-2" class="mockup-container">
+        <div class="mockup-title">Scenario 2: Required for G36 Connection</div>
+        <div class="mockup-description">User drags untagged BACnet point to G36 input port. 223P popup appears with G36 context showing what the port expects.</div>
+
+        <div class="scenario-note">
+            <div class="scenario-note-title">📍 User Action</div>
+            <div class="scenario-note-text">Sarah drags AHU-1_Sensor3 (untagged) to "Mixed Air Temperature" port on G36 Economizer block → 223P popup appears with G36 requirements</div>
+        </div>
+
+        <div class="app-layout">
+            <div class="left-panel">
+                <div class="panel-header">
+                    Components
+                    <span style="font-size: 1rem; cursor: pointer;">🔍</span>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">▼ BACnet Points</div>
+                    <div class="bacnet-point">
+                        <div class="point-name">AHU-1_OAT</div>
+                        <span class="point-badge">analog-input</span>
+                        <div class="point-tags">
+                            <span class="tag-badge">MAU</span>
+                            <span class="tag-badge success">Sensor</span>
+                            <span class="tag-badge warning">air-temp</span>
+                        </div>
+                        <div class="point-value" style="margin-top: 0.25rem;">📍 AHU-1 Mech Room</div>
+                        <div class="point-value">Present Value: 45.2°F</div>
+                    </div>
+                    <div class="bacnet-point">
+                        <div class="point-name">AHU-1_Sensor3</div>
+                        <span class="point-badge">analog-input</span>
+                        <div class="warning-text">⚠️ Not tagged</div>
+                        <div class="point-value">Present Value: 55.2°F</div>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">▼ G36 Sequences</div>
+                    <div class="component-item">G36 AHU Economizer</div>
+                </div>
+            </div>
+
+            <div class="canvas">
+                <div class="flow-node" style="top: 100px; left: 100px;">
+                    <div class="node-header">
+                        G36 AHU Economizer
+                        <span class="node-badge">economizer</span>
+                    </div>
+                    <div class="node-body">
+                        <div class="port-row">
+                            <div class="port-left">
+                                <span class="port-connector connected"></span>
+                                <span class="port-label">Outside Air Temp</span>
+                            </div>
+                        </div>
+                        <div class="port-connection">
+                            <span class="connection-icon">🔗</span> AHU-1_OAT ✓
+                        </div>
+
+                        <div class="port-row" style="margin-top: 0.5rem;">
+                            <div class="port-left">
+                                <span class="port-connector connected"></span>
+                                <span class="port-label">Return Air Temp</span>
+                            </div>
+                        </div>
+                        <div class="port-connection">
+                            <span class="connection-icon">🔗</span> AHU-1_RAT ✓
+                        </div>
+
+                        <div class="port-row" style="margin-top: 0.5rem;">
+                            <div class="port-left">
+                                <span class="port-connector" style="border-color: #f59e0b; animation: pulse 1s infinite;"></span>
+                                <span class="port-label">Mixed Air Temp</span>
+                            </div>
+                        </div>
+                        <div class="port-connection" style="color: #f59e0b;">
+                            ⚠️ Not connected
+                        </div>
+
+                        <div class="node-status">
+                            ⚠️ 1 input required
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 223P Popup Modal - Required Variant -->
+        <div class="modal-overlay active">
+            <div class="popup-modal">
+                <div class="modal-header">
+                    <div class="modal-title">223P Semantic Mapping</div>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="requirement-badge required">⚠️ Required for G36</div>
+
+                    <div class="point-info">
+                        <div class="point-info-header">
+                            <span class="point-info-name">AHU-1_Sensor3</span>
+                            <span class="point-badge">analog-input</span>
+                        </div>
+                        <div class="point-info-value">Present Value: 55.2°F</div>
+
+                        <div class="g36-context">
+                            <div class="g36-context-title">🎯 Connecting to: G36 AHU Economizer</div>
+                            <div class="g36-context-info">Port: Mixed Air Temperature</div>
+                            <div class="g36-context-info">Expected: Temperature Sensor</div>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <div class="field-label">
+                            <span>System Type</span>
+                            <span class="loading-spinner">✓ 92%</span>
+                        </div>
+                        <select class="field-select">
+                            <option selected>Makeup Air Unit</option>
+                            <option>VAV Reheat Terminal Unit</option>
+                            <option>Heat Recovery System</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <div class="field-label">
+                            <span>Space (Optional)</span>
+                            <span class="loading-spinner" style="color: #666;">Auto</span>
+                        </div>
+                        <select class="field-select">
+                            <option selected>PhysicalSpace</option>
+                            <option>DomainSpace</option>
+                        </select>
+                        <div style="position: relative; margin-top: 0.5rem;">
+                            <input
+                                type="text"
+                                class="field-select"
+                                placeholder="Type space name or select..."
+                                value="AHU-1 Mechanical Room"
+                                style="font-size: 0.875rem; padding-right: 2rem;"
+                            >
+                            <span style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none;">🔍</span>
+                        </div>
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #eff6ff; border: 1px solid #3b82f6; border-radius: 6px; font-size: 0.75rem; color: #1e40af;">
+                            ℹ️ Auto-filled from AHU-1_OAT
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <div class="field-label">
+                            <span>Device Type</span>
+                            <span class="loading-spinner">✓ 90%</span>
+                        </div>
+                        <select class="field-select">
+                            <optgroup label="🏷️ Sensors & Monitoring">
+                                <option selected>Sensor</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Air-side Equipment">
+                                <option>Damper</option>
+                                <option>Fan</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <div class="field-label">
+                            <span>Observable Property</span>
+                            <span class="loading-spinner">✓ 88%</span>
+                        </div>
+                        <select class="field-select">
+                            <optgroup label="🏷️ Temperature (Quantifiable)">
+                                <option selected>air-temperature</option>
+                                <option>water-temperature</option>
+                            </optgroup>
+                            <optgroup label="🏷️ Pressure (Quantifiable)">
+                                <option>static-pressure</option>
+                                <option>differential-pressure</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="confidence-bar">
+                        <div class="confidence-label">Overall AI Confidence: 90%</div>
+                        <div class="confidence-track">
+                            <div class="confidence-fill" style="width: 90%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="warning-message">
+                        <div class="warning-message-title">⚠️ Required for G36 Connection</div>
+                        <div class="warning-message-text">This point must be semantically tagged to connect to the G36 sequence block.</div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="btn btn-primary">Confirm</button>
+                        <button class="btn btn-secondary">Not Sure - Ask AI</button>
+                        <button class="btn btn-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario 3: Chat Mode -->
+    <div id="mockup-3" class="mockup-container">
+        <div class="mockup-title">Scenario 3: Conversational AI Assistance</div>
+        <div class="mockup-description">User clicks "Not Sure - Ask AI" when uncertain. CopilotKit chat interface helps user reach confident decision.</div>
+
+        <div class="scenario-note">
+            <div class="scenario-note-title">📍 User Action</div>
+            <div class="scenario-note-text">AI confidence is low (45%) or user clicked "Not Sure - Ask AI" → Chat interface opens to help resolve uncertainty</div>
+        </div>
+
+        <div class="app-layout">
+            <div class="left-panel">
+                <div class="panel-header">
+                    Components
+                    <span style="font-size: 1rem; cursor: pointer;">🔍</span>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">▼ BACnet Points</div>
+                    <div class="bacnet-point">
+                        <div class="point-name">Temp1</div>
+                        <span class="point-badge">analog-input</span>
+                        <div class="warning-text">⚠️ Ambiguous name</div>
+                        <div class="point-value">Present Value: 68.3°F</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas">
+                <!-- Empty canvas -->
+            </div>
+        </div>
+
+        <!-- 223P Popup Modal - Chat Mode -->
+        <div class="modal-overlay active">
+            <div class="popup-modal">
+                <div class="modal-header">
+                    <div class="modal-title">223P Semantic Mapping - AI Chat</div>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="requirement-badge optional">ℹ️ Optional - Recommended</div>
+
+                    <div class="point-info">
+                        <div class="point-info-header">
+                            <span class="point-info-name">Temp1</span>
+                            <span class="point-badge">analog-input</span>
+                        </div>
+                        <div class="point-info-value">Present Value: 68.3°F</div>
+                    </div>
+
+                    <div class="chat-container">
+                        <div class="chat-header">💬 Chat with AI</div>
+                        <div class="chat-messages">
+                            <div class="chat-message ai">
+                                <div class="chat-message-label">AI</div>
+                                <div class="chat-message-text">
+                                    I'm not confident about this point (45%). The name "Temp1" is ambiguous.
+                                    <br><br>
+                                    Can you tell me:
+                                    <br>• What equipment is this connected to?
+                                    <br>• What does this sensor measure?
+                                </div>
+                            </div>
+
+                            <div class="chat-message user">
+                                <div class="chat-message-label">You</div>
+                                <div class="chat-message-text">
+                                    It's a zone temperature sensor for VAV box 2-01
+                                </div>
+                            </div>
+
+                            <div class="chat-message ai">
+                                <div class="chat-message-label">AI</div>
+                                <div class="chat-message-text">
+                                    Got it! Based on that:
+                                    <br><br>
+                                    • Equipment: <strong>VAV Terminal Unit</strong>
+                                    <br>• Device: <strong>Temperature Sensor</strong>
+                                    <br>• Property: <strong>Zone Air Temperature</strong>
+                                    <br><br>
+                                    Does this look correct?
+                                </div>
+                            </div>
+                        </div>
+                        <input type="text" class="chat-input" placeholder="Type your message...">
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="btn btn-primary">Apply Suggestion</button>
+                        <button class="btn btn-secondary">Back to Form</button>
+                        <button class="btn btn-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario 4: G36 Fully Connected -->
+    <div id="mockup-4" class="mockup-container">
+        <div class="mockup-title">Scenario 4: G36 Block Fully Connected</div>
+        <div class="mockup-description">All G36 inputs and outputs connected. User can configure parameters and run validation.</div>
+
+        <div class="scenario-note">
+            <div class="scenario-note-title">📍 Current State</div>
+            <div class="scenario-note-text">Sarah has connected all required BACnet points to G36 Economizer. Block is ready for parameter configuration.</div>
+        </div>
+
+        <div class="app-layout">
+            <div class="left-panel">
+                <div class="panel-header">
+                    Components
+                    <span style="font-size: 1rem; cursor: pointer;">🔍</span>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">▼ BACnet Points</div>
+                    <div class="bacnet-point">
+                        <div class="point-name">AHU-1_OAT</div>
+                        <span class="point-badge">analog-input</span>
+                        <div class="point-tags">
+                            <span class="tag-badge">MAU</span>
+                            <span class="tag-badge success">Sensor</span>
+                            <span class="tag-badge warning">air-temp</span>
+                        </div>
+                        <div class="point-value" style="margin-top: 0.25rem;">📍 AHU-1 Mech Room</div>
+                        <div class="point-value">Present Value: 45.2°F</div>
+                    </div>
+                    <div class="bacnet-point">
+                        <div class="point-name">AHU-1_RAT</div>
+                        <span class="point-badge">analog-input</span>
+                        <div class="point-tags">
+                            <span class="tag-badge">MAU</span>
+                            <span class="tag-badge success">Sensor</span>
+                            <span class="tag-badge warning">air-temp</span>
+                        </div>
+                        <div class="point-value" style="margin-top: 0.25rem;">📍 AHU-1 Mech Room</div>
+                        <div class="point-value">Present Value: 72.1°F</div>
+                    </div>
+                    <div class="bacnet-point">
+                        <div class="point-name">AHU-1_MAT</div>
+                        <span class="point-badge">analog-input</span>
+                        <div class="point-tags">
+                            <span class="tag-badge">MAU</span>
+                            <span class="tag-badge success">Sensor</span>
+                            <span class="tag-badge warning">air-temp</span>
+                        </div>
+                        <div class="point-value" style="margin-top: 0.25rem;">📍 AHU-1 Mech Room</div>
+                        <div class="point-value">Present Value: 55.2°F</div>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">▼ G36 Sequences</div>
+                    <div class="component-item">G36 VAV Cooling</div>
+                </div>
+            </div>
+
+            <div class="canvas">
+                <div class="flow-node" style="top: 100px; left: 100px; border-color: #10b981;">
+                    <div class="node-header">
+                        G36 AHU Economizer
+                        <span class="node-badge">economizer</span>
+                    </div>
+                    <div class="node-body">
+                        <div class="port-row">
+                            <div class="port-left">
+                                <span class="port-connector connected"></span>
+                                <span class="port-label">Outside Air Temp</span>
+                            </div>
+                            <div class="port-right">
+                                <span class="port-label">OA Damper Cmd</span>
+                                <span class="port-connector connected"></span>
+                            </div>
+                        </div>
+                        <div class="port-connection">
+                            <span class="connection-icon">🔗</span> AHU-1_OAT ✓
+                        </div>
+
+                        <div class="port-row" style="margin-top: 0.5rem;">
+                            <div class="port-left">
+                                <span class="port-connector connected"></span>
+                                <span class="port-label">Return Air Temp</span>
+                            </div>
+                            <div class="port-right">
+                                <span class="port-label">RA Damper Cmd</span>
+                                <span class="port-connector connected"></span>
+                            </div>
+                        </div>
+                        <div class="port-connection">
+                            <span class="connection-icon">🔗</span> AHU-1_RAT ✓
+                        </div>
+
+                        <div class="port-row" style="margin-top: 0.5rem;">
+                            <div class="port-left">
+                                <span class="port-connector connected"></span>
+                                <span class="port-label">Mixed Air Temp</span>
+                            </div>
+                        </div>
+                        <div class="port-connection">
+                            <span class="connection-icon">🔗</span> AHU-1_MAT ✓
+                        </div>
+
+                        <div class="node-status success">
+                            ✓ Ready to configure parameters
+                        </div>
+
+                        <button class="configure-btn">+ Configure Parameters</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showMockup(num) {
+            // Hide all mockups
+            document.querySelectorAll('.mockup-container').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+            // Show selected mockup
+            document.getElementById('mockup-' + num).classList.add('active');
+            document.querySelectorAll('.nav-tab')[num - 1].classList.add('active');
+        }
+
+        // Close modal on click outside
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+
+        // Close button handlers
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.modal-overlay').classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>

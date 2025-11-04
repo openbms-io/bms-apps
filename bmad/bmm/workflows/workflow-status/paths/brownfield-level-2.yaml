@@ -1,0 +1,76 @@
+# Brownfield Level 2 - Medium Project in Existing Codebase
+# 5-15 stories, multiple features added to existing system
+
+project_type: "software"
+level: 2
+field_type: "brownfield"
+description: "Medium project adding multiple features to existing codebase"
+
+phases:
+  - prerequisite: true
+    name: "Documentation"
+    conditional: "if_undocumented"
+    note: "NOT a phase - prerequisite for brownfield without docs OR post-completion cleanup"
+    workflows:
+      - id: "document-project"
+        required: true
+        agent: "analyst"
+        command: "document-project"
+        output: "Comprehensive project documentation"
+        purpose: "Understand existing codebase before planning OR create superior final docs after Phase 4"
+
+  - phase: 1
+    name: "Analysis"
+    optional: true
+    workflows:
+      - id: "brainstorm-project"
+        optional: true
+        agent: "analyst"
+        command: "brainstorm-project"
+      - id: "research"
+        optional: true
+        agent: "analyst"
+        command: "research"
+      - id: "product-brief"
+        optional: true
+        agent: "analyst"
+        command: "product-brief"
+
+  - phase: 2
+    name: "Planning"
+    required: true
+    workflows:
+      - id: "prd"
+        recommended: true
+        agent: "pm"
+        command: "prd"
+        output: "Focused PRD for new features"
+        note: "Must consider existing system constraints"
+      - id: "validate-prd"
+        optional: true
+        agent: "pm"
+        command: "validate-prd"
+      - id: "tech-spec"
+        required: true
+        agent: "pm"
+        command: "tech-spec"
+        output: "Creates spec with multiple story files"
+        note: "Integrate with existing patterns"
+      - id: "create-design"
+        conditional: "if_has_ui"
+        agent: "ux-designer"
+        command: "create-design"
+
+  - phase: 3
+    name: "Solutioning"
+    skip: true
+
+  - phase: 4
+    name: "Implementation"
+    required: true
+    workflows:
+      - id: "sprint-planning"
+        required: true
+        agent: "sm"
+        command: "sprint-planning"
+        note: "Creates sprint plan with all stories - subsequent work tracked in sprint plan output, not workflow-status"

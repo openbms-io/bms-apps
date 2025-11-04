@@ -1,0 +1,95 @@
+# Brownfield Level 3 - Complex Integration with Existing System
+# Major feature addition requiring architectural integration
+
+project_type: "software"
+level: 3
+field_type: "brownfield"
+description: "Complex integration with existing system architecture"
+
+phases:
+  - prerequisite: true
+    name: "Documentation"
+    conditional: "if_undocumented"
+    note: "NOT a phase - prerequisite for brownfield without docs OR post-completion cleanup"
+    workflows:
+      - id: "document-project"
+        required: true
+        agent: "analyst"
+        command: "document-project"
+        output: "Comprehensive project documentation"
+        purpose: "Understand existing codebase before planning OR create superior final docs after Phase 4"
+
+  - phase: 1
+    name: "Analysis"
+    recommended: true
+    workflows:
+      - id: "brainstorm-project"
+        optional: true
+        agent: "analyst"
+        command: "brainstorm-project"
+      - id: "research"
+        recommended: true
+        agent: "analyst"
+        command: "research"
+        note: "Research existing architecture patterns"
+      - id: "product-brief"
+        recommended: true
+        agent: "analyst"
+        command: "product-brief"
+
+  - phase: 2
+    name: "Planning"
+    required: true
+    workflows:
+      - id: "prd"
+        required: true
+        agent: "pm"
+        command: "prd"
+        output: "Requirements with integration points"
+      - id: "validate-prd"
+        optional: true
+        agent: "pm"
+        command: "validate-prd"
+      - id: "create-design"
+        conditional: "if_has_ui"
+        agent: "ux-designer"
+        command: "create-design"
+        note: "Must align with existing UI patterns"
+
+  - phase: 3
+    name: "Solutioning"
+    required: true
+    workflows:
+      - id: "architecture-review"
+        required: true
+        agent: "architect"
+        command: "architecture-review"
+        note: "Review existing architecture first"
+      - id: "integration-planning"
+        required: true
+        agent: "architect"
+        command: "integration-planning"
+        output: "Integration strategy document"
+      - id: "create-architecture"
+        required: true
+        agent: "architect"
+        command: "create-architecture"
+        note: "Extension of existing architecture"
+      - id: "validate-architecture"
+        optional: true
+        agent: "architect"
+        command: "validate-architecture"
+      - id: "solutioning-gate-check"
+        required: true
+        agent: "architect"
+        command: "solutioning-gate-check"
+
+  - phase: 4
+    name: "Implementation"
+    required: true
+    workflows:
+      - id: "sprint-planning"
+        required: true
+        agent: "sm"
+        command: "sprint-planning"
+        note: "Creates sprint plan with all stories - subsequent work tracked in sprint plan output, not workflow-status"

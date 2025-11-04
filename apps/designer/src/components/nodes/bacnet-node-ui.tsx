@@ -21,12 +21,19 @@ import {
 } from '@/types/bacnet-properties'
 import { BacnetNodeData } from '@/types/node-data-types'
 import { useFlowStore } from '@/store/use-flow-store'
+import { useMappingsQuery } from '@/domains/223p/api/queries/use-mappings-query'
 
 export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
   const typedData = data as BacnetNodeData
   const [showProperties, setShowProperties] = useState(false)
 
-  // Subscribe to discoveredProperties from store for reactive updates
+  const projectId = useFlowStore((s) => s.projectId)
+  const { data: mappings223p = new Map() } = useMappingsQuery(projectId)
+
+  const mapping = typedData.mapping223pKey
+    ? mappings223p.get(typedData.mapping223pKey)
+    : undefined
+
   const discoveredProperties = useFlowStore(
     useShallow((state) => {
       const node = state.nodes.find((n) => n.id === id)
@@ -34,7 +41,6 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
     })
   ) as BacnetProperties
 
-  // Local state for which properties to show in UI
   const [visibleProperties, setVisibleProperties] = useState<
     Set<keyof BacnetProperties>
   >(() => {
@@ -59,7 +65,6 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
     setVisibleProperties((prev) => new Set(prev).add(propertyName))
   }
 
-  // Remove property from visible list
   const removeProperty = (propertyName: keyof BacnetProperties) => {
     setVisibleProperties((prev) => {
       const next = new Set(prev)
@@ -70,7 +75,7 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
 
   return (
     <>
-      <Card className="min-w-[200px] border-2">
+      <Card className="min-w-[300px] border-2">
         <div className="p-3">
           {/* Header with info button */}
           <div className="flex items-center justify-between mb-2">
@@ -84,7 +89,7 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
                 variant="ghost"
                 className="h-6 w-6"
                 onClick={(e) => {
-                  e.stopPropagation() // Prevent node selection
+                  e.stopPropagation()
                   setShowProperties(true)
                 }}
                 title="View all properties"
@@ -93,6 +98,33 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
               </Button>
             </div>
           </div>
+
+          {/* 223P Metadata */}
+          {mapping && (
+            <div className="mb-2 p-2 bg-primary/5 rounded border border-primary/20">
+              <div className="flex items-center gap-1 mb-1">
+                <span className="text-[10px] font-semibold text-primary">
+                  🏷️ Tag
+                </span>
+              </div>
+              <div className="space-y-0.5 text-[10px]">
+                <div className="truncate">
+                  <span className="text-muted-foreground">Equipment:</span>{' '}
+                  <span className="font-medium">{mapping.equipmentType}</span>
+                </div>
+                <div className="truncate">
+                  <span className="text-muted-foreground">Device:</span>{' '}
+                  <span className="font-medium">{mapping.deviceType}</span>
+                </div>
+                <div className="truncate">
+                  <span className="text-muted-foreground">Property:</span>{' '}
+                  <span className="font-medium">
+                    {mapping.observableProperty}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Visible Properties */}
           <div className="space-y-2">

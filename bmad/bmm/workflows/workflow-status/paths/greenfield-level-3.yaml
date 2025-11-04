@@ -1,0 +1,73 @@
+# Greenfield Level 3 - Complex System
+# Subsystems, integrations, architectural decisions required
+
+project_type: "software"
+level: 3
+field_type: "greenfield"
+description: "Complex system - subsystems, integrations, architectural decisions"
+
+phases:
+  - phase: 1
+    name: "Analysis"
+    optional: true
+    workflows:
+      - id: "brainstorm-project"
+        optional: true
+        agent: "analyst"
+        command: "brainstorm-project"
+      - id: "research"
+        optional: true
+        agent: "analyst"
+        command: "research"
+        note: "Multiple research areas likely"
+      - id: "product-brief"
+        recommended: true
+        agent: "analyst"
+        command: "product-brief"
+
+  - phase: 2
+    name: "Planning"
+    required: true
+    workflows:
+      - id: "prd"
+        required: true
+        agent: "pm"
+        command: "prd"
+        output: "High-level requirements and epic definitions"
+      - id: "validate-prd"
+        optional: true
+        agent: "pm"
+        command: "validate-prd"
+      - id: "create-design"
+        conditional: "if_has_ui"
+        agent: "ux-designer"
+        command: "create-design"
+
+  - phase: 3
+    name: "Solutioning"
+    required: true
+    workflows:
+      - id: "create-architecture"
+        required: true
+        agent: "architect"
+        command: "create-architecture"
+        output: "System-wide architecture document"
+      - id: "validate-architecture"
+        optional: true
+        agent: "architect"
+        command: "validate-architecture"
+      - id: "solutioning-gate-check"
+        recommended: true
+        agent: "architect"
+        command: "solutioning-gate-check"
+        note: "Validate PRD + UX + architecture cohesion before implementation"
+
+  - phase: 4
+    name: "Implementation"
+    required: true
+    workflows:
+      - id: "sprint-planning"
+        required: true
+        agent: "sm"
+        command: "sprint-planning"
+        note: "Creates sprint plan with all stories - subsequent work tracked in sprint plan output, not workflow-status"

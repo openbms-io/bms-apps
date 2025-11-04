@@ -2,6 +2,8 @@ import { StateCreator } from 'zustand'
 import { TreeNode } from '@/types/infrastructure'
 import { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
+import type { Equipment223PDTO } from '@/domains/223p/schemas'
+import { createCompositeKey } from '@/domains/223p/utils/bacnet-keys'
 
 export interface TreeUISlice {
   // UI State only
@@ -18,7 +20,8 @@ export interface TreeUISlice {
   getTreeData: (
     controllers: IotDeviceController[],
     iotDevice: { id: string; name: string } | undefined,
-    pointsByController: Record<string, ControllerPoint[]>
+    pointsByController: Record<string, ControllerPoint[]>,
+    mappings223p: Map<string, Equipment223PDTO>
   ) => TreeNode[]
 }
 
@@ -58,7 +61,8 @@ export const createTreeUISlice: StateCreator<
   getTreeData: (
     controllers: IotDeviceController[],
     iotDevice: { id: string; name: string } | undefined,
-    pointsByController: Record<string, ControllerPoint[]>
+    pointsByController: Record<string, ControllerPoint[]>,
+    mappings223p: Map<string, Equipment223PDTO>
   ) => {
     const { expandedNodes } = get()
 
@@ -110,6 +114,24 @@ export const createTreeUISlice: StateCreator<
 
         if (controllerNode.isExpanded && hasPoints) {
           points.forEach((point) => {
+            // Find controller to get BACnet deviceId
+            const controller = controllers.find(
+              (c) => c.id === point.controllerId
+            )
+
+            // Construct composite key: "device,123:analog-input,1"
+            const compositeKey = controller
+              ? createCompositeKey(
+                  controller.deviceId,
+                  point.pointType,
+                  point.instanceNumber
+                )
+              : null
+
+            const mapping223p = compositeKey
+              ? mappings223p.get(compositeKey)
+              : undefined
+
             const pointNode: TreeNode = {
               id: point.id,
               type: 'point',
@@ -121,6 +143,7 @@ export const createTreeUISlice: StateCreator<
               isExpanded: false,
               data: point,
               children: [],
+              mapping223p,
             }
 
             controllerNode.children!.push(pointNode)

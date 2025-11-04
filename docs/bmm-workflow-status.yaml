@@ -1,0 +1,51 @@
+# Workflow Status Template
+# This tracks progress through phases 1-3 of the BMM methodology
+# Phase 4 (Implementation) is tracked separately in sprint-status.yaml
+
+# generated: 2025-10-31
+# project: bms-apps
+# project_type: software
+# project_level: 4
+# field_type: brownfield
+# workflow_path: brownfield-level-4.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-10-31"
+project: "bms-apps"
+project_type: "software"
+project_level: "4"
+field_type: "brownfield"
+workflow_path: "brownfield-level-4.yaml"
+
+workflow_status:
+  # Prerequisite: Documentation (conditional - if undocumented)
+  document-project: conditional
+
+  # Phase 1: Analysis
+  brainstorm-project: recommended
+  research: docs/research/2025-10-31-type-safety-strategy-polyglot-architecture.md
+  product-brief: docs/feature-development/ashrae-223p-ai-g36-integration/product-brief.md
+
+  # Phase 2: Planning
+  prd: docs/feature-development/ashrae-223p-ai-g36-integration/PRD.md
+  validate-prd: optional
+  create-design: docs/feature-development/ashrae-223p-ai-g36-integration/ux-design-specification.md
+
+  # Phase 3: Solutioning
+  create-architecture: docs/architecture.md
+  validate-architecture: optional
+  solutioning-gate-check: docs/feature-development/ashrae-223p-ai-g36-integration/implementation-readiness-report-2025-11-01.md
+
+  # Phase 4: Implementation
+  sprint-planning: required

@@ -1,0 +1,260 @@
+# Workflow Status System
+
+The universal entry point for BMM workflows - answers "what should I do now?" for any agent.
+
+## Overview
+
+The workflow status system provides:
+
+- **Smart project initialization** - Detects existing work and infers project details
+- **Simple status tracking** - Key-value pairs for instant parsing
+- **Intelligent routing** - Suggests next actions based on current state
+- **Modular workflow paths** - Each project type/level has its own clean definition
+
+## Architecture
+
+### Core Components
+
+```
+workflow-status/
+├── workflow.yaml              # Main configuration
+├── instructions.md            # Status checker (99 lines)
+├── workflow-status-template.yaml # Clean YAML status template
+├── project-levels.yaml        # Source of truth for scale definitions
+└── paths/                     # Modular workflow definitions
+    ├── greenfield-level-0.yaml through level-4.yaml
+    ├── brownfield-level-0.yaml through level-4.yaml
+    └── game-design.yaml
+```
+
+### Related Workflow
+
+```
+workflow-init/
+├── workflow.yaml              # Initialization configuration
+└── instructions.md            # Smart setup (182 lines)
+```
+
+## How It Works
+
+### For New Projects
+
+1. User runs `workflow-status`
+2. System finds no status file
+3. Directs to `workflow-init`
+4. Init workflow:
+   - Scans for existing work (PRDs, code, etc.)
+   - Infers project details from what it finds
+   - Asks minimal questions (name + description)
+   - Confirms understanding in one step
+   - Creates status file with workflow path
+
+### For Existing Projects
+
+1. User runs `workflow-status`
+2. System reads status file
+3. Shows current state and options:
+   - Continue in-progress work
+   - Next required step
+   - Available optional workflows
+4. User picks action
+
+## Status File Format
+
+Clean YAML format with all workflows listed up front:
+
+```yaml
+# generated: 2025-10-29
+# project: MyProject
+# project_type: software
+# project_level: 2
+# field_type: greenfield
+# workflow_path: greenfield-level-2.yaml
+
+workflow_status:
+  # Phase 1: Analysis
+  brainstorm-project: optional
+  research: optional
+  product-brief: recommended
+
+  # Phase 2: Planning
+  prd: docs/prd.md
+  validate-prd: optional
+  create-design: conditional
+
+  # Phase 3: Solutioning
+  create-architecture: required
+  validate-architecture: optional
+  solutioning-gate-check: required
+```
+
+**Status Values:**
+
+- `required` / `optional` / `recommended` / `conditional` - Not yet started
+- `{file-path}` - Completed (e.g., `docs/prd.md`)
+- `skipped` - Optional workflow that was skipped
+
+Any agent can instantly parse what they need:
+
+- Read YAML to see all workflows and their status
+- Check which workflows are completed vs pending
+- Auto-detect existing work by scanning for output files
+
+## Project Levels
+
+Source of truth: `/src/modules/bmm/README.md` lines 77-85
+
+- **Level 0**: Single atomic change (1 story)
+- **Level 1**: Small feature (1-10 stories)
+- **Level 2**: Medium project (5-15 stories)
+- **Level 3**: Complex system (12-40 stories)
+- **Level 4**: Enterprise scale (40+ stories)
+
+## Workflow Paths
+
+Each combination has its own file:
+
+- `greenfield-level-X.yaml` - New projects at each level
+- `brownfield-level-X.yaml` - Existing codebases at each level
+- `game-design.yaml` - Game projects (all levels)
+
+Benefits:
+
+- Load only what's needed (60 lines vs 750+)
+- Easy to maintain individual paths
+- Clear separation of concerns
+
+## Smart Detection
+
+The init workflow intelligently detects:
+
+**Project Type:**
+
+- Finds GDD → game
+- Otherwise → software
+
+**Project Level:**
+
+- Reads PRD epic/story counts
+- Analyzes scope descriptions
+- Makes educated guess
+
+**Field Type:**
+
+- Finds source code → brownfield
+- Only planning docs → greenfield
+- Checks git history age
+
+**Documentation Status:**
+
+- Finds index.md → was undocumented
+- Good README → documented
+- Missing docs → needs documentation
+
+## Usage Examples
+
+### Any Agent Checking Status
+
+```
+Agent: workflow-status
+Result: "Current: Phase 2 - Planning, Next: prd (pm agent)"
+```
+
+### New Project Setup
+
+```
+Agent: workflow-status
+System: "No status found. Run workflow-init"
+Agent: workflow-init
+System: "Tell me about your project"
+User: "Building a dashboard with user management"
+System: "Level 2 greenfield software project. Correct?"
+User: "Yes"
+System: "Status created! Next: pm agent, run prd"
+```
+
+### Smart Inference
+
+```
+System finds: prd-dashboard.md with 3 epics
+System finds: package.json, src/ directory
+System infers: Level 2 brownfield software
+User confirms or corrects
+```
+
+## Philosophy
+
+**Less Structure, More Intelligence**
+
+Instead of complex if/else logic:
+
+- Trust the LLM to analyze and infer
+- Use natural language for corrections
+- Keep menus simple and contextual
+- Let intelligence emerge from the model
+
+**Result:** A workflow system that feels like talking to a smart assistant, not filling out a form.
+
+## Implementation Details
+
+### workflow-init (6 Steps)
+
+1. **Scan for existing work** - Check for docs, code, git history
+2. **Confirm findings** - Show what was detected (if anything)
+3. **Gather info** - Name, description, confirm type/level/field
+4. **Load path file** - Select appropriate workflow definition
+5. **Generate workflow** - Build from path file
+6. **Create status file** - Save and show next step
+
+### workflow-status (4 Steps)
+
+1. **Check for status file** - Direct to init if missing
+2. **Parse status** - Extract key-value pairs
+3. **Display options** - Show current, required, optional
+4. **Handle selection** - Execute user's choice
+
+## Best Practices
+
+1. **Let the AI guess** - It's usually right, user corrects if needed
+2. **One conversation** - Get all info in Step 3 of init
+3. **Simple parsing** - Key-value pairs, not complex structures
+4. **Modular paths** - Each scenario in its own file
+5. **Trust intelligence** - LLM understands context better than rules
+
+## Integration
+
+Other workflows read the status to coordinate:
+
+- Any workflow can check CURRENT_PHASE
+- Workflows can verify prerequisites are complete
+- All agents can ask "what should I do?"
+
+**Phase 4 (Implementation):**
+
+- workflow-status only tracks sprint-planning completion
+- After sprint-planning, all story/epic tracking happens in sprint-status.yaml
+- Phase 4 workflows do NOT read/write workflow-status (except sprint-planning for prerequisite verification)
+
+The workflow-status.yaml file is the single source of truth for Phases 1-3, and sprint-status.yaml takes over for Phase 4 implementation tracking.
+
+## Benefits
+
+✅ **Smart Detection** - Infers from existing work instead of asking everything
+✅ **Minimal Questions** - Just name and description in most cases
+✅ **Clean Status** - Simple key-value pairs for instant parsing
+✅ **Modular Paths** - 60-line files instead of 750+ line monolith
+✅ **Natural Language** - "Tell me about your project" not "Pick 1-12"
+✅ **Intelligent Menus** - Shows only relevant options
+✅ **Fast Parsing** - Grep instead of complex logic
+✅ **Easy Maintenance** - Change one level without affecting others
+
+## Future Enhancements
+
+- Visual progress indicators
+- Time tracking and estimates
+- Multi-project support
+- Team synchronization
+
+---
+
+**This workflow is the front door to BMad Method. Start here to know what to do next.**

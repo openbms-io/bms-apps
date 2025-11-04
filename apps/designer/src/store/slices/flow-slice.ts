@@ -18,6 +18,8 @@ import {
   EdgeData,
   NodeTypeString,
 } from '@/types/infrastructure'
+import type { Equipment223PDTO } from '@/domains/223p/schemas'
+import { createCompositeKey } from '@/domains/223p/utils/bacnet-keys'
 import { NodeData } from '@/types/node-data-types'
 import type {
   CalculationOperation,
@@ -44,6 +46,7 @@ export interface DraggedPoint {
   type: 'bacnet-point'
   config: BacnetConfig
   draggedFrom: 'controllers-tree'
+  controller?: { id: string; name: string; deviceId: number }
 }
 
 export interface DraggedLogicNode {
@@ -129,6 +132,9 @@ export interface FlowSlice {
   // Save/load state
   saveStatus: 'saved' | 'saving' | 'error' | 'unsaved'
 
+  // Project context
+  projectId?: string
+
   // React Flow change handlers
   onNodesChange: (changes: NodeChange[]) => void
   onEdgesChange: (changes: EdgeChange[]) => void
@@ -136,7 +142,8 @@ export interface FlowSlice {
   // Actions
   addNodeFromInfrastructure: (
     draggedPoint: DraggedPoint,
-    position: XYPosition
+    position: XYPosition,
+    mapping223p?: Equipment223PDTO
   ) => void
   addLogicNode: (
     nodeType: NodeTypeString,
@@ -209,15 +216,18 @@ async function createDataNodeFromBacnetConfig({
   config,
   mqttBus,
   onDataChange,
+  mapping223pKey,
 }: {
   config: BacnetConfig
   mqttBus: ReturnType<typeof getMqttBus>
   onDataChange: () => void
+  mapping223pKey?: string
 }): Promise<DataNode> {
   return factory.createDataNodeFromBacnetConfig({
     config,
     mqttBus,
     onDataChange,
+    mapping223pKey,
   })
 }
 
@@ -258,13 +268,24 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
     set({ edges: updatedEdges })
   },
 
-  addNodeFromInfrastructure: async (draggedPoint, position) => {
-    const { config } = draggedPoint
+  addNodeFromInfrastructure: async (draggedPoint, position, mapping223p) => {
+    const { config, controller } = draggedPoint
+
+    // Compute composite key for lookup
+    const mapping223pKey =
+      mapping223p && controller
+        ? createCompositeKey(
+            controller.deviceId,
+            config.objectType,
+            config.objectId
+          )
+        : undefined
 
     const dataNode = await createDataNodeFromBacnetConfig({
       config,
       mqttBus: getMqttBus(),
       onDataChange: () => set({ nodes: [...get().nodes] }),
+      mapping223pKey,
     })
 
     get().dataGraph.addNode(dataNode, position)
@@ -680,14 +701,11 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
       console.log('🚀 [FlowStore] Loaded project:', project)
       if (project.workflowConfig) {
         const versionedConfig = project.workflowConfig
-        const nodeFactory = createNodeFactory({
-          mqttBus: getMqttBus(),
-          onDataChange: () => set({ nodes: [...get().nodes] }),
-        })
 
         const { nodes, edges } = deserializeWorkflow({
           versionedConfig,
-          nodeFactory,
+          mqttBus: getMqttBus(),
+          onDataChange: () => set({ nodes: [...get().nodes] }),
         })
 
         // Update store and DataGraph
@@ -697,6 +715,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
 
         console.log('🚀 [FlowStore] Loaded project:', nodes, edges)
         set({
+          projectId,
           nodes: nodes as Node<NodeData>[],
           edges: edges as Edge<EdgeData>[],
           saveStatus: 'saved',
@@ -708,6 +727,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
         dataGraph.setEdgesArray([])
 
         set({
+          projectId,
           nodes: [],
           edges: [],
           saveStatus: 'saved',

@@ -1,3 +1,5 @@
+import { NodeType } from '@/types/infrastructure'
+
 export interface SerializableNode {
   toSerializable(): Record<string, unknown>
 }
@@ -27,10 +29,10 @@ export function deserializeNodeData({
   serializedData,
   nodeFactory,
 }: {
-  readonly nodeType: string
+  readonly nodeType: NodeType
   readonly serializedData: Record<string, unknown>
   readonly nodeFactory: (
-    nodeType: string,
+    nodeType: NodeType,
     data: Record<string, unknown>
   ) => unknown
 }): unknown {
