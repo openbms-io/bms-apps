@@ -171,7 +171,7 @@ export type SpaceDTO = z.infer<typeof SpaceDTOSchema>
  * Epic 1: Flat structure with optional fields
  * Epic 3: May become nested graph structure (RDF/JSON-LD)
  */
-export const Equipment223PDTOSchema = z.object({
+export const SemanticEquipmentSchema = z.object({
   equipmentType: SystemTypeSchema,
   physicalSpaceId: z.string().optional(),
   domainSpaceIds: z.array(z.string()).optional(),
@@ -183,7 +183,7 @@ export const Equipment223PDTOSchema = z.object({
   schemaVersion: z.literal('223p-2023'),
 })
 
-export type Equipment223PDTO = z.infer<typeof Equipment223PDTOSchema>
+export type SemanticEquipment = z.infer<typeof SemanticEquipmentSchema>
 
 /**
  * Validation Error DTO

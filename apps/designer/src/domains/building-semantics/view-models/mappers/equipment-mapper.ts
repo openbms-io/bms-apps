@@ -1,9 +1,9 @@
-import type { Equipment223PDTO, SpaceDTO } from '../../schemas'
+import type { SemanticEquipment, SpaceDTO } from '../../schemas'
 import type { EquipmentViewModel } from '../types'
 
 export function mapEquipmentDTOToViewModel(
   pointName: string,
-  dto: Equipment223PDTO | null,
+  dto: SemanticEquipment | null,
   spaces: SpaceDTO[]
 ): EquipmentViewModel {
   if (!dto) {

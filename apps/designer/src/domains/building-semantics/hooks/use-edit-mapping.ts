@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import type { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 import type { ControllerPoint } from '@/lib/domain/models/controller-point'
 import type {
-  Equipment223PDTO,
+  SemanticEquipment,
   BACnetPointData,
   BACnetControllerData,
 } from '../schemas'
@@ -11,7 +11,7 @@ import { createCompositeKey } from '../utils/bacnet-keys'
 interface EditMappingState {
   point: BACnetPointData | null
   controller: BACnetControllerData | null
-  mapping: Equipment223PDTO | null
+  mapping: SemanticEquipment | null
   isOpen: boolean
 }
 
@@ -19,7 +19,7 @@ export function useEditMapping(
   projectId: string,
   controllers: IotDeviceController[],
   pointsByController: Record<string, ControllerPoint[]>,
-  mappings223p: Map<string, Equipment223PDTO>,
+  mappings223p: Map<string, SemanticEquipment>,
   iotDeviceId: string | undefined
 ) {
   const [editState, setEditState] = useState<EditMappingState>({

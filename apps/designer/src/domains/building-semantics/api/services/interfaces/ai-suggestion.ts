@@ -1,7 +1,7 @@
 import type { Equipment223PRecommendation } from '@/lib/ai'
 import type {
   BACnetPointData,
-  Equipment223PDTO,
+  SemanticEquipment,
   SpaceDTO,
 } from '../../../schemas'
 

@@ -5,10 +5,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import type { Equipment223PDTO } from '../schemas'
+import type { SemanticEquipment } from '../schemas'
 
 interface Point223PBadgeProps {
-  mapping: Equipment223PDTO
+  mapping: SemanticEquipment
 }
 
 export function Point223PBadge({ mapping }: Point223PBadgeProps) {

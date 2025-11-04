@@ -25,7 +25,7 @@ import { MappingPopupModal } from '@/domains/building-semantics/components'
 import type {
   BACnetPointData,
   BACnetControllerData,
-  Equipment223PDTO,
+  SemanticEquipment,
 } from '@/domains/building-semantics/schemas'
 import { useGetConfigPayload } from '@/hooks/use-get-config-payload'
 import { useEditMapping } from '@/domains/building-semantics/hooks/use-edit-mapping'
@@ -306,7 +306,7 @@ export function ControllersTreeContainer({
   }, [controllerToDelete, deleteController, orgId, siteId, projectId, project])
 
   const handleCreate223PMapping = useCallback(
-    (mapping: Equipment223PDTO) => {
+    (mapping: SemanticEquipment) => {
       toast.success('223P mapping created')
       closeSemanticModal()
     },

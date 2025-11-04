@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useAISuggestionQuery } from '../api/queries/use-ai-suggestion-query'
 import { useMappingsQuery } from '../api/queries/use-mappings-query'
 import { useSpacesQuery } from '../api/queries/use-spaces-query'
-import type { BACnetPointData, Equipment223PDTO, SpaceDTO } from '../schemas'
+import type { BACnetPointData, SemanticEquipment, SpaceDTO } from '../schemas'
 import type {
   Equipment223PRecommendation,
   FieldRecommendation,
@@ -16,8 +16,8 @@ function extractDevicePrefix(pointName: string): string | null {
 
 function findPreviousMappingFromSameDevice(
   point: BACnetPointData,
-  existingMappings?: Map<string, Equipment223PDTO>
-): { mapping: Equipment223PDTO; sourcePointId: string } | null {
+  existingMappings?: Map<string, SemanticEquipment>
+): { mapping: SemanticEquipment; sourcePointId: string } | null {
   if (!existingMappings || !point.name) {
     return null
   }
@@ -84,7 +84,7 @@ function resolveDomainSpaces(
 
 function applyAutoFill(
   baseRecommendation: Equipment223PRecommendation,
-  previousMapping: { mapping: Equipment223PDTO; sourcePointId: string },
+  previousMapping: { mapping: SemanticEquipment; sourcePointId: string },
   spaces?: SpaceDTO[]
 ): Equipment223PRecommendation {
   return {

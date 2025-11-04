@@ -27,14 +27,14 @@ export {
 export {
   BACnetExternalReferenceDTOSchema,
   SpaceDTOSchema,
-  Equipment223PDTOSchema,
+  SemanticEquipmentSchema,
   ValidationErrorDTOSchema,
   ValidationResultDTOSchema,
   type BACnetExternalReferenceDTO,
   type BACnetPointData,
   type BACnetControllerData,
   type SpaceDTO,
-  type Equipment223PDTO,
+  type SemanticEquipment,
   type ValidationErrorDTO,
   type ValidationResultDTO,
 } from './dto.schemas'

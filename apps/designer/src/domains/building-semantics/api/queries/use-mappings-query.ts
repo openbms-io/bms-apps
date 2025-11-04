@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { mappings223pApi } from '../mappings.api'
 import { queryKeys223p } from './query-keys'
-import type { Equipment223PDTO } from '../../schemas'
+import type { SemanticEquipment } from '../../schemas'
 
 export function useMappingsQuery(projectId: string | undefined) {
   return useQuery({
@@ -33,7 +33,7 @@ export function useCreateMappingMutation() {
     }: {
       projectId: string
       pointId: string
-      mapping: Equipment223PDTO
+      mapping: SemanticEquipment
     }) => mappings223pApi.createMapping(projectId, pointId, mapping),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({

@@ -2,7 +2,7 @@ import { StateCreator } from 'zustand'
 import { TreeNode } from '@/types/infrastructure'
 import { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
-import type { Equipment223PDTO } from '@/domains/building-semantics/schemas'
+import type { SemanticEquipment } from '@/domains/building-semantics/schemas'
 import { createCompositeKey } from '@/domains/building-semantics/utils/bacnet-keys'
 
 export interface TreeUISlice {
@@ -21,7 +21,7 @@ export interface TreeUISlice {
     controllers: IotDeviceController[],
     iotDevice: { id: string; name: string } | undefined,
     pointsByController: Record<string, ControllerPoint[]>,
-    mappings223p: Map<string, Equipment223PDTO>
+    mappings223p: Map<string, SemanticEquipment>
   ) => TreeNode[]
 }
 
@@ -62,7 +62,7 @@ export const createTreeUISlice: StateCreator<
     controllers: IotDeviceController[],
     iotDevice: { id: string; name: string } | undefined,
     pointsByController: Record<string, ControllerPoint[]>,
-    mappings223p: Map<string, Equipment223PDTO>
+    mappings223p: Map<string, SemanticEquipment>
   ) => {
     const { expandedNodes } = get()
 

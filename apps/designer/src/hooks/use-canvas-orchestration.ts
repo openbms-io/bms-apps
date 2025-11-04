@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { useFlowStore } from '@/store/use-flow-store'
 import type { ReactFlowInstance, XYPosition } from '@xyflow/react'
 import type {
-  Equipment223PDTO,
+  SemanticEquipment,
   BACnetPointData,
   BACnetControllerData,
 } from '@/domains/building-semantics/schemas'
@@ -15,7 +15,7 @@ import { useCreateSemanticModal } from '@/domains/building-semantics/hooks/use-c
 export function useCanvasOrchestration(
   projectId: string,
   reactFlowInstanceRef: React.RefObject<ReactFlowInstance | null>,
-  mappings223p: Map<string, Equipment223PDTO>,
+  mappings223p: Map<string, SemanticEquipment>,
   controllers: IotDeviceController[],
   pointsByController: Record<string, ControllerPoint[]>,
   iotDeviceId: string | undefined
@@ -141,7 +141,7 @@ export function useCanvasOrchestration(
   )
 
   const handle223PConfirm = useCallback(
-    async (mapping: Equipment223PDTO) => {
+    async (mapping: SemanticEquipment) => {
       if (!pendingDraggedPoint || !pendingPosition) {
         closeSemanticModal()
         return

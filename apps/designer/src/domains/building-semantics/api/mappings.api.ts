@@ -1,4 +1,4 @@
-import type { Equipment223PDTO } from '../schemas'
+import type { SemanticEquipment } from '../schemas'
 
 const STORAGE_KEY_PREFIX = '223p-mappings-'
 
@@ -9,14 +9,14 @@ function getStorageKey(projectId: string): string {
 export const mappings223pApi = {
   async listMappings(
     projectId: string
-  ): Promise<Map<string, Equipment223PDTO>> {
+  ): Promise<Map<string, SemanticEquipment>> {
     const key = getStorageKey(projectId)
     const stored = sessionStorage.getItem(key)
 
     if (!stored) return new Map()
 
     try {
-      const data = JSON.parse(stored) as Record<string, Equipment223PDTO>
+      const data = JSON.parse(stored) as Record<string, SemanticEquipment>
       return new Map(Object.entries(data))
     } catch {
       return new Map()
@@ -26,7 +26,7 @@ export const mappings223pApi = {
   async getMapping(
     projectId: string,
     compositeKey: string
-  ): Promise<Equipment223PDTO | null> {
+  ): Promise<SemanticEquipment | null> {
     const mappings = await this.listMappings(projectId)
     return mappings.get(compositeKey) || null
   },
@@ -34,8 +34,8 @@ export const mappings223pApi = {
   async createMapping(
     projectId: string,
     pointId: string,
-    mapping: Equipment223PDTO
-  ): Promise<Equipment223PDTO> {
+    mapping: SemanticEquipment
+  ): Promise<SemanticEquipment> {
     const mappings = await this.listMappings(projectId)
 
     const compositeKey = mapping.externalReference.compositeKey
@@ -57,8 +57,8 @@ export const mappings223pApi = {
   async updateMapping(
     projectId: string,
     pointId: string,
-    mapping: Equipment223PDTO
-  ): Promise<Equipment223PDTO> {
+    mapping: SemanticEquipment
+  ): Promise<SemanticEquipment> {
     return this.createMapping(projectId, pointId, mapping)
   },
 

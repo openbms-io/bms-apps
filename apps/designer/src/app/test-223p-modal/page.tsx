@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MappingPopupModal } from '@/domains/building-semantics/components'
 import type {
   BACnetPointData,
-  Equipment223PDTO,
+  SemanticEquipment,
   BACnetControllerData,
 } from '@/domains/building-semantics/schemas'
 
@@ -144,7 +144,7 @@ export default function Test223PModalPage() {
     null
   )
   const [savedMappings, setSavedMappings] = useState<
-    Record<string, Equipment223PDTO>
+    Record<string, SemanticEquipment>
   >({})
 
   const handleOpenModal = (point: BACnetPointData) => {
@@ -152,7 +152,7 @@ export default function Test223PModalPage() {
     setShowModal(true)
   }
 
-  const handleConfirm = (mapping: Equipment223PDTO) => {
+  const handleConfirm = (mapping: SemanticEquipment) => {
     if (selectedPoint) {
       setSavedMappings((prev) => ({
         ...prev,

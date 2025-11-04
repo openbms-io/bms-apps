@@ -35,7 +35,7 @@ import { useDeleteMappingMutation } from '../api/queries/use-mappings-query'
 import { toast } from 'sonner'
 import type {
   BACnetPointData,
-  Equipment223PDTO,
+  SemanticEquipment,
   ValidationResultDTO,
   BACnetControllerData,
 } from '../schemas'
@@ -49,9 +49,9 @@ interface MappingPopupModalProps {
   open: boolean
   point: BACnetPointData | null
   controller: BACnetControllerData | null
-  existingMapping?: Equipment223PDTO | null
+  existingMapping?: SemanticEquipment | null
   mode?: 'create' | 'edit'
-  onConfirm: (mapping: Equipment223PDTO) => void
+  onConfirm: (mapping: SemanticEquipment) => void
   onSkip: () => void
   onOpenChange: (open: boolean) => void
 }

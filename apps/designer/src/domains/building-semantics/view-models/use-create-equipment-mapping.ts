@@ -5,7 +5,7 @@ import {
 } from '../api/queries/use-spaces-query'
 import { spaces223pApi } from '../api/spaces.api'
 import type { CreateMappingParams } from './types'
-import { Equipment223PDTOSchema, type Equipment223PDTO } from '../schemas'
+import { SemanticEquipmentSchema, type SemanticEquipment } from '../schemas'
 
 export function useCreateEquipmentMapping() {
   const createMapping = useCreateMappingMutation()
@@ -14,7 +14,7 @@ export function useCreateEquipmentMapping() {
 
   const execute = async (
     params: CreateMappingParams
-  ): Promise<Equipment223PDTO> => {
+  ): Promise<SemanticEquipment> => {
     let physicalSpaceId: string | undefined
     const domainSpaceIds: string[] = []
 
@@ -97,7 +97,7 @@ export function useCreateEquipmentMapping() {
       schemaVersion: '223p-2023' as const,
     }
 
-    const mapping = Equipment223PDTOSchema.parse(mappingInput)
+    const mapping = SemanticEquipmentSchema.parse(mappingInput)
 
     const result = await createMapping.mutateAsync({
       projectId: params.projectId,
