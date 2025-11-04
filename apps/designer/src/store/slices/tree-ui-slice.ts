@@ -2,8 +2,8 @@ import { StateCreator } from 'zustand'
 import { TreeNode } from '@/types/infrastructure'
 import { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
-import type { Equipment223PDTO } from '@/domains/223p/schemas'
-import { createCompositeKey } from '@/domains/223p/utils/bacnet-keys'
+import type { Equipment223PDTO } from '@/domains/building-semantics/schemas'
+import { createCompositeKey } from '@/domains/building-semantics/utils/bacnet-keys'
 
 export interface TreeUISlice {
   // UI State only

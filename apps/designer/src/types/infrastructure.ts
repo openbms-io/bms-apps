@@ -3,7 +3,7 @@ import { BacnetProperties } from './bacnet-properties'
 import { MessageNode } from '@/lib/message-system/types'
 import { SerializableNode } from '@/lib/node-serializer'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
-import type { Equipment223PDTO } from '@/domains/223p/schemas'
+import type { Equipment223PDTO } from '@/domains/building-semantics/schemas'
 
 // BACnet namespace for deterministic UUIDs
 export const BACNET_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'

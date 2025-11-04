@@ -66,7 +66,7 @@ export class MockBuildingMOTIFService implements IBuildingMOTIFService {
  * Ensures consistent mock data across all components.
  *
  * @example
- * import { mockBuildingMOTIFService } from '@/domains/223p/services';
+ * import { mockBuildingMOTIFService } from '@/domains/building-semantics/services';
  * const systems = await mockBuildingMOTIFService.getTemplates();
  */
 export const mockBuildingMOTIFService = new MockBuildingMOTIFService()

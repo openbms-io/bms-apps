@@ -5,22 +5,26 @@ import type {
   Equipment223PDTO,
   BACnetPointData,
   BACnetControllerData,
-} from '@/domains/223p/schemas'
+} from '@/domains/building-semantics/schemas'
 import type { DraggedPoint } from '@/store/slices/flow-slice'
-import { createCompositeKey } from '@/domains/223p/utils/bacnet-keys'
-
-interface PendingDrop {
-  draggedPoint: DraggedPoint
-  position: XYPosition
-}
+import type { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
+import type { ControllerPoint } from '@/lib/domain/models/controller-point'
+import { createCompositeKey } from '@/domains/building-semantics/utils/bacnet-keys'
+import { useCreateSemanticModal } from '@/domains/building-semantics/hooks/use-create-semantic-modal'
 
 export function useCanvasOrchestration(
   projectId: string,
   reactFlowInstanceRef: React.RefObject<ReactFlowInstance | null>,
-  mappings223p: Map<string, Equipment223PDTO>
+  mappings223p: Map<string, Equipment223PDTO>,
+  controllers: IotDeviceController[],
+  pointsByController: Record<string, ControllerPoint[]>,
+  iotDeviceId: string | undefined
 ) {
-  const [show223PModal, setShow223PModal] = useState(false)
-  const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null)
+  const [pendingPosition, setPendingPosition] = useState<XYPosition | null>(
+    null
+  )
+  const [pendingDraggedPoint, setPendingDraggedPoint] =
+    useState<DraggedPoint | null>(null)
 
   const addNodeFromInfrastructure = useFlowStore(
     (s) => s.addNodeFromInfrastructure
@@ -28,6 +32,9 @@ export function useCanvasOrchestration(
   const addLogicNode = useFlowStore((s) => s.addLogicNode)
   const addCommandNode = useFlowStore((s) => s.addCommandNode)
   const addControlFlowNode = useFlowStore((s) => s.addControlFlowNode)
+
+  const { semanticModalState, openSemanticModal, closeSemanticModal } =
+    useCreateSemanticModal(controllers, pointsByController, iotDeviceId)
 
   const handleDrop = useCallback(
     async (event: DragEvent) => {
@@ -81,9 +88,10 @@ export function useCanvasOrchestration(
             }
           }
 
-          // No mapping found - open modal as usual
-          setPendingDrop({ draggedPoint: draggedData, position })
-          setShow223PModal(true)
+          // No mapping found - open semantic modal
+          setPendingPosition(position)
+          setPendingDraggedPoint(draggedData)
+          openSemanticModal(draggedData.config.pointId)
         } else if (
           draggedData.type === 'logic-node' &&
           draggedData.draggedFrom === 'logic-section'
@@ -128,75 +136,59 @@ export function useCanvasOrchestration(
       addCommandNode,
       addControlFlowNode,
       mappings223p,
+      openSemanticModal,
     ]
   )
 
   const handle223PConfirm = useCallback(
     async (mapping: Equipment223PDTO) => {
-      if (!pendingDrop) return
+      if (!pendingDraggedPoint || !pendingPosition) {
+        closeSemanticModal()
+        return
+      }
 
       await addNodeFromInfrastructure(
-        pendingDrop.draggedPoint,
-        pendingDrop.position,
+        pendingDraggedPoint,
+        pendingPosition,
         mapping
       )
 
-      setShow223PModal(false)
-      setPendingDrop(null)
+      setPendingPosition(null)
+      setPendingDraggedPoint(null)
+      closeSemanticModal()
     },
-    [pendingDrop, addNodeFromInfrastructure]
+    [
+      pendingDraggedPoint,
+      pendingPosition,
+      addNodeFromInfrastructure,
+      closeSemanticModal,
+    ]
   )
 
   const handle223PSkip = useCallback(async () => {
-    if (!pendingDrop) return
-
-    await addNodeFromInfrastructure(
-      pendingDrop.draggedPoint,
-      pendingDrop.position
-    )
-
-    setShow223PModal(false)
-    setPendingDrop(null)
-  }, [pendingDrop, addNodeFromInfrastructure])
-
-  const getBACnetPointData = useCallback((): BACnetPointData | null => {
-    if (!pendingDrop) return null
-
-    const { config } = pendingDrop.draggedPoint
-    const bacnetPointData = {
-      pointId: config.pointId,
-      objectType: config.objectType,
-      objectId: config.objectId,
-      supervisorId: config.supervisorId,
-      controllerId: config.controllerId,
-      name: config.name,
-      discoveredProperties: config.discoveredProperties,
+    if (!pendingDraggedPoint || !pendingPosition) {
+      closeSemanticModal()
+      return
     }
 
-    return bacnetPointData
-  }, [pendingDrop])
+    await addNodeFromInfrastructure(pendingDraggedPoint, pendingPosition)
 
-  const getBACnetControllerData =
-    useCallback((): BACnetControllerData | null => {
-      if (!pendingDrop) return null
-
-      const { controller } = pendingDrop.draggedPoint
-
-      if (!controller) return null
-
-      return {
-        deviceId: controller.deviceId,
-        controllerId: controller.id,
-        name: controller.name,
-      }
-    }, [pendingDrop])
+    setPendingPosition(null)
+    setPendingDraggedPoint(null)
+    closeSemanticModal()
+  }, [
+    pendingDraggedPoint,
+    pendingPosition,
+    addNodeFromInfrastructure,
+    closeSemanticModal,
+  ])
 
   return {
     handleDrop,
-    show223PModal,
-    setShow223PModal,
-    modal223PPoint: getBACnetPointData(),
-    modal223PController: getBACnetControllerData(),
+    show223PModal: semanticModalState.isOpen,
+    setShow223PModal: closeSemanticModal,
+    modal223PPoint: semanticModalState.point,
+    modal223PController: semanticModalState.controller,
     handle223PConfirm,
     handle223PSkip,
   }

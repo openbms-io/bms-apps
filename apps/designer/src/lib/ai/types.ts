@@ -3,7 +3,7 @@ import type {
   DeviceType,
   ObservableProperty,
   SpaceType,
-} from '@/domains/223p/schemas'
+} from '@/domains/building-semantics/schemas'
 
 export interface FieldRecommendation<T> {
   value: T

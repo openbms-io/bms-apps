@@ -20,14 +20,16 @@ import { useAllControllerPoints } from '@/hooks/use-all-controller-points'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-client'
 import { AddControllerDialog } from '@/components/modals/add-controller-dialog'
-import { useMappingsQuery } from '@/domains/223p/api/queries/use-mappings-query'
-import { MappingPopupModal } from '@/domains/223p/components'
+import { useMappingsQuery } from '@/domains/building-semantics/api/queries/use-mappings-query'
+import { MappingPopupModal } from '@/domains/building-semantics/components'
 import type {
   BACnetPointData,
   BACnetControllerData,
-} from '@/domains/223p/schemas'
+  Equipment223PDTO,
+} from '@/domains/building-semantics/schemas'
 import { useGetConfigPayload } from '@/hooks/use-get-config-payload'
-import { useEditMapping } from '@/domains/223p/hooks/use-edit-mapping'
+import { useEditMapping } from '@/domains/building-semantics/hooks/use-edit-mapping'
+import { useCreateSemanticModal } from '@/domains/building-semantics/hooks/use-create-semantic-modal'
 import { useFlowStore } from '@/store/use-flow-store'
 import { CommandNameEnum } from 'mqtt-topics'
 import { toast } from 'sonner'
@@ -83,6 +85,32 @@ interface ControllersTreeContainerProps {
   projectId: string
 }
 
+function filterTreeNodes(
+  nodes: TreeNodeType[],
+  searchTerm: string
+): TreeNodeType[] {
+  return nodes.reduce<TreeNodeType[]>((filtered, node) => {
+    const nodeMatches =
+      node.label.toLowerCase().includes(searchTerm) ||
+      node.sublabel?.toLowerCase().includes(searchTerm)
+
+    let filteredChildren: TreeNodeType[] = []
+    if (node.children) {
+      filteredChildren = filterTreeNodes(node.children, searchTerm)
+    }
+
+    if (nodeMatches || filteredChildren.length > 0) {
+      filtered.push({
+        ...node,
+        children: filteredChildren,
+        isExpanded: filteredChildren.length > 0,
+      })
+    }
+
+    return filtered
+  }, [])
+}
+
 export function ControllersTreeContainer({
   orgId,
   siteId,
@@ -118,8 +146,15 @@ export function ControllersTreeContainer({
     controllers,
     pointsByController,
     mappings223p,
-    project?.iotDeviceId || ''
+    project?.iotDeviceId
   )
+
+  const { semanticModalState, openSemanticModal, closeSemanticModal } =
+    useCreateSemanticModal(
+      controllers,
+      pointsByController,
+      project?.iotDeviceId
+    )
 
   const queryClient = useQueryClient()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
@@ -130,7 +165,6 @@ export function ControllersTreeContainer({
     name: string
   } | null>(null)
 
-  // Hooks
   const sendCommand = useFlowStore((s) => s.sendCommand)
   const { refetch: fetchPayload, isFetching } = useGetConfigPayload(
     orgId,
@@ -142,7 +176,6 @@ export function ControllersTreeContainer({
   const { mutate: deleteController, isPending: isDeleting } =
     useDeleteIotDeviceController()
 
-  // Tree UI Store
   const {
     selectedPointId,
     toggleNode,
@@ -152,7 +185,6 @@ export function ControllersTreeContainer({
     getTreeData,
   } = useTreeUIStore()
 
-  // Transform controllers into tree structure with points
   const treeData = getTreeData(
     controllers,
     iotDevice ? { id: iotDevice.id, name: iotDevice.name } : undefined,
@@ -160,7 +192,6 @@ export function ControllersTreeContainer({
     mappings223p
   )
 
-  // Filter tree data based on search
   const filteredTreeData = searchValue
     ? filterTreeNodes(treeData, searchValue.toLowerCase())
     : treeData
@@ -228,7 +259,6 @@ export function ControllersTreeContainer({
         payload: transformedPayload,
       })
 
-      // Invalidate points cache to refetch after sync
       queryClient.invalidateQueries({
         queryKey: queryKeys.controllerPoints.batch(controllerIds),
       })
@@ -274,6 +304,14 @@ export function ControllersTreeContainer({
       }
     )
   }, [controllerToDelete, deleteController, orgId, siteId, projectId, project])
+
+  const handleCreate223PMapping = useCallback(
+    (mapping: Equipment223PDTO) => {
+      toast.success('223P mapping created')
+      closeSemanticModal()
+    },
+    [closeSemanticModal]
+  )
 
   return (
     <div className="flex flex-col h-full" onClick={handleContainerClick}>
@@ -326,6 +364,7 @@ export function ControllersTreeContainer({
             onToggle={toggleNode}
             onSelect={selectPoint}
             onDelete={handleDeleteClick}
+            onAdd223PMapping={openSemanticModal}
             onEdit223PMapping={openEdit}
             isDraggable={true}
             onDragStart={handleDragStart}
@@ -389,33 +428,17 @@ export function ControllersTreeContainer({
         onSkip={closeEdit}
         onOpenChange={closeEdit}
       />
+
+      <MappingPopupModal
+        projectId={projectId}
+        open={semanticModalState.isOpen}
+        point={semanticModalState.point}
+        controller={semanticModalState.controller}
+        mode="create"
+        onConfirm={handleCreate223PMapping}
+        onSkip={closeSemanticModal}
+        onOpenChange={closeSemanticModal}
+      />
     </div>
   )
-}
-
-// Helper function to filter tree nodes
-function filterTreeNodes(
-  nodes: TreeNodeType[],
-  searchTerm: string
-): TreeNodeType[] {
-  return nodes.reduce<TreeNodeType[]>((filtered, node) => {
-    const nodeMatches =
-      node.label.toLowerCase().includes(searchTerm) ||
-      node.sublabel?.toLowerCase().includes(searchTerm)
-
-    let filteredChildren: TreeNodeType[] = []
-    if (node.children) {
-      filteredChildren = filterTreeNodes(node.children, searchTerm)
-    }
-
-    if (nodeMatches || filteredChildren.length > 0) {
-      filtered.push({
-        ...node,
-        children: filteredChildren,
-        isExpanded: filteredChildren.length > 0,
-      })
-    }
-
-    return filtered
-  }, [])
 }

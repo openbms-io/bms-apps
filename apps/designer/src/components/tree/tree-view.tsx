@@ -10,6 +10,7 @@ interface TreeViewProps {
   onToggle: (nodeId: string) => void
   onSelect?: (nodeId: string | null) => void
   onDelete?: (nodeId: string) => void
+  onAdd223PMapping?: (nodeId: string) => void
   onEdit223PMapping?: (nodeId: string) => void
   isDraggable?: boolean
   onDragStart?: (e: React.DragEvent, node: TreeNodeType) => void
@@ -22,6 +23,7 @@ export function TreeView({
   onToggle,
   onSelect,
   onDelete,
+  onAdd223PMapping,
   onEdit223PMapping,
   isDraggable = false,
   onDragStart,
@@ -35,6 +37,7 @@ export function TreeView({
           onToggle={onToggle}
           onSelect={onSelect}
           onDelete={onDelete}
+          onAdd223PMapping={onAdd223PMapping}
           onEdit223PMapping={onEdit223PMapping}
           isSelected={selectedNodeId === node.id}
           isDraggable={isDraggable}

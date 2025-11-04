@@ -1,15 +1,16 @@
 'use client'
 
-import { ChevronRight, ChevronDown, Trash2, Pencil } from 'lucide-react'
+import { ChevronRight, ChevronDown, Trash2, Pencil, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TreeNode as TreeNodeType } from '@/types/infrastructure'
-import { Point223PBadge } from '@/domains/223p/components/point-223p-badge'
+import { Point223PBadge } from '@/domains/building-semantics/components/point-223p-badge'
 
 interface TreeNodeProps {
   node: TreeNodeType
   onToggle: (nodeId: string) => void
   onSelect?: (nodeId: string | null) => void
   onDelete?: (nodeId: string) => void
+  onAdd223PMapping?: (nodeId: string) => void
   onEdit223PMapping?: (nodeId: string) => void
   isSelected?: boolean
   isDraggable?: boolean
@@ -21,6 +22,7 @@ export function TreeNode({
   onToggle,
   onSelect,
   onDelete,
+  onAdd223PMapping,
   onEdit223PMapping,
   isSelected = false,
   isDraggable = false,
@@ -57,6 +59,13 @@ export function TreeNode({
     e.stopPropagation()
     if (onDelete) {
       onDelete(node.id)
+    }
+  }
+
+  const handleAdd223PMapping = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onAdd223PMapping) {
+      onAdd223PMapping(node.id)
     }
   }
 
@@ -120,6 +129,16 @@ export function TreeNode({
           </span>
         )}
       </div>
+
+      {node.type === 'point' && !node.mapping223p && onAdd223PMapping && (
+        <button
+          onClick={handleAdd223PMapping}
+          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-primary/10 rounded transition-opacity"
+          title="Add 223P mapping"
+        >
+          <Plus className="h-3.5 w-3.5 text-primary" />
+        </button>
+      )}
 
       {node.type === 'point' && node.mapping223p && onEdit223PMapping && (
         <button

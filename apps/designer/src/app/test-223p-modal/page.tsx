@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { MappingPopupModal } from '@/domains/223p/components'
+import { MappingPopupModal } from '@/domains/building-semantics/components'
 import type {
   BACnetPointData,
   Equipment223PDTO,
   BACnetControllerData,
-} from '@/domains/223p/schemas'
+} from '@/domains/building-semantics/schemas'
 
 const samplePoints: BACnetPointData[] = [
   {

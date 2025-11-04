@@ -20,7 +20,7 @@ export function useEditMapping(
   controllers: IotDeviceController[],
   pointsByController: Record<string, ControllerPoint[]>,
   mappings223p: Map<string, Equipment223PDTO>,
-  iotDeviceId: string
+  iotDeviceId: string | undefined
 ) {
   const [editState, setEditState] = useState<EditMappingState>({
     point: null,
@@ -31,6 +31,11 @@ export function useEditMapping(
 
   const openEdit = useCallback(
     (nodeId: string) => {
+      if (!iotDeviceId) {
+        console.error('Cannot open edit modal: iotDeviceId is undefined')
+        return
+      }
+
       let foundPoint: ControllerPoint | null = null
       let foundController: IotDeviceController | null = null
 

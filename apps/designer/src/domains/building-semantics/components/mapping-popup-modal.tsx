@@ -31,6 +31,8 @@ import {
 import { useMappingSuggestionViewModel } from '../view-models/use-mapping-suggestion-view-model'
 import { useSpacesViewModel } from '../view-models/use-spaces-view-model'
 import { useCreateEquipmentMapping } from '../view-models/use-create-equipment-mapping'
+import { useDeleteMappingMutation } from '../api/queries/use-mappings-query'
+import { toast } from 'sonner'
 import type {
   BACnetPointData,
   Equipment223PDTO,
@@ -78,6 +80,7 @@ export function MappingPopupModal({
   const { physicalSpaces, domainSpaces } = useSpacesViewModel(projectId)
 
   const { execute: createMapping } = useCreateEquipmentMapping()
+  const { mutate: deleteMapping } = useDeleteMappingMutation()
 
   const suggestion = useMappingSuggestionViewModel(projectId, point)
   const [validationResult, setValidationResult] =
@@ -155,6 +158,29 @@ export function MappingPopupModal({
 
   const handleSkip = () => {
     onSkip()
+  }
+
+  const handleDelete = () => {
+    if (!existingMapping?.externalReference.compositeKey) {
+      toast.error('Cannot delete: missing composite key')
+      return
+    }
+
+    deleteMapping(
+      {
+        projectId,
+        compositeKey: existingMapping.externalReference.compositeKey,
+      },
+      {
+        onSuccess: () => {
+          toast.success('223P mapping removed')
+          onOpenChange(false)
+        },
+        onError: (error) => {
+          toast.error(error.message || 'Failed to remove mapping')
+        },
+      }
+    )
   }
 
   if (!point) return null
@@ -345,14 +371,23 @@ export function MappingPopupModal({
         </div>
 
         <DialogFooter>
+          {mode === 'edit' && existingMapping && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              className="mr-auto"
+            >
+              Delete Mapping
+            </Button>
+          )}
           <Button variant="outline" onClick={handleSkip}>
-            Skip
+            {mode === 'edit' ? 'Cancel' : 'Skip'}
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={validationResult !== null && !validationResult.isValid}
           >
-            Confirm
+            {mode === 'edit' ? 'Update' : 'Confirm'}
           </Button>
         </DialogFooter>
       </DialogContent>

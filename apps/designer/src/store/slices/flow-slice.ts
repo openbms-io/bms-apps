@@ -18,8 +18,8 @@ import {
   EdgeData,
   NodeTypeString,
 } from '@/types/infrastructure'
-import type { Equipment223PDTO } from '@/domains/223p/schemas'
-import { createCompositeKey } from '@/domains/223p/utils/bacnet-keys'
+import type { Equipment223PDTO } from '@/domains/building-semantics/schemas'
+import { createCompositeKey } from '@/domains/building-semantics/utils/bacnet-keys'
 import { NodeData } from '@/types/node-data-types'
 import type {
   CalculationOperation,

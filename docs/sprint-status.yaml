@@ -40,19 +40,23 @@ story_location: "{project-root}/docs/feature-development/ashrae-223p-ai-g36-inte
 
 development_status:
   # Epic 1: 223P Mapping UI with Mock DTOs
-  epic-1: backlog
+  epic-1: done
   1-1-define-buildingmotif-dto-interfaces: done
   1-2-create-mock-buildingmotif-service: done
   1-3-ai-suggestion-mock-engine: done
   1-4-223p-mapping-popup-modal-component: done
   1-5-equipment-type-dropdown-with-search: done
-  1-6-device-type-and-property-dropdowns: backlog
-  1-7-shacl-validation-mock: backlog
-  1-8-left-panel-223p-metadata-badges: backlog
-  1-9-in-memory-state-management-for-223p-mappings: backlog
-  1-10-auto-fill-equipment-type-from-previous-point: backlog
-  1-11-cancel-skip-mapping-workflow: backlog
-  1-12-ui-polish-and-accessibility: backlog
+  1-6-device-type-and-property-dropdowns: done
+  1-7-shacl-validation-mock: done
+  1-8-left-panel-223p-metadata-badges: done
+  1-9-in-memory-state-management-for-223p-mappings: done
+  1-10-auto-fill-equipment-type-from-previous-point: done
+  1-11-cancel-skip-mapping-workflow: done
+  1-12-ui-polish-and-accessibility: done
+  1-13-skip-223p-modal-for-already-tagged-points: done
+  1-14-display-223p-metadata-on-canvas-nodes: done
+  1-15-persist-223p-mappings-across-page-refresh: done
+  1-16-edit-223p-mapping-from-left-sidebar: done
   epic-1-retrospective: optional
 
   # Epic 2: G36 Visual Blocks UI with Mock DTOs

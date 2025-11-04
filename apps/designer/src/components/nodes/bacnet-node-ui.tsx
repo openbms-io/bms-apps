@@ -21,7 +21,7 @@ import {
 } from '@/types/bacnet-properties'
 import { BacnetNodeData } from '@/types/node-data-types'
 import { useFlowStore } from '@/store/use-flow-store'
-import { useMappingsQuery } from '@/domains/223p/api/queries/use-mappings-query'
+import { useMappingsQuery } from '@/domains/building-semantics/api/queries/use-mappings-query'
 
 export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
   const typedData = data as BacnetNodeData

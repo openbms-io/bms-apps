@@ -2,10 +2,13 @@
 
 import { useRef, useCallback } from 'react'
 import { FlowCanvas } from '@/components/canvas/flow-canvas'
-import { MappingPopupModal } from '@/domains/223p/components'
-import { useMappingsQuery } from '@/domains/223p/api/queries/use-mappings-query'
+import { MappingPopupModal } from '@/domains/building-semantics/components'
+import { useMappingsQuery } from '@/domains/building-semantics/api/queries/use-mappings-query'
 import { useCanvasOrchestration } from '@/hooks/use-canvas-orchestration'
 import { useFlowStore } from '@/store/use-flow-store'
+import { useProject } from '@/hooks/use-projects'
+import { useIotDeviceControllers } from '@/hooks/use-iot-device-controllers'
+import { useAllControllerPoints } from '@/hooks/use-all-controller-points'
 import type { ReactFlowInstance, Connection } from '@xyflow/react'
 
 interface FlowCanvasContainerProps {
@@ -26,6 +29,23 @@ export function FlowCanvasContainer({
   const onNodesChange = useFlowStore((s) => s.onNodesChange)
   const onEdgesChange = useFlowStore((s) => s.onEdgesChange)
   const connectNodes = useFlowStore((s) => s.connectNodes)
+
+  const { data: project } = useProject({ orgId, siteId, projectId })
+  const { data: controllers = [] } = useIotDeviceControllers(
+    orgId,
+    siteId,
+    projectId,
+    project?.iotDeviceId
+  )
+
+  const controllerIds = controllers.map((c) => c.id)
+  const { data: pointsByController = {} } = useAllControllerPoints(
+    orgId,
+    siteId,
+    projectId,
+    project?.iotDeviceId,
+    controllerIds
+  )
 
   const { data: mappings223p = new Map() } = useMappingsQuery(projectId)
 
@@ -51,7 +71,14 @@ export function FlowCanvasContainer({
     modal223PController,
     handle223PConfirm,
     handle223PSkip,
-  } = useCanvasOrchestration(projectId, reactFlowInstanceRef, mappings223p)
+  } = useCanvasOrchestration(
+    projectId,
+    reactFlowInstanceRef,
+    mappings223p,
+    controllers,
+    pointsByController,
+    project?.iotDeviceId
+  )
 
   return (
     <>

@@ -55,11 +55,11 @@ export function useDeleteMappingMutation() {
   return useMutation({
     mutationFn: ({
       projectId,
-      pointId,
+      compositeKey,
     }: {
       projectId: string
-      pointId: string
-    }) => mappings223pApi.deleteMapping(projectId, pointId),
+      compositeKey: string
+    }) => mappings223pApi.deleteMapping(projectId, compositeKey),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys223p.mappings.list(variables.projectId),
