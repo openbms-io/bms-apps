@@ -24,6 +24,7 @@ import { makeSerializable } from '@/lib/workflow/serialization-utils'
 import { Subscription } from 'rxjs'
 import { MqttBusManager } from '@/lib/mqtt/mqtt-bus'
 import { PointBulkPayload, ControllerPoint } from 'mqtt-topics'
+import type { SemanticEquipment } from '@/domains/building-semantics'
 
 export abstract class BaseBacnetNode implements BacnetInputOutput {
   // From BacnetConfig
@@ -34,6 +35,9 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
   discoveredProperties: BacnetProperties
   readonly name?: string
   readonly position?: { x: number; y: number }
+
+  // 223P composite key for lookup
+  readonly semanticMappingKey?: string
 
   // From DataNode
   readonly id: string
@@ -55,6 +59,7 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
     mqttBus: MqttBusManager
     onDataChange: () => void
     id?: string
+    semanticMappingKey?: string
   }) {
     const { config, id, mqttBus, onDataChange } = params
 
@@ -69,6 +74,9 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
     this.name = config.name
     this.position = config.position
 
+    // 223P composite key
+    this.semanticMappingKey = params.semanticMappingKey
+
     // DataNode properties
     this.id = id ?? generateInstanceId()
     this.label = config.name || ''
@@ -81,7 +89,7 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
   abstract canConnectWith(target: DataNode): boolean
 
   toSerializable() {
-    const metadata: BacnetConfig = {
+    const metadata: BacnetConfig & { semanticMappingKey?: string } = {
       pointId: this.pointId,
       objectType: this.objectType,
       objectId: this.objectId,
@@ -91,6 +99,11 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
       discoveredProperties: this.discoveredProperties,
       position: this.position,
     }
+
+    if (this.semanticMappingKey) {
+      metadata.semanticMappingKey = this.semanticMappingKey
+    }
+
     return makeSerializable({
       id: this.id,
       type: this.type,

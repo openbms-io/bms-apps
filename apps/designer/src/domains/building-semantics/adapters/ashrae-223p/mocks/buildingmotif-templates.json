@@ -1,0 +1,67 @@
+{
+  "version": "0.10.0",
+  "source": "NREL BuildingMOTIF",
+  "description": "Mock template data from NREL BuildingMOTIF systems.yml, devices.yml, properties.yml",
+  "templates": {
+    "systems": [
+      "Makeup Air Unit",
+      "VAV Reheat Terminal Unit",
+      "Lab VAV Reheat Terminal Unit",
+      "Chilled Water System",
+      "Hot Water System",
+      "Process Chilled Water System",
+      "Exhaust Air Unit",
+      "Heat Recovery System"
+    ],
+    "devices": [
+      "Damper",
+      "Fan",
+      "Exhaust Fan",
+      "Filter",
+      "Chilled Water Coil",
+      "Hot Water Coil",
+      "Heat Recovery Coil",
+      "Chilled Water Valve",
+      "Hot Water Valve",
+      "Chilled Water Pump",
+      "Hot Water Pump",
+      "Sensor",
+      "Evaporative Cooler",
+      "Heat Exchanger",
+      "Fan Coil Unit",
+      "Unit Heater",
+      "Tank",
+      "Domestic Water Heater"
+    ],
+    "properties": {
+      "quantifiable": [
+        "static-pressure",
+        "low-static-pressure",
+        "water-static-pressure",
+        "differential-pressure",
+        "water-differential-pressure",
+        "air-temperature",
+        "water-temperature",
+        "air-flow",
+        "water-flow",
+        "relative-humidity",
+        "vfd-current",
+        "vfd-frequency",
+        "vfd-voltage",
+        "vfd-power",
+        "vfd-energy",
+        "BTU-Meter-energy",
+        "BTU-Meter-energy-rate",
+        "BTU-Meter-water-flow",
+        "BTU-Meter-water-volume"
+      ],
+      "enumerated": [
+        "run-status",
+        "flow-status",
+        "vfd-fault",
+        "condensate-overflow",
+        "occupancy-override"
+      ]
+    }
+  }
+}

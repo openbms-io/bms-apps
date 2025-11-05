@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { Node, Edge } from '@xyflow/react'
-import { getVersionMetadata } from 'bms-schemas'
+import { getVersionMetadata } from '@/lib/schemas'
 import {
   WorkflowConfigSchema as StrictWorkflowConfigSchema,
   VersionedWorkflowConfigSchema as StrictVersionedWorkflowConfigSchema,
@@ -19,7 +19,7 @@ import { type DayOfWeek } from '@/lib/data-nodes/schedule-node'
 import { type FunctionNodeMetadata } from '@/lib/data-nodes/function-node'
 import { type TimerNodeMetadata } from '@/lib/data-nodes/timer-node'
 import { type ScheduleNodeMetadata } from '@/lib/data-nodes/schedule-node'
-import { type BacnetConfig } from '@/types/infrastructure'
+import { type BacnetConfig, NodeType } from '@/types/infrastructure'
 import { type SwitchNodeMetadata } from '@/lib/data-nodes/switch-node'
 import { MqttBusManager } from '@/lib/mqtt/mqtt-bus'
 
@@ -64,8 +64,6 @@ export interface ValidationResult {
 }
 
 export type VersionedWorkflowConfig = ValidatedWorkflowConfig
-
-// Use strict schemas for validation
 
 export function createWorkflowConfig({
   nodes,
@@ -113,27 +111,28 @@ export function serializeWorkflow({
 
 export function deserializeWorkflow({
   versionedConfig,
-  nodeFactory,
+  mqttBus,
+  onDataChange,
 }: {
   readonly versionedConfig: VersionedWorkflowConfig
-  readonly nodeFactory: (
-    nodeType: string,
-    data: Record<string, unknown>
-  ) => unknown
+  mqttBus: MqttBusManager
+  onDataChange: () => void
 }): DeserializedWorkflowState {
   const { data } = versionedConfig
+  const nodeFactory = createNodeFactory({ mqttBus, onDataChange })
 
   const deserializedNodes: Node<Record<string, unknown>>[] = data.nodes.map(
-    (serializedNode) => ({
-      id: serializedNode.id,
-      type: serializedNode.type,
-      position: serializedNode.position,
-      data: deserializeNodeData({
-        nodeType: serializedNode.data.nodeType,
-        serializedData: serializedNode.data.serializedData,
-        nodeFactory,
-      }) as Record<string, unknown>,
-    })
+    (serializedNode) => {
+      return {
+        id: serializedNode.id,
+        type: serializedNode.type,
+        position: serializedNode.position,
+        data: nodeFactory(
+          serializedNode.data.nodeType,
+          serializedNode.data.serializedData
+        ) as Record<string, unknown>,
+      }
+    }
   )
 
   return {
@@ -216,55 +215,24 @@ export function serializeFromReactFlowObject({
   })
 }
 
-export function prepareForReactFlow({
-  versionedConfig,
-  nodeFactory,
-}: {
-  readonly versionedConfig: VersionedWorkflowConfig
-  readonly nodeFactory: (
-    nodeType: string,
-    data: Record<string, unknown>
-  ) => unknown
-}): DeserializedWorkflowState {
-  return deserializeWorkflow({ versionedConfig, nodeFactory })
-}
-
 export function createNodeFactory({
   mqttBus,
   onDataChange,
 }: {
   mqttBus: MqttBusManager
   onDataChange: () => void
-}): (nodeType: string, data: Record<string, unknown>) => unknown {
+}) {
   return function nodeFactory(
-    nodeType: string,
+    nodeType: NodeType,
     data: Record<string, unknown>
   ): unknown {
     switch (nodeType) {
-      // Logic nodes (constructor names)
-      case 'ConstantNode':
-        const constantMetadata = data.metadata as ConstantNodeMetadata
-        return factory.createConstantNode({
-          label: data.label as string,
-          value: constantMetadata?.value,
-          valueType: constantMetadata?.valueType,
-          id: data.id as string,
-        })
       // Logic nodes (enum string values)
       case 'constant':
         return factory.createConstantNode({
           label: data.label as string,
           value: (data.metadata as ConstantNodeMetadata)?.value,
           valueType: (data.metadata as ConstantNodeMetadata)?.valueType,
-          id: data.id as string,
-        })
-      case 'CalculationNode':
-        const calcMetadata = data.metadata as {
-          operation: CalculationOperation
-        }
-        return factory.createCalculationNode({
-          label: data.label as string,
-          operation: calcMetadata?.operation,
           id: data.id as string,
         })
       case 'calculation':
@@ -274,13 +242,6 @@ export function createNodeFactory({
             ?.operation,
           id: data.id as string,
         })
-      case 'ComparisonNode':
-        const compMetadata = data.metadata as { operation: ComparisonOperation }
-        return factory.createComparisonNode({
-          label: data.label as string,
-          operation: compMetadata?.operation,
-          id: data.id as string,
-        })
       case 'comparison':
         return factory.createComparisonNode({
           label: data.label as string,
@@ -288,27 +249,10 @@ export function createNodeFactory({
             ?.operation,
           id: data.id as string,
         })
-      case 'WriteSetpointNode':
-        const writeMetadata = data.metadata as { priority: number }
-        return factory.createWriteSetpointNode({
-          label: data.label as string,
-          priority: writeMetadata?.priority,
-          id: data.id as string,
-        })
       case 'write-setpoint':
         return factory.createWriteSetpointNode({
           label: data.label as string,
           priority: (data.metadata as { priority: number })?.priority,
-          id: data.id as string,
-        })
-      case 'SwitchNode':
-        const switchMetadata = data.metadata as SwitchNodeMetadata
-        return factory.createSwitchNode({
-          label: data.label as string,
-          condition: switchMetadata?.condition,
-          threshold: switchMetadata?.threshold,
-          activeLabel: switchMetadata?.activeLabel,
-          inactiveLabel: switchMetadata?.inactiveLabel,
           id: data.id as string,
         })
       case 'switch':
@@ -321,31 +265,11 @@ export function createNodeFactory({
           inactiveLabel: switchMeta?.inactiveLabel,
           id: data.id as string,
         })
-      case 'TimerNode':
-        const timerMetadata = data.metadata as { duration: number }
-        return factory.createTimerNode({
-          label: data.label as string,
-          duration: timerMetadata?.duration,
-          id: data.id as string,
-        })
       case 'timer':
         const timerMeta = data.metadata as TimerNodeMetadata
         return factory.createTimerNode({
           label: data.label as string,
           duration: timerMeta?.duration,
-          id: data.id as string,
-        })
-      case 'ScheduleNode':
-        const scheduleMetadata = data.metadata as {
-          startTime: string
-          endTime: string
-          days: string[]
-        }
-        return factory.createScheduleNode({
-          label: data.label as string,
-          startTime: scheduleMetadata?.startTime,
-          endTime: scheduleMetadata?.endTime,
-          days: scheduleMetadata?.days as DayOfWeek[],
           id: data.id as string,
         })
       case 'schedule':
@@ -357,19 +281,6 @@ export function createNodeFactory({
           days: scheduleMeta?.days as DayOfWeek[],
           id: data.id as string,
         })
-      case 'FunctionNode':
-        const functionMetadata = data.metadata as {
-          code: string
-          inputs: { id: string; label: string }[]
-          timeout: number
-        }
-        return factory.createFunctionNode({
-          label: data.label as string,
-          code: functionMetadata?.code,
-          inputs: functionMetadata?.inputs,
-          timeout: functionMetadata?.timeout,
-          id: data.id as string,
-        })
       case 'function':
         const fnMeta = data.metadata as FunctionNodeMetadata
         return factory.createFunctionNode({
@@ -379,134 +290,26 @@ export function createNodeFactory({
           timeout: fnMeta?.timeout,
           id: data.id as string,
         })
-      // BACnet nodes (constructor names)
-      case 'AnalogInputNode':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
-      // BACnet nodes (enum string values)
       case 'analog-input':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
-      case 'AnalogOutputNode':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
       case 'analog-output':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
-      case 'AnalogValueNode':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
       case 'analog-value':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
-      case 'BinaryInputNode':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
       case 'binary-input':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
-      case 'BinaryOutputNode':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
       case 'binary-output':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
-      case 'BinaryValueNode':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
       case 'binary-value':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
-      case 'MultistateInputNode':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
       case 'multi-state-input':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
-      case 'MultistateOutputNode':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
       case 'multi-state-output':
+      case 'multi-state-value': {
+        const metadata = data.metadata as BacnetConfig & {
+          semanticMappingKey?: string
+        }
         return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
+          config: metadata,
           mqttBus,
           onDataChange,
           id: data.id as string,
+          semanticMappingKey: metadata.semanticMappingKey,
         })
-      case 'MultistateValueNode':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
-      case 'multi-state-value':
-        return factory.createDataNodeFromBacnetConfig({
-          config: data.metadata as BacnetConfig,
-          mqttBus,
-          onDataChange,
-          id: data.id as string,
-        })
+      }
       default:
         throw new Error(`Unknown node type: ${nodeType}`)
     }

@@ -110,6 +110,7 @@ const BacnetConfigSchema = z.object({
   discoveredProperties: BacnetPropertiesSchema,
   name: z.string(),
   position: PositionSchema.optional(),
+  semanticMappingKey: z.string().optional(),
 })
 
 // Edge data schema (validates our additional data field; keeps passthrough on edges)
@@ -269,7 +270,7 @@ const SerializedNodeInnerSchema = z.discriminatedUnion('type', [
 
 export const SerializedNodeDataSchema = z.object({
   // Node class constructor name or enum string; keep broad during migration
-  nodeType: z.string(),
+  nodeType: NodeTypeSchema,
   serializedData: SerializedNodeInnerSchema,
 })
 

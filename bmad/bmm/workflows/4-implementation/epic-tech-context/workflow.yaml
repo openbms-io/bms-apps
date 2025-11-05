@@ -1,0 +1,32 @@
+name: tech-spec
+description: "Generate a comprehensive Technical Specification from PRD and Architecture with acceptance criteria and traceability mapping"
+author: "BMAD BMM"
+
+# Critical variables
+config_source: "{project-root}/bmad/bmm/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+date: system-generated
+
+# Inputs expected ( check output_folder or ask user if missing)
+recommended_inputs:
+  - prd
+  - gdd
+  - spec
+  - architecture
+  - ux_spec
+  - ux-design
+  - if there is an index.md then read the index.md to find other related docs that could be relevant
+  - prior epic tech-specs for model, style and consistency reference
+
+# Workflow components
+installed_path: "{project-root}/bmad/bmm/workflows/4-implementation/epic-tech-context"
+template: "{installed_path}/template.md"
+instructions: "{installed_path}/instructions.md"
+validation: "{installed_path}/checklist.md"
+
+# Output configuration
+default_output_file: "{output_folder}/tech-spec-epic-{{epic_id}}.md"
+
+standalone: true

@@ -18,6 +18,8 @@ import {
   EdgeData,
   NodeTypeString,
 } from '@/types/infrastructure'
+import type { SemanticEquipment } from '@/domains/building-semantics'
+import { createCompositeKey } from '@/domains/building-semantics/utils/bacnet-keys'
 import { NodeData } from '@/types/node-data-types'
 import type {
   CalculationOperation,
@@ -44,6 +46,7 @@ export interface DraggedPoint {
   type: 'bacnet-point'
   config: BacnetConfig
   draggedFrom: 'controllers-tree'
+  controller?: { id: string; name: string; deviceId: number }
 }
 
 export interface DraggedLogicNode {
@@ -129,6 +132,9 @@ export interface FlowSlice {
   // Save/load state
   saveStatus: 'saved' | 'saving' | 'error' | 'unsaved'
 
+  // Project context
+  projectId?: string
+
   // React Flow change handlers
   onNodesChange: (changes: NodeChange[]) => void
   onEdgesChange: (changes: EdgeChange[]) => void
@@ -136,7 +142,8 @@ export interface FlowSlice {
   // Actions
   addNodeFromInfrastructure: (
     draggedPoint: DraggedPoint,
-    position: XYPosition
+    position: XYPosition,
+    semanticMapping?: SemanticEquipment
   ) => void
   addLogicNode: (
     nodeType: NodeTypeString,
@@ -209,15 +216,18 @@ async function createDataNodeFromBacnetConfig({
   config,
   mqttBus,
   onDataChange,
+  semanticMappingKey,
 }: {
   config: BacnetConfig
   mqttBus: ReturnType<typeof getMqttBus>
   onDataChange: () => void
+  semanticMappingKey?: string
 }): Promise<DataNode> {
   return factory.createDataNodeFromBacnetConfig({
     config,
     mqttBus,
     onDataChange,
+    semanticMappingKey,
   })
 }
 
@@ -258,13 +268,28 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
     set({ edges: updatedEdges })
   },
 
-  addNodeFromInfrastructure: async (draggedPoint, position) => {
-    const { config } = draggedPoint
+  addNodeFromInfrastructure: async (
+    draggedPoint,
+    position,
+    semanticMapping
+  ) => {
+    const { config, controller } = draggedPoint
+
+    // Compute composite key for lookup
+    const semanticMappingKey =
+      semanticMapping && controller
+        ? createCompositeKey(
+            controller.deviceId,
+            config.objectType,
+            config.objectId
+          )
+        : undefined
 
     const dataNode = await createDataNodeFromBacnetConfig({
       config,
       mqttBus: getMqttBus(),
       onDataChange: () => set({ nodes: [...get().nodes] }),
+      semanticMappingKey,
     })
 
     get().dataGraph.addNode(dataNode, position)
@@ -680,14 +705,11 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
       console.log('🚀 [FlowStore] Loaded project:', project)
       if (project.workflowConfig) {
         const versionedConfig = project.workflowConfig
-        const nodeFactory = createNodeFactory({
-          mqttBus: getMqttBus(),
-          onDataChange: () => set({ nodes: [...get().nodes] }),
-        })
 
         const { nodes, edges } = deserializeWorkflow({
           versionedConfig,
-          nodeFactory,
+          mqttBus: getMqttBus(),
+          onDataChange: () => set({ nodes: [...get().nodes] }),
         })
 
         // Update store and DataGraph
@@ -697,6 +719,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
 
         console.log('🚀 [FlowStore] Loaded project:', nodes, edges)
         set({
+          projectId,
           nodes: nodes as Node<NodeData>[],
           edges: edges as Edge<EdgeData>[],
           saveStatus: 'saved',
@@ -708,6 +731,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
         dataGraph.setEdgesArray([])
 
         set({
+          projectId,
           nodes: [],
           edges: [],
           saveStatus: 'saved',

@@ -1,0 +1,49 @@
+# Greenfield Level 1 - Small Feature
+# Coherent feature with 2-3 stories in a single epic
+
+project_type: "software"
+level: 1
+field_type: "greenfield"
+description: "Small coherent feature - 2-3 stories, single epic"
+
+phases:
+  - phase: 1
+    name: "Analysis"
+    optional: true
+    workflows:
+      - id: "brainstorm-project"
+        optional: true
+        agent: "analyst"
+        command: "brainstorm-project"
+      - id: "research"
+        optional: true
+        agent: "analyst"
+        command: "research"
+      - id: "product-brief"
+        optional: true
+        agent: "analyst"
+        command: "product-brief"
+
+  - phase: 2
+    name: "Planning"
+    required: true
+    workflows:
+      - id: "tech-spec"
+        required: true
+        agent: "pm"
+        command: "tech-spec"
+        output: "Creates Technical Specification with an epic and 2-3 story files"
+
+  - phase: 3
+    name: "Solutioning"
+    skip: true
+
+  - phase: 4
+    name: "Implementation"
+    required: true
+    workflows:
+      - id: "sprint-planning"
+        required: true
+        agent: "sm"
+        command: "sprint-planning"
+        note: "Creates sprint plan with all stories - subsequent work tracked in sprint plan output, not workflow-status"

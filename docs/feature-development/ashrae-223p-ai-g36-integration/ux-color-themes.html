@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMS Apps - Color Theme Options</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 1.125rem;
+        }
+
+        .themes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .theme-card {
+            background: #111;
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid #222;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .theme-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .theme-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .theme-personality {
+            color: #888;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .theme-best-for {
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        .palette {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .color-swatch {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.05);
+        }
+
+        .color-label {
+            margin-bottom: 0.25rem;
+            opacity: 0.9;
+        }
+
+        .color-hex {
+            font-family: 'Courier New', monospace;
+            opacity: 0.7;
+            font-size: 0.7rem;
+        }
+
+        .components-demo {
+            margin-top: 2rem;
+        }
+
+        .demo-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #888;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .buttons-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .input-demo {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .input {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            border: 1px solid;
+            background: transparent;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid;
+        }
+
+        .card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .confidence-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 0.5rem;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Theme 1: Vibrant Tech */
+        .theme-1 .theme-name { color: #3b82f6; }
+        .theme-1 .btn-primary { background: #3b82f6; color: #fff; }
+        .theme-1 .btn-primary:hover { background: #2563eb; }
+        .theme-1 .btn-secondary { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid #3b82f6; }
+        .theme-1 .btn-destructive { background: #ef4444; color: #fff; }
+        .theme-1 .input { border-color: #3b82f6; color: #fff; }
+        .theme-1 .badge-primary { background: #3b82f6; color: #fff; }
+        .theme-1 .badge-success { background: #10b981; color: #fff; }
+        .theme-1 .badge-warning { background: #f59e0b; color: #fff; }
+        .theme-1 .alert-success { background: rgba(16, 185, 129, 0.15); border-color: #10b981; color: #10b981; }
+        .theme-1 .alert-error { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #ef4444; }
+        .theme-1 .card { background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .theme-1 .confidence-fill { background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
+
+        /* Theme 2: Neon Gradient */
+        .theme-2 .theme-name {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .theme-2 .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .theme-2 .btn-primary:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #63408b 100%);
+        }
+        .theme-2 .btn-secondary {
+            background: rgba(102, 126, 234, 0.15);
+            color: #667eea;
+            border: 1px solid #667eea;
+        }
+        .theme-2 .btn-destructive { background: #ff6b9d; color: #fff; }
+        .theme-2 .input { border-color: #667eea; color: #fff; }
+        .theme-2 .badge-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .theme-2 .badge-success { background: #4ade80; color: #000; }
+        .theme-2 .badge-warning { background: #fbbf24; color: #000; }
+        .theme-2 .alert-success { background: rgba(74, 222, 128, 0.15); border-color: #4ade80; color: #4ade80; }
+        .theme-2 .alert-error { background: rgba(255, 107, 157, 0.15); border-color: #ff6b9d; color: #ff6b9d; }
+        .theme-2 .card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        .theme-2 .confidence-fill { background: linear-gradient(90deg, #667eea, #764ba2, #f093fb); }
+
+        /* Theme 3: Cyber Green */
+        .theme-3 .theme-name { color: #00ff88; }
+        .theme-3 .btn-primary { background: #00ff88; color: #000; }
+        .theme-3 .btn-primary:hover { background: #00cc6f; }
+        .theme-3 .btn-secondary { background: rgba(0, 255, 136, 0.15); color: #00ff88; border: 1px solid #00ff88; }
+        .theme-3 .btn-destructive { background: #ff3366; color: #fff; }
+        .theme-3 .input { border-color: #00ff88; color: #fff; }
+        .theme-3 .badge-primary { background: #00ff88; color: #000; }
+        .theme-3 .badge-success { background: #00ff88; color: #000; }
+        .theme-3 .badge-warning { background: #ffaa00; color: #000; }
+        .theme-3 .alert-success { background: rgba(0, 255, 136, 0.15); border-color: #00ff88; color: #00ff88; }
+        .theme-3 .alert-error { background: rgba(255, 51, 102, 0.15); border-color: #ff3366; color: #ff3366; }
+        .theme-3 .card { background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); }
+        .theme-3 .confidence-fill { background: linear-gradient(90deg, #00ff88, #00ffff); }
+
+        /* Theme 4: Sunset Energy */
+        .theme-4 .theme-name {
+            background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .theme-4 .btn-primary {
+            background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+            color: #fff;
+        }
+        .theme-4 .btn-primary:hover {
+            background: linear-gradient(135deg, #ea580c 0%, #db2777 100%);
+        }
+        .theme-4 .btn-secondary {
+            background: rgba(249, 115, 22, 0.15);
+            color: #f97316;
+            border: 1px solid #f97316;
+        }
+        .theme-4 .btn-destructive { background: #dc2626; color: #fff; }
+        .theme-4 .input { border-color: #f97316; color: #fff; }
+        .theme-4 .badge-primary {
+            background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+            color: #fff;
+        }
+        .theme-4 .badge-success { background: #22c55e; color: #fff; }
+        .theme-4 .badge-warning { background: #eab308; color: #000; }
+        .theme-4 .alert-success { background: rgba(34, 197, 94, 0.15); border-color: #22c55e; color: #22c55e; }
+        .theme-4 .alert-error { background: rgba(220, 38, 38, 0.15); border-color: #dc2626; color: #dc2626; }
+        .theme-4 .card {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+        .theme-4 .confidence-fill { background: linear-gradient(90deg, #f97316, #ec4899, #fbbf24); }
+
+        /* Theme 5: Dark Energy (tastytrade-inspired minimal + vibrant) */
+        .theme-5 .theme-card { background: #000; border-color: #1a1a1a; }
+        .theme-5 .theme-name {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .theme-5 .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 6px;
+        }
+        .theme-5 .btn-primary:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #63408b 100%);
+        }
+        .theme-5 .btn-secondary {
+            background: transparent;
+            color: #667eea;
+            border: 1px solid #667eea;
+            border-radius: 6px;
+        }
+        .theme-5 .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .theme-5 .btn-destructive { background: #e21f27; color: #fff; border-radius: 6px; }
+        .theme-5 .input {
+            border-color: #333;
+            color: #fff;
+            background: #000;
+        }
+        .theme-5 .input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+        .theme-5 .badge-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .theme-5 .badge-success { background: #4ade80; color: #000; }
+        .theme-5 .badge-warning { background: #fbbf24; color: #000; }
+        .theme-5 .alert-success {
+            background: rgba(74, 222, 128, 0.1);
+            border-color: #4ade80;
+            color: #4ade80;
+            border-left-width: 2px;
+        }
+        .theme-5 .alert-error {
+            background: rgba(226, 31, 39, 0.1);
+            border-color: #e21f27;
+            color: #e21f27;
+            border-left-width: 2px;
+        }
+        .theme-5 .card {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+        }
+        .theme-5 .confidence-fill { background: linear-gradient(90deg, #667eea, #764ba2, #f093fb); }
+
+        .recommendation {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .recommendation h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .recommendation p {
+            color: #888;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .recommendation-highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>BMS Apps Color Themes</h1>
+        <p>Modern, fun, energizing designs for building management</p>
+    </div>
+
+    <div class="themes-grid">
+        <!-- Theme 1: Vibrant Tech -->
+        <div class="theme-card theme-1">
+            <div class="theme-header">
+                <h2 class="theme-name">1. Vibrant Tech</h2>
+                <p class="theme-personality">Professional, energetic, modern</p>
+                <p class="theme-best-for">Best for: Technical credibility with vibrant energy</p>
+            </div>
+
+            <div class="palette">
+                <div class="color-swatch" style="background: #3b82f6; color: #fff;">
+                    <div class="color-label">Primary</div>
+                    <div class="color-hex">#3b82f6</div>
+                </div>
+                <div class="color-swatch" style="background: #8b5cf6; color: #fff;">
+                    <div class="color-label">Accent</div>
+                    <div class="color-hex">#8b5cf6</div>
+                </div>
+                <div class="color-swatch" style="background: #10b981; color: #fff;">
+                    <div class="color-label">Success</div>
+                    <div class="color-hex">#10b981</div>
+                </div>
+                <div class="color-swatch" style="background: #ef4444; color: #fff;">
+                    <div class="color-label">Error</div>
+                    <div class="color-hex">#ef4444</div>
+                </div>
+            </div>
+
+            <div class="components-demo">
+                <div class="demo-section">
+                    <div class="demo-label">Buttons</div>
+                    <div class="buttons-row">
+                        <button class="btn btn-primary">Confirm Mapping</button>
+                        <button class="btn btn-secondary">Not Sure</button>
+                        <button class="btn btn-destructive">Delete</button>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Form Input</div>
+                    <div class="input-demo">
+                        <input type="text" class="input" placeholder="Search equipment..." value="VAV Terminal Unit">
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">223P Metadata Badges</div>
+                    <div>
+                        <span class="badge badge-primary">AHU</span>
+                        <span class="badge badge-success">Temp Sensor</span>
+                        <span class="badge badge-warning">Outside Air Temp</span>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">AI Confidence (95%)</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 95%;"></div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Alerts</div>
+                    <div class="alert alert-success">✓ 223P mapping validated successfully</div>
+                    <div class="alert alert-error">✗ Type mismatch: Expected Temp Sensor, found Pressure Sensor</div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Card Components</div>
+                    <div class="card">
+                        <strong>Zone Air Temperature Sensor</strong>
+                        <p style="color: #888; margin-top: 0.5rem; font-size: 0.875rem;">Equipment: VAV Terminal Unit | Confidence: 95%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 2: Neon Gradient -->
+        <div class="theme-card theme-2">
+            <div class="theme-header">
+                <h2 class="theme-name">2. Neon Gradient</h2>
+                <p class="theme-personality">Playful, contemporary, eye-catching</p>
+                <p class="theme-best-for">Best for: Modern, fun vibe with gradient flair</p>
+            </div>
+
+            <div class="palette">
+                <div class="color-swatch" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;">
+                    <div class="color-label">Primary</div>
+                    <div class="color-hex">Gradient</div>
+                </div>
+                <div class="color-swatch" style="background: #f093fb; color: #000;">
+                    <div class="color-label">Accent</div>
+                    <div class="color-hex">#f093fb</div>
+                </div>
+                <div class="color-swatch" style="background: #4ade80; color: #000;">
+                    <div class="color-label">Success</div>
+                    <div class="color-hex">#4ade80</div>
+                </div>
+                <div class="color-swatch" style="background: #ff6b9d; color: #fff;">
+                    <div class="color-label">Error</div>
+                    <div class="color-hex">#ff6b9d</div>
+                </div>
+            </div>
+
+            <div class="components-demo">
+                <div class="demo-section">
+                    <div class="demo-label">Buttons</div>
+                    <div class="buttons-row">
+                        <button class="btn btn-primary">Confirm Mapping</button>
+                        <button class="btn btn-secondary">Not Sure</button>
+                        <button class="btn btn-destructive">Delete</button>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Form Input</div>
+                    <div class="input-demo">
+                        <input type="text" class="input" placeholder="Search equipment..." value="VAV Terminal Unit">
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">223P Metadata Badges</div>
+                    <div>
+                        <span class="badge badge-primary">AHU</span>
+                        <span class="badge badge-success">Temp Sensor</span>
+                        <span class="badge badge-warning">Outside Air Temp</span>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">AI Confidence (95%)</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 95%;"></div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Alerts</div>
+                    <div class="alert alert-success">✓ 223P mapping validated successfully</div>
+                    <div class="alert alert-error">✗ Type mismatch: Expected Temp Sensor, found Pressure Sensor</div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Card Components</div>
+                    <div class="card">
+                        <strong>Zone Air Temperature Sensor</strong>
+                        <p style="color: #888; margin-top: 0.5rem; font-size: 0.875rem;">Equipment: VAV Terminal Unit | Confidence: 95%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 3: Cyber Green -->
+        <div class="theme-card theme-3">
+            <div class="theme-header">
+                <h2 class="theme-name">3. Cyber Green</h2>
+                <p class="theme-personality">Bold, tech-forward, high-energy</p>
+                <p class="theme-best-for">Best for: Stand-out brand, futuristic vibe</p>
+            </div>
+
+            <div class="palette">
+                <div class="color-swatch" style="background: #00ff88; color: #000;">
+                    <div class="color-label">Primary</div>
+                    <div class="color-hex">#00ff88</div>
+                </div>
+                <div class="color-swatch" style="background: #00ffff; color: #000;">
+                    <div class="color-label">Accent</div>
+                    <div class="color-hex">#00ffff</div>
+                </div>
+                <div class="color-swatch" style="background: #00ff88; color: #000;">
+                    <div class="color-label">Success</div>
+                    <div class="color-hex">#00ff88</div>
+                </div>
+                <div class="color-swatch" style="background: #ff3366; color: #fff;">
+                    <div class="color-label">Error</div>
+                    <div class="color-hex">#ff3366</div>
+                </div>
+            </div>
+
+            <div class="components-demo">
+                <div class="demo-section">
+                    <div class="demo-label">Buttons</div>
+                    <div class="buttons-row">
+                        <button class="btn btn-primary">Confirm Mapping</button>
+                        <button class="btn btn-secondary">Not Sure</button>
+                        <button class="btn btn-destructive">Delete</button>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Form Input</div>
+                    <div class="input-demo">
+                        <input type="text" class="input" placeholder="Search equipment..." value="VAV Terminal Unit">
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">223P Metadata Badges</div>
+                    <div>
+                        <span class="badge badge-primary">AHU</span>
+                        <span class="badge badge-success">Temp Sensor</span>
+                        <span class="badge badge-warning">Outside Air Temp</span>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">AI Confidence (95%)</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 95%;"></div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Alerts</div>
+                    <div class="alert alert-success">✓ 223P mapping validated successfully</div>
+                    <div class="alert alert-error">✗ Type mismatch: Expected Temp Sensor, found Pressure Sensor</div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Card Components</div>
+                    <div class="card">
+                        <strong>Zone Air Temperature Sensor</strong>
+                        <p style="color: #888; margin-top: 0.5rem; font-size: 0.875rem;">Equipment: VAV Terminal Unit | Confidence: 95%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 4: Sunset Energy -->
+        <div class="theme-card theme-4">
+            <div class="theme-header">
+                <h2 class="theme-name">4. Sunset Energy</h2>
+                <p class="theme-personality">Warm, vibrant, approachable</p>
+                <p class="theme-best-for">Best for: Energetic, friendly professional feel</p>
+            </div>
+
+            <div class="palette">
+                <div class="color-swatch" style="background: linear-gradient(135deg, #f97316 0%, #ec4899 100%); color: #fff;">
+                    <div class="color-label">Primary</div>
+                    <div class="color-hex">Gradient</div>
+                </div>
+                <div class="color-swatch" style="background: #fbbf24; color: #000;">
+                    <div class="color-label">Accent</div>
+                    <div class="color-hex">#fbbf24</div>
+                </div>
+                <div class="color-swatch" style="background: #22c55e; color: #fff;">
+                    <div class="color-label">Success</div>
+                    <div class="color-hex">#22c55e</div>
+                </div>
+                <div class="color-swatch" style="background: #dc2626; color: #fff;">
+                    <div class="color-label">Error</div>
+                    <div class="color-hex">#dc2626</div>
+                </div>
+            </div>
+
+            <div class="components-demo">
+                <div class="demo-section">
+                    <div class="demo-label">Buttons</div>
+                    <div class="buttons-row">
+                        <button class="btn btn-primary">Confirm Mapping</button>
+                        <button class="btn btn-secondary">Not Sure</button>
+                        <button class="btn btn-destructive">Delete</button>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Form Input</div>
+                    <div class="input-demo">
+                        <input type="text" class="input" placeholder="Search equipment..." value="VAV Terminal Unit">
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">223P Metadata Badges</div>
+                    <div>
+                        <span class="badge badge-primary">AHU</span>
+                        <span class="badge badge-success">Temp Sensor</span>
+                        <span class="badge badge-warning">Outside Air Temp</span>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">AI Confidence (95%)</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 95%;"></div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Alerts</div>
+                    <div class="alert alert-success">✓ 223P mapping validated successfully</div>
+                    <div class="alert alert-error">✗ Type mismatch: Expected Temp Sensor, found Pressure Sensor</div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Card Components</div>
+                    <div class="card">
+                        <strong>Zone Air Temperature Sensor</strong>
+                        <p style="color: #888; margin-top: 0.5rem; font-size: 0.875rem;">Equipment: VAV Terminal Unit | Confidence: 95%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 5: Dark Energy (tastytrade-inspired) -->
+        <div class="theme-card theme-5">
+            <div class="theme-header">
+                <h2 class="theme-name">5. Dark Energy</h2>
+                <p class="theme-personality">Minimal, professional, vibrant accents</p>
+                <p class="theme-best-for">Best for: tastytrade-inspired dark minimal + modern fun colors</p>
+            </div>
+
+            <div class="palette">
+                <div class="color-swatch" style="background: #000; color: #fff; border: 1px solid #333;">
+                    <div class="color-label">Background</div>
+                    <div class="color-hex">#000000</div>
+                </div>
+                <div class="color-swatch" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;">
+                    <div class="color-label">Primary</div>
+                    <div class="color-hex">Gradient</div>
+                </div>
+                <div class="color-swatch" style="background: #4ade80; color: #000;">
+                    <div class="color-label">Success</div>
+                    <div class="color-hex">#4ade80</div>
+                </div>
+                <div class="color-swatch" style="background: #e21f27; color: #fff;">
+                    <div class="color-label">Error</div>
+                    <div class="color-hex">#e21f27</div>
+                </div>
+            </div>
+
+            <div class="components-demo">
+                <div class="demo-section">
+                    <div class="demo-label">Buttons</div>
+                    <div class="buttons-row">
+                        <button class="btn btn-primary">Confirm Mapping</button>
+                        <button class="btn btn-secondary">Not Sure</button>
+                        <button class="btn btn-destructive">Delete</button>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Form Input</div>
+                    <div class="input-demo">
+                        <input type="text" class="input" placeholder="Search equipment..." value="VAV Terminal Unit">
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">223P Metadata Badges</div>
+                    <div>
+                        <span class="badge badge-primary">AHU</span>
+                        <span class="badge badge-success">Temp Sensor</span>
+                        <span class="badge badge-warning">Outside Air Temp</span>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">AI Confidence (95%)</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 95%;"></div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Alerts</div>
+                    <div class="alert alert-success">✓ 223P mapping validated successfully</div>
+                    <div class="alert alert-error">✗ Type mismatch: Expected Temp Sensor, found Pressure Sensor</div>
+                </div>
+
+                <div class="demo-section">
+                    <div class="demo-label">Card Components</div>
+                    <div class="card">
+                        <strong>Zone Air Temperature Sensor</strong>
+                        <p style="color: #888; margin-top: 0.5rem; font-size: 0.875rem;">Equipment: VAV Terminal Unit | Confidence: 95%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="recommendation">
+        <h2>💡 My Recommendation</h2>
+        <p>Based on your preference for <strong>tastytrade's minimal style + modern fun colors:</strong></p>
+        <div class="recommendation-highlight">Theme 5: Dark Energy</div>
+        <p style="margin-top: 1rem;">
+            This theme combines the best of both worlds: tastytrade's dark, minimal, professional aesthetic with vibrant gradient accents that make work feel energizing, not tedious.
+            The pure black background provides maximum focus, while the purple-pink gradient adds modern energy to critical actions.
+            Minimal visual noise, maximum impact.
+        </p>
+        <p style="margin-top: 1rem; font-size: 0.875rem; color: #666;">
+            <strong>Why this works for BMS:</strong> The dark UI reduces eye strain during long configuration sessions, the minimal style keeps focus on the work (not the UI), and the vibrant accents make the 223P popup feel like critical, valuable work.
+        </p>
+        <p style="margin-top: 1rem; font-size: 0.875rem; color: #666;">
+            <strong>Alternatives:</strong> Theme 2 (Neon Gradient) for lighter background, Theme 3 (Cyber Green) for futuristic boldness.
+        </p>
+    </div>
+</body>
+</html>
