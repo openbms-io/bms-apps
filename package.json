@@ -6,7 +6,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --parallel run dev",
+    "dev": "./scripts/start-dev.sh",
     "build": "pnpm --recursive run build",
     "test": "jest && pnpm --filter designer test && pnpm bms-iot:test",
     "test:js": "jest && pnpm --filter designer test",
