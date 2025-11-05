@@ -17,7 +17,7 @@ describe('Workflow Config Schema', () => {
           type: 'logic.constant', // react-flow type string
           position: { x: 0, y: 0 },
           data: {
-            nodeType: 'ConstantNode', // constructor name (compat)
+            nodeType: NodeType.CONSTANT, // enum value
             serializedData: {
               id: 'n1',
               type: NodeType.CONSTANT,
@@ -57,7 +57,7 @@ describe('Workflow Config Schema', () => {
             type: `bacnet.${ot}`,
             position: { x: 0, y: 0 },
             data: {
-              nodeType: 'AnalogInputNode', // value ignored by schema; factory uses it
+              nodeType: nt, // enum value
               serializedData: {
                 id: 'n1',
                 type: nt,

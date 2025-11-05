@@ -34,7 +34,7 @@ describe('WorkflowSerializer factory compatibility', () => {
     }
   }
 
-  it('deserializes ConstantNode when nodeType is constructor name', () => {
+  it('deserializes ConstantNode when nodeType is enum value', () => {
     const config = versionedOf({
       metadata: { lastModified: '2025-09-19T10:30:00Z' },
       nodes: [
@@ -43,7 +43,7 @@ describe('WorkflowSerializer factory compatibility', () => {
           type: 'logic.constant',
           position: { x: 0, y: 0 },
           data: {
-            nodeType: 'ConstantNode',
+            nodeType: NodeType.CONSTANT,
             serializedData: {
               id: 'n1',
               type: NodeType.CONSTANT,
@@ -57,7 +57,11 @@ describe('WorkflowSerializer factory compatibility', () => {
       edges: [],
     })
 
-    const result = deserializeWorkflow({ versionedConfig: config, nodeFactory })
+    const result = deserializeWorkflow({
+      versionedConfig: config,
+      mqttBus: mockMqttBus as any,
+      onDataChange: mockOnDataChange,
+    })
     expect(result.nodes[0].data).toBeInstanceOf(ConstantNode)
   })
 
@@ -84,11 +88,15 @@ describe('WorkflowSerializer factory compatibility', () => {
       edges: [],
     })
 
-    const result = deserializeWorkflow({ versionedConfig: config, nodeFactory })
+    const result = deserializeWorkflow({
+      versionedConfig: config,
+      mqttBus: mockMqttBus as any,
+      onDataChange: mockOnDataChange,
+    })
     expect(result.nodes[0].data).toBeInstanceOf(ConstantNode)
   })
 
-  it('deserializes AnalogInputNode for constructor-name and enum-string nodeType', () => {
+  it('deserializes AnalogInputNode for enum-string nodeType', () => {
     const metadata: BacnetConfig = {
       pointId: 'pid-1',
       objectType: 'analog-input',
@@ -99,28 +107,6 @@ describe('WorkflowSerializer factory compatibility', () => {
       discoveredProperties: { presentValue: 21.5 },
     }
 
-    const cfgCtor = versionedOf({
-      metadata: { lastModified: '2025-09-19T10:30:00Z' },
-      nodes: [
-        {
-          id: 'n1',
-          type: 'bacnet.analog-input',
-          position: { x: 0, y: 0 },
-          data: {
-            nodeType: 'AnalogInputNode',
-            serializedData: {
-              id: 'n1',
-              type: NodeType.ANALOG_INPUT,
-              category: NodeCategory.BACNET,
-              label: 'AI',
-              metadata,
-            },
-          },
-        },
-      ],
-      edges: [],
-    })
-
     const cfgEnum = versionedOf({
       metadata: { lastModified: '2025-09-19T10:30:00Z' },
       nodes: [
@@ -129,7 +115,7 @@ describe('WorkflowSerializer factory compatibility', () => {
           type: 'bacnet.analog-input',
           position: { x: 0, y: 0 },
           data: {
-            nodeType: 'analog-input',
+            nodeType: NodeType.ANALOG_INPUT,
             serializedData: {
               id: 'n2',
               type: NodeType.ANALOG_INPUT,
@@ -143,10 +129,12 @@ describe('WorkflowSerializer factory compatibility', () => {
       edges: [],
     })
 
-    const r1 = deserializeWorkflow({ versionedConfig: cfgCtor, nodeFactory })
-    const r2 = deserializeWorkflow({ versionedConfig: cfgEnum, nodeFactory })
+    const r2 = deserializeWorkflow({
+      versionedConfig: cfgEnum,
+      mqttBus: mockMqttBus as any,
+      onDataChange: mockOnDataChange,
+    })
 
-    expect(r1.nodes[0].data).toBeInstanceOf(AnalogInputNode)
     expect(r2.nodes[0].data).toBeInstanceOf(AnalogInputNode)
   })
 })

@@ -205,23 +205,30 @@ describe('FlowSlice - Save/Load Integration', () => {
         },
       }
 
-      const mockNodeFactory = jest.fn()
-
       mockProjectsApi.get.mockResolvedValue(mockProject)
-      mockCreateNodeFactory.mockReturnValue(mockNodeFactory)
       mockDeserializeWorkflow.mockReturnValue(mockDeserializedState)
 
       // Act
-      await store.getState().loadWorkflowIntoCanvas({ projectId })
+      await store.getState().loadWorkflowIntoCanvas({
+        orgId: 'test-org',
+        siteId: 'test-site',
+        projectId,
+      })
 
       // Assert
       expect(store.getState().saveStatus).toBe('saved')
-      expect(mockProjectsApi.get).toHaveBeenCalledWith({ projectId })
-      expect(mockCreateNodeFactory).toHaveBeenCalled()
-      expect(mockDeserializeWorkflow).toHaveBeenCalledWith({
-        versionedConfig: mockVersionedConfig,
-        nodeFactory: mockNodeFactory,
+      expect(mockProjectsApi.get).toHaveBeenCalledWith({
+        orgId: 'test-org',
+        siteId: 'test-site',
+        projectId,
       })
+      expect(mockDeserializeWorkflow).toHaveBeenCalledWith(
+        expect.objectContaining({
+          versionedConfig: mockVersionedConfig,
+          mqttBus: expect.any(Object),
+          onDataChange: expect.any(Function),
+        })
+      )
     })
 
     it('should handle empty workflow config', async () => {
@@ -240,7 +247,11 @@ describe('FlowSlice - Save/Load Integration', () => {
       mockProjectsApi.get.mockResolvedValue(mockProject)
 
       // Act
-      await store.getState().loadWorkflowIntoCanvas({ projectId })
+      await store.getState().loadWorkflowIntoCanvas({
+        orgId: 'test-org',
+        siteId: 'test-site',
+        projectId,
+      })
 
       // Assert
       expect(store.getState().saveStatus).toBe('saved')
@@ -257,7 +268,11 @@ describe('FlowSlice - Save/Load Integration', () => {
 
       // Act & Assert
       await expect(
-        store.getState().loadWorkflowIntoCanvas({ projectId })
+        store.getState().loadWorkflowIntoCanvas({
+          orgId: 'test-org',
+          siteId: 'test-site',
+          projectId,
+        })
       ).rejects.toThrow('API Error')
       expect(store.getState().saveStatus).toBe('error')
     })
