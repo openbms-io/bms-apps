@@ -50,12 +50,29 @@ echo "▶ Waiting for broker (TCP 1883) and proxy (HTTP 3000)..."
 wait_port localhost 1883 "MQTT broker (NanoMQ)" || true
 wait_port localhost 3000 "Reverse proxy (Nginx)" || true
 
-echo "PYTHONPATH=.:apps/bms-iot-app python -m src.cli run-main"
-
-echo "▶ Starting Designer (Next.js) on port 3001..."
+echo "▶ Starting BMS IoT App (Python) and Designer (Next.js) in parallel..."
 echo "   Access the app at http://localhost:3000 (proxied)"
 echo "   Browser MQTT connects to ws://localhost:3000/mqtt"
+echo "   Press Ctrl+C to stop both services"
+echo ""
 
-pushd "$ROOT_DIR" >/dev/null
-PORT=3003 pnpm --filter designer dev
-popd >/dev/null
+cd "$ROOT_DIR"
+
+# Start Python BMS IoT App in background with output prefix
+PYTHONPATH=.:apps/bms-iot-app python -m src.cli run-main 2>&1 | sed 's/^/[BMS-IoT] /' &
+PID_PYTHON=$!
+
+# Start Designer app in background with output prefix
+PORT=3003 pnpm --filter designer dev 2>&1 | sed 's/^/[Designer] /' &
+PID_DESIGNER=$!
+
+# Trap Ctrl+C to kill both processes cleanly
+trap "echo ''; echo '▶ Shutting down services...'; kill $PID_PYTHON $PID_DESIGNER 2>/dev/null; exit" INT TERM
+
+echo "▶ Services started:"
+echo "   - BMS IoT App (PID: $PID_PYTHON)"
+echo "   - Designer (PID: $PID_DESIGNER, Port: 3003)"
+echo ""
+
+# Wait for both processes
+wait
