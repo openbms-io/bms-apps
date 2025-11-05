@@ -57,12 +57,46 @@ pnpm install
 ### Development
 
 ```bash
-# Start both apps in development mode
-pnpm run dev
+# Start both apps in development mode (default: quiet logs, stop infra on exit)
+pnpm dev
 
 # Or start individually:
-pnpm --filter designer run dev          # Designer on http://localhost:3000
-pnpm bms-iot:run                        # BMS IoT App
+pnpm --filter designer dev    # Designer on http://localhost:3000
+pnpm bms-iot:run              # BMS IoT App
+```
+
+#### Log Level Control
+
+Control BMS IoT App log verbosity using `BMS_LOG_LEVEL` environment variable:
+
+```bash
+# Quiet mode (default) - show only WARNING, ERROR, CRITICAL
+pnpm dev
+
+# Verbose mode - show all DEBUG and above
+BMS_LOG_LEVEL=DEBUG pnpm dev
+
+# All logs mode - same as DEBUG
+BMS_LOG_LEVEL=ALL pnpm dev
+```
+
+#### Infrastructure Management
+
+Control Docker infrastructure lifecycle using `KEEP_INFRA` environment variable:
+
+```bash
+# Default - stop infrastructure (NanoMQ + Nginx) on Ctrl+C
+pnpm dev
+
+# Keep infrastructure running after exit
+KEEP_INFRA=true pnpm dev
+```
+
+#### Combined Options
+
+```bash
+# Verbose logs + keep infrastructure running
+BMS_LOG_LEVEL=DEBUG KEEP_INFRA=true pnpm dev
 ```
 
 ## 📋 Schema Management
