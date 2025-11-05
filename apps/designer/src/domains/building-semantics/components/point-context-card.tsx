@@ -12,8 +12,10 @@ interface PointContextCardProps {
 
 export function PointContextCard({ point, controller }: PointContextCardProps) {
   const presentValue = point.discoveredProperties?.presentValue
-  const units = point.discoveredProperties?.units
-  const description = point.discoveredProperties?.description
+  const units = point.discoveredProperties?.units as string | undefined
+  const description = point.discoveredProperties?.description as
+    | string
+    | undefined
 
   return (
     <Card>

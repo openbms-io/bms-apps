@@ -37,7 +37,7 @@ export function useCanvasOrchestration(
     useCreateSemanticModal(controllers, pointsByController, iotDeviceId)
 
   const handleDrop = useCallback(
-    async (event: DragEvent) => {
+    async (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault()
 
       if (!reactFlowInstanceRef.current) {

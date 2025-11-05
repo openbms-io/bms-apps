@@ -55,7 +55,7 @@ export function useCreateSemanticModal(
         supervisorId: iotDeviceId,
         controllerId: foundPoint.controllerId,
         name: foundPoint.pointName,
-        discoveredProperties: foundPoint.metadata,
+        discoveredProperties: foundPoint.metadata as Record<string, unknown>,
       }
 
       const controllerData: BACnetControllerData = {

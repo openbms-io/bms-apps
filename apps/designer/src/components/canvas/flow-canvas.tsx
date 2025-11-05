@@ -39,7 +39,7 @@ interface FlowCanvasProps {
   onNodesChange: OnNodesChange
   onEdgesChange: OnEdgesChange
   onConnect: OnConnect
-  onDrop: (event: DragEvent) => void
+  onDrop: (event: React.DragEvent<HTMLDivElement>) => void
   orgId: string
   siteId: string
   projectId: string
@@ -96,7 +96,7 @@ export function FlowCanvas({
         onConnect={onConnect}
         onInit={onInit}
         onDragOver={onDragOver}
-        onDrop={onDrop as any}
+        onDrop={onDrop}
         fitView
         deleteKeyCode={['Delete', 'Backspace']}
         className="bg-background"

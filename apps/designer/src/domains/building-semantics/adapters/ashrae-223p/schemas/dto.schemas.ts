@@ -91,7 +91,7 @@ export interface BACnetPointData {
   supervisorId: string
   controllerId: string
   name?: string
-  discoveredProperties?: Record<string, any>
+  discoveredProperties?: Record<string, unknown>
 }
 
 /**

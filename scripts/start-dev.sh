@@ -50,15 +50,12 @@ echo "▶ Waiting for broker (TCP 1883) and proxy (HTTP 3000)..."
 wait_port localhost 1883 "MQTT broker (NanoMQ)" || true
 wait_port localhost 3000 "Reverse proxy (Nginx)" || true
 
-echo "▶ Building shared schemas (bms-schemas)..."
-pushd "$ROOT_DIR" >/dev/null
-pnpm --filter bms-schemas build
-popd >/dev/null
+echo "PYTHONPATH=.:apps/bms-iot-app python -m src.cli run-main"
 
 echo "▶ Starting Designer (Next.js) on port 3001..."
 echo "   Access the app at http://localhost:3000 (proxied)"
 echo "   Browser MQTT connects to ws://localhost:3000/mqtt"
 
 pushd "$ROOT_DIR" >/dev/null
-PORT=3001 pnpm --filter designer dev
+PORT=3003 pnpm --filter designer dev
 popd >/dev/null
