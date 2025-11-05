@@ -6,7 +6,7 @@
 [![Discord](https://img.shields.io/discord/1417899927304016146)](https://discord.gg/SUkvbwkDGz)
 
 Visual programming platform for building management systems with IoT device integration.
-[Live Preview](https://supervisor-designer.vercel.app/projects)
+[Live Preview](https://supervisor-designer.vercel.app/)
 
 ## 📊 Project Status
 
