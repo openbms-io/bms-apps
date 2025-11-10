@@ -1,0 +1,229 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.2</storyId>
+    <title>Design FastAPI OpenAPI Specification</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-09</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-2-design-openapi-specification.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>a complete OpenAPI specification for 5 simplified endpoints</iWant>
+    <soThat>I can generate a type-safe TypeScript client and validate the API contract before implementation</soThat>
+    <tasks>
+      1. Implement DTOs in src/dto/ with nested hierarchical structure (templates_dto.py, mappings_dto.py, spaces_dto.py)
+      2. Define GET /api/v1/223p/templates endpoint with TemplatesResponseDTO response model
+      3. Define GET /api/v1/223p/mappings endpoint with MappingsResponseDTO and projectId query param
+      4. Define POST /api/v1/223p/mappings endpoint with SaveMappingsRequestDTO request body
+      5. Define GET /api/v1/223p/spaces endpoint with list[SpaceInstanceDTO] response and projectId query param
+      6. Define POST /api/v1/223p/spaces endpoint with CreateSpaceRequestDTO request body, 201 status code
+      7. Apply OpenAPI tags to all routers (ASHRAE 223P Templates, Mappings, Spaces)
+      8. Add detailed descriptions, examples, and error responses to all endpoints
+      9. Configure Pydantic models with explicit camelCase serialization aliases using ConfigDict
+      10. Start server and verify Swagger UI displays all endpoints correctly
+      11. Download openapi.json and validate it using openapi-ts
+      12. Verify JSON output uses camelCase fields (not snake_case)
+      13. Run mypy type checking to ensure all DTOs are properly typed
+      14. Verify all router imports work and server starts without errors
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC #1: All 5 endpoints defined in OpenAPI spec (GET /templates, GET/POST /mappings, GET/POST /spaces)
+    AC #2: All Pydantic models use explicit camelCase aliases with ConfigDict and serialization_alias
+    AC #3: GET /api/v1/223p/templates returns hierarchical TemplatesResponseDTO with nested systems/devices/properties
+    AC #4: Mappings endpoints (GET/POST) implement bulk save/replace pattern with query param projectId
+    AC #5: Spaces endpoints (GET/POST) with projectId query param and 201 status for POST
+    AC #6: OpenAPI tags applied: "ASHRAE 223P Templates", "ASHRAE 223P Mappings", "ASHRAE 223P Spaces"
+    AC #7: OpenAPI metadata complete (title, description, version 0.1.0)
+    AC #8: Examples and descriptions provided for all complex schemas with error responses (422, 500)
+    AC #9: OpenAPI spec validates successfully with no errors using npx @hey-api/openapi-ts
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/tech-spec-review.md</path>
+        <title>Epic 2 Technical Specification Review</title>
+        <section>FastAPI Foundation Work - Architecture and Patterns (lines 568-1210)</section>
+        <snippet>Defines API architecture with 3 services (Templates, Mappings, Spaces), URN-based identifiers, hierarchical template structure, bulk operations pattern, and explicit camelCase Pydantic aliases for JSON serialization</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/tech-spec-review.md</path>
+        <title>Epic 2 Technical Specification Review</title>
+        <section>Coding Standards Python (lines 308-397)</section>
+        <snippet>Python coding conventions including async/await patterns, Pydantic v2 configuration with ConfigDict, type hints with strict mypy, and FastAPI router organization</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2 Phase Breakdown</title>
+        <section>Phase 1: Interface-First Development & Validation</section>
+        <snippet>Story 2.2 focuses on designing OpenAPI specification with 5 endpoints, hierarchical DTOs, and explicit camelCase aliases before implementation</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-decisions.md</path>
+        <title>Epic 2 Technical Decisions</title>
+        <section>API Design Decisions</section>
+        <snippet>Documents decision to use URN identifiers, hierarchical templates, bulk mappings pattern (YAGNI principle), and explicit Pydantic aliases over auto-conversion</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Project Coding Standards</title>
+        <section>Python Conventions (lines 12-112)</section>
+        <snippet>Defines strict type checking, Pydantic BaseModel patterns, async function signatures, and test-driven development approach for Python code</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-1-create-fastapi-app-scaffolding.md</path>
+        <title>Story 2.1: Create FastAPI App Scaffolding</title>
+        <section>Implementation Notes and Router Patterns</section>
+        <snippet>Completed scaffolding with FastAPI app structure, router stubs at /api/223p prefix pattern, CORS configuration for Designer (port 3003), and Pydantic BaseSettings</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+        <kind>router</kind>
+        <symbol>router</symbol>
+        <lines>1-10</lines>
+        <reason>Empty router stub for templates endpoint - needs GET endpoint definition with TemplatesResponseDTO</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+        <kind>router</kind>
+        <symbol>router</symbol>
+        <lines>1-10</lines>
+        <reason>Empty router stub for mappings endpoints - needs GET and POST endpoint definitions with query params and DTOs</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/spaces.py</path>
+        <kind>router</kind>
+        <symbol>router</symbol>
+        <lines>1-10</lines>
+        <reason>Empty router stub for spaces endpoints - needs GET (list) and POST (create) endpoint definitions</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/main.py</path>
+        <kind>application</kind>
+        <symbol>app</symbol>
+        <lines>1-34</lines>
+        <reason>FastAPI application entry point with CORS middleware and health check - router includes reference pattern for new endpoint imports</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/config/settings.py</path>
+        <kind>config</kind>
+        <symbol>Settings</symbol>
+        <lines>1-29</lines>
+        <reason>Example of Pydantic BaseSettings with ConfigDict pattern - reference for DTO implementation approach</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="fastapi" version=">=0.104.0" />
+        <package name="pydantic" version=">=2.5.0" />
+        <package name="uvicorn[standard]" version=">=0.24.0" />
+        <package name="httpx" version=">=0.25.0" />
+        <package name="pytest" version=">=7.4.0" />
+        <package name="mypy" version=">=1.7.0" />
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - YAGNI principle: Only define endpoints needed for Phase 1 interface validation, no premature optimization
+    - Hierarchical template structure: All relationships embedded (systems contain devices, devices contain properties)
+    - Bulk operations only: No individual CRUD operations for mappings - save all at once
+    - Explicit camelCase aliases: Use serialization_alias in Field() for all snake_case Python fields
+    - URN identifiers: Use urn:223p:{entity} pattern for template IDs, urn:bms:PhysicalSpace:{id} for instances
+    - FastAPI router pattern: prefix="/api/v1/223p/{service}", tags=["ASHRAE 223P {Service}"]
+    - Pydantic v2 patterns: model_config = ConfigDict(populate_by_name=True) for all DTOs
+    - Async endpoint signatures: async def endpoint_name(...) -> ResponseDTO
+    - HTTPException for not implemented: raise HTTPException(status_code=501, detail="Not implemented")
+    - Strict type checking: All functions must have type hints (mypy strict mode)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/v1/223p/templates</name>
+      <kind>REST endpoint</kind>
+      <signature>async def get_templates() -> TemplatesResponseDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+    </interface>
+    <interface>
+      <name>GET /api/v1/223p/mappings</name>
+      <kind>REST endpoint</kind>
+      <signature>async def get_mappings(project_id: str = Query(..., alias="projectId")) -> MappingsResponseDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+    </interface>
+    <interface>
+      <name>POST /api/v1/223p/mappings</name>
+      <kind>REST endpoint</kind>
+      <signature>async def save_mappings(request: SaveMappingsRequestDTO) -> MappingsResponseDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+    </interface>
+    <interface>
+      <name>GET /api/v1/223p/spaces</name>
+      <kind>REST endpoint</kind>
+      <signature>async def list_spaces(project_id: str = Query(..., alias="projectId")) -> list[SpaceInstanceDTO]</signature>
+      <path>apps/building-semantics-api-app/src/routers/spaces.py</path>
+    </interface>
+    <interface>
+      <name>POST /api/v1/223p/spaces</name>
+      <kind>REST endpoint</kind>
+      <signature>async def create_space(request: CreateSpaceRequestDTO) -> SpaceInstanceDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/spaces.py</path>
+    </interface>
+    <interface>
+      <name>TemplatePropertyDTO</name>
+      <kind>Pydantic model</kind>
+      <signature>class TemplatePropertyDTO(BaseModel): id: str, label: str, property_type: Literal["quantifiable", "enumerated"], description: str | None</signature>
+      <path>apps/building-semantics-api-app/src/dto/templates_dto.py (to be created)</path>
+    </interface>
+    <interface>
+      <name>TemplateDeviceDTO</name>
+      <kind>Pydantic model</kind>
+      <signature>class TemplateDeviceDTO(BaseModel): id: str, label: str, description: str | None, properties: list[TemplatePropertyDTO]</signature>
+      <path>apps/building-semantics-api-app/src/dto/templates_dto.py (to be created)</path>
+    </interface>
+    <interface>
+      <name>TemplateSystemDTO</name>
+      <kind>Pydantic model</kind>
+      <signature>class TemplateSystemDTO(BaseModel): id: str, label: str, description: str | None, devices: list[TemplateDeviceDTO]</signature>
+      <path>apps/building-semantics-api-app/src/dto/templates_dto.py (to be created)</path>
+    </interface>
+    <interface>
+      <name>SpaceTypeDTO</name>
+      <kind>Pydantic model</kind>
+      <signature>class SpaceTypeDTO(BaseModel): id: str, label: str, description: str | None</signature>
+      <path>apps/building-semantics-api-app/src/dto/templates_dto.py (to be created)</path>
+    </interface>
+    <interface>
+      <name>TemplatesResponseDTO</name>
+      <kind>Pydantic model</kind>
+      <signature>class TemplatesResponseDTO(BaseModel): systems: list[TemplateSystemDTO], space_types: list[SpaceTypeDTO]</signature>
+      <path>apps/building-semantics-api-app/src/dto/templates_dto.py (to be created)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Follow TDD approach with pytest and FastAPI TestClient. Integration tests use TestClient to call endpoints and verify response models. Unit tests validate Pydantic DTOs serialize correctly to camelCase JSON. All tests in tests/ directory with pytest-asyncio for async endpoints. Strict type checking with mypy ensures DTO type safety.</standards>
+    <locations>
+      - tests/integration/test_routers/ - Integration tests for endpoint definitions
+      - tests/unit/test_dto/ - Unit tests for Pydantic DTO serialization
+    </locations>
+    <ideas>
+      1. Test TemplatesResponseDTO serializes with camelCase "spaceTypes" field (AC #2)
+      2. Test SemanticMappingDTO uses camelCase aliases (equipmentTypeId, deviceTypeId, propertyId, spaceId) (AC #2)
+      3. Test GET /api/v1/223p/templates returns 501 status with "Not implemented" (AC #3)
+      4. Test GET /api/v1/223p/mappings accepts projectId query param and returns 501 (AC #4)
+      5. Test POST /api/v1/223p/mappings accepts SaveMappingsRequestDTO and returns 501 (AC #4)
+      6. Test GET /api/v1/223p/spaces accepts projectId query param and returns 501 (AC #5)
+      7. Test POST /api/v1/223p/spaces accepts CreateSpaceRequestDTO and returns 201 status (AC #5)
+      8. Test OpenAPI JSON at /openapi.json contains all 5 endpoints with correct paths (AC #1)
+      9. Verify Swagger UI displays proper tags for each endpoint group (AC #6)
+      10. Test nested DTO structure: TemplateSystemDTO contains devices which contain properties (AC #3)
+    </ideas>
+  </tests>
+</story-context>

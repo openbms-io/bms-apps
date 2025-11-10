@@ -1,0 +1,213 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>1</storyId>
+    <title>Create Building Semantics API App Scaffolding</title>
+    <status>pending</status>
+    <generatedAt>2025-11-09</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-1-create-fastapi-app-scaffolding.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>a complete FastAPI project scaffold with tooling configured</iWant>
+    <soThat>I can implement mock endpoints in Phase 1 without infrastructure blockers</soThat>
+    <tasks>
+      - Create directory structure (src/, tests/, routers, services, adapters, dto, config, utils)
+      - Create pyproject.toml with dependencies (FastAPI, BuildingMOTIF, Pydantic, pytest, mypy, ruff)
+      - Implement src/main.py with FastAPI app, CORS middleware, health endpoint
+      - Create 4 empty router stubs (templates, spaces, mappings, validation)
+      - Create settings.py with Pydantic BaseSettings for configuration
+      - Create .env.template with environment variables
+      - Create README.md with setup instructions
+      - Configure .gitignore
+      - Verify server starts successfully
+      - Verify health check endpoint responds
+      - Verify type checking passes (mypy strict mode)
+      - Verify linting passes (ruff)
+      - Verify OpenAPI spec accessible at /docs
+      - Integrate with pnpm dev script
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Directory structure created with all required folders
+    2. pyproject.toml configured with FastAPI>=0.104.0, uvicorn, buildingmotif>=2.0.0, pydantic>=2.5.0, pytest, mypy, black, ruff
+    3. src/main.py implemented with FastAPI app, CORS for port 3003, health endpoint at /health
+    4. 4 router stubs created (empty): templates.py, spaces.py, mappings.py, validation.py with APIRouter prefix /api/223p/*
+    5. settings.py with Pydantic BaseSettings loading from .env
+    6. .env.template created with API_HOST, API_PORT, DEBUG, BUILDINGMOTIF_DB_PATH, CORS_ORIGINS
+    7. README.md with setup instructions
+    8. Server starts: pnpm building-semantics:run
+    9. Health check responds: curl http://localhost:8000/health returns {"status":"healthy","service":"building-semantics-api","version":"0.1.0"}
+    10. Type checking passes: pnpm building-semantics:typecheck (mypy strict mode, no errors)
+    11. Linting passes: pnpm building-semantics:lint (ruff, no errors)
+    12. OpenAPI accessible: http://localhost:8000/docs (empty spec, but valid)
+    13. pnpm dev starts all 3 services (BMS IoT, Semantics API, Designer) with [Semantics-API] log prefix
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/tech-spec-review.md</path>
+        <title>Epic 2 Tech Spec Review</title>
+        <section>FastAPI Foundation Work - Architecture and Patterns (lines 568-1210)</section>
+        <snippet>Comprehensive technical specification for FastAPI scaffolding including directory structure, dependency management, router organization, service layer patterns, Pydantic models, and testing strategy.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2 Phase Breakdown</title>
+        <section>Phase 0: Story 2.1 - FastAPI Scaffolding (lines 80-185)</section>
+        <snippet>Phase 0 breakdown showing FastAPI app scaffolding as foundation for Phase 1 mock endpoints. Defines clear separation: Phase 0 = infrastructure, Phase 1 = endpoints, Phase 2 = BuildingMOTIF integration.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Development Philosophy</title>
+        <section>Core Principles and TDD Workflow (lines 18-80)</section>
+        <snippet>TDD workflow: write tests first, red-green-refactor cycle. Core principles: no overengineering, fail fast, prop up issues faster, no unnecessary comments. Python TDD: write test_*.py, pytest tests/, implement src/, verify tests pass.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Python Coding Standards</title>
+        <section>Python Conventions (lines 12-60)</section>
+        <snippet>PEP 8 compliance: snake_case variables/functions, PascalCase classes, UPPER_CASE constants. Indentation: 4 spaces. Line length: 88 chars (Black). Imports: grouped and ordered (stdlib, third-party, local).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/bms-iot-app/pyproject.toml</path>
+        <kind>configuration</kind>
+        <symbol>pyproject.toml</symbol>
+        <lines>1-50</lines>
+        <reason>Reference Python project structure pattern for BMS apps - dependency management, tool configuration (pytest, mypy, black)</reason>
+      </artifact>
+      <artifact>
+        <path>apps/bms-iot-app/src/main.py</path>
+        <kind>entry-point</kind>
+        <symbol>main</symbol>
+        <lines>1-50</lines>
+        <reason>Reference pattern for Python application entry point and CLI structure</reason>
+      </artifact>
+      <artifact>
+        <path>apps/bms-iot-app/src/config</path>
+        <kind>configuration-module</kind>
+        <symbol>config module</symbol>
+        <lines>full directory</lines>
+        <reason>Reference pattern for configuration management with environment variables and settings classes</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/start-dev.sh</path>
+        <kind>script</kind>
+        <symbol>start-dev.sh</symbol>
+        <lines>101-102</lines>
+        <reason>Integration point - building-semantics-api already configured with [Semantics-API] log prefix</reason>
+      </artifact>
+      <artifact>
+        <path>package.json</path>
+        <kind>configuration</kind>
+        <symbol>building-semantics scripts</symbol>
+        <lines>26-32</lines>
+        <reason>PNPM scripts already defined: building-semantics:install, run, test, typecheck, lint, format</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="fastapi" version=">=0.104.0" />
+        <package name="uvicorn[standard]" version=">=0.24.0" />
+        <package name="buildingmotif" version=">=2.0.0" note="Phase 2 only, declared now" />
+        <package name="pydantic" version=">=2.5.0" />
+        <package name="pydantic-settings" version="latest" note="For BaseSettings" />
+        <package name="sqlalchemy" version=">=2.0.0" />
+        <package name="python-dotenv" version=">=1.0.0" />
+        <package name="loguru" version=">=0.7.0" />
+        <package name="python-multipart" version=">=0.0.6" />
+        <package name="pytest" version=">=7.4.0" scope="test" />
+        <package name="pytest-asyncio" version=">=0.21.0" scope="test" />
+        <package name="httpx" version=">=0.25.0" scope="test" note="FastAPI test client" />
+        <package name="pytest-cov" version=">=4.1.0" scope="test" />
+        <package name="pytest-mock" version=">=3.11.1" scope="test" />
+        <package name="mypy" version=">=1.7.0" scope="dev" />
+        <package name="black" version=">=23.11.0" scope="dev" />
+        <package name="ruff" version=">=0.1.6" scope="dev" />
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - TDD approach: Write tests first, implement after (though scaffolding may defer test writing to Phase 1)
+    - No overengineering: Keep stubs empty, minimal implementation
+    - Python 3.11+ required
+    - FastAPI with async/await patterns
+    - Pydantic v2 for data models (not v1)
+    - Strict mypy configuration (disallow_untyped_defs=true)
+    - Black formatter with line-length=88
+    - Ruff linter enabled
+    - CORS must allow Designer app at port 3003
+    - Health check endpoint required at /health
+    - Router prefix pattern: /api/223p/{service}
+    - Empty router stubs only (no endpoint implementation in Phase 0)
+    - BuildingMOTIF dependency declared but not used yet
+    - Integration with existing pnpm dev script required
+    - Log prefix: [Semantics-API] for consistency
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>FastAPI Health Check</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /health → {"status": "healthy", "service": "building-semantics-api", "version": "0.1.0"}</signature>
+      <path>apps/building-semantics-api-app/src/main.py</path>
+    </interface>
+    <interface>
+      <name>Templates Router</name>
+      <kind>REST router stub</kind>
+      <signature>APIRouter(prefix="/api/223p/templates", tags=["ASHRAE 223P Templates"])</signature>
+      <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+    </interface>
+    <interface>
+      <name>Spaces Router</name>
+      <kind>REST router stub</kind>
+      <signature>APIRouter(prefix="/api/223p/spaces", tags=["ASHRAE 223P Spaces"])</signature>
+      <path>apps/building-semantics-api-app/src/routers/spaces.py</path>
+    </interface>
+    <interface>
+      <name>Mappings Router</name>
+      <kind>REST router stub</kind>
+      <signature>APIRouter(prefix="/api/223p/mappings", tags=["ASHRAE 223P Mappings"])</signature>
+      <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+    </interface>
+    <interface>
+      <name>Validation Router</name>
+      <kind>REST router stub</kind>
+      <signature>APIRouter(prefix="/api/223p/validate", tags=["ASHRAE 223P Validation"])</signature>
+      <path>apps/building-semantics-api-app/src/routers/validation.py</path>
+    </interface>
+    <interface>
+      <name>Settings</name>
+      <kind>Pydantic BaseSettings class</kind>
+      <signature>class Settings(BaseSettings): api_host, api_port, debug, buildingmotif_db_path, cors_origins</signature>
+      <path>apps/building-semantics-api-app/src/config/settings.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Follow TDD workflow from CLAUDE.md: write test_*.py files first, run pytest tests/, implement features, verify tests pass. Use pytest with async support (pytest-asyncio). FastAPI testing with httpx TestClient. Structure: tests/unit/ for business logic, tests/integration/ for API endpoints. Test naming: test_*.py files, test_* functions. Assertions should be clear and specific.
+    </standards>
+    <locations>
+      - apps/building-semantics-api-app/tests/unit/ (unit tests for services, DTOs, adapters)
+      - apps/building-semantics-api-app/tests/integration/ (integration tests for routers/endpoints)
+    </locations>
+    <ideas>
+      AC1: Test directory structure exists - pytest fixture to verify all required directories present
+      AC3: Test FastAPI app initialization - httpx TestClient test for /health endpoint returns expected JSON
+      AC4: Test CORS middleware configuration - verify CORS headers in response for Designer origin
+      AC5: Test router registration - verify routers are included in app
+      AC8: Test settings loading from environment - mock environment variables, verify Settings class loads correctly
+      AC9: Integration test for health check - GET /health returns 200 with expected JSON structure
+      AC10: Test mypy passes - run mypy programmatically, assert exit code 0
+      AC11: Test ruff passes - run ruff check programmatically, assert exit code 0
+    </ideas>
+  </tests>
+</story-context>
