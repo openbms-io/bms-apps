@@ -1,6 +1,7 @@
 """ASHRAE 223P Templates router."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
+from ..data.mock_templates import MOCK_TEMPLATES
 from ..dto.templates_dto import TemplatesResponseDTO
 
 router = APIRouter(
@@ -79,4 +80,4 @@ async def get_templates() -> TemplatesResponseDTO:
     Raises:
         HTTPException: When operation fails
     """
-    raise HTTPException(status_code=501, detail="Not implemented")
+    return MOCK_TEMPLATES

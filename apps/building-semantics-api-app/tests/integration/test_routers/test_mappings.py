@@ -6,11 +6,15 @@ from src.main import app
 client = TestClient(app)
 
 
-def test_get_mappings_returns_501_with_project_id_query() -> None:
-    """Test GET /api/v1/223p/mappings accepts projectId query param and returns 501."""
+def test_get_mappings_returns_200_with_static_data() -> None:
+    """Test GET /api/v1/223p/mappings accepts projectId query param and returns 200."""
     response = client.get("/api/v1/223p/mappings?projectId=proj-123")
-    assert response.status_code == 501
-    assert response.json()["detail"] == "Not implemented"
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "projectId" in data
+    assert "mappings" in data
+    assert isinstance(data["mappings"], dict)
 
 
 def test_get_mappings_requires_project_id() -> None:
@@ -19,8 +23,8 @@ def test_get_mappings_requires_project_id() -> None:
     assert response.status_code == 422  # Validation error
 
 
-def test_post_mappings_returns_501() -> None:
-    """Test POST /api/v1/223p/mappings accepts SaveMappingsRequestDTO and returns 501."""
+def test_post_mappings_returns_200_with_static_data() -> None:
+    """Test POST /api/v1/223p/mappings accepts SaveMappingsRequestDTO and returns 200."""
     request_data = {
         "projectId": "proj-123",
         "mappings": {
@@ -33,8 +37,13 @@ def test_post_mappings_returns_501() -> None:
     }
 
     response = client.post("/api/v1/223p/mappings", json=request_data)
-    assert response.status_code == 501
-    assert response.json()["detail"] == "Not implemented"
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "projectId" in data
+    assert "mappings" in data
+    # Verify endpoint ignores request body (Phase 1 behavior)
+    assert isinstance(data["mappings"], dict)
 
 
 def test_mappings_schemas_in_openapi() -> None:

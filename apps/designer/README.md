@@ -20,6 +20,61 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Building Semantics API Client
+
+The Designer app includes a TypeScript client for the Building Semantics API (ASHRAE 223P integration). The client is auto-generated from the FastAPI OpenAPI specification.
+
+### When to Regenerate
+
+Regenerate the TypeScript client whenever:
+
+- FastAPI Pydantic DTOs change (field names, types, or structure)
+- New API endpoints are added
+- Existing endpoints are modified or removed
+- After pulling changes that modify `apps/building-semantics/src/routers/`
+
+### How to Regenerate
+
+```bash
+# 1. Start the FastAPI server (required for OpenAPI spec)
+pnpm building-semantics:run
+
+# 2. In a separate terminal, regenerate the client
+cd apps/designer
+pnpm generate:api-client
+```
+
+The generated client will be created at:
+
+```
+apps/designer/src/domains/building-semantics/api/generated/
+```
+
+### Build Validation
+
+The build process validates:
+
+- ✅ TypeScript compilation (types match usage in components)
+- ✅ Import resolution (generated files exist)
+- ✅ Type safety (no type mismatches)
+
+The build does NOT validate:
+
+- ❌ Whether generated types match the current API
+- ❌ Whether types are stale if API changed
+
+**Important:** Always regenerate the client after API changes and commit the updated generated files.
+
+### Generated Files
+
+Generated files are **checked into git** for simpler CI/CD (no FastAPI dependency during build). When regenerating:
+
+1. Review the diff to understand API changes
+2. Update components using the API if breaking changes occurred
+3. Run tests: `pnpm test`
+4. Run build: `pnpm build`
+5. Commit the changes
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

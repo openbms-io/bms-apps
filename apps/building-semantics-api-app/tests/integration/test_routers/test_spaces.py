@@ -6,11 +6,20 @@ from src.main import app
 client = TestClient(app)
 
 
-def test_list_spaces_returns_501_with_project_id_query() -> None:
-    """Test GET /api/v1/223p/spaces accepts projectId query param and returns 501."""
+def test_list_spaces_returns_200_with_array() -> None:
+    """Test GET /api/v1/223p/spaces accepts projectId query param and returns 200."""
     response = client.get("/api/v1/223p/spaces?projectId=proj-123")
-    assert response.status_code == 501
-    assert response.json()["detail"] == "Not implemented"
+    assert response.status_code == 200
+
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    # Verify space structure
+    for space in data:
+        assert "id" in space
+        assert "spaceTypeId" in space
+        assert "label" in space
+        assert "createdAt" in space
 
 
 def test_list_spaces_requires_project_id() -> None:
@@ -19,8 +28,8 @@ def test_list_spaces_requires_project_id() -> None:
     assert response.status_code == 422  # Validation error
 
 
-def test_create_space_returns_501_and_uses_201_status() -> None:
-    """Test POST /api/v1/223p/spaces accepts CreateSpaceRequestDTO and returns 501."""
+def test_create_space_returns_201_with_space_instance() -> None:
+    """Test POST /api/v1/223p/spaces accepts CreateSpaceRequestDTO and returns 201."""
     request_data = {
         "projectId": "proj-123",
         "spaceTypeId": "urn:223p:Office",
@@ -28,11 +37,13 @@ def test_create_space_returns_501_and_uses_201_status() -> None:
     }
 
     response = client.post("/api/v1/223p/spaces", json=request_data)
+    assert response.status_code == 201
 
-    # Even though it's not implemented, the endpoint is configured for 201
-    # But since we raise 501, that takes precedence
-    assert response.status_code == 501
-    assert response.json()["detail"] == "Not implemented"
+    data = response.json()
+    assert "id" in data
+    assert "spaceTypeId" in data
+    assert "label" in data
+    assert "createdAt" in data
 
 
 def test_spaces_schemas_in_openapi() -> None:

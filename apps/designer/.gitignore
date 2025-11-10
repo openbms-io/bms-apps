@@ -1,0 +1,2 @@
+# Generated API client - checking in generated types for simpler CI/CD
+# Regenerate when API changes: pnpm generate:api-client

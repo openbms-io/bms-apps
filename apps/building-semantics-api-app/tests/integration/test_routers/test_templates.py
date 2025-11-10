@@ -6,11 +6,17 @@ from src.main import app
 client = TestClient(app)
 
 
-def test_get_templates_returns_501_not_implemented() -> None:
-    """Test GET /api/v1/223p/templates returns 501 status."""
+def test_get_templates_returns_200_with_mock_data() -> None:
+    """Test GET /api/v1/223p/templates returns 200 with hierarchical mock data."""
     response = client.get("/api/v1/223p/templates")
-    assert response.status_code == 501
-    assert response.json()["detail"] == "Not implemented"
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "systems" in data
+    assert "spaceTypes" in data
+    assert len(data["systems"]) == 8  # 8 systems as per AC
+    assert isinstance(data["systems"], list)
+    assert isinstance(data["spaceTypes"], list)
 
 
 def test_get_templates_endpoint_exists() -> None:

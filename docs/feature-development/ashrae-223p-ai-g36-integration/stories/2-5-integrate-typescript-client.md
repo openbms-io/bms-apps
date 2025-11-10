@@ -2,7 +2,8 @@
 
 **Epic:** Epic 2 - BuildingMOTIF API Integration
 **Phase:** Phase 1 - Interface-First Development & Validation
-**Status:** pending
+**Status:** ready-for-dev
+**Context:** [2-5-integrate-typescript-client.context.xml](./2-5-integrate-typescript-client.context.xml)
 **Created:** 2025-11-06
 **Updated:** 2025-11-09 (Simplified: 9 → 5 hooks, bulk save, hierarchical templates)
 **Complexity:** 3 (Medium)

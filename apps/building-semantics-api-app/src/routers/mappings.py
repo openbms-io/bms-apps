@@ -1,6 +1,7 @@
 """ASHRAE 223P Mappings router."""
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 
+from ..data.mock_templates import MOCK_MAPPINGS
 from ..dto.mappings_dto import MappingsResponseDTO, SaveMappingsRequestDTO
 
 router = APIRouter(
@@ -51,7 +52,7 @@ async def get_mappings(
     Raises:
         HTTPException: When operation fails
     """
-    raise HTTPException(status_code=501, detail="Not implemented")
+    return MOCK_MAPPINGS
 
 
 @router.post(
@@ -101,4 +102,4 @@ async def save_mappings(request: SaveMappingsRequestDTO) -> MappingsResponseDTO:
     Raises:
         HTTPException: When operation fails
     """
-    raise HTTPException(status_code=501, detail="Not implemented")
+    return MOCK_MAPPINGS

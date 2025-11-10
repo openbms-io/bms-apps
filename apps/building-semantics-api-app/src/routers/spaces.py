@@ -1,6 +1,7 @@
 """ASHRAE 223P Spaces router."""
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 
+from ..data.mock_templates import MOCK_SPACES
 from ..dto.spaces_dto import CreateSpaceRequestDTO, SpaceInstanceDTO
 
 router = APIRouter(
@@ -48,7 +49,7 @@ async def list_spaces(
     Raises:
         HTTPException: When operation fails
     """
-    raise HTTPException(status_code=501, detail="Not implemented")
+    return MOCK_SPACES
 
 
 @router.post(
@@ -88,4 +89,4 @@ async def create_space(request: CreateSpaceRequestDTO) -> SpaceInstanceDTO:
     Raises:
         HTTPException: When operation fails
     """
-    raise HTTPException(status_code=501, detail="Not implemented")
+    return MOCK_SPACES[0]
