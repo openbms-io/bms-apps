@@ -25,10 +25,9 @@ interface SpaceComboBoxProps {
   onValueChange: (value: string) => void
   spaces: SpaceViewModel[]
   aiSuggestion?: {
-    value: string
+    id: string
     confidence: number
   }
-  autoFillHint?: string
   placeholder?: string
   id?: string
 }
@@ -38,7 +37,6 @@ export function SpaceComboBox({
   onValueChange,
   spaces,
   aiSuggestion,
-  autoFillHint,
   placeholder = 'Select or type space name...',
   id,
 }: SpaceComboBoxProps) {
@@ -106,7 +104,7 @@ export function SpaceComboBox({
               {filteredSpaces.length > 0 && (
                 <CommandGroup heading="Recently used spaces">
                   {filteredSpaces.map((space) => {
-                    const isAiSuggestion = aiSuggestion?.value === space.label
+                    const isAiSuggestion = aiSuggestion?.id === space.label
                     const isSelected = value === space.label
                     const pointCount = space.pointCount
 
@@ -155,12 +153,6 @@ export function SpaceComboBox({
           </Command>
         </PopoverContent>
       </Popover>
-      {autoFillHint && (
-        <div className="text-xs text-muted-foreground flex items-center gap-1">
-          <span>🔄</span>
-          <span>{autoFillHint}</span>
-        </div>
-      )}
     </div>
   )
 }

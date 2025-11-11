@@ -42,8 +42,37 @@ def test_post_mappings_returns_200_with_static_data() -> None:
     data = response.json()
     assert "projectId" in data
     assert "mappings" in data
-    # Verify endpoint ignores request body (Phase 1 behavior)
+    # Verify endpoint saves data to in-memory store (Phase 1 mock behavior)
     assert isinstance(data["mappings"], dict)
+
+
+def test_post_then_get_mappings_persists_data() -> None:
+    """Test POST saves data and GET retrieves the saved mappings."""
+    # Save mappings
+    save_request = {
+        "projectId": "test-proj-persistence",
+        "mappings": {
+            "point-abc-123": {
+                "equipmentTypeId": "urn:ashrae:223p:VAVReheatTerminalUnit",
+                "deviceTypeId": "urn:ashrae:223p:Damper",
+                "propertyId": "urn:ashrae:223p:DamperCommand",
+                "spaceId": None
+            }
+        }
+    }
+
+    post_response = client.post("/api/v1/223p/mappings", json=save_request)
+    assert post_response.status_code == 200
+
+    # Retrieve mappings
+    get_response = client.get("/api/v1/223p/mappings?projectId=test-proj-persistence")
+    assert get_response.status_code == 200
+
+    data = get_response.json()
+    assert data["projectId"] == "test-proj-persistence"
+    assert "point-abc-123" in data["mappings"]
+    assert data["mappings"]["point-abc-123"]["equipmentTypeId"] == "urn:ashrae:223p:VAVReheatTerminalUnit"
+    assert data["mappings"]["point-abc-123"]["deviceTypeId"] == "urn:ashrae:223p:Damper"
 
 
 def test_mappings_schemas_in_openapi() -> None:

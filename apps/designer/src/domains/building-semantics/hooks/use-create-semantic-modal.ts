@@ -7,8 +7,8 @@ import type {
 } from '../adapters/ashrae-223p/schemas'
 
 interface CreateSemanticModalState {
-  point: BACnetPointData | null
-  controller: BACnetControllerData | null
+  point: BACnetPointData | undefined
+  controller: BACnetControllerData | undefined
   isOpen: boolean
 }
 
@@ -18,8 +18,8 @@ export function useCreateSemanticModal(
   iotDeviceId: string | undefined
 ) {
   const [state, setState] = useState<CreateSemanticModalState>({
-    point: null,
-    controller: null,
+    point: undefined,
+    controller: undefined,
     isOpen: false,
   })
 
@@ -30,8 +30,8 @@ export function useCreateSemanticModal(
         return
       }
 
-      let foundPoint: ControllerPoint | null = null
-      let foundController: IotDeviceController | null = null
+      let foundPoint: ControllerPoint | undefined = undefined
+      let foundController: IotDeviceController | undefined = undefined
 
       for (const controller of controllers) {
         const points = pointsByController[controller.id] || []
@@ -75,8 +75,8 @@ export function useCreateSemanticModal(
 
   const closeSemanticModal = useCallback(() => {
     setState({
-      point: null,
-      controller: null,
+      point: undefined,
+      controller: undefined,
       isOpen: false,
     })
   }, [])

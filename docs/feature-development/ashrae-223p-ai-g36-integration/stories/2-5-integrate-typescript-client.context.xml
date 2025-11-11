@@ -24,7 +24,13 @@
       <task id="8">Remove obsolete hooks (device types, observable properties, individual CRUD)</task>
       <task id="9">Remove old Epic 1 service files (buildingmotif, space, mappings, validation)</task>
       <task id="10">Add error handling and loading states to all hooks</task>
-      <task id="11">Test end-to-end workflow (equipment → device → property → space → save)</task>
+      <task id="11">Update MappingPopupModal to use hierarchical templates with dynamic dropdown filtering</task>
+      <task id="12">Update SearchableSelect component to support disabled state and parent-dependent filtering</task>
+      <task id="13">Update useCreateEquipmentMapping view model to use bulk save pattern</task>
+      <task id="14">Update delete mapping functionality to use bulk save with filtered array</task>
+      <task id="15">Update type definitions and imports to use camelCase field names (equipmentTypeId, deviceTypeId, propertyId, spaceId)</task>
+      <task id="16">Update useSpacesViewModel to use FastAPI-backed hooks</task>
+      <task id="17">Test end-to-end workflow (equipment → device → property → space → save)</task>
     </tasks>
   </story>
 
@@ -53,6 +59,19 @@
     <criterion id="22">TypeScript compiles without errors</criterion>
     <criterion id="23">Designer app starts successfully</criterion>
     <criterion id="24">Phase 1 limitation documented (static mock data, no persistence)</criterion>
+    <criterion id="25">MappingPopupModal uses single hierarchical templates query instead of 3 separate queries</criterion>
+    <criterion id="26">Device dropdown dynamically filters based on selected equipment type (disabled until equipment selected)</criterion>
+    <criterion id="27">Property dropdown dynamically filters based on selected device type (disabled until device selected)</criterion>
+    <criterion id="28">Changing equipment type resets device and property selections</criterion>
+    <criterion id="29">Changing device type resets property selection</criterion>
+    <criterion id="30">mockValidationService removed - validation no longer needed with hierarchical filtering</criterion>
+    <criterion id="31">Create mapping uses bulk save pattern (adds to existing mappings array)</criterion>
+    <criterion id="32">Delete mapping uses bulk save pattern (removes from mappings array)</criterion>
+    <criterion id="33">SearchableSelect component supports disabled state with contextual placeholder</criterion>
+    <criterion id="34">useCreateEquipmentMapping view model uses bulk save mutation</criterion>
+    <criterion id="35">useSpacesViewModel uses FastAPI-backed hooks (useSpacesQuery, useCreateSpaceMutation)</criterion>
+    <criterion id="36">Type definitions updated to use camelCase field names matching generated client</criterion>
+    <criterion id="37">Container components (ControllersTreeContainer, FlowCanvasContainer) work without code changes</criterion>
   </acceptanceCriteria>
 
   <artifacts>
@@ -186,6 +205,41 @@
         <lines>all</lines>
         <reason>KEEP UNCHANGED - Designer-only service, not FastAPI-backed. No changes needed for this story.</reason>
       </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/mapping-popup-modal.tsx</path>
+        <kind>component</kind>
+        <symbol>MappingPopupModal</symbol>
+        <lines>27-30, 77-79, 83, 113-123, 163-184</lines>
+        <reason>PRIMARY UI COMPONENT - Replace 3 separate queries with 1 hierarchical query. Add dynamic dropdown filtering. Remove validation service. Update to use bulk save for create/delete operations.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/searchable-select.tsx</path>
+        <kind>component</kind>
+        <symbol>SearchableSelect</symbol>
+        <lines>all</lines>
+        <reason>UPDATE - Add disabled state support for parent-dependent filtering. Show contextual placeholder when parent not selected. Clear selection when options change.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/view-models/use-create-equipment-mapping.ts</path>
+        <kind>view-model</kind>
+        <symbol>useCreateEquipmentMapping</symbol>
+        <lines>1, 14, 105-109</lines>
+        <reason>UPDATE - Replace individual createMappingMutation with bulk save pattern. Fetch current mappings, add new one, save entire array.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/view-models/use-spaces-view-model.ts</path>
+        <kind>view-model</kind>
+        <symbol>useSpacesViewModel</symbol>
+        <lines>all</lines>
+        <reason>UPDATE - Replace spaces223pApi with FastAPI-backed useSpacesQuery and useCreateSpaceMutation hooks.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/adapters/ashrae-223p/schemas/index.ts</path>
+        <kind>type-definitions</kind>
+        <symbol>SemanticEquipment, SemanticMapping</symbol>
+        <lines>all</lines>
+        <reason>UPDATE - Change field names to camelCase: equipmentType → equipmentTypeId, deviceType → deviceTypeId, observableProperty → propertyId, physicalSpaceId → spaceId.</reason>
+      </artifact>
     </code>
     <dependencies>
       <node>
@@ -214,6 +268,12 @@
     <constraint>Project-relative paths only in context files - strip /Users/amol/Documents/ai-projects/bms-supervisor-controller prefix</constraint>
     <constraint>Follow TDD principle - write tests first, then implement (from CLAUDE.md)</constraint>
     <constraint>No comments unless explaining WHY (from CLAUDE.md)</constraint>
+    <constraint>Dynamic dropdown filtering - device dropdown disabled until equipment selected, property dropdown disabled until device selected</constraint>
+    <constraint>Reset child selections when parent changes - changing equipment type resets device and property, changing device resets property</constraint>
+    <constraint>Remove mockValidationService - hierarchical template filtering prevents invalid combinations</constraint>
+    <constraint>Bulk save for all mutations - create adds to array, delete filters from array, both use single saveMappings mutation</constraint>
+    <constraint>UI components must handle loading and error states from React Query hooks</constraint>
+    <constraint>Container components remain unchanged - hook interfaces preserved even though implementation changes</constraint>
   </constraints>
   <interfaces>
     <interface>
@@ -260,6 +320,13 @@
       <test id="7" maps-to="AC-18,AC-19">Test camelCase serialization and URN identifiers using 'id' field.</test>
       <test id="8" maps-to="AC-22,AC-23">Integration test: start Designer app, verify no TypeScript errors, verify app starts successfully.</test>
       <test id="9" maps-to="AC-20,AC-21">End-to-end test: complete mapping workflow, verify no console errors, verify API calls to localhost:8000.</test>
+      <test id="10" maps-to="UI">Test MappingPopupModal hierarchical filtering: select equipment type → device dropdown enables with filtered options → select device → property dropdown enables with filtered options.</test>
+      <test id="11" maps-to="UI">Test dropdown reset behavior: change equipment type → device and property reset to empty → change device → property resets to empty.</test>
+      <test id="12" maps-to="UI">Test SearchableSelect disabled state: equipment not selected → device dropdown disabled with placeholder "Select equipment type first...".</test>
+      <test id="13" maps-to="UI">Test bulk save on create: open popup, fill fields, confirm → verify API called with current mappings + new mapping array.</test>
+      <test id="14" maps-to="UI">Test bulk save on delete: open edit popup, delete mapping → verify API called with filtered mappings array (without deleted item).</test>
+      <test id="15" maps-to="UI">Test mockValidationService removed: verify no validation service calls, hierarchical filtering prevents invalid combinations.</test>
+      <test id="16" maps-to="UI">Test container components unchanged: verify ControllersTreeContainer and FlowCanvasContainer still work without code changes.</test>
     </ideas>
   </tests>
 </story-context>

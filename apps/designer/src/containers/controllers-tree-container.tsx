@@ -20,7 +20,7 @@ import { useAllControllerPoints } from '@/hooks/use-all-controller-points'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-client'
 import { AddControllerDialog } from '@/components/modals/add-controller-dialog'
-import { useMappingsQuery } from '@/domains/building-semantics/api/queries/use-mappings-query'
+import { useMappingsViewModel } from '@/domains/building-semantics/view-models/use-mappings-view-model'
 import { MappingPopupModal } from '@/domains/building-semantics/components'
 import type {
   BACnetPointData,
@@ -139,7 +139,9 @@ export function ControllersTreeContainer({
     controllerIds
   )
 
-  const { data: semanticMappings = new Map() } = useMappingsQuery(projectId)
+  const { data: semanticMappings = new Map() } = useMappingsViewModel({
+    projectId,
+  })
 
   const { editState, openEdit, closeEdit } = useEditMapping(
     projectId,

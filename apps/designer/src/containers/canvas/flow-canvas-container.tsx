@@ -3,7 +3,7 @@
 import { useRef, useCallback } from 'react'
 import { FlowCanvas } from '@/components/canvas/flow-canvas'
 import { MappingPopupModal } from '@/domains/building-semantics/components'
-import { useMappingsQuery } from '@/domains/building-semantics/api/queries/use-mappings-query'
+import { useMappingsViewModel } from '@/domains/building-semantics/view-models/use-mappings-view-model'
 import { useCanvasOrchestration } from '@/hooks/use-canvas-orchestration'
 import { useFlowStore } from '@/store/use-flow-store'
 import { useProject } from '@/hooks/use-projects'
@@ -47,7 +47,9 @@ export function FlowCanvasContainer({
     controllerIds
   )
 
-  const { data: semanticMappings = new Map() } = useMappingsQuery(projectId)
+  const { data: semanticMappings = new Map() } = useMappingsViewModel({
+    projectId,
+  })
 
   const onConnect = useCallback(
     (params: Connection) => {

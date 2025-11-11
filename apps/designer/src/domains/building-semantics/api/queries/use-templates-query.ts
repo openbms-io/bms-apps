@@ -1,27 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import { mockBuildingMOTIFService } from '../../services'
-import { semanticQueryKeys } from './query-keys'
+import { getTemplatesApiV1223pTemplatesGet } from '../generated'
 
-export function useEquipmentTypesQuery() {
+export function useTemplatesQuery() {
   return useQuery({
-    queryKey: semanticQueryKeys.templates.equipmentTypes(),
-    queryFn: () => mockBuildingMOTIFService.getTemplates(),
-    staleTime: Infinity,
-  })
-}
-
-export function useDeviceTypesQuery() {
-  return useQuery({
-    queryKey: semanticQueryKeys.templates.deviceTypes(),
-    queryFn: () => mockBuildingMOTIFService.getDeviceTypes(),
-    staleTime: Infinity,
-  })
-}
-
-export function useObservablePropertiesQuery() {
-  return useQuery({
-    queryKey: semanticQueryKeys.templates.observableProperties(),
-    queryFn: () => mockBuildingMOTIFService.getObservableProperties(),
-    staleTime: Infinity,
+    queryKey: ['templates'],
+    queryFn: async () => {
+      const response = await getTemplatesApiV1223pTemplatesGet()
+      return response.data
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 3,
   })
 }

@@ -1,8 +1,5 @@
 import { z } from 'zod'
 import {
-  SystemTypeSchema,
-  DeviceTypeSchema,
-  ObservablePropertySchema,
   SpaceTypeSchema,
   ConnectionPointTypeSchema,
   ValidationErrorCodeSchema,
@@ -114,34 +111,6 @@ export interface BACnetControllerData {
 }
 
 /**
- * Space DTO
- *
- * Represents a physical or logical space in the building.
- * Spaces group multiple points together (e.g., all points in "Room 201").
- *
- * @example
- * {
- *   id: "urn:bms:PhysicalSpace:space-550e8400-e29b-41d4-a716-446655440000",
- *   rdfsLabel: "Room 201",
- *   spaceType: "PhysicalSpace",
- *   pointIds: ["point-1", "point-2", "point-3"],
- *   createdAt: new Date("2025-11-02")
- * }
- *
- * Epic 1: Client generates UUID, stores in sessionStorage
- * Epic 3: Server generates URN, returns in API response
- */
-export const SpaceDTOSchema = z.object({
-  id: z.string(),
-  rdfsLabel: z.string(),
-  spaceType: SpaceTypeSchema,
-  pointIds: z.array(z.string()),
-  createdAt: z.date(),
-})
-
-export type SpaceDTO = z.infer<typeof SpaceDTOSchema>
-
-/**
  * Equipment 223P DTO
  *
  * Complete 223P semantic mapping for a BACnet point.
@@ -172,11 +141,11 @@ export type SpaceDTO = z.infer<typeof SpaceDTOSchema>
  * Epic 3: May become nested graph structure (RDF/JSON-LD)
  */
 export const SemanticEquipmentSchema = z.object({
-  equipmentType: SystemTypeSchema,
+  equipmentTypeId: z.string(),
   physicalSpaceId: z.string().optional(),
   domainSpaceIds: z.array(z.string()).optional(),
-  deviceType: DeviceTypeSchema,
-  observableProperty: ObservablePropertySchema,
+  deviceTypeId: z.string(),
+  propertyId: z.string(),
   propertyType: z.enum(['quantifiable', 'enumerated']),
   connectionPoints: z.array(ConnectionPointTypeSchema).optional(),
   externalReference: BACnetExternalReferenceDTOSchema,

@@ -1,8 +1,8 @@
 export interface EquipmentViewModel {
   pointName: string
-  equipmentType: string
-  deviceType: string
-  observableProperty: string
+  equipmentTypeId: string
+  deviceTypeId: string
+  propertyId: string
   propertyType: 'quantifiable' | 'enumerated'
   physicalSpaceLabel?: string
   domainSpaceLabels?: string[]
@@ -18,18 +18,18 @@ export interface SpaceViewModel {
 }
 
 export interface TemplatesViewModel {
-  equipmentTypes: string[]
-  deviceTypes: string[]
-  observableProperties: string[]
+  equipmentTypeIds: string[]
+  deviceTypeIds: string[]
+  propertyIds: string[]
   isLoading: boolean
 }
 
 export interface CreateMappingParams {
   projectId: string
   pointId: string
-  equipmentType: string
-  deviceType: string
-  observableProperty: string
+  equipmentTypeId: string
+  deviceTypeId: string
+  propertyId: string
   propertyType: 'quantifiable' | 'enumerated'
   physicalSpaceName?: string
   domainSpaceNames?: string[]

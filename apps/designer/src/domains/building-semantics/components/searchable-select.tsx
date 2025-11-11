@@ -19,18 +19,23 @@ import {
 } from '@/components/ui/popover'
 import { ConfidenceIndicator } from './confidence-indicator'
 
+interface SearchableSelectOption {
+  value: string
+  label: string
+}
+
 interface SearchableSelectProps {
   value: string
   onValueChange: (value: string) => void
-  options: string[]
+  options: SearchableSelectOption[]
   aiSuggestion?: {
-    value: string
+    id: string
     confidence: number
   }
-  autoFillHint?: string
   placeholder?: string
   emptyText?: string
   id?: string
+  disabled?: boolean
 }
 
 export function SearchableSelect({
@@ -38,12 +43,14 @@ export function SearchableSelect({
   onValueChange,
   options,
   aiSuggestion,
-  autoFillHint,
+  disabled = false,
   placeholder = 'Select...',
   emptyText = 'No results found.',
   id,
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false)
+  const selectedOption = options.find((opt) => opt.value === value)
+  const displayValue = selectedOption?.label || placeholder
 
   return (
     <div className="space-y-1">
@@ -55,8 +62,9 @@ export function SearchableSelect({
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between"
+            disabled={disabled}
           >
-            {value || placeholder}
+            {displayValue}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -73,14 +81,14 @@ export function SearchableSelect({
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => {
-                  const isAiSuggestion = aiSuggestion?.value === option
-                  const isSelected = value === option
+                  const isAiSuggestion = aiSuggestion?.id === option.value
+                  const isSelected = value === option.value
                   return (
                     <CommandItem
-                      key={option}
-                      value={option}
-                      onSelect={(currentValue) => {
-                        onValueChange(currentValue)
+                      key={option.value}
+                      value={option.label}
+                      onSelect={() => {
+                        onValueChange(option.value)
                         setOpen(false)
                       }}
                       className={cn(isSelected && 'bg-accent')}
@@ -91,7 +99,7 @@ export function SearchableSelect({
                           isSelected ? 'opacity-100' : 'opacity-0'
                         )}
                       />
-                      <span className="flex-1">{option}</span>
+                      <span className="flex-1">{option.label}</span>
                       {isAiSuggestion && aiSuggestion && (
                         <ConfidenceIndicator
                           confidence={aiSuggestion.confidence}
@@ -106,12 +114,6 @@ export function SearchableSelect({
           </Command>
         </PopoverContent>
       </Popover>
-      {autoFillHint && (
-        <div className="text-xs text-muted-foreground flex items-center gap-1">
-          <span>🔄</span>
-          <span>{autoFillHint}</span>
-        </div>
-      )}
     </div>
   )
 }

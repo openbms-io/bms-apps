@@ -1,10 +1,5 @@
 import type { IAISuggestionService } from './interfaces/ai-suggestion'
-import type {
-  BACnetPointData,
-  SystemType,
-  DeviceType,
-  ObservableProperty,
-} from '../schemas'
+import type { BACnetPointData } from '../schemas'
 import type { Equipment223PRecommendation } from '@/lib/ai'
 
 export class MockAISuggestionService implements IAISuggestionService {
@@ -19,61 +14,63 @@ export class MockAISuggestionService implements IAISuggestionService {
     const nameLower = pointName.toLowerCase()
     const objectType = point.objectType.toLowerCase()
 
-    let equipmentType: SystemType = 'VAV Reheat Terminal Unit'
-    let deviceType: DeviceType = 'Sensor'
-    let observableProperty: ObservableProperty = 'air-temperature'
+    let equipmentType = 'urn:ashrae:223p:VAVReheatTerminalUnit'
+    let deviceType = 'urn:ashrae:223p:TemperatureSensor'
+    let observableProperty = 'urn:ashrae:223p:AirTemperature'
     let equipmentConfidence = 85
     let deviceConfidence = 90
     let propertyConfidence = 88
 
     if (nameLower.includes('vav')) {
-      equipmentType = 'VAV Reheat Terminal Unit'
+      equipmentType = 'urn:ashrae:223p:VAVReheatTerminalUnit'
       equipmentConfidence = 94
 
       if (nameLower.includes('temp')) {
-        deviceType = 'Sensor'
-        observableProperty = 'air-temperature'
+        deviceType = 'urn:ashrae:223p:TemperatureSensor'
+        observableProperty = 'urn:ashrae:223p:AirTemperature'
         propertyConfidence = 92
       } else if (nameLower.includes('damper')) {
-        deviceType = 'Damper'
-        observableProperty = 'static-pressure'
+        deviceType = 'urn:ashrae:223p:Damper'
+        observableProperty = 'urn:ashrae:223p:DamperCommand'
         deviceConfidence = 93
         propertyConfidence = 91
       }
     } else if (nameLower.includes('ahu')) {
-      equipmentType = 'Makeup Air Unit'
+      equipmentType = 'urn:ashrae:223p:AirHandlingUnit'
       equipmentConfidence = 96
 
       if (nameLower.includes('supply')) {
-        deviceType = 'Sensor'
-        observableProperty = 'air-temperature'
+        deviceType = 'urn:ashrae:223p:TemperatureSensor'
+        observableProperty = 'urn:ashrae:223p:AirTemperature'
       } else if (nameLower.includes('fan')) {
-        deviceType = 'Fan'
-        observableProperty = 'vfd-frequency'
+        deviceType = 'urn:ashrae:223p:Fan'
+        observableProperty = 'urn:ashrae:223p:VFDSpeed'
       }
     }
 
     return {
-      equipmentType: {
-        value: equipmentType,
+      equipmentTypeId: {
+        id: equipmentType,
         confidence: equipmentConfidence,
         reasoning: `Pattern match on "${pointName}"`,
         alternatives: [
-          { value: 'Makeup Air Unit', confidence: 75 },
-          { value: 'Exhaust Air Unit', confidence: 65 },
+          { id: 'urn:ashrae:223p:AirHandlingUnit', confidence: 75 },
+          { id: 'urn:ashrae:223p:ExhaustAirUnit', confidence: 65 },
         ],
       },
-      deviceType: {
-        value: deviceType,
+      deviceTypeId: {
+        id: deviceType,
         confidence: deviceConfidence,
         reasoning: `Based on object type "${objectType}" and name pattern`,
-        alternatives: [{ value: 'Damper', confidence: 70 }],
+        alternatives: [{ id: 'urn:ashrae:223p:Damper', confidence: 70 }],
       },
-      observableProperty: {
-        value: observableProperty,
+      propertyId: {
+        id: observableProperty,
         confidence: propertyConfidence,
         reasoning: `Inferred from point name and device type`,
-        alternatives: [{ value: 'relative-humidity', confidence: 60 }],
+        alternatives: [
+          { id: 'urn:ashrae:223p:RelativeHumidity', confidence: 60 },
+        ],
       },
       overallConfidence: Math.round(
         (equipmentConfidence + deviceConfidence + propertyConfidence) / 3

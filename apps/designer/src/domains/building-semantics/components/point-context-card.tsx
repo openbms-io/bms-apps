@@ -7,7 +7,7 @@ import type {
 
 interface PointContextCardProps {
   point: BACnetPointData
-  controller?: BACnetControllerData | null
+  controller?: BACnetControllerData | undefined
 }
 
 export function PointContextCard({ point, controller }: PointContextCardProps) {

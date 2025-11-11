@@ -67,5 +67,5 @@ development_status:
   2-2-design-openapi-specification: done
   2-3-generate-typescript-client: done
   2-4-implement-mock-endpoints: done
-  2-5-integrate-typescript-client: ready-for-dev
+  2-5-integrate-typescript-client: review
   epic-2-retrospective: optional

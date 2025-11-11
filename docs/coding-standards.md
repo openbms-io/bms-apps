@@ -162,11 +162,6 @@ interface User {
   name: string;
 }
 
-// Use explicit return types
-function getUser(id: string): User | undefined {
-  return undefined;
-}
-
 // Avoid any - use specific types
 function processData({ data }: { data: DataType }): void {
   // Type guard

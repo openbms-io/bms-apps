@@ -1,122 +1,83 @@
-import { useCreateMappingMutation } from '../api/queries/use-mappings-query'
-import {
-  useCreateSpaceMutation,
-  useAddPointToSpaceMutation,
-} from '../api/queries/use-spaces-query'
-import { spaces223pApi } from '../api/spaces.api'
+import { useSaveMappingsMutation } from '../api/mutations/use-save-mappings-mutation'
+import { useMappingsViewModel } from './use-mappings-view-model'
+import { useCreateSpaceMutation } from '../api/mutations/use-create-space-mutation'
 import type { CreateMappingParams } from './types'
 import {
   SemanticEquipmentSchema,
   type SemanticEquipment,
 } from '../adapters/ashrae-223p/schemas'
+import type { SemanticMappingDto } from '../api/generated'
 
-export function useCreateEquipmentMapping() {
-  const createMapping = useCreateMappingMutation()
+export function useCreateEquipmentMapping(projectId: string | undefined) {
+  const saveMappings = useSaveMappingsMutation()
+  const { data: currentMappings } = useMappingsViewModel({ projectId })
   const createSpace = useCreateSpaceMutation()
-  const addPointToSpace = useAddPointToSpaceMutation()
 
   const execute = async (
     params: CreateMappingParams
   ): Promise<SemanticEquipment> => {
     let physicalSpaceId: string | undefined
-    const domainSpaceIds: string[] = []
 
     if (params.physicalSpaceName?.trim()) {
-      const existingSpace = await spaces223pApi.searchSpace(
-        params.projectId,
-        params.physicalSpaceName
-      )
-
-      if (existingSpace) {
-        physicalSpaceId = existingSpace.id
-        await addPointToSpace.mutateAsync({
-          projectId: params.projectId,
-          spaceId: existingSpace.id,
-          pointId: params.pointId,
-        })
-      } else {
-        const newSpace = await createSpace.mutateAsync({
-          projectId: params.projectId,
-          rdfsLabel: params.physicalSpaceName.trim(),
-          spaceType: 'PhysicalSpace',
-        })
-        physicalSpaceId = newSpace.id
-        await addPointToSpace.mutateAsync({
-          projectId: params.projectId,
-          spaceId: newSpace.id,
-          pointId: params.pointId,
-        })
-      }
-    }
-
-    if (params.domainSpaceNames) {
-      for (const domainSpaceName of params.domainSpaceNames) {
-        if (domainSpaceName.trim()) {
-          const existingSpace = await spaces223pApi.searchSpace(
-            params.projectId,
-            domainSpaceName
-          )
-
-          if (existingSpace) {
-            domainSpaceIds.push(existingSpace.id)
-            await addPointToSpace.mutateAsync({
-              projectId: params.projectId,
-              spaceId: existingSpace.id,
-              pointId: params.pointId,
-            })
-          } else {
-            const newSpace = await createSpace.mutateAsync({
-              projectId: params.projectId,
-              rdfsLabel: domainSpaceName.trim(),
-              spaceType: 'DomainSpace',
-            })
-            domainSpaceIds.push(newSpace.id)
-            await addPointToSpace.mutateAsync({
-              projectId: params.projectId,
-              spaceId: newSpace.id,
-              pointId: params.pointId,
-            })
-          }
-        }
-      }
+      const newSpace = await createSpace.mutateAsync({
+        projectId: params.projectId,
+        label: params.physicalSpaceName.trim(),
+        spaceTypeId: 'urn:223p:PhysicalSpace',
+      })
+      physicalSpaceId = newSpace?.id
     }
 
     const mappingInput = {
-      equipmentType: params.equipmentType as never,
+      equipmentTypeId: params.equipmentTypeId,
       physicalSpaceId,
-      domainSpaceIds: domainSpaceIds.length > 0 ? domainSpaceIds : undefined,
-      deviceType: params.deviceType as never,
-      observableProperty: params.observableProperty as never,
+      domainSpaceIds: [],
+      deviceTypeId: params.deviceTypeId,
+      propertyId: params.propertyId,
       propertyType: params.propertyType,
       externalReference: {
+        compositeKey: params.pointId,
         deviceIdentifier: params.externalReference.deviceIdentifier,
-        deviceName: params.externalReference.deviceName,
         objectIdentifier: params.externalReference.objectIdentifier,
         objectName: params.externalReference.objectName,
         propertyIdentifier: params.externalReference.propertyIdentifier,
-        propertyArrayIndex: params.externalReference.propertyArrayIndex,
-        priorityForWriting: params.externalReference.priorityForWriting,
       },
       schemaVersion: '223p-2023' as const,
     }
 
     const mapping = SemanticEquipmentSchema.parse(mappingInput)
 
-    const result = await createMapping.mutateAsync({
+    const newMappingDto: SemanticMappingDto = {
+      equipmentTypeId: params.equipmentTypeId,
+      deviceTypeId: params.deviceTypeId,
+      propertyId: params.propertyId,
+      spaceId: physicalSpaceId ?? null,
+    }
+
+    const currentMappingsRecord: Record<string, SemanticMappingDto> = {}
+    if (currentMappings) {
+      currentMappings.forEach((value, key) => {
+        currentMappingsRecord[key] = {
+          equipmentTypeId: value.equipmentTypeId,
+          deviceTypeId: value.deviceTypeId,
+          propertyId: value.propertyId,
+          spaceId: value.physicalSpaceId ?? null,
+        }
+      })
+    }
+
+    currentMappingsRecord[params.pointId] = newMappingDto
+
+    await saveMappings.mutateAsync({
       projectId: params.projectId,
-      pointId: params.pointId,
-      mapping,
+      mappings: currentMappingsRecord,
     })
 
-    return result
+    return mapping
   }
 
   return {
     execute,
-    isLoading:
-      createMapping.isPending ||
-      createSpace.isPending ||
-      addPointToSpace.isPending,
-    error: createMapping.error || createSpace.error || addPointToSpace.error,
+    isLoading: saveMappings.isPending || createSpace.isPending,
+    error: saveMappings.error || createSpace.error,
   }
 }

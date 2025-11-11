@@ -9,6 +9,10 @@ router = APIRouter(
     tags=["ASHRAE 223P Mappings"],
 )
 
+# In-memory storage for mappings data (Phase 1 mock behavior)
+# Dictionary keyed by projectId for multi-project support
+_MAPPINGS_STORE: dict[str, MappingsResponseDTO] = {}
+
 
 @router.get(
     "",
@@ -52,7 +56,10 @@ async def get_mappings(
     Raises:
         HTTPException: When operation fails
     """
-    return MOCK_MAPPINGS
+    return _MAPPINGS_STORE.get(
+        project_id,
+        MappingsResponseDTO(projectId=project_id, mappings={})
+    )
 
 
 @router.post(
@@ -102,4 +109,9 @@ async def save_mappings(request: SaveMappingsRequestDTO) -> MappingsResponseDTO:
     Raises:
         HTTPException: When operation fails
     """
-    return MOCK_MAPPINGS
+    response = MappingsResponseDTO(
+        projectId=request.project_id,
+        mappings=request.mappings
+    )
+    _MAPPINGS_STORE[request.project_id] = response
+    return response

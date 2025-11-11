@@ -9,9 +9,9 @@ import type {
 import { createCompositeKey } from '../utils/bacnet-keys'
 
 interface EditMappingState {
-  point: BACnetPointData | null
-  controller: BACnetControllerData | null
-  mapping: SemanticEquipment | null
+  point: BACnetPointData | undefined
+  controller: BACnetControllerData | undefined
+  mapping: SemanticEquipment | undefined
   isOpen: boolean
 }
 
@@ -23,9 +23,9 @@ export function useEditMapping(
   iotDeviceId: string | undefined
 ) {
   const [editState, setEditState] = useState<EditMappingState>({
-    point: null,
-    controller: null,
-    mapping: null,
+    point: undefined,
+    controller: undefined,
+    mapping: undefined,
     isOpen: false,
   })
 
@@ -36,8 +36,8 @@ export function useEditMapping(
         return
       }
 
-      let foundPoint: ControllerPoint | null = null
-      let foundController: IotDeviceController | null = null
+      let foundPoint: ControllerPoint | undefined = undefined
+      let foundController: IotDeviceController | undefined = undefined
 
       for (const controller of controllers) {
         const points = pointsByController[controller.id] || []
@@ -94,9 +94,9 @@ export function useEditMapping(
 
   const closeEdit = useCallback(() => {
     setEditState({
-      point: null,
-      controller: null,
-      mapping: null,
+      point: undefined,
+      controller: undefined,
+      mapping: undefined,
       isOpen: false,
     })
   }, [])
