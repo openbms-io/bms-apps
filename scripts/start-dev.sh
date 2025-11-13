@@ -85,10 +85,10 @@ start_bms_iot_app() {
 
   if [ "$log_level" = "DEBUG" ] || [ "$log_level" = "ALL" ]; then
     # Show all logs (DEBUG and above)
-    PYTHONPATH=.:apps/bms-iot-app python -m src.cli run-main 2>&1 | sed 's/^/[BMS-IoT] /' &
+    pnpm bms-iot:run 2>&1 | sed 's/^/[BMS-IoT] /' &
   else
     # Show only WARNING, ERROR, CRITICAL (with line buffering)
-    PYTHONPATH=.:apps/bms-iot-app python -m src.cli run-main 2>&1 |
+    pnpm bms-iot:run 2>&1 |
       grep --line-buffered -E "(WARNING|ERROR|CRITICAL)" | sed 's/^/[BMS-IoT] /' &
   fi
 }
@@ -98,7 +98,7 @@ start_designer_app() {
 }
 
 start_building_semantics_api() {
-  ROOT_PATH=/building-semantics PYTHONPATH=.:apps/building-semantics-api-app uvicorn src.main:app --reload --port 8000 2>&1 | sed 's/^/[Semantics-API] /' &
+  pnpm building-semantics:run 2>&1 | sed 's/^/[Semantics-API] /' &
 }
 
 # --- Shutdown Management ---

@@ -11,7 +11,8 @@ def test_settings_default_values() -> None:
     assert settings.api_host == "0.0.0.0"
     assert settings.api_port == 8000
     assert settings.debug is True
-    assert settings.buildingmotif_db_path == "buildingmotif.db"
+    assert settings.buildingmotif_db_path == "apps/building-semantics-api-app/data/buildingmotif.db"
+    assert settings.buildingmotif_templates_path == "apps/building-semantics-api-app/data/libraries/ashrae-223p-nrel"
     assert settings.cors_origins == ["http://localhost:3003"]
 
 

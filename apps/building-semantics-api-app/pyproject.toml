@@ -7,22 +7,20 @@ requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
-    "pydantic>=2.5.0",
+    "pydantic==2.5.3",
     "pydantic-settings>=2.0.0",
     "python-dotenv>=1.0.0",
-    "loguru>=0.7.0",
+    "loguru==0.7.3",
     "python-multipart>=0.0.6",
-]
-
-[project.optional-dependencies]
-buildingmotif = [
     "buildingmotif>=0.4.0",
     "sqlalchemy<2.0.0,>=1.4.44",
 ]
+
+[project.optional-dependencies]
 test = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
-    "httpx>=0.25.0",
+    "httpx==0.25.2",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.1",
 ]

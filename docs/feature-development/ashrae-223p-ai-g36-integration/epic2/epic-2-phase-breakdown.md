@@ -202,25 +202,17 @@ apps/designer/src/domains/building-semantics/
 
 **Scope:**
 
-- Define 14 endpoints across 4 services:
-  - **Templates Service** (3 endpoints):
-    - GET `/api/223p/templates/systems`
-    - GET `/api/223p/templates/devices`
-    - GET `/api/223p/templates/properties`
-  - **Spaces Service** (4 endpoints):
-    - GET `/api/223p/spaces?projectId={id}`
-    - POST `/api/223p/spaces`
-    - GET `/api/223p/spaces/search?label={label}`
-    - POST `/api/223p/spaces/{id}/points`
-  - **Mappings Service** (6 endpoints):
-    - GET `/api/223p/mappings?projectId={id}`
-    - GET `/api/223p/mappings/{compositeKey}`
-    - POST `/api/223p/mappings`
-    - PUT `/api/223p/mappings/{compositeKey}`
-    - DELETE `/api/223p/mappings/{compositeKey}`
-    - DELETE `/api/223p/mappings?projectId={id}` (clearAll)
-  - **Validation Service** (1 endpoint):
-    - POST `/api/223p/validate`
+- Define 5 endpoints across 3 services (simplified bulk operations approach):
+  - **Templates Service** (1 endpoint):
+    - GET `/api/v1/223p/templates` - Returns hierarchical structure with systems, devices, properties, and space types all nested (single response, no multiple lookups)
+  - **Spaces Service** (2 endpoints):
+    - GET `/api/v1/223p/spaces?projectId={id}` - List all spaces for project
+    - POST `/api/v1/223p/spaces` - Create new space instance
+  - **Mappings Service** (2 endpoints):
+    - GET `/api/v1/223p/mappings?projectId={id}` - Get all mappings for project (bulk read)
+    - POST `/api/v1/223p/mappings` - Bulk save/replace all mappings (complete replacement operation)
+  - **Validation Service** (0 endpoints):
+    - Router stub only - implementation deferred to Phase 2
 - Create Pydantic request/response models matching Epic 1 DTOs
 - Add OpenAPI tags for documentation
 - Add descriptions and examples
@@ -233,11 +225,13 @@ apps/designer/src/domains/building-semantics/
 
 **Acceptance Criteria:**
 
-- [ ] All 14 endpoints defined in OpenAPI spec
+- [ ] All 5 endpoints defined in OpenAPI spec
+- [ ] Hierarchical templates response structure documented
+- [ ] Bulk operations pattern documented for mappings
 - [ ] Request/response schemas match Epic 1 DTO structure
 - [ ] OpenAPI spec validates with `openapi-generator validate`
 - [ ] Swagger UI displays all endpoints with documentation
-- [ ] Examples included for complex schemas
+- [ ] Examples included for complex schemas (especially nested templates)
 
 **Effort Estimate:** ~6 hours
 
@@ -261,7 +255,9 @@ apps/designer/src/domains/building-semantics/
 **Acceptance Criteria:**
 
 - [ ] TypeScript client generated from OpenAPI spec
-- [ ] All 14 endpoints available as typed functions
+- [ ] All 5 endpoints available as typed functions
+- [ ] Hierarchical templates types properly nested
+- [ ] Bulk operations types for mappings
 - [ ] Request/response types generated
 - [ ] TypeScript compiler validates types
 - [ ] Generation script in Designer package.json
@@ -276,14 +272,19 @@ apps/designer/src/domains/building-semantics/
 
 **Scope:**
 
-- Implement 14 endpoints returning static mock data:
-  - **Templates endpoints**: Return hardcoded ASHRAE 223P templates
-    - 8 systems (vav-reheat, chilled-water-system, etc.)
-    - 18 devices (matching Epic 1 enum)
-    - 24 properties (matching Epic 1 enum)
-  - **Spaces endpoints**: Use in-memory dictionary for CRUD
-  - **Mappings endpoints**: Use in-memory dictionary for CRUD
-  - **Validation endpoint**: Return mock validation results
+- Implement 5 endpoints returning static mock data:
+  - **Templates endpoint**: Return hierarchical structure with nested systems, devices, properties, and space types
+    - Complete ASHRAE 223P template hierarchy in single response
+    - Systems with embedded devices
+    - Devices with embedded properties
+    - Space types list
+  - **Spaces endpoints**: Use in-memory dictionary for create/list operations
+    - List spaces for project
+    - Create space instance
+  - **Mappings endpoints**: Use in-memory dictionary for bulk operations
+    - Get all mappings (keyed by point ID)
+    - Bulk save/replace all mappings (complete replacement)
+  - **Validation endpoint**: Router stub only (no implementation)
 - No BuildingMOTIF SDK integration
 - Focus on request/response format matching Epic 1
 - Add basic error handling (404, 422, 500)
@@ -295,15 +296,16 @@ apps/designer/src/domains/building-semantics/
 
 **Acceptance Criteria:**
 
-- [ ] All 14 endpoints implemented
+- [ ] All 5 endpoints implemented (validation is stub only)
+- [ ] Hierarchical templates structure properly nested
 - [ ] Mock data matches Epic 1 structure
 - [ ] Endpoints respond with correct HTTP status codes
-- [ ] CRUD operations work in-memory (spaces, mappings)
-- [ ] Validation endpoint returns mock SHACL results
+- [ ] Bulk operations work in-memory (mappings)
+- [ ] Create/list operations work in-memory (spaces)
 - [ ] Integration tests pass (httpx test client)
 - [ ] Swagger UI can call all endpoints
 
-**Effort Estimate:** ~8 hours
+**Effort Estimate:** ~6 hours (reduced from ~8h due to fewer endpoints)
 
 ---
 
@@ -315,27 +317,27 @@ apps/designer/src/domains/building-semantics/
   - `Templates223PApiService` implements `I223PTemplatesService`
   - `Spaces223PApiService` implements `I223PSpacesService`
   - `Mappings223PApiService` implements `I223PMappingsService`
-  - `Validation223PApiService` implements `I223PValidationService`
-- Update 7 React Query hooks to use new API services:
-  - `useTemplatesQuery()`
-  - `useMappingsQuery()`
-  - `useCreateMappingMutation()`
-  - `useUpdateMappingMutation()`
-  - `useDeleteMappingMutation()`
-  - `useSpacesQuery()`
-  - `useCreateSpaceMutation()`
+  - (Validation deferred to Phase 2)
+- Update React Query hooks to use new API services:
+  - `useTemplatesQuery()` - single hierarchical call
+  - `useMappingsQuery()` - bulk read
+  - `useSaveMappingsMutation()` - bulk save/replace (simplified from individual CRUD)
+  - `useSpacesQuery()` - list spaces
+  - `useCreateSpaceMutation()` - create space
 - Keep `useAISuggestionQuery()` unchanged (Designer-only)
 - Update service registration to use API implementations instead of mock
 - Remove sessionStorage usage (mappings, spaces)
+- Adapt UI to bulk operations pattern for mappings
 - Test all Epic 1 UI flows with FastAPI backend
 
 **Acceptance Criteria:**
 
-- [ ] 4 API service classes created (implement interfaces)
-- [ ] 7 React Query hooks updated
+- [ ] 3 API service classes created (templates, spaces, mappings)
+- [ ] 5 React Query hooks updated (templates, mappings bulk, spaces)
+- [ ] Bulk operations pattern working for mappings (replace individual CRUD)
 - [ ] sessionStorage removed (mappings, spaces)
 - [ ] All Epic 1 UI functionality works with FastAPI
-- [ ] No UI component changes
+- [ ] No UI component changes (or minimal to support bulk operations)
 - [ ] Epic 1 tests pass (component tests)
 - [ ] Manual testing: mapping workflow end-to-end
 
@@ -348,11 +350,13 @@ apps/designer/src/domains/building-semantics/
 **Overall Success:**
 
 - [ ] OpenAPI spec generates valid TypeScript client
-- [ ] Designer app successfully communicates with FastAPI mock endpoints
+- [ ] Designer app successfully communicates with FastAPI mock endpoints (5 endpoints)
 - [ ] All Epic 1 UI functionality preserved with mock API
-- [ ] Zero UI component changes
+- [ ] Minimal UI component changes (bulk operations pattern for mappings)
 - [ ] Interface contract validated before BuildingMOTIF work
 - [ ] No BuildingMOTIF SDK touched yet (cheap validation)
+- [ ] Hierarchical templates response reduces client-side complexity
+- [ ] Bulk operations pattern simplifies state management
 
 **Why Interface-First:**
 
@@ -413,117 +417,127 @@ apps/designer/src/domains/building-semantics/
 
 ---
 
-### Story 2.7: Implement `/api/223p/templates` endpoints (3 endpoints)
+### Story 2.7: Implement `/api/v1/223p/templates` endpoint (1 hierarchical endpoint)
 
 **Scope:**
 
 - Replace mock data with BuildingMOTIF template queries
 - Implement `TemplatesService`:
   - Query ASHRAE 223P templates from BuildingMOTIF
-  - Parse YAML templates (systems.yml, devices.yml, properties.yml)
-  - Convert RDF data → Pydantic DTOs
+  - Parse YAML templates or query RDF graph for template hierarchy
+  - Convert RDF data → nested Pydantic DTOs
+  - Build hierarchical structure: systems → devices → properties
+  - Include space types list
 - Implement `from_rdf()` class methods on DTOs:
-  - `SystemTypeDTO.from_rdf()`
-  - `DeviceTypeDTO.from_rdf()`
+  - `SystemTypeDTO.from_rdf()` (with nested devices)
+  - `DeviceTypeDTO.from_rdf()` (with nested properties)
   - `ObservablePropertyDTO.from_rdf()`
-- Update endpoints:
-  - GET `/api/223p/templates/systems`
-  - GET `/api/223p/templates/devices`
-  - GET `/api/223p/templates/properties`
+  - `SpaceTypeDTO.from_rdf()`
+- Update endpoint:
+  - GET `/api/v1/223p/templates` - Returns complete hierarchical structure
 - Add error handling for BuildingMOTIF exceptions
 - Write integration tests with real BuildingMOTIF
+- Optimize for performance (caching if needed for large hierarchy)
 
 **Acceptance Criteria:**
 
-- [ ] All 3 template endpoints return real BuildingMOTIF data
-- [ ] DTOs match Epic 1 structure (value, label, description)
-- [ ] `from_rdf()` conversion methods implemented
+- [ ] Hierarchical templates endpoint returns real BuildingMOTIF data
+- [ ] Complete nested structure: systems → devices → properties + space types
+- [ ] DTOs match Epic 1 structure with proper nesting
+- [ ] `from_rdf()` conversion methods implemented for all DTOs
 - [ ] Error handling for BuildingMOTIF failures
+- [ ] Performance acceptable for complete hierarchy (< 1s response time)
 - [ ] Integration tests pass
-- [ ] Designer app templates dropdown works with real data
+- [ ] Designer app templates dropdown works with real hierarchical data
 
-**Effort Estimate:** ~6 hours
+**Effort Estimate:** ~6-7 hours (same complexity, different structure)
 
 ---
 
-### Story 2.8: Implement `/api/223p/mappings` CRUD endpoints (6 endpoints)
+### Story 2.8: Implement `/api/v1/223p/mappings` bulk endpoints (2 endpoints)
 
 **Scope:**
 
 - Implement `MappingsService` with BuildingMOTIF:
-  - **Create**: Add RDF triples to model
-  - **Read**: Query RDF graph for mappings
-  - **Update**: Modify existing RDF triples
-  - **Delete**: Remove RDF triples
-  - **List**: Get all mappings for project
-  - **Clear**: Delete all mappings for project
+  - **Bulk Read**: Query RDF graph for all mappings in project, return as dictionary keyed by point ID
+  - **Bulk Save**: Complete replacement operation - clear existing mappings, add all new mappings as RDF triples
 - RDF triple patterns for semantic equipment:
   - equipment → hasDeviceType → device
   - equipment → monitors → property
   - equipment → locatedIn → space
-- Update 6 endpoints to use BuildingMOTIF
+- Update 2 endpoints to use BuildingMOTIF:
+  - GET `/api/v1/223p/mappings?projectId={id}` - Bulk read all mappings
+  - POST `/api/v1/223p/mappings` - Bulk save/replace all mappings
 - Persist to SQLite via BuildingMOTIF
-- Add transaction support for CRUD operations
+- Add transaction support for bulk operations (atomic replace)
+- Optimize bulk queries for performance
 
 **Acceptance Criteria:**
 
-- [ ] All 6 mapping endpoints use BuildingMOTIF SDK
+- [ ] Both bulk mapping endpoints use BuildingMOTIF SDK
 - [ ] RDF triples stored in SQLite database
 - [ ] Mappings persist across server restarts
-- [ ] CRUD operations transactional
-- [ ] Integration tests pass
+- [ ] Bulk save operation is atomic (transaction-based clear + add)
+- [ ] Bulk read returns dictionary keyed by point ID
+- [ ] Performance acceptable for large mapping sets (100+ points)
+- [ ] Integration tests pass (bulk operations)
 - [ ] Designer app mapping workflow end-to-end works
 
-**Effort Estimate:** ~8 hours
+**Effort Estimate:** ~5-6 hours (reduced from ~8h, simpler bulk operations)
 
 ---
 
-### Story 2.9: Implement `/api/223p/spaces` endpoints (4 endpoints)
+### Story 2.9: Implement `/api/v1/223p/spaces` endpoints (2 endpoints)
 
 **Scope:**
 
 - Implement `SpacesService` with BuildingMOTIF:
-  - **Create space**: Add space to RDF graph
-  - **List spaces**: Query RDF graph for spaces
-  - **Search space**: Find space by label (SPARQL query)
-  - **Add point to space**: Create locatedIn relationship
+  - **Create space**: Add space instance to RDF graph with type and label
+  - **List spaces**: Query RDF graph for all spaces in project
 - RDF triple patterns for spaces:
-  - space → rdf:type → 223:Space
+  - space → rdf:type → 223:PhysicalSpace (or specific space type)
   - space → rdfs:label → "label"
-  - point → 223:locatedIn → space
-- Update 4 endpoints to use BuildingMOTIF
+  - space → belongsToProject → projectId (for filtering)
+- Update 2 endpoints to use BuildingMOTIF:
+  - GET `/api/v1/223p/spaces?projectId={id}` - List all spaces
+  - POST `/api/v1/223p/spaces` - Create space instance
 - Persist to SQLite via BuildingMOTIF
+- Note: Point-to-space relationships handled via mappings (Story 2.8)
 
 **Acceptance Criteria:**
 
-- [ ] All 4 space endpoints use BuildingMOTIF SDK
-- [ ] Spaces stored as RDF triples
-- [ ] Search works with SPARQL queries
-- [ ] Point-to-space relationships persisted
+- [ ] Both space endpoints use BuildingMOTIF SDK
+- [ ] Spaces stored as RDF triples with proper types
+- [ ] List operation filters by projectId
+- [ ] Create operation assigns unique space URIs
+- [ ] Point-to-space relationships handled via mappings endpoint
 - [ ] Integration tests pass
 - [ ] Designer app space workflow works
 
-**Effort Estimate:** ~6 hours
+**Effort Estimate:** ~4 hours (reduced from ~6h, fewer endpoints)
 
 ---
 
-### Story 2.10: Implement `/api/223p/validate` SHACL endpoint (1 endpoint)
+### Story 2.10: Implement `/api/v1/223p/validate` SHACL endpoint (1 endpoint - NEW)
+
+**Note:** This is **full implementation**, not migration - validation was deferred in Phase 1.
 
 **Scope:**
 
 - Implement `ValidationService` with BuildingMOTIF:
   - Use BuildingMOTIF SHACL validation engine
-  - Validate semantic equipment against 223P rules
-  - Return validation errors/warnings
-- Map SHACL results to Epic 1 `ValidationResultDTO`:
+  - Validate semantic equipment against ASHRAE 223P SHACL rules
+  - Return validation errors/warnings with detailed messages
+- Map SHACL results to Pydantic `ValidationResultDTO`:
   - `isValid: boolean`
-  - `errors: string[]`
-  - `warnings: string[]`
-- Update POST `/api/223p/validate` endpoint
+  - `errors: string[]` - Constraint violations
+  - `warnings: string[]` - Recommendations
+- Implement POST `/api/v1/223p/validate` endpoint (new in Phase 2)
 - Add validation rules for:
   - Device type compatibility with equipment type
   - Property compatibility with device type
-  - Required 223P constraints
+  - Required 223P constraints (hasDeviceType, monitors, locatedIn)
+- Handle validation input (mappings to validate)
 
 **Acceptance Criteria:**
 
@@ -550,24 +564,27 @@ apps/designer/src/domains/building-semantics/
   - RDF query timeouts
 - Write end-to-end integration tests:
   - Designer → FastAPI → BuildingMOTIF flow
-  - All 14 endpoints tested
-  - CRUD workflows tested
+  - All 5 endpoints tested (templates, spaces x2, mappings x2, validation)
+  - Bulk operations workflows tested
+  - Hierarchical templates loading tested
   - Error scenarios tested
 - Performance testing:
-  - Template loading time
-  - Mapping query time
+  - Hierarchical template loading time (< 1s)
+  - Bulk mapping operations (100+ points)
   - Validation time
 
 **Acceptance Criteria:**
 
 - [ ] All BuildingMOTIF exceptions handled
 - [ ] Retry logic for transient failures
-- [ ] E2E integration tests pass
+- [ ] E2E integration tests pass (all 5 endpoints)
+- [ ] Bulk operations performance tested
+- [ ] Hierarchical templates performance tested
 - [ ] Error messages user-friendly
-- [ ] Performance acceptable (< 500ms for most operations)
+- [ ] Performance acceptable (< 1s for templates, < 500ms for others)
 - [ ] Epic 1 UI shows meaningful errors
 
-**Effort Estimate:** ~8 hours
+**Effort Estimate:** ~6 hours (reduced from ~8h due to fewer endpoints)
 
 ---
 
@@ -575,13 +592,15 @@ apps/designer/src/domains/building-semantics/
 
 **Overall Success:**
 
-- [ ] All 14 endpoints use real BuildingMOTIF SDK
+- [ ] All 5 endpoints use real BuildingMOTIF SDK
+- [ ] Hierarchical templates reduce client complexity
+- [ ] Bulk operations simplify state management
 - [ ] RDF graphs persist in SQLite database
-- [ ] SHACL validation returns real compliance results
+- [ ] SHACL validation returns real 223P compliance results
 - [ ] Epic 1 UI works with real semantic tagging
 - [ ] Integration tests pass
 - [ ] Error handling robust
-- [ ] Performance acceptable
+- [ ] Performance acceptable (< 1s for most operations)
 
 **Why Incremental Integration:**
 
@@ -701,13 +720,13 @@ apps/designer/src/domains/building-semantics/
 
 **14 stories across 4 phases:**
 
-| Phase       | Stories | Duration     | Key Deliverable                                 |
-| ----------- | ------- | ------------ | ----------------------------------------------- |
-| **Phase 0** | 2       | ~1 day       | Foundation: Designer cleanup + FastAPI scaffold |
-| **Phase 1** | 4       | ~2-3 days    | Interface validation with mock data             |
-| **Phase 2** | 6       | ~4-5 days    | BuildingMOTIF SDK integration (14 endpoints)    |
-| **Phase 3** | 2       | ~1-2 days    | AI enhancement with Vercel AI SDK               |
-| **Total**   | **14**  | **~2 weeks** | Full BuildingMOTIF integration + AI             |
+| Phase       | Stories | Duration         | Key Deliverable                                   |
+| ----------- | ------- | ---------------- | ------------------------------------------------- |
+| **Phase 0** | 2       | ~1 day           | Foundation: Designer cleanup + FastAPI scaffold   |
+| **Phase 1** | 4       | ~2-3 days        | Interface validation with mock data (5 endpoints) |
+| **Phase 2** | 6       | ~3-4 days        | BuildingMOTIF SDK integration (5 endpoints)       |
+| **Phase 3** | 2       | ~1-2 days        | AI enhancement with Vercel AI SDK                 |
+| **Total**   | **14**  | **~1.5-2 weeks** | Full BuildingMOTIF integration + AI               |
 
 ### Story List
 
@@ -726,10 +745,10 @@ apps/designer/src/domains/building-semantics/
 **Phase 2 (BuildingMOTIF Integration):**
 
 - Story 2.6: Setup BuildingMOTIF SDK infrastructure
-- Story 2.7: Implement templates endpoints (3)
-- Story 2.8: Implement mappings endpoints (6)
-- Story 2.9: Implement spaces endpoints (4)
-- Story 2.10: Implement validation endpoint (1)
+- Story 2.7: Implement templates endpoint (1 hierarchical)
+- Story 2.8: Implement mappings endpoints (2 bulk operations)
+- Story 2.9: Implement spaces endpoints (2)
+- Story 2.10: Implement validation endpoint (1 - new implementation)
 - Story 2.11: Error handling and integration tests
 
 **Phase 3 (AI Enhancement):**
@@ -783,12 +802,16 @@ Phase 0 → Phase 1 → Phase 2 → Phase 3
 **Phase 1 Success:**
 
 - ✅ OpenAPI spec generates TypeScript client
-- ✅ Designer app calls FastAPI endpoints
+- ✅ Designer app calls FastAPI endpoints (5 endpoints)
 - ✅ Epic 1 UI works with mock API
+- ✅ Bulk operations pattern validated
+- ✅ Hierarchical templates reduce complexity
 
 **Phase 2 Success:**
 
-- ✅ All endpoints use BuildingMOTIF SDK
+- ✅ All 5 endpoints use BuildingMOTIF SDK
+- ✅ Hierarchical templates from real RDF data
+- ✅ Bulk operations with RDF persistence
 - ✅ RDF persistence in SQLite
 - ✅ Epic 1 UI works with real semantic tagging
 
@@ -799,8 +822,9 @@ Phase 0 → Phase 1 → Phase 2 → Phase 3
 
 **Epic 2 Success:**
 
-- ✅ Full BuildingMOTIF integration operational
-- ✅ Zero Epic 1 UI changes
+- ✅ Full BuildingMOTIF integration operational (5 endpoints)
+- ✅ Minimal Epic 1 UI changes (bulk operations pattern)
+- ✅ Simplified API design (hierarchical templates, bulk operations)
 - ✅ AI-powered suggestions
 
 ---

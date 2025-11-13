@@ -54,3 +54,9 @@ dmypy.json
 
 # Ruff
 .ruff_cache/
+
+# Data directory - keep ontologies and libraries, ignore databases
+data/*.db
+data/**/*.db
+!data/ontologies/
+!data/libraries/
