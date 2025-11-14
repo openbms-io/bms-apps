@@ -2,6 +2,7 @@
 import json
 
 from src.dto.templates_dto import (
+    DeviceType,
     SpaceTypeDTO,
     TemplateDeviceDTO,
     TemplatePropertyDTO,
@@ -15,7 +16,9 @@ def test_template_property_dto_serializes_with_camelcase() -> None:
     dto = TemplatePropertyDTO(
         id="urn:223p:DamperPosition",
         label="Damper Position",
+        class_uri="http://data.ashrae.org/standard223#Property",
         property_type="quantifiable",
+        is_actuatable=False,
         description="Test property",
     )
 
@@ -24,6 +27,8 @@ def test_template_property_dto_serializes_with_camelcase() -> None:
     assert "propertyType" in json_data
     assert json_data["propertyType"] == "quantifiable"
     assert "property_type" not in json_data
+    assert "classUri" in json_data
+    assert "isActuatable" in json_data
 
 
 def test_templates_response_dto_serializes_with_camelcase() -> None:
@@ -33,15 +38,20 @@ def test_templates_response_dto_serializes_with_camelcase() -> None:
             TemplateSystemDTO(
                 id="urn:223p:TestSystem",
                 label="Test System",
+                class_uri="http://data.ashrae.org/standard223#Equipment",
                 devices=[
                     TemplateDeviceDTO(
                         id="urn:223p:TestDevice",
                         label="Test Device",
+                        class_uri="http://data.ashrae.org/standard223#Equipment",
+                        device_type=DeviceType.OTHER,
                         properties=[
                             TemplatePropertyDTO(
                                 id="urn:223p:TestProperty",
                                 label="Test Property",
+                                class_uri="http://data.ashrae.org/standard223#Property",
                                 property_type="quantifiable",
+                                is_actuatable=False,
                             )
                         ],
                     )
@@ -67,15 +77,20 @@ def test_hierarchical_structure_preserved() -> None:
             TemplateSystemDTO(
                 id="urn:223p:VAVReheatTerminalUnit",
                 label="VAV with Reheat",
+                class_uri="http://data.ashrae.org/standard223#TerminalUnit",
                 devices=[
                     TemplateDeviceDTO(
                         id="urn:223p:Damper",
                         label="Damper",
+                        class_uri="http://data.ashrae.org/standard223#Damper",
+                        device_type=DeviceType.OTHER,
                         properties=[
                             TemplatePropertyDTO(
                                 id="urn:223p:DamperPosition",
                                 label="Damper Position",
+                                class_uri="http://data.ashrae.org/standard223#Property",
                                 property_type="quantifiable",
+                                is_actuatable=False,
                             )
                         ],
                     )
@@ -93,3 +108,6 @@ def test_hierarchical_structure_preserved() -> None:
     device = system["devices"][0]
     assert len(device["properties"]) == 1
     assert device["properties"][0]["propertyType"] == "quantifiable"
+    assert device["properties"][0]["isActuatable"] is False
+    assert "deviceType" in device
+    assert device["deviceType"] == "other"

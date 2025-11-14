@@ -1,7 +1,6 @@
 """ASHRAE 223P Mappings router."""
 from fastapi import APIRouter, Query
 
-from ..data.mock_templates import MOCK_MAPPINGS
 from ..dto.mappings_dto import MappingsResponseDTO, SaveMappingsRequestDTO
 
 router = APIRouter(

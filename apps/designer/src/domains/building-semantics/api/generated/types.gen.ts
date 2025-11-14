@@ -31,6 +31,13 @@ export type CreateSpaceRequestDto = {
 }
 
 /**
+ * DeviceType
+ *
+ * Device type enum for UI behavior.
+ */
+export type DeviceType = 'sensor' | 'other'
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -177,13 +184,13 @@ export type SpaceTypeDto = {
 /**
  * TemplateDeviceDTO
  *
- * Device type template with nested properties.
+ * Device type template with nested properties and UI metadata.
  */
 export type TemplateDeviceDto = {
   /**
    * Id
    *
-   * Device URN
+   * Template name (e.g., 'damper')
    */
   id: string
   /**
@@ -192,6 +199,16 @@ export type TemplateDeviceDto = {
    * Human-readable label
    */
   label: string
+  /**
+   * Classuri
+   *
+   * ASHRAE 223P class URI
+   */
+  classUri: string
+  /**
+   * Device type for UI behavior (sensor vs other)
+   */
+  deviceType: DeviceType
   /**
    * Description
    *
@@ -209,13 +226,13 @@ export type TemplateDeviceDto = {
 /**
  * TemplatePropertyDTO
  *
- * Observable property template with hierarchical nesting.
+ * Observable property template with hierarchical nesting and metadata.
  */
 export type TemplatePropertyDto = {
   /**
    * Id
    *
-   * Property URN
+   * Template name (e.g., 'water-temperature')
    */
   id: string
   /**
@@ -225,11 +242,47 @@ export type TemplatePropertyDto = {
    */
   label: string
   /**
+   * Classuri
+   *
+   * ASHRAE 223P class URI
+   */
+  classUri: string
+  /**
    * Propertytype
    *
    * Property type
    */
   propertyType: 'quantifiable' | 'enumerated'
+  /**
+   * Quantitykind
+   *
+   * QUDT quantity kind (e.g., 'Temperature', 'Pressure')
+   */
+  quantityKind?: string | null
+  /**
+   * Unit
+   *
+   * QUDT unit (e.g., 'DEG_C', 'PSI')
+   */
+  unit?: string | null
+  /**
+   * Medium
+   *
+   * s223 medium (e.g., 'Water', 'Air') - optional
+   */
+  medium?: string | null
+  /**
+   * Enumerationkind
+   *
+   * s223 enumeration kind (e.g., 'RunStatus') - only for enumerated properties
+   */
+  enumerationKind?: string | null
+  /**
+   * Isactuatable
+   *
+   * Observable (false) vs Actuatable (true)
+   */
+  isActuatable: boolean
   /**
    * Description
    *
@@ -241,13 +294,13 @@ export type TemplatePropertyDto = {
 /**
  * TemplateSystemDTO
  *
- * System (equipment) type template with nested devices.
+ * System (equipment) type template with nested devices and class URI.
  */
 export type TemplateSystemDto = {
   /**
    * Id
    *
-   * System URN
+   * Template name (e.g., 'vav-reheat')
    */
   id: string
   /**
@@ -256,6 +309,12 @@ export type TemplateSystemDto = {
    * Human-readable label
    */
   label: string
+  /**
+   * Classuri
+   *
+   * ASHRAE 223P class URI
+   */
+  classUri: string
   /**
    * Description
    *

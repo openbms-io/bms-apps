@@ -1,7 +1,8 @@
 """ASHRAE 223P Templates router."""
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from loguru import logger
 
-from ..data.mock_templates import MOCK_TEMPLATES
+from ..controllers.templates_controller import TemplatesController
 from ..dto.templates_dto import TemplatesResponseDTO
 
 router = APIRouter(
@@ -80,4 +81,12 @@ async def get_templates() -> TemplatesResponseDTO:
     Raises:
         HTTPException: When operation fails
     """
-    return MOCK_TEMPLATES
+    try:
+        controller = TemplatesController()
+        return await controller.get_all_templates()
+    except Exception as e:
+        logger.error(f"Failed to load templates: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to load templates from BuildingMOTIF: {str(e)}",
+        )

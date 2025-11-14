@@ -22,6 +22,11 @@ import { ConfidenceIndicator } from './confidence-indicator'
 interface SearchableSelectOption {
   value: string
   label: string
+  metadata?: {
+    quantityKind?: string | null
+    unit?: string | null
+    medium?: string | null
+  }
 }
 
 interface SearchableSelectProps {
@@ -80,12 +85,12 @@ export function SearchableSelect({
             <CommandList>
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
-                {options.map((option) => {
+                {options.map((option, index) => {
                   const isAiSuggestion = aiSuggestion?.id === option.value
                   const isSelected = value === option.value
                   return (
                     <CommandItem
-                      key={option.value}
+                      key={`${index}-${option.value}`}
                       value={option.label}
                       onSelect={() => {
                         onValueChange(option.value)
@@ -99,7 +104,28 @@ export function SearchableSelect({
                           isSelected ? 'opacity-100' : 'opacity-0'
                         )}
                       />
-                      <span className="flex-1">{option.label}</span>
+                      <div className="flex-1 flex items-center gap-2">
+                        <span>{option.label}</span>
+                        {option.metadata && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            {option.metadata.quantityKind && (
+                              <span className="px-1.5 py-0.5 bg-muted rounded">
+                                {option.metadata.quantityKind}
+                              </span>
+                            )}
+                            {option.metadata.unit && (
+                              <span className="px-1.5 py-0.5 bg-muted rounded">
+                                {option.metadata.unit}
+                              </span>
+                            )}
+                            {option.metadata.medium && (
+                              <span className="px-1.5 py-0.5 bg-muted rounded text-blue-600">
+                                {option.metadata.medium}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                       {isAiSuggestion && aiSuggestion && (
                         <ConfidenceIndicator
                           confidence={aiSuggestion.confidence}

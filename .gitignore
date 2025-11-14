@@ -43,6 +43,8 @@ designer.db
 designer.db-journal
 designer.db-shm
 designer.db-wal
+buildingmotif.db
+buildingmotif.db-journal
 
 # Test database files
 designer-test.db

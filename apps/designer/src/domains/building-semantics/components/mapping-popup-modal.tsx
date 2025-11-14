@@ -89,8 +89,15 @@ export function MappingPopupModal({
     (d) => d.id === deviceType
   )
   const observableProperties =
-    selectedDevice?.properties.map((p) => ({ value: p.id, label: p.label })) ??
-    []
+    selectedDevice?.properties.map((p) => ({
+      value: p.id,
+      label: p.label,
+      metadata: {
+        quantityKind: p.quantityKind,
+        unit: p.unit,
+        medium: p.medium,
+      },
+    })) ?? []
 
   useEffect(() => {
     if (open) {
