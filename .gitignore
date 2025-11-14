@@ -5,6 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+local.db
 .npm
 .npmrc
 dist/
@@ -216,3 +217,6 @@ $RECYCLE.BIN/
 
 # Project-specific
 test_hook.py
+
+# Python app-specific virtual environments
+apps/*/.venv/

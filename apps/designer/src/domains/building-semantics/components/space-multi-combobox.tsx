@@ -26,10 +26,9 @@ interface SpaceMultiComboBoxProps {
   onValueChange: (value: string[]) => void
   spaces: SpaceViewModel[]
   aiSuggestions?: Array<{
-    value: string
+    id: string
     confidence: number
   }>
-  autoFillHint?: string
   placeholder?: string
   id?: string
 }
@@ -39,7 +38,6 @@ export function SpaceMultiComboBox({
   onValueChange,
   spaces,
   aiSuggestions,
-  autoFillHint,
   placeholder = 'Select spaces...',
   id,
 }: SpaceMultiComboBoxProps) {
@@ -76,7 +74,7 @@ export function SpaceMultiComboBox({
     !value.includes(searchValue.trim())
 
   const getAISuggestionConfidence = (spaceName: string): number | undefined => {
-    return aiSuggestions?.find((s) => s.value === spaceName)?.confidence
+    return aiSuggestions?.find((s) => s.id === spaceName)?.confidence
   }
 
   return (
@@ -140,7 +138,7 @@ export function SpaceMultiComboBox({
                 <CommandGroup heading="Available spaces">
                   {filteredSpaces.map((space) => {
                     const isAiSuggestion = aiSuggestions?.some(
-                      (s) => s.value === space.label
+                      (s) => s.id === space.label
                     )
                     const aiConfidence = getAISuggestionConfidence(space.label)
                     const isSelected = value.includes(space.label)
@@ -191,12 +189,6 @@ export function SpaceMultiComboBox({
           </Command>
         </PopoverContent>
       </Popover>
-      {autoFillHint && (
-        <div className="text-xs text-muted-foreground flex items-center gap-1">
-          <span>🔄</span>
-          <span>{autoFillHint}</span>
-        </div>
-      )}
     </div>
   )
 }

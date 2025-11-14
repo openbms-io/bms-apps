@@ -21,18 +21,33 @@ import {
 } from '@/types/bacnet-properties'
 import { BacnetNodeData } from '@/types/node-data-types'
 import { useFlowStore } from '@/store/use-flow-store'
-import { useMappingsQuery } from '@/domains/building-semantics/api/queries/use-mappings-query'
+import { useMappingsViewModel } from '@/domains/building-semantics/view-models/use-mappings-view-model'
+import { useTemplatesQuery } from '@/domains/building-semantics/api/queries/use-templates-query'
+import { getMappingLabels } from '@/domains/building-semantics/utils/template-labels'
 
 export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
   const typedData = data as BacnetNodeData
   const [showProperties, setShowProperties] = useState(false)
 
   const projectId = useFlowStore((s) => s.projectId)
-  const { data: semanticMappings = new Map() } = useMappingsQuery(projectId)
+  const { data: semanticMappings = new Map() } = useMappingsViewModel({
+    projectId,
+  })
 
   const mapping = typedData.semanticMappingKey
     ? semanticMappings.get(typedData.semanticMappingKey)
     : undefined
+
+  const { data: templates } = useTemplatesQuery()
+
+  const mappingLabels = mapping
+    ? getMappingLabels({
+        templates,
+        equipmentTypeUrn: mapping.equipmentTypeId,
+        deviceTypeUrn: mapping.deviceTypeId,
+        propertyUrn: mapping.propertyId,
+      })
+    : null
 
   const discoveredProperties = useFlowStore(
     useShallow((state) => {
@@ -110,17 +125,17 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
               <div className="space-y-0.5 text-[10px]">
                 <div className="truncate">
                   <span className="text-muted-foreground">Equipment:</span>{' '}
-                  <span className="font-medium">{mapping.equipmentType}</span>
+                  <span className="font-medium">
+                    {mappingLabels?.equipment}
+                  </span>
                 </div>
                 <div className="truncate">
                   <span className="text-muted-foreground">Device:</span>{' '}
-                  <span className="font-medium">{mapping.deviceType}</span>
+                  <span className="font-medium">{mappingLabels?.device}</span>
                 </div>
                 <div className="truncate">
                   <span className="text-muted-foreground">Property:</span>{' '}
-                  <span className="font-medium">
-                    {mapping.observableProperty}
-                  </span>
+                  <span className="font-medium">{mappingLabels?.property}</span>
                 </div>
               </div>
             </div>

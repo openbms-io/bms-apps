@@ -1,16 +1,11 @@
-import type {
-  SystemType,
-  DeviceType,
-  ObservableProperty,
-  SpaceType,
-} from '@/domains/building-semantics'
+import type { SpaceType } from '@/domains/building-semantics'
 
 export interface FieldRecommendation<T> {
-  value: T
+  id: T
   confidence: number
   reasoning: string
   alternatives: Array<{
-    value: T
+    id: T
     confidence: number
   }>
 }
@@ -22,11 +17,10 @@ export interface SpaceRecommendation {
 }
 
 export interface Equipment223PRecommendation {
-  equipmentType: FieldRecommendation<SystemType>
+  equipmentTypeId: FieldRecommendation<string>
   physicalSpace?: FieldRecommendation<SpaceRecommendation>
   domainSpaces?: FieldRecommendation<SpaceRecommendation>[]
-  deviceType: FieldRecommendation<DeviceType>
-  observableProperty: FieldRecommendation<ObservableProperty>
+  deviceTypeId: FieldRecommendation<string>
+  propertyId: FieldRecommendation<string>
   overallConfidence: number
-  autoFillSource?: string
 }

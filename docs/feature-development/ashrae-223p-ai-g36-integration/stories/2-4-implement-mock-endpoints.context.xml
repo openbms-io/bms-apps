@@ -1,0 +1,312 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>Epic 2</epicId>
+    <storyId>2.4</storyId>
+    <title>Implement FastAPI Mock Endpoints with Hierarchical Data</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-10</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-4-implement-mock-endpoints.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>all 5 FastAPI endpoints implemented with realistic hierarchical mock data</iWant>
+    <soThat>I can validate the API contract with the Designer app before BuildingMOTIF integration</soThat>
+    <tasks>
+      <task id="1">Create mock data constants file (src/data/mock_templates.py) with hierarchical ASHRAE 223P templates (8 systems), mock mappings (2-3), and mock spaces (2-3)</task>
+      <task id="2">Implement templates router (src/routers/templates.py) to return MOCK_TEMPLATES with GET endpoint returning hierarchical structure</task>
+      <task id="3">Implement mappings router (src/routers/mappings.py) with GET and POST endpoints returning MOCK_MAPPINGS (ignores request body)</task>
+      <task id="4">Implement spaces router (src/routers/spaces.py) with GET (status 200) and POST (status 201) endpoints returning MOCK_SPACES</task>
+      <task id="5">Verify all endpoints return correct status codes (200, 201) and camelCase JSON output</task>
+      <task id="6">Test Swagger UI (/docs) displays all 5 endpoints and "Try it out" functionality works</task>
+      <task id="7">Verify type checking (mypy) and linting (ruff) pass with no errors</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <title>Templates Endpoint - Hierarchical Static Data</title>
+      <description>GET /api/v1/223p/templates returns TemplatesResponseDTO with hierarchical structure: 8 systems, each with nested devices and properties. Uses realistic ASHRAE 223P terminology and URNs.</description>
+      <verification>curl http://localhost:8000/api/v1/223p/templates | jq - returns 200 with nested systems/devices/properties</verification>
+    </criterion>
+    <criterion id="AC2">
+      <title>Mappings Endpoints - Static Bulk Data</title>
+      <description>GET /api/v1/223p/mappings?projectId={id} and POST /api/v1/223p/mappings both return MappingsResponseDTO with static data (ignore request parameters)</description>
+      <verification>curl "http://localhost:8000/api/v1/223p/mappings?projectId=test" returns 200, POST returns 200</verification>
+    </criterion>
+    <criterion id="AC3">
+      <title>Spaces Endpoints - Static List</title>
+      <description>GET /api/v1/223p/spaces?projectId={id} returns list[SpaceInstanceDTO] (status 200). POST /api/v1/223p/spaces returns SpaceInstanceDTO (status 201)</description>
+      <verification>GET returns 200 with array, POST returns 201 with single object</verification>
+    </criterion>
+    <criterion id="AC4">
+      <title>Mock Data Constants File</title>
+      <description>File src/data/mock_templates.py contains MOCK_TEMPLATES (8 systems hierarchical), MOCK_MAPPINGS (2-3 mappings), MOCK_SPACES (2-3 spaces)</description>
+      <verification>File exists with all three constants exported</verification>
+    </criterion>
+    <criterion id="AC5">
+      <title>All Endpoints Return Correct Status Codes</title>
+      <description>Templates GET: 200, Mappings GET: 200, POST: 200, Spaces GET: 200, POST: 201</description>
+      <verification>curl -i tests for each endpoint show correct status codes</verification>
+    </criterion>
+    <criterion id="AC6">
+      <title>camelCase JSON Output Verified</title>
+      <description>All responses use camelCase field names (equipmentTypeId, deviceTypeId, propertyId, spaceTypeId, createdAt) not snake_case</description>
+      <verification>curl http://localhost:8000/api/v1/223p/mappings?projectId=test | jq shows camelCase fields</verification>
+    </criterion>
+    <criterion id="AC7">
+      <title>Swagger UI Works</title>
+      <description>Swagger UI at http://localhost:8000/docs displays all 5 endpoints. "Try it out" functionality works for all endpoints and returns static data with camelCase</description>
+      <verification>Manual test of /docs interface</verification>
+    </criterion>
+    <criterion id="AC8">
+      <title>Type Checking and Linting Pass</title>
+      <description>pnpm building-semantics:typecheck (mypy) and pnpm building-semantics:lint (ruff) complete with no errors</description>
+      <verification>Run both commands, exit code 0</verification>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/tech-spec-review.md</path>
+        <title>Epic 2 Tech Spec Review - FastAPI Endpoint Summary</title>
+        <section>FastAPI Endpoint Summary (lines 358-381)</section>
+        <snippet>5 endpoints across 3 services: I223PTemplatesService (1 endpoint - GET hierarchical templates), I223PSpacesService (2 endpoints - GET list, POST create), I223PMappingsService (2 endpoints - GET mappings, POST bulk save/replace). Design principles: YAGNI, hierarchical data, bulk operations, UI filtering.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/tech-spec-review.md</path>
+        <title>Epic 2 Tech Spec Review - Coding Standards Python</title>
+        <section>Python Coding Standards (lines 308-397)</section>
+        <snippet>Python coding conventions: PEP 8, type hints, async/await patterns, Pydantic with serialization_alias for camelCase, FastAPI router patterns, DTOs in dto/ folder, routers in routers/ folder.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2 Phase Breakdown</title>
+        <section>Phase 1 - Interface validation with mock data</section>
+        <snippet>Phase 1 objective: Validate OpenAPI contract works end-to-end with static mock data. Story 2.4: Implement mock endpoints. Interface-first development approach validates types match before BuildingMOTIF integration in Phase 2.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards - Python Conventions</title>
+        <section>Python Coding Standards</section>
+        <snippet>snake_case for variables/functions, PascalCase for classes, UPPER_CASE for constants, 4 spaces indentation, PEP 8 compliance, type hints required, async/await for I/O operations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-2-design-openapi-specification.md</path>
+        <title>Story 2.2 - Design OpenAPI Specification (Prerequisite)</title>
+        <section>OpenAPI endpoint definitions and DTOs</section>
+        <snippet>Defines 5 FastAPI endpoints with Pydantic DTOs using serialization_alias for camelCase output. Templates endpoint returns hierarchical structure. Mappings use bulk format. Spaces have proper status codes (200, 201).</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-3-generate-typescript-client.md</path>
+        <title>Story 2.3 - Generate TypeScript Client (Prerequisite)</title>
+        <section>TypeScript client generation from OpenAPI spec</section>
+        <snippet>TypeScript client auto-generated from /openapi.json endpoint. Verifies camelCase fields match Pydantic serialization_alias. Client stored in apps/designer/src/domains/building-semantics/api/generated/.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+        <kind>router</kind>
+        <symbol>get_templates</symbol>
+        <lines>69-82</lines>
+        <reason>Router stub returning 501. Needs implementation to return MOCK_TEMPLATES with hierarchical structure.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+        <kind>router</kind>
+        <symbol>get_mappings, save_mappings</symbol>
+        <lines>39-54, 88-104</lines>
+        <reason>Router stubs returning 501. Need implementation to return MOCK_MAPPINGS (static data, ignore request parameters).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/spaces.py</path>
+        <kind>router</kind>
+        <symbol>list_spaces, create_space</symbol>
+        <lines>36-51, 78-91</lines>
+        <reason>Router stubs returning 501. Need implementation to return MOCK_SPACES with proper status codes (200, 201).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/templates_dto.py</path>
+        <kind>dto</kind>
+        <symbol>TemplatesResponseDTO, TemplateSystemDTO, TemplateDeviceDTO, TemplatePropertyDTO, SpaceTypeDTO</symbol>
+        <lines>1-80</lines>
+        <reason>Pydantic DTOs with serialization_alias for camelCase. Used to create mock data structures with proper types.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/mappings_dto.py</path>
+        <kind>dto</kind>
+        <symbol>SemanticMappingDTO, MappingsResponseDTO, SaveMappingsRequestDTO</symbol>
+        <lines>1-52</lines>
+        <reason>Pydantic DTOs with serialization_alias. Used for mock mappings data structure.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/spaces_dto.py</path>
+        <kind>dto</kind>
+        <symbol>SpaceInstanceDTO, CreateSpaceRequestDTO</symbol>
+        <lines>1-42</lines>
+        <reason>Pydantic DTOs with serialization_alias. Used for mock spaces data structure.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/main.py</path>
+        <kind>fastapi_app</kind>
+        <symbol>app</symbol>
+        <lines>1-42</lines>
+        <reason>FastAPI application with routers registered. Confirms all 5 endpoints are wired up.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/data/mock_templates.py</path>
+        <kind>data_constants</kind>
+        <symbol>MOCK_TEMPLATES, MOCK_MAPPINGS, MOCK_SPACES</symbol>
+        <lines>N/A (new file)</lines>
+        <reason>NEW FILE - Will contain all static mock data with hierarchical ASHRAE 223P templates (8 systems), mock mappings (2-3), and mock spaces (2-3).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python ecosystem="pyproject.toml">
+        <package name="fastapi" version=">=0.104.0" usage="FastAPI web framework for routers and DTOs"/>
+        <package name="uvicorn" version=">=0.24.0" usage="ASGI server to run FastAPI application"/>
+        <package name="pydantic" version=">=2.5.0" usage="Data validation with serialization_alias for camelCase output"/>
+        <package name="pydantic-settings" version=">=2.0.0" usage="Configuration management"/>
+        <package name="python-dotenv" version=">=1.0.0" usage="Environment variable loading"/>
+        <package name="loguru" version=">=0.7.0" usage="Logging"/>
+        <package name="python-multipart" version=">=0.0.6" usage="Form data parsing"/>
+      </python>
+      <python ecosystem="pyproject.toml" group="dev">
+        <package name="mypy" version=">=1.7.0" usage="Type checking"/>
+        <package name="black" version=">=23.11.0" usage="Code formatting"/>
+        <package name="ruff" version=">=0.1.6" usage="Linting"/>
+      </python>
+      <python ecosystem="pyproject.toml" group="test">
+        <package name="pytest" version=">=7.4.0" usage="Testing framework"/>
+        <package name="pytest-asyncio" version=">=0.21.0" usage="Async test support"/>
+        <package name="httpx" version=">=0.25.0" usage="HTTP client for endpoint testing"/>
+        <package name="pytest-cov" version=">=4.1.0" usage="Coverage reporting"/>
+      </python>
+      <note>BuildingMOTIF SDK (optional-dependencies) NOT used in Phase 1 - Phase 2 integration only</note>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Phase 1 Goal: Interface validation with static mock data only - NO storage, NO state, NO CRUD logic (YAGNI principle)</constraint>
+    <constraint>All endpoints return static data defined in src/data/mock_templates.py - request parameters and bodies are ignored</constraint>
+    <constraint>Python coding standards: PEP 8, snake_case for variables/functions, PascalCase for classes, UPPER_CASE for constants, 4 spaces indentation, type hints required</constraint>
+    <constraint>Pydantic DTOs use serialization_alias for camelCase JSON output (equipmentTypeId, deviceTypeId, propertyId, spaceTypeId, createdAt)</constraint>
+    <constraint>FastAPI async/await patterns required for all router functions</constraint>
+    <constraint>Hierarchical structure: Systems contain nested devices, devices contain nested properties - single API call returns complete structure</constraint>
+    <constraint>Proper HTTP status codes: Templates GET (200), Mappings GET (200), POST (200), Spaces GET (200), POST (201)</constraint>
+    <constraint>Mock data must use realistic ASHRAE 223P terminology and URN patterns (urn:223p:*)</constraint>
+    <constraint>Minimum 8 systems in MOCK_TEMPLATES with nested devices and properties for realistic testing</constraint>
+    <constraint>Type checking (mypy) and linting (ruff) must pass with no errors</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>GET /api/v1/223p/templates</name>
+      <kind>REST endpoint</kind>
+      <signature>async def get_templates() -> TemplatesResponseDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/templates.py:69</path>
+    </interface>
+    <interface>
+      <name>GET /api/v1/223p/mappings</name>
+      <kind>REST endpoint</kind>
+      <signature>async def get_mappings(project_id: str = Query(..., alias="projectId")) -> MappingsResponseDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/mappings.py:39</path>
+    </interface>
+    <interface>
+      <name>POST /api/v1/223p/mappings</name>
+      <kind>REST endpoint</kind>
+      <signature>async def save_mappings(request: SaveMappingsRequestDTO) -> MappingsResponseDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/mappings.py:88</path>
+    </interface>
+    <interface>
+      <name>GET /api/v1/223p/spaces</name>
+      <kind>REST endpoint</kind>
+      <signature>async def list_spaces(project_id: str = Query(..., alias="projectId")) -> list[SpaceInstanceDTO]</signature>
+      <path>apps/building-semantics-api-app/src/routers/spaces.py:36</path>
+    </interface>
+    <interface>
+      <name>POST /api/v1/223p/spaces</name>
+      <kind>REST endpoint</kind>
+      <signature>async def create_space(request: CreateSpaceRequestDTO) -> SpaceInstanceDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/spaces.py:78</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Testing framework: pytest with pytest-asyncio for async tests. FastAPI TestClient for integration tests (httpx-based). Test structure: tests/unit/ for unit tests, tests/integration/ for endpoint integration tests. Naming: test_*.py files. TDD approach: write tests first, implement to pass. Type hints required in tests. Test behavior not implementation. Use descriptive test names (test_endpoint_returns_expected_status_code). Integration tests verify status codes, response schemas, and camelCase field names in JSON output.</standards>
+    <locations>
+      <location>apps/building-semantics-api-app/tests/unit/</location>
+      <location>apps/building-semantics-api-app/tests/integration/test_routers/</location>
+      <location>apps/building-semantics-api-app/tests/integration/test_health.py</location>
+    </locations>
+    <ideas>
+      <test_idea ac="AC1" priority="high">
+        <file>tests/integration/test_routers/test_templates.py</file>
+        <tests>
+          - test_get_templates_returns_200_with_hierarchical_data: Verify GET /api/v1/223p/templates returns 200 with nested systems/devices/properties
+          - test_get_templates_has_8_systems: Verify response contains exactly 8 systems
+          - test_get_templates_systems_have_nested_devices: Verify each system has devices list
+          - test_get_templates_devices_have_nested_properties: Verify each device has properties list
+          - test_get_templates_uses_realistic_223p_urns: Verify URNs follow urn:223p:* pattern
+        </tests>
+      </test_idea>
+      <test_idea ac="AC2" priority="high">
+        <file>tests/integration/test_routers/test_mappings.py</file>
+        <tests>
+          - test_get_mappings_returns_200_with_static_data: Verify GET returns 200 with MappingsResponseDTO structure
+          - test_get_mappings_ignores_project_id_parameter: Verify same response regardless of projectId query param
+          - test_post_mappings_returns_200_with_static_data: Verify POST returns 200 with same static data
+          - test_post_mappings_ignores_request_body: Verify response doesn't reflect request body changes
+          - test_mappings_response_has_camel_case_fields: Verify equipmentTypeId, deviceTypeId, propertyId, spaceId use camelCase
+        </tests>
+      </test_idea>
+      <test_idea ac="AC3" priority="high">
+        <file>tests/integration/test_routers/test_spaces.py</file>
+        <tests>
+          - test_list_spaces_returns_200_with_array: Verify GET returns 200 with list[SpaceInstanceDTO]
+          - test_list_spaces_ignores_project_id: Verify same response regardless of projectId
+          - test_create_space_returns_201: Verify POST returns 201 status code
+          - test_create_space_returns_space_instance: Verify POST returns SpaceInstanceDTO structure
+          - test_create_space_ignores_request_body: Verify response doesn't reflect request data
+          - test_spaces_response_has_camel_case_fields: Verify spaceTypeId, createdAt use camelCase
+        </tests>
+      </test_idea>
+      <test_idea ac="AC4" priority="medium">
+        <file>tests/unit/test_data/test_mock_templates.py</file>
+        <tests>
+          - test_mock_templates_exists: Verify MOCK_TEMPLATES constant is importable
+          - test_mock_templates_has_8_systems: Verify MOCK_TEMPLATES.systems has length 8
+          - test_mock_mappings_exists: Verify MOCK_MAPPINGS constant is importable
+          - test_mock_spaces_exists: Verify MOCK_SPACES constant is importable
+        </tests>
+      </test_idea>
+      <test_idea ac="AC5" priority="high">
+        <file>tests/integration/test_routers/test_all_endpoints_status_codes.py</file>
+        <tests>
+          - test_templates_get_returns_200: Verify status code
+          - test_mappings_get_returns_200: Verify status code
+          - test_mappings_post_returns_200: Verify status code (not 201)
+          - test_spaces_get_returns_200: Verify status code
+          - test_spaces_post_returns_201: Verify status code (201 for POST create)
+        </tests>
+      </test_idea>
+      <test_idea ac="AC6" priority="high">
+        <file>tests/integration/test_routers/test_camelcase_output.py</file>
+        <tests>
+          - test_templates_response_uses_camelcase: Verify propertyType (not property_type) in JSON
+          - test_mappings_response_uses_camelcase: Verify equipmentTypeId, deviceTypeId, propertyId, spaceId
+          - test_spaces_response_uses_camelcase: Verify spaceTypeId, createdAt
+          - test_no_snake_case_in_responses: Verify no snake_case fields in any JSON response
+        </tests>
+      </test_idea>
+      <test_idea ac="AC8" priority="medium">
+        <file>N/A - command line validation</file>
+        <tests>
+          - Manual: Run `pnpm building-semantics:typecheck` (mypy) - exit code 0
+          - Manual: Run `pnpm building-semantics:lint` (ruff) - exit code 0
+        </tests>
+      </test_idea>
+    </ideas>
+  </tests>
+</story-context>

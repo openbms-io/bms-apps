@@ -294,6 +294,10 @@ pnpm bms-iot:test
   return nodeData?.label ?? 'Constant'
   })
 
+## Test Run
+
+Test commands are in package.json. Use these commands to run tests.
+
 ## Development Mindset
 
 - **Write tests first** - they define the expected behavior

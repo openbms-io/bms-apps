@@ -16,13 +16,8 @@ export type {
   BACnetControllerData,
 } from './types'
 
-// Enum types from 223P adapter (needed for AI types)
-export type {
-  SystemType,
-  DeviceType,
-  ObservableProperty,
-  SpaceType,
-} from './adapters/ashrae-223p/schemas'
+// Enum types from 223P adapter (needed for space types)
+export type { SpaceType } from './adapters/ashrae-223p/schemas'
 
 // ============================================================================
 // COMPONENTS - UI components for semantic mappings
@@ -45,7 +40,6 @@ export { useCreateSemanticModal } from './hooks/use-create-semantic-modal'
 // ============================================================================
 // QUERIES - React Query hooks for data fetching
 // ============================================================================
-export { useMappingsQuery } from './api/queries/use-mappings-query'
 
 // ============================================================================
 // UTILITIES - Helper functions

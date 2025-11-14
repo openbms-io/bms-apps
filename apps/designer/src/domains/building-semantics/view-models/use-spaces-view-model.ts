@@ -7,9 +7,13 @@ export function useSpacesViewModel(projectId: string | undefined): {
   physicalSpaces: SpaceViewModel[]
   domainSpaces: SpaceViewModel[]
   isLoading: boolean
-  error: Error | null
+  error: Error | undefined
 } {
-  const { data: spacesDTOs = [], isLoading, error } = useSpacesQuery(projectId)
+  const {
+    data: spacesDTOs = [],
+    isLoading,
+    error,
+  } = useSpacesQuery({ projectId })
 
   const spaces = mapSpacesDTOToViewModel(spacesDTOs)
   const physicalSpaces = spaces.filter((s) => s.type === 'PhysicalSpace')

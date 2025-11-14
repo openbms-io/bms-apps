@@ -29,5 +29,16 @@ http {
       proxy_set_header Host $host;
       proxy_pass http://nanomq:8083/mqtt;
     }
+
+    # Building Semantics API: /building-semantics → http://${BUILDING_SEMANTICS_HOST}:${BUILDING_SEMANTICS_PORT}
+    location /building-semantics {
+      rewrite ^/building-semantics(/.*)$ $1 break;
+      proxy_pass http://${BUILDING_SEMANTICS_HOST}:${BUILDING_SEMANTICS_PORT};
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
   }
 }

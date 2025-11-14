@@ -48,4 +48,4 @@ workflow_status:
   solutioning-gate-check: docs/feature-development/ashrae-223p-ai-g36-integration/implementation-readiness-report-2025-11-01.md
 
   # Phase 4: Implementation
-  sprint-planning: required
+  sprint-planning: docs/feature-development/ashrae-223p-ai-g36-integration/sprint-status.yaml

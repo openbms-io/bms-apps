@@ -1,0 +1,332 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>5</storyId>
+    <title>Integrate TypeScript Client with Designer App</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-10</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-5-integrate-typescript-client.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>React Query hooks updated to use the simplified TypeScript client</iWant>
+    <soThat>the Designer app calls FastAPI endpoints with hierarchical templates and bulk operations</soThat>
+    <tasks>
+      <task id="1">Configure API Client (create config.ts, set BASE URL, add to layout.tsx)</task>
+      <task id="2">Update useTemplatesQuery hook (hierarchical single call)</task>
+      <task id="3">Update useMappingsQuery hook (bulk pattern)</task>
+      <task id="4">Create useSaveMappingsMutation hook (bulk save replacing individual CRUD)</task>
+      <task id="5">Update useSpacesQuery hook</task>
+      <task id="6">Update useCreateSpaceMutation hook</task>
+      <task id="7">Keep useAISuggestionQuery unchanged (Designer-only)</task>
+      <task id="8">Remove obsolete hooks (device types, observable properties, individual CRUD)</task>
+      <task id="9">Remove old Epic 1 service files (buildingmotif, space, mappings, validation)</task>
+      <task id="10">Add error handling and loading states to all hooks</task>
+      <task id="11">Update MappingPopupModal to use hierarchical templates with dynamic dropdown filtering</task>
+      <task id="12">Update SearchableSelect component to support disabled state and parent-dependent filtering</task>
+      <task id="13">Update useCreateEquipmentMapping view model to use bulk save pattern</task>
+      <task id="14">Update delete mapping functionality to use bulk save with filtered array</task>
+      <task id="15">Update type definitions and imports to use camelCase field names (equipmentTypeId, deviceTypeId, propertyId, spaceId)</task>
+      <task id="16">Update useSpacesViewModel to use FastAPI-backed hooks</task>
+      <task id="17">Test end-to-end workflow (equipment → device → property → space → save)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">useTemplatesQuery hook uses hierarchical TemplatesService.getTemplates() with single API call</criterion>
+    <criterion id="2">useMappingsQuery hook uses MappingsService.getMappings() with projectId parameter</criterion>
+    <criterion id="3">useSaveMappingsMutation hook implements bulk save pattern (replaces create/update/delete)</criterion>
+    <criterion id="4">useSpacesQuery hook uses SpacesService.listSpaces() with projectId</criterion>
+    <criterion id="5">useCreateSpaceMutation hook uses SpacesService.createSpace() with camelCase fields</criterion>
+    <criterion id="6">useAISuggestionQuery remains unchanged (Designer-only service)</criterion>
+    <criterion id="7">4 obsolete hooks removed (device types, observable properties, individual mapping CRUD)</criterion>
+    <criterion id="8">4 old Epic 1 service implementations removed (buildingmotif, space, mappings, validation)</criterion>
+    <criterion id="9">4 old Epic 1 service interfaces removed (keep ai-suggestion)</criterion>
+    <criterion id="10">API configuration file created with BASE URL and timeout settings</criterion>
+    <criterion id="11">Error handling with retry logic implemented for all hooks</criterion>
+    <criterion id="12">Equipment type dropdown displays ASHRAE 223P systems with camelCase fields</criterion>
+    <criterion id="13">Device dropdown filters based on selected equipment type (nested in hierarchical template)</criterion>
+    <criterion id="14">Property dropdown filters based on selected device (nested in hierarchical template)</criterion>
+    <criterion id="15">Bulk save mutation accepts array of mappings</criterion>
+    <criterion id="16">Create space mutation works with spaceTypeId from templates</criterion>
+    <criterion id="17">Spaces dropdown loads from FastAPI</criterion>
+    <criterion id="18">camelCase fields serialize correctly (Pydantic aliases)</criterion>
+    <criterion id="19">URN identifiers use 'id' field name (not 'urn')</criterion>
+    <criterion id="20">No console errors during workflow</criterion>
+    <criterion id="21">Network tab shows API calls to localhost:8000</criterion>
+    <criterion id="22">TypeScript compiles without errors</criterion>
+    <criterion id="23">Designer app starts successfully</criterion>
+    <criterion id="24">Phase 1 limitation documented (static mock data, no persistence)</criterion>
+    <criterion id="25">MappingPopupModal uses single hierarchical templates query instead of 3 separate queries</criterion>
+    <criterion id="26">Device dropdown dynamically filters based on selected equipment type (disabled until equipment selected)</criterion>
+    <criterion id="27">Property dropdown dynamically filters based on selected device type (disabled until device selected)</criterion>
+    <criterion id="28">Changing equipment type resets device and property selections</criterion>
+    <criterion id="29">Changing device type resets property selection</criterion>
+    <criterion id="30">mockValidationService removed - validation no longer needed with hierarchical filtering</criterion>
+    <criterion id="31">Create mapping uses bulk save pattern (adds to existing mappings array)</criterion>
+    <criterion id="32">Delete mapping uses bulk save pattern (removes from mappings array)</criterion>
+    <criterion id="33">SearchableSelect component supports disabled state with contextual placeholder</criterion>
+    <criterion id="34">useCreateEquipmentMapping view model uses bulk save mutation</criterion>
+    <criterion id="35">useSpacesViewModel uses FastAPI-backed hooks (useSpacesQuery, useCreateSpaceMutation)</criterion>
+    <criterion id="36">Type definitions updated to use camelCase field names matching generated client</criterion>
+    <criterion id="37">Container components (ControllersTreeContainer, FlowCanvasContainer) work without code changes</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2 Phase Breakdown</title>
+        <section>Phase 1 - Interface-First Development</section>
+        <snippet>Phase 1 validates OpenAPI contract with mock data before BuildingMOTIF. Story 2.5 integrates TypeScript client with Designer app using hierarchical templates and bulk save patterns.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-2-design-openapi-specification.md</path>
+        <title>Design OpenAPI Specification</title>
+        <section>Pydantic Models with camelCase Aliases</section>
+        <snippet>Python code uses snake_case internally, JSON API uses camelCase via Pydantic serialization_alias. URN identifiers use 'id' field name. Hierarchical template structure embeds all relationships.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-3-generate-typescript-client.md</path>
+        <title>Generate TypeScript Client</title>
+        <section>@hey-api/openapi-ts Generator</section>
+        <snippet>Uses @hey-api/openapi-ts to generate type-safe client with 5 functions (TemplatesService, MappingsService, SpacesService). Respects camelCase from Pydantic aliases.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-4-implement-mock-endpoints.md</path>
+        <title>Implement Mock Endpoints</title>
+        <section>Hierarchical Static Data</section>
+        <snippet>All 5 endpoints return static hierarchical data. No actual storage. Validates OpenAPI contract before BuildingMOTIF integration in Phase 2.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>TypeScript and React Conventions</section>
+        <snippet>Use React Query for data fetching. Prefer functional components with hooks. Follow error handling patterns with retry logic.</snippet>
+      </doc>
+      <doc>
+        <path>apps/designer/README.md</path>
+        <title>Designer App Documentation</title>
+        <section>React Query Setup</section>
+        <snippet>QueryClient configured for data fetching patterns. Use useQuery for reads, useMutation for writes with cache invalidation.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/generated/sdk.gen.ts</path>
+        <kind>generated-client</kind>
+        <symbol>getTemplatesApiV1223pTemplatesGet, getMappingsApiV1223pMappingsGet, saveMappingsApiV1223pMappingsPost, listSpacesApiV1223pSpacesGet, createSpaceApiV1223pSpacesPost</symbol>
+        <lines>26-99</lines>
+        <reason>Auto-generated TypeScript client with 5 FastAPI endpoint functions. Uses camelCase fields from Pydantic aliases. This is the new API client to integrate.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/queries/use-templates-query.ts</path>
+        <kind>query-hook</kind>
+        <symbol>useEquipmentTypesQuery, useDeviceTypesQuery, useObservablePropertiesQuery</symbol>
+        <lines>1-28</lines>
+        <reason>OLD Epic 1 hooks using mockBuildingMOTIFService. Need to replace with single hierarchical useTemplatesQuery using generated client.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/queries/use-mappings-query.ts</path>
+        <kind>query-hook</kind>
+        <symbol>useMappingsQuery, useCreateMappingMutation, useDeleteMappingMutation</symbol>
+        <lines>1-73</lines>
+        <reason>OLD Epic 1 hooks using semanticMappingsApi (sessionStorage). Update useMappingsQuery to use generated client. Replace individual CRUD mutations with single bulk save mutation.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/config.ts</path>
+        <kind>configuration</kind>
+        <symbol>API_BASE_URL, API_CONFIG</symbol>
+        <lines>1-11</lines>
+        <reason>Existing API configuration. Need to update to initialize generated client's base URL and timeout settings.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/adapters/ashrae-223p/services/mock-buildingmotif.service.ts</path>
+        <kind>service</kind>
+        <symbol>mockBuildingMOTIFService</symbol>
+        <lines>all</lines>
+        <reason>OLD Epic 1 service implementation. DELETE - replaced by FastAPI endpoints.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/adapters/ashrae-223p/services/mock-space.service.ts</path>
+        <kind>service</kind>
+        <symbol>mockSpaceService</symbol>
+        <lines>all</lines>
+        <reason>OLD Epic 1 service implementation. DELETE - replaced by FastAPI endpoints.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/adapters/ashrae-223p/services/mock-validation.service.ts</path>
+        <kind>service</kind>
+        <symbol>mockValidationService</symbol>
+        <lines>all</lines>
+        <reason>OLD Epic 1 service implementation. DELETE - hierarchical templates make validation unnecessary.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/mappings.api.ts</path>
+        <kind>api-service</kind>
+        <symbol>semanticMappingsApi</symbol>
+        <lines>all</lines>
+        <reason>OLD Epic 1 sessionStorage API. DELETE - replaced by FastAPI endpoints.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/spaces.api.ts</path>
+        <kind>api-service</kind>
+        <symbol>spaces223pApi</symbol>
+        <lines>all</lines>
+        <reason>OLD Epic 1 API. DELETE - replaced by FastAPI endpoints.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/adapters/ashrae-223p/services/interfaces/buildingmotif.ts</path>
+        <kind>interface</kind>
+        <symbol>IBuildingMOTIFService</symbol>
+        <lines>all</lines>
+        <reason>OLD Epic 1 service interface. DELETE - no longer needed with generated client.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/adapters/ashrae-223p/services/space.service.interface.ts</path>
+        <kind>interface</kind>
+        <symbol>ISpaceService</symbol>
+        <lines>all</lines>
+        <reason>OLD Epic 1 service interface. DELETE - no longer needed with generated client.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/adapters/ashrae-223p/services/validation.service.interface.ts</path>
+        <kind>interface</kind>
+        <symbol>IValidationService</symbol>
+        <lines>all</lines>
+        <reason>OLD Epic 1 service interface. DELETE - hierarchical templates make validation unnecessary.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/queries/use-ai-suggestion-query.ts</path>
+        <kind>query-hook</kind>
+        <symbol>useAISuggestionQuery</symbol>
+        <lines>all</lines>
+        <reason>KEEP UNCHANGED - Designer-only service, not FastAPI-backed. No changes needed for this story.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/mapping-popup-modal.tsx</path>
+        <kind>component</kind>
+        <symbol>MappingPopupModal</symbol>
+        <lines>27-30, 77-79, 83, 113-123, 163-184</lines>
+        <reason>PRIMARY UI COMPONENT - Replace 3 separate queries with 1 hierarchical query. Add dynamic dropdown filtering. Remove validation service. Update to use bulk save for create/delete operations.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/searchable-select.tsx</path>
+        <kind>component</kind>
+        <symbol>SearchableSelect</symbol>
+        <lines>all</lines>
+        <reason>UPDATE - Add disabled state support for parent-dependent filtering. Show contextual placeholder when parent not selected. Clear selection when options change.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/view-models/use-create-equipment-mapping.ts</path>
+        <kind>view-model</kind>
+        <symbol>useCreateEquipmentMapping</symbol>
+        <lines>1, 14, 105-109</lines>
+        <reason>UPDATE - Replace individual createMappingMutation with bulk save pattern. Fetch current mappings, add new one, save entire array.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/view-models/use-spaces-view-model.ts</path>
+        <kind>view-model</kind>
+        <symbol>useSpacesViewModel</symbol>
+        <lines>all</lines>
+        <reason>UPDATE - Replace spaces223pApi with FastAPI-backed useSpacesQuery and useCreateSpaceMutation hooks.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/adapters/ashrae-223p/schemas/index.ts</path>
+        <kind>type-definitions</kind>
+        <symbol>SemanticEquipment, SemanticMapping</symbol>
+        <lines>all</lines>
+        <reason>UPDATE - Change field names to camelCase: equipmentType → equipmentTypeId, deviceType → deviceTypeId, observableProperty → propertyId, physicalSpaceId → spaceId.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="@tanstack/react-query">^5.86.0</package>
+        <package name="@tanstack/react-query-devtools">^5.86.0</package>
+        <package name="@hey-api/openapi-ts">^0.87.1 (devDependency)</package>
+        <package name="next">15.5.2</package>
+        <package name="react">19.1.0</package>
+        <package name="zod">^3.22.0</package>
+        <package name="zustand">^5.0.8</package>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Use generated TypeScript client functions (getTemplatesApiV1223pTemplatesGet, getMappingsApiV1223pMappingsGet, etc.) - do not create manual fetch calls</constraint>
+    <constraint>All hooks must use React Query (useQuery for reads, useMutation for writes)</constraint>
+    <constraint>Implement error handling with retry: 3 logic in all queries</constraint>
+    <constraint>Use camelCase field names matching Pydantic aliases (equipmentTypeId, deviceTypeId, propertyId, spaceId)</constraint>
+    <constraint>URN identifiers use 'id' field name, not 'urn'</constraint>
+    <constraint>Hierarchical template structure - no separate device/property queries needed</constraint>
+    <constraint>Bulk save pattern - single mutation replaces all mappings, no individual CRUD</constraint>
+    <constraint>Delete old Epic 1 services - do not leave unused code</constraint>
+    <constraint>Keep useAISuggestionQuery unchanged - Designer-only, not FastAPI-backed</constraint>
+    <constraint>Cache invalidation on mutations - use queryClient.invalidateQueries with specific query keys</constraint>
+    <constraint>Project-relative paths only in context files - strip /Users/amol/Documents/ai-projects/bms-supervisor-controller prefix</constraint>
+    <constraint>Follow TDD principle - write tests first, then implement (from CLAUDE.md)</constraint>
+    <constraint>No comments unless explaining WHY (from CLAUDE.md)</constraint>
+    <constraint>Dynamic dropdown filtering - device dropdown disabled until equipment selected, property dropdown disabled until device selected</constraint>
+    <constraint>Reset child selections when parent changes - changing equipment type resets device and property, changing device resets property</constraint>
+    <constraint>Remove mockValidationService - hierarchical template filtering prevents invalid combinations</constraint>
+    <constraint>Bulk save for all mutations - create adds to array, delete filters from array, both use single saveMappings mutation</constraint>
+    <constraint>UI components must handle loading and error states from React Query hooks</constraint>
+    <constraint>Container components remain unchanged - hook interfaces preserved even though implementation changes</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>TemplatesService.getTemplatesApiV1223pTemplatesGet</name>
+      <kind>REST GET endpoint</kind>
+      <signature>GET /api/v1/223p/templates → TemplatesResponse (hierarchical structure with systems[], spaceTypes[])</signature>
+      <path>apps/designer/src/domains/building-semantics/api/generated/sdk.gen.ts:26-31</path>
+    </interface>
+    <interface>
+      <name>MappingsService.getMappingsApiV1223pMappingsGet</name>
+      <kind>REST GET endpoint</kind>
+      <signature>GET /api/v1/223p/mappings?projectId={id} → MappingsResponse (projectId, mappings[])</signature>
+      <path>apps/designer/src/domains/building-semantics/api/generated/sdk.gen.ts:66-71</path>
+    </interface>
+    <interface>
+      <name>MappingsService.saveMappingsApiV1223pMappingsPost</name>
+      <kind>REST POST endpoint</kind>
+      <signature>POST /api/v1/223p/mappings with SaveMappingsRequest (projectId, mappings[]) → MappingsResponse</signature>
+      <path>apps/designer/src/domains/building-semantics/api/generated/sdk.gen.ts:78-87</path>
+    </interface>
+    <interface>
+      <name>SpacesService.listSpacesApiV1223pSpacesGet</name>
+      <kind>REST GET endpoint</kind>
+      <signature>GET /api/v1/223p/spaces?projectId={id} → SpaceInstance[]</signature>
+      <path>apps/designer/src/domains/building-semantics/api/generated/sdk.gen.ts:38-43</path>
+    </interface>
+    <interface>
+      <name>SpacesService.createSpaceApiV1223pSpacesPost</name>
+      <kind>REST POST endpoint</kind>
+      <signature>POST /api/v1/223p/spaces with CreateSpaceRequest (projectId, label, spaceTypeId) → SpaceInstance</signature>
+      <path>apps/designer/src/domains/building-semantics/api/generated/sdk.gen.ts:50-59</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Use Jest with React Testing Library for component and hook tests. Test hooks with @testing-library/react-hooks patterns. Mock external API calls. Follow TDD: write tests first, then implement. Test files colocated with source (*.spec.ts, *.spec.tsx). Run with: pnpm test</standards>
+    <locations>apps/designer/src/domains/building-semantics/api/**/*.spec.ts</locations>
+    <ideas>
+      <test id="1" maps-to="AC-1,AC-2">Test useTemplatesQuery returns hierarchical structure with systems and spaceTypes arrays. Verify single API call made.</test>
+      <test id="2" maps-to="AC-3">Test useMappingsQuery calls getMappingsApiV1223pMappingsGet with projectId parameter. Verify camelCase field names.</test>
+      <test id="3" maps-to="AC-4">Test useSaveMappingsMutation accepts array of mappings and calls bulk save endpoint. Verify cache invalidation.</test>
+      <test id="4" maps-to="AC-5,AC-6">Test useSpacesQuery and useCreateSpaceMutation with camelCase spaceTypeId field.</test>
+      <test id="5" maps-to="AC-12,AC-13,AC-14">Test hierarchical filtering: equipment → devices → properties. Verify dropdown filtering logic.</test>
+      <test id="6" maps-to="AC-11">Test error handling with retry logic (3 attempts) for all hooks.</test>
+      <test id="7" maps-to="AC-18,AC-19">Test camelCase serialization and URN identifiers using 'id' field.</test>
+      <test id="8" maps-to="AC-22,AC-23">Integration test: start Designer app, verify no TypeScript errors, verify app starts successfully.</test>
+      <test id="9" maps-to="AC-20,AC-21">End-to-end test: complete mapping workflow, verify no console errors, verify API calls to localhost:8000.</test>
+      <test id="10" maps-to="UI">Test MappingPopupModal hierarchical filtering: select equipment type → device dropdown enables with filtered options → select device → property dropdown enables with filtered options.</test>
+      <test id="11" maps-to="UI">Test dropdown reset behavior: change equipment type → device and property reset to empty → change device → property resets to empty.</test>
+      <test id="12" maps-to="UI">Test SearchableSelect disabled state: equipment not selected → device dropdown disabled with placeholder "Select equipment type first...".</test>
+      <test id="13" maps-to="UI">Test bulk save on create: open popup, fill fields, confirm → verify API called with current mappings + new mapping array.</test>
+      <test id="14" maps-to="UI">Test bulk save on delete: open edit popup, delete mapping → verify API called with filtered mappings array (without deleted item).</test>
+      <test id="15" maps-to="UI">Test mockValidationService removed: verify no validation service calls, hierarchical filtering prevents invalid combinations.</test>
+      <test id="16" maps-to="UI">Test container components unchanged: verify ControllersTreeContainer and FlowCanvasContainer still work without code changes.</test>
+    </ideas>
+  </tests>
+</story-context>

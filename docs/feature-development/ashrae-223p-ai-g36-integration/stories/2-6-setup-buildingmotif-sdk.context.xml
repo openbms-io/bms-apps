@@ -1,0 +1,232 @@
+<story-context id="epic-2-story-2.6" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>6</storyId>
+    <title>Setup BuildingMOTIF SDK Infrastructure</title>
+    <status>draft</status>
+    <generatedAt>2025-11-12</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-6-setup-buildingmotif-sdk.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>backend developer</asA>
+    <iWant>BuildingMOTIF SDK properly initialized and integrated with our FastAPI application</iWant>
+    <soThat>we can replace mock endpoints with real ASHRAE 223P semantic operations in subsequent stories</soThat>
+    <tasks>
+      <task id="1" estimate="15min">Install BuildingMOTIF Dependency</task>
+      <task id="2" estimate="15min">Update Settings Configuration</task>
+      <task id="3" estimate="2h">Implement BuildingMOTIFAdapter</task>
+      <task id="4" estimate="1h">Create Service Layer</task>
+      <task id="5" estimate="5min">Update Service Module Init</task>
+      <task id="6" estimate="5min">Create Data Directory</task>
+      <task id="7" estimate="1.5h">Write Unit Tests</task>
+      <task id="8" estimate="1h">Write Integration Tests</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">BuildingMOTIF SDK installed and importable - verify with "python -c 'import buildingmotif; print(buildingmotif.__version__)'"</criterion>
+    <criterion id="AC2">BuildingMOTIFAdapter class implemented with methods: __init__, get_ashrae_library, get_template_by_name, list_templates, create_model, query_model, add_graph</criterion>
+    <criterion id="AC3">SQLite database created for RDF storage at apps/building-semantics-api-app/data/buildingmotif.db</criterion>
+    <criterion id="AC4">ASHRAE 223P library loaded successfully without exceptions</criterion>
+    <criterion id="AC5">Unit tests pass with mocked BuildingMOTIF SDK - pytest tests/unit/test_buildingmotif_adapter.py -v</criterion>
+    <criterion id="AC6">Integration tests pass with real BuildingMOTIF SDK - pytest tests/integration/test_buildingmotif_integration.py -v</criterion>
+    <criterion id="AC7">No changes to FastAPI endpoints - GET /api/v1/223p/templates, spaces, mappings still return mock data</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/PRD.md</path>
+        <title>bms-apps Product Requirements Document</title>
+        <section>Requirements - BuildingMOTIF Integration</section>
+        <snippet>FR013-FR018: System shall communicate with BuildingMOTIF service via REST API for template retrieval, RDF storage, SHACL validation, equipment hierarchies, and model querying</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>BMS Supervisor Controller — Architecture</title>
+        <section>Near-Term Planned - BuildingMOTIF Service</section>
+        <snippet>BuildingMOTIF Service (FastAPI) provides ASHRAE 223P semantic modeling with RDF graphs, SHACL validation, template library (VAV, AHU, CHW), and RESTful API. Designer integrates via generated TypeScript client.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/buildingmotif-research.md</path>
+        <title>BuildingMOTIF SDK Research</title>
+        <section>Executive Summary</section>
+        <snippet>BuildingMOTIF is a Python SDK (not a REST API) for semantic building models using RDF graphs and ASHRAE 223P. Provides template-based model creation, RDF operations, SHACL validation, and SQLite persistence. Epic 2 requires REST API wrapper around SDK.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2 Phase Breakdown</title>
+        <section>Phase 2: BuildingMOTIF SDK Integration - Story 2.6</section>
+        <snippet>Setup BuildingMOTIF SDK infrastructure with adapter pattern, SQLite persistence, service layer, and comprehensive unit/integration tests. Foundation for Stories 2.7-2.10 endpoint implementations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Python Coding Standards</section>
+        <snippet>Follow PEP 8 and Google Python Style Guide. Use snake_case for functions/variables, PascalCase for classes, type hints for all functions, Google-style docstrings, Black formatter (88 chars), Ruff linter, mypy type checking.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>BuildingMOTIFAdapter</symbol>
+        <lines>7-15</lines>
+        <reason>Current stub implementation to be replaced with full adapter in this story</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+        <kind>router</kind>
+        <symbol>get_templates</symbol>
+        <lines>15-35</lines>
+        <reason>Mock endpoint that will use BuildingMOTIFAdapter in Story 2.7</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+        <kind>router</kind>
+        <symbol>get_mappings, save_mappings</symbol>
+        <lines>44-117</lines>
+        <reason>Mock endpoints that will use BuildingMOTIFAdapter in Story 2.8</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/spaces.py</path>
+        <kind>router</kind>
+        <symbol>get_spaces, create_space</symbol>
+        <lines>all</lines>
+        <reason>Mock endpoints that will use BuildingMOTIFAdapter in Story 2.9</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/tests/integration/test_health.py</path>
+        <kind>test</kind>
+        <symbol>test_health_check_returns_200</symbol>
+        <lines>10-13</lines>
+        <reason>Example integration test pattern using TestClient</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/tests/unit/test_dto/test_templates_dto.py</path>
+        <kind>test</kind>
+        <symbol>test_template_property_dto_serializes_with_camelcase</symbol>
+        <lines>13-26</lines>
+        <reason>Example unit test pattern for DTOs with camelCase serialization</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="buildingmotif" version=">=0.4.0"/>
+        <package name="sqlalchemy" version="<2.0.0,>=1.4.44"/>
+        <package name="fastapi" version=">=0.104.0"/>
+        <package name="uvicorn" version=">=0.24.0"/>
+        <package name="pydantic" version=">=2.5.0"/>
+        <package name="pydantic-settings" version=">=2.0.0"/>
+        <package name="loguru" version=">=0.7.0"/>
+        <package name="pytest" version=">=7.4.0"/>
+        <package name="pytest-asyncio" version=">=0.21.0"/>
+        <package name="pytest-mock" version=">=3.11.1"/>
+        <package name="httpx" version=">=0.25.0"/>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Python 3.11+ required for type hints (list[str], dict[str, Any])</constraint>
+    <constraint>TDD approach: Write tests first, then implement (Red-Green-Refactor cycle)</constraint>
+    <constraint>Adapter pattern: BuildingMOTIFAdapter wraps SDK complexity, service layer provides business logic</constraint>
+    <constraint>No endpoint changes in this story - mock data remains active until Stories 2.7-2.10</constraint>
+    <constraint>SQLite persistence: Use file-based database (sqlite:///data/buildingmotif.db), not in-memory</constraint>
+    <constraint>Follow coding standards: PEP 8, Google-style docstrings, type hints, Black formatter (88 chars)</constraint>
+    <constraint>Error handling: Wrap BuildingMOTIF exceptions and provide clear error messages</constraint>
+    <constraint>ASHRAE 223P library: Load from BuildingMOTIF package (libraries/ashrae/223p/nrel-templates/)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>BuildingMOTIFAdapter.__init__</name>
+      <kind>python_method</kind>
+      <signature>def __init__(self, db_path: str = "data/buildingmotif.db") -> None</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.get_ashrae_library</name>
+      <kind>python_method</kind>
+      <signature>def get_ashrae_library(self) -> Library</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.get_template_by_name</name>
+      <kind>python_method</kind>
+      <signature>def get_template_by_name(self, template_name: str) -> Template</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.list_templates</name>
+      <kind>python_method</kind>
+      <signature>def list_templates(self) -> list[str]</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.create_model</name>
+      <kind>python_method</kind>
+      <signature>def create_model(self, namespace: str) -> Model</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.query_model</name>
+      <kind>python_method</kind>
+      <signature>def query_model(self, model: Model, sparql_query: str) -> list[dict[str, Any]]</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.add_graph</name>
+      <kind>python_method</kind>
+      <signature>def add_graph(self, model: Model, graph: Graph) -> None</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFService.__init__</name>
+      <kind>python_method</kind>
+      <signature>def __init__(self, adapter: BuildingMOTIFAdapter) -> None</signature>
+      <path>apps/building-semantics-api-app/src/services/buildingmotif_service.py</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFService.list_all_templates</name>
+      <kind>python_method</kind>
+      <signature>async def list_all_templates(self) -> list[str]</signature>
+      <path>apps/building-semantics-api-app/src/services/buildingmotif_service.py</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFService.get_template_info</name>
+      <kind>python_method</kind>
+      <signature>async def get_template_info(self, template_name: str) -> dict[str, Any]</signature>
+      <path>apps/building-semantics-api-app/src/services/buildingmotif_service.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest with pytest-asyncio for async tests. Follow TDD: write tests first, then implement. Unit tests mock BuildingMOTIF SDK (use pytest-mock for mocking buildingmotif.BuildingMOTIF and buildingmotif.dataclasses.Library). Integration tests use real BuildingMOTIF SDK with temporary SQLite database (tempfile.NamedTemporaryFile). Test file naming: test_*.py in tests/unit/ or tests/integration/. Use TestClient from FastAPI for integration tests. Assert behavior, not implementation details.
+    </standards>
+    <locations>
+      <location>tests/unit/test_buildingmotif_adapter.py</location>
+      <location>tests/integration/test_buildingmotif_integration.py</location>
+    </locations>
+    <ideas>
+      <idea criterion="AC1">Test BuildingMOTIF SDK importability - import buildingmotif and check __version__ attribute</idea>
+      <idea criterion="AC2">Unit test: Mock BuildingMOTIF and Library.load() to test adapter initialization without real SDK</idea>
+      <idea criterion="AC2">Unit test: Mock library.get_template_by_name() to test template retrieval logic</idea>
+      <idea criterion="AC2">Unit test: Mock library.get_templates() to test list_templates() returns correct format</idea>
+      <idea criterion="AC2">Unit test: Verify TemplateNotFoundError is raised when template doesn't exist</idea>
+      <idea criterion="AC3">Integration test: Initialize adapter with temp DB and verify file exists at specified path</idea>
+      <idea criterion="AC4">Integration test: Load ASHRAE 223P library and verify it's not None</idea>
+      <idea criterion="AC5">Unit test: Test model creation with mocked Model.create()</idea>
+      <idea criterion="AC5">Unit test: Test query execution with mocked model.query()</idea>
+      <idea criterion="AC6">Integration test: Load real template (vav-reheat) and verify template.name matches</idea>
+      <idea criterion="AC6">Integration test: List real templates and verify count > 0 and includes known templates</idea>
+      <idea criterion="AC6">Integration test: Create real model and verify it's not None</idea>
+      <idea criterion="AC7">Integration test: GET /api/v1/223p/templates returns mock data structure (verify no adapter integration yet)</idea>
+    </ideas>
+  </tests>
+</story-context>

@@ -1,23 +1,18 @@
-import type {
-  SemanticEquipment,
-  SpaceDTO,
-} from '../../adapters/ashrae-223p/schemas'
+import type { SemanticEquipment } from '../../adapters/ashrae-223p/schemas'
+import type { SpaceInstanceDto } from '../../api/generated'
 import type { EquipmentViewModel } from '../types'
 
-export function mapEquipmentDTOToViewModel(
-  pointName: string,
-  dto: SemanticEquipment | null,
-  spaces: SpaceDTO[]
-): EquipmentViewModel {
+export function mapEquipmentDTOToViewModel({
+  pointName,
+  dto,
+  spaces,
+}: {
+  pointName: string
+  dto: SemanticEquipment | undefined
+  spaces: SpaceInstanceDto[]
+}): EquipmentViewModel | undefined {
   if (!dto) {
-    return {
-      pointName,
-      equipmentType: '',
-      deviceType: '',
-      observableProperty: '',
-      propertyType: 'quantifiable',
-      hasMapping: false,
-    }
+    return undefined
   }
 
   const physicalSpace = dto.physicalSpaceId
@@ -27,16 +22,16 @@ export function mapEquipmentDTOToViewModel(
   const domainSpaces =
     dto.domainSpaceIds
       ?.map((id) => spaces.find((s) => s.id === id))
-      .filter((s): s is SpaceDTO => s !== undefined) || []
+      .filter((s): s is SpaceInstanceDto => s !== undefined) || []
 
   return {
     pointName,
-    equipmentType: dto.equipmentType,
-    deviceType: dto.deviceType,
-    observableProperty: dto.observableProperty,
+    equipmentTypeId: dto.equipmentTypeId,
+    deviceTypeId: dto.deviceTypeId,
+    propertyId: dto.propertyId,
     propertyType: dto.propertyType,
-    physicalSpaceLabel: physicalSpace?.rdfsLabel,
-    domainSpaceLabels: domainSpaces.map((s) => s.rdfsLabel),
+    physicalSpaceLabel: physicalSpace?.label,
+    domainSpaceLabels: domainSpaces.map((s) => s.label),
     hasMapping: true,
   }
 }
