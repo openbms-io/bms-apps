@@ -1,0 +1,329 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>8</storyId>
+    <title>Implement Mappings Endpoints with Real Persistence</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-14</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-8-implement-mappings-endpoints.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>backend developer and frontend developer</asA>
+    <iWant>the mappings endpoints to persist semantic point mappings in BuildingMOTIF's RDF graph storage</iWant>
+    <soThat>point mappings survive server restarts and enable real ASHRAE 223P instance graph queries</soThat>
+    <tasks>
+      <task id="0" name="Validation test for project relationship pattern">
+        <subtasks>
+          <subtask id="0.1">Create tests/integration/test_project_relationship_rdf.py</subtask>
+          <subtask id="0.2">Test BACnetExternalReference with bacnet: properties</subtask>
+          <subtask id="0.3">Test point ID format (already 223P-compliant from Designer)</subtask>
+          <subtask id="0.4">Test clean S223-compliant TTL export</subtask>
+        </subtasks>
+        <purpose>Verify external project relationship architecture and clean S223-compliant TTL export BEFORE implementing full mappings persistence</purpose>
+      </task>
+      <task id="1" name="Create pure mapper functions">
+        <subtasks>
+          <subtask id="1.1">Create src/mappers/mapping_mapper.py</subtask>
+          <subtask id="1.2">Implement to_equipment_rdf_triples() function</subtask>
+          <subtask id="1.3">Implement to_project_relationship_triples() function</subtask>
+          <subtask id="1.4">Add helper functions for URI construction</subtask>
+          <subtask id="1.5">Add RDF namespace constants</subtask>
+        </subtasks>
+      </task>
+      <task id="2" name="Extend BuildingMOTIFAdapter with mappings methods">
+        <subtasks>
+          <subtask id="2.1">Add get_project_mappings() method</subtask>
+          <subtask id="2.2">Add clear_project_mappings() method</subtask>
+          <subtask id="2.3">Add add_mapping_triples() method</subtask>
+          <subtask id="2.4">Add transaction support</subtask>
+        </subtasks>
+      </task>
+      <task id="3" name="Implement MappingsController">
+        <subtasks>
+          <subtask id="3.1">Create src/controllers/mappings_controller.py</subtask>
+          <subtask id="3.2">Implement get_mappings() method</subtask>
+          <subtask id="3.3">Implement save_mappings() method with atomic transaction</subtask>
+          <subtask id="3.4">Add error handling with logging</subtask>
+        </subtasks>
+      </task>
+      <task id="4" name="Update mappings router">
+        <subtasks>
+          <subtask id="4.1">Update src/routers/mappings.py to use MappingsController</subtask>
+        </subtasks>
+      </task>
+      <task id="5" name="Write integration tests">
+        <subtasks>
+          <subtask id="5.1">Create tests/integration/test_mappings_endpoint.py</subtask>
+          <subtask id="5.2">Test bulk GET with empty project</subtask>
+          <subtask id="5.3">Test bulk POST and GET roundtrip</subtask>
+          <subtask id="5.4">Test atomic transaction (rollback on error)</subtask>
+          <subtask id="5.5">Test bulk replace (clear + add)</subtask>
+          <subtask id="5.6">Test performance with 100+ mappings</subtask>
+        </subtasks>
+      </task>
+      <task id="6" name="Update Designer app">
+        <subtasks>
+          <subtask id="6.1">Verify TypeScript client already generated (Story 2.5)</subtask>
+          <subtask id="6.2">Test bulk save mutation hook</subtask>
+          <subtask id="6.3">Remove sessionStorage usage in mappings.api.ts</subtask>
+          <subtask id="6.4">End-to-end test: mapping workflow</subtask>
+        </subtasks>
+      </task>
+      <task id="7" name="Update documentation">
+        <subtasks>
+          <subtask id="7.1">Update mock_templates.py docstring</subtask>
+          <subtask id="7.2">Update Epic 2 tech spec if needed</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1" title="RDF triple persistence with external project relationship">
+      <requirements>
+        <requirement>Task 0 validation test passes before implementation</requirement>
+        <requirement>External project relationship pattern verified (project s223:contains equipment)</requirement>
+        <requirement>BACnetExternalReference 223P compliance verified</requirement>
+        <requirement>Clean S223 TTL export confirmed (no project metadata in equipment)</requirement>
+        <requirement>Mappings stored as RDF triples in BuildingMOTIF's SQLite database</requirement>
+        <requirement>Equipment instances are pure 223P (no project metadata)</requirement>
+        <requirement>BACnet references use bacnet:device-identifier and bacnet:object-identifier properties</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="2" title="Bulk GET endpoint returns pointId-keyed dictionary">
+      <requirements>
+        <requirement>GET /api/v1/223p/mappings?projectId=proj-123 returns MappingsResponseDTO</requirement>
+        <requirement>Query RDF graph for all equipment instances in project</requirement>
+        <requirement>Convert to DTO dictionary keyed by pointId</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="3" title="Bulk POST endpoint with atomic transaction">
+      <requirements>
+        <requirement>POST /api/v1/223p/mappings with atomic operation</requirement>
+        <requirement>Clear existing + Add all new mappings</requirement>
+        <requirement>Transaction: Begin → Delete existing → Add new → Commit (rollback on error)</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="4" title="Pure mapper functions for RDF ↔ DTO conversion">
+      <requirements>
+        <requirement>Create src/mappers/mapping_mapper.py with stateless functions</requirement>
+        <requirement>to_mapping_dto() converts RDF equipment instance to DTO</requirement>
+        <requirement>to_equipment_rdf_triples() converts DTO to equipment RDF triples</requirement>
+        <requirement>to_project_relationship_triples() converts project contains relationships</requirement>
+        <requirement>Point ID parsing: simple split(":") - no complex parsing logic</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="5" title="MappingsController following Story 2.7 patterns">
+      <requirements>
+        <requirement>Mediator pattern: Router → Controller → Adapter</requirement>
+        <requirement>get_mappings() fetches RDF graph and converts to DTOs</requirement>
+        <requirement>save_mappings() uses atomic transaction for bulk operations</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="6" title="Integration tests with session-scoped fixtures + clean TTL export">
+      <requirements>
+        <requirement>Use session-scoped BuildingMOTIFAdapter fixture</requirement>
+        <requirement>Test bulk GET with empty project</requirement>
+        <requirement>Test bulk POST and GET roundtrip</requirement>
+        <requirement>Test atomic transaction rollback on error</requirement>
+        <requirement>Test clean S223 TTL export (SPARQL CONSTRUCT filters by project)</requirement>
+        <requirement>Test BACnetExternalReference properties</requirement>
+        <requirement>Test external project relationship (not embedded)</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="7" title="Performance optimization (100+ mappings &lt; 500ms)">
+      <requirements>
+        <requirement>Batch RDF queries (avoid N+1 query problem)</requirement>
+        <requirement>Use SPARQL queries with proper filters</requirement>
+        <requirement>Transaction batching for bulk add operations</requirement>
+        <requirement>Performance test: 100 mappings bulk save &lt; 500ms</requirement>
+        <requirement>Performance test: 100 mappings bulk read &lt; 300ms</requirement>
+      </requirements>
+    </criterion>
+    <criterion id="8" title="Designer app end-to-end workflow">
+      <requirements>
+        <requirement>Save mappings → POST bulk endpoint</requirement>
+        <requirement>Refresh page → GET bulk endpoint → Mappings restored</requirement>
+        <requirement>Verify sessionStorage removed (replaced by API)</requirement>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-7-implement-templates-endpoint.md</path>
+        <title>Story 2.7: Implement Templates Endpoint</title>
+        <section>Dev Notes - Architecture Alignment</section>
+        <snippet>Router → Controller → Adapter (mediator pattern). Controller orchestrates, mappers transform (pure functions). Adapter is singleton, initialized once. Session-scoped fixtures for testing to avoid 30s+ ontology reload per test.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2 Phase Breakdown</title>
+        <section>Story 2.8: Implement Mappings Endpoints</section>
+        <snippet>Phase 2 story implementing RDF persistence for mappings. Replace in-memory storage with BuildingMOTIF RDF graph. External project relationship pattern (project contains equipment). Bulk operations for performance.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/tech-spec-review.md</path>
+        <title>Epic 2 Tech Spec Review</title>
+        <section>Service Architecture - I223P*Service Pattern</section>
+        <snippet>FastAPI-backed services use I223P* prefix. Domain (223P) + Responsibility naming. I223PMappingsService interface for mappings operations. Consistent interface pattern across all services.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>BMS Supervisor Controller Architecture</title>
+        <section>BuildingMOTIF Service (FastAPI)</section>
+        <snippet>ASHRAE 223P semantic modeling (RDF graphs). SHACL validation. Template library. RESTful API with Pydantic → OpenAPI → TypeScript types. Designer integrates via generated TypeScript client.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Python Coding Standards</section>
+        <snippet>PEP 8 style guide. Type hints required (Python 3.5+). Docstrings with Args/Returns/Raises. snake_case for variables/functions, PascalCase for classes. 4 spaces indentation, 88 chars line length (Black formatter).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>BuildingMOTIFAdapter</symbol>
+        <lines>14-150</lines>
+        <reason>Singleton adapter for BuildingMOTIF SDK. Need to extend with mappings methods: get_project_mappings(), clear_project_mappings(), add_mapping_triples(), transaction() context manager</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+        <kind>router</kind>
+        <symbol>router</symbol>
+        <lines>6-116</lines>
+        <reason>Current in-memory mappings router. Need to replace _MAPPINGS_STORE dict with MappingsController calls. Remove line 13 (_MAPPINGS_STORE), update get_mappings() and save_mappings() endpoints</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/mappings_dto.py</path>
+        <kind>dto</kind>
+        <symbol>SemanticMappingDTO, MappingsResponseDTO, SaveMappingsRequestDTO</symbol>
+        <lines>1-52</lines>
+        <reason>Data transfer objects for mappings endpoints. Already defined, use as-is. SemanticMappingDTO represents single point mapping. MappingsResponseDTO for GET responses. SaveMappingsRequestDTO for POST bulk operations</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/controllers/templates_controller.py</path>
+        <kind>controller</kind>
+        <symbol>TemplatesController</symbol>
+        <lines>1-80</lines>
+        <reason>Story 2.7 controller implementation. Follow same pattern for MappingsController: mediator pattern, singleton adapter access via get_instance(), type hints with TypeAlias, error handling with logging</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/tests/integration/conftest.py</path>
+        <kind>test-fixture</kind>
+        <symbol>shared_adapter</symbol>
+        <lines>-</lines>
+        <reason>Session-scoped BuildingMOTIFAdapter fixture (Story 2.7 pattern). Reuse for mappings integration tests. Avoids 30s+ ontology reload per test. Each test uses unique project_id for isolation</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/mappers/template_mapper.py</path>
+        <kind>mapper</kind>
+        <symbol>extract_rdf_class_uri</symbol>
+        <lines>19-37</lines>
+        <reason>Reuse this pattern for mappings. Extracts 223P class URI from BuildingMOTIF template RDF graph. Pattern: adapter.get_template_by_name(template_id) → extract_rdf_class_uri(template) → URIRef. Necessary because template IDs ≠ class names (1:N relationship)</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="fastapi" version=">=0.104.0">Web framework for API endpoints</package>
+        <package name="pydantic" version="2.5.3">Data validation and DTOs</package>
+        <package name="buildingmotif" version=">=0.4.0">ASHRAE 223P RDF operations and templates</package>
+        <package name="rdflib" version="-">RDF graph operations (via buildingmotif)</package>
+        <package name="sqlalchemy" version="&lt;2.0.0,>=1.4.44">Database ORM for RDF persistence</package>
+        <package name="loguru" version="0.7.3">Logging framework</package>
+        <package name="pytest" version=">=7.4.0">Testing framework</package>
+        <package name="pytest-asyncio" version=">=0.21.0">Async test support</package>
+        <package name="httpx" version="0.25.2">HTTP client for API testing</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint category="architecture">Router → Controller → Adapter (mediator pattern). No service layer. Controllers handle business logic directly.</constraint>
+    <constraint category="architecture">External project relationship: project s223:contains equipment (not embedded). Equipment instances must be pure 223P with no project metadata.</constraint>
+    <constraint category="architecture">Mapper functions are stateless but require adapter parameter for template lookups (template ID → class URI resolution via extract_rdf_class_uri pattern). Controller fetches data, passes to mapper with adapter reference, returns DTOs.</constraint>
+    <constraint category="rdf">Use official ASHRAE 223P predicates: s223:contains, s223:hasProperty, s223:hasExternalReference, s223:locatedIn</constraint>
+    <constraint category="rdf">BACnet references must use bacnet:device-identifier and bacnet:object-identifier (all optional per SHACL)</constraint>
+    <constraint category="rdf">Point ID format from Designer: "device,{id}:{objectType},{instance}". Backend: simple split(":") - no parsing logic</constraint>
+    <constraint category="rdf-mapping">Template IDs (e.g., "vav-reheat") are NOT the same as 223P class names. Multiple templates can share the same class URI (e.g., "vav-reheat" and "lab-vav-reheat" both use s223:TerminalUnit). Mappers must lookup templates via BuildingMOTIF adapter to get class URIs using extract_rdf_class_uri() pattern from Story 2.7.</constraint>
+    <constraint category="testing">Use session-scoped BuildingMOTIFAdapter fixture. Each test uses unique project_id for isolation. No cleanup needed between tests.</constraint>
+    <constraint category="testing">Test atomic transactions: POST with error must rollback (no partial updates)</constraint>
+    <constraint category="performance">Avoid N+1 queries. Batch RDF operations. Use SPARQL filters early. Target: 100 mappings bulk save &lt; 500ms, bulk read &lt; 300ms</constraint>
+    <constraint category="code-style">Python: PEP 8, type hints required, docstrings with Args/Returns/Raises, 88 char line length (Black)</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>MappingsController.get_mappings()</name>
+      <kind>controller-method</kind>
+      <signature>async def get_mappings(self, project_id: str) -> MappingsResponseDTO</signature>
+      <path>apps/building-semantics-api-app/src/controllers/mappings_controller.py</path>
+      <description>Mediator pattern. Fetch RDF graph from adapter, extract equipment URIs, pass to mapper for DTO conversion, return MappingsResponseDTO</description>
+    </interface>
+    <interface>
+      <name>MappingsController.save_mappings()</name>
+      <kind>controller-method</kind>
+      <signature>async def save_mappings(self, request: SaveMappingsRequestDTO) -> MappingsResponseDTO</signature>
+      <path>apps/building-semantics-api-app/src/controllers/mappings_controller.py</path>
+      <description>Atomic transaction. Begin → Clear existing → Convert DTOs to RDF triples (mapper) → Add triples → Commit. Rollback on error</description>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.get_project_mappings()</name>
+      <kind>adapter-method</kind>
+      <signature>def get_project_mappings(self, project_id: str) -> Graph</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+      <description>Query RDF graph for all equipment instances in project using external relationship filter</description>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.clear_project_mappings()</name>
+      <kind>adapter-method</kind>
+      <signature>def clear_project_mappings(self, project_id: str) -> None</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+      <description>Delete all equipment instances for project. Part of atomic transaction pattern</description>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.add_mapping_triples()</name>
+      <kind>adapter-method</kind>
+      <signature>def add_mapping_triples(self, triples: list[tuple[URIRef, URIRef, URIRef | Literal]]) -> None</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+      <description>Add RDF triples to graph in bulk. Used for batch operations</description>
+    </interface>
+    <interface>
+      <name>mapping_mapper.to_equipment_rdf_triples()</name>
+      <kind>mapper-function</kind>
+      <signature>def to_equipment_rdf_triples(equipment_uri: URIRef, point_id: str, mapping: SemanticMappingDTO, adapter: BuildingMOTIFAdapter) -> list[tuple]</signature>
+      <path>apps/building-semantics-api-app/src/mappers/mapping_mapper.py</path>
+      <description>Converts DTO to equipment + device + property + BACnetExternalReference triples. Requires adapter for template lookups (template ID → class URI via extract_rdf_class_uri pattern). Does NOT include project relationship</description>
+    </interface>
+    <interface>
+      <name>mapping_mapper.to_project_relationship_triples()</name>
+      <kind>pure-function</kind>
+      <signature>def to_project_relationship_triples(project_uri: URIRef, equipment_uris: list[URIRef]) -> list[tuple]</signature>
+      <path>apps/building-semantics-api-app/src/mappers/mapping_mapper.py</path>
+      <description>Pure function. Returns project s223:contains equipment triples for each equipment URI</description>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Pytest framework with pytest-asyncio for async support. Session-scoped fixtures for BuildingMOTIFAdapter (Story 2.7 pattern) to avoid 30s+ ontology reload per test. Integration tests use httpx TestClient for FastAPI endpoints. Each test uses unique project_id for isolation. Test atomic transactions with rollback verification. Performance tests target: 100 mappings bulk save &lt; 500ms, bulk read &lt; 300ms.</standards>
+    <locations>
+      <location>apps/building-semantics-api-app/tests/integration/</location>
+      <location>apps/building-semantics-api-app/tests/unit/</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Task 0 validation test: Verify external project relationship pattern, BACnetExternalReference 223P compliance, clean S223 TTL export (no project metadata)</idea>
+      <idea ac="2">Integration test: GET /api/v1/223p/mappings?projectId=empty returns empty mappings dict</idea>
+      <idea ac="2">Integration test: POST mappings → GET mappings roundtrip verifies persistence</idea>
+      <idea ac="3">Integration test: POST with error → Verify rollback (atomic transaction)</idea>
+      <idea ac="3">Integration test: Bulk replace - save initial mappings, save different mappings, verify only new mappings exist</idea>
+      <idea ac="4">Unit test: to_equipment_rdf_triples() generates correct RDF triples for equipment + device + property + BACnetExternalReference</idea>
+      <idea ac="4">Unit test: to_project_relationship_triples() generates correct project s223:contains equipment triples</idea>
+      <idea ac="4">Unit test: Point ID split - "device,123:analog-input,1".split(":") extracts device_id and object_id correctly</idea>
+      <idea ac="6">Integration test: SPARQL CONSTRUCT query exports clean 223P TTL (no bms:Project in output)</idea>
+      <idea ac="7">Performance test: 100 mappings bulk save &lt; 500ms, bulk read &lt; 300ms</idea>
+    </ideas>
+  </tests>
+</story-context>

@@ -70,7 +70,7 @@ development_status:
   2-5-integrate-typescript-client: done
   2-6-setup-buildingmotif-sdk: done
   2-7-implement-templates-endpoint: done
-  2-8-implement-mappings-endpoints: backlog
+  2-8-implement-mappings-endpoints: ready-for-dev
   2-9-implement-spaces-endpoints: backlog
   2-10-implement-validation-endpoint: backlog
   2-11-error-handling-and-integration-tests: backlog
