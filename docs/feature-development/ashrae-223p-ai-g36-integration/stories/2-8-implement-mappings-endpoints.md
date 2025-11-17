@@ -269,7 +269,7 @@ class MappingsController:
 
 **Purpose**: Verify external project relationship architecture and clean S223-compliant TTL export BEFORE implementing full mappings persistence.
 
-- [ ] **0.1**: Create `tests/integration/test_project_relationship_rdf.py`
+- [x] **0.1**: Create `tests/integration/test_project_relationship_rdf.py`
 
   ```python
   async def test_external_project_relationship_pattern(shared_adapter):
@@ -285,7 +285,7 @@ class MappingsController:
       pass
   ```
 
-- [ ] **0.2**: Test BACnetExternalReference with bacnet: properties
+- [x] **0.2**: Test BACnetExternalReference with bacnet: properties
 
   ```python
   async def test_bacnet_external_reference_223p_compliance(shared_adapter):
@@ -301,7 +301,7 @@ class MappingsController:
       pass
   ```
 
-- [ ] **0.3**: Test point ID format (already 223P-compliant from Designer)
+- [x] **0.3**: Test point ID format (already 223P-compliant from Designer)
 
   ```python
   async def test_point_id_format_split_no_parsing(shared_adapter):
@@ -319,7 +319,7 @@ class MappingsController:
       assert object_id == "analog-input,1"
   ```
 
-- [ ] **0.4**: Test clean S223-compliant TTL export
+- [x] **0.4**: Test clean S223-compliant TTL export
 
   ```python
   async def test_clean_223p_ttl_export_no_project_metadata(shared_adapter):
@@ -337,16 +337,16 @@ class MappingsController:
 
 **Success Criteria:**
 
-- All 4 tests pass
-- External project relationship pattern validated
-- BACnetExternalReference 223P compliance verified
-- Clean TTL export confirmed (no project metadata in equipment)
+- ✅ All 4 tests pass
+- ✅ External project relationship pattern validated
+- ✅ BACnetExternalReference 223P compliance verified
+- ✅ Clean TTL export confirmed (no project metadata in equipment)
 
 ---
 
 ### Task 1: Create pure mapper functions (AC: #4)
 
-- [ ] **1.1**: Create `src/mappers/mapping_mapper.py`
+- [x] **1.1**: Create `src/mappers/mapping_mapper.py`
 
   ```python
   def to_mapping_dto(
@@ -366,7 +366,7 @@ class MappingsController:
       pass
   ```
 
-- [ ] **1.2**: Implement `to_equipment_rdf_triples()` function
+- [x] **1.2**: Implement `to_equipment_rdf_triples()` function
 
   ```python
   def to_equipment_rdf_triples(
@@ -395,7 +395,7 @@ class MappingsController:
       pass
   ```
 
-- [ ] **1.3**: Implement `to_project_relationship_triples()` function
+- [x] **1.3**: Implement `to_project_relationship_triples()` function
 
   ```python
   def to_project_relationship_triples(
@@ -417,7 +417,7 @@ class MappingsController:
       pass
   ```
 
-- [ ] **1.4**: Add helper functions for URI construction
+- [x] **1.4**: Add helper functions for URI construction
 
   ```python
   def create_equipment_uri(point_id: str) -> URIRef
@@ -427,7 +427,7 @@ class MappingsController:
   def create_project_uri(project_id: str) -> URIRef
   ```
 
-- [ ] **1.5**: Add RDF namespace constants
+- [x] **1.5**: Add RDF namespace constants
 
   ```python
   S223 = Namespace('http://data.ashrae.org/standard223#')
@@ -603,7 +603,7 @@ class MappingsController:
 
 ### Task 6: Update Designer app (AC: #8)
 
-- [ ] **6.1**: Verify TypeScript client already generated (Story 2.5)
+- [x] **6.1**: Verify TypeScript client already generated (Story 2.5)
 
   ```bash
   # Regenerate if needed
@@ -611,7 +611,7 @@ class MappingsController:
   pnpm run generate:api-client
   ```
 
-- [ ] **6.2**: Test bulk save mutation hook
+- [x] **6.2**: Test bulk save mutation hook
 
   ```typescript
   // Verify useSaveMappingsMutation() calls new endpoint
@@ -622,12 +622,13 @@ class MappingsController:
   })
   ```
 
-- [ ] **6.3**: Remove sessionStorage usage in mappings.api.ts
+- [x] **6.3**: Remove sessionStorage usage in mappings.api.ts
 
   - Verify no `sessionStorage.setItem('223p-mappings:...')`
   - All persistence via FastAPI
+  - Updated outdated comment in bacnet-keys.ts
 
-- [ ] **6.4**: End-to-end test: mapping workflow
+- [x] **6.4**: End-to-end test: mapping workflow
   - Select equipment → device → property
   - Save mappings
   - Refresh browser tab
@@ -635,14 +636,15 @@ class MappingsController:
 
 ### Task 7: Update documentation (AC: All)
 
-- [ ] **7.1**: Update mock_templates.py docstring
+- [x] **7.1**: Update mock_templates.py docstring
 
   - Note: Story 2.8 replaces in-memory mappings with RDF persistence
   - MOCK_MAPPINGS removed (no longer needed)
 
-- [ ] **7.2**: Update Epic 2 tech spec if needed
+- [x] **7.2**: Update Epic 2 tech spec if needed
   - Document RDF persistence model
   - Document atomic transaction pattern
+  - Reviewed: Already well-documented in phase breakdown
 
 ---
 
@@ -990,5 +992,70 @@ def shared_adapter(tmp_path_factory):
 ### Debug Log References
 
 ### Completion Notes List
+
+**2025-11-16: SPARQL Query Refactoring**
+
+Addressed code review findings by decomposing complex SPARQL queries in `mappings_model.py`:
+
+**Part 1: `_get_project_graph()` decomposed into 4 focused CONSTRUCT queries:**
+- `_get_equipment_triples()` - Equipment instance triples only
+- `_get_device_triples()` - Device instance triples only
+- `_get_property_triples()` - Property instance triples only
+- `_get_bacnet_reference_triples()` - BACnet reference triples only
+
+**Part 2: `_extract_mappings_from_graph()` decomposed into 2 focused SELECT queries:**
+- `_query_core_mappings()` - Core mapping data without GROUP_CONCAT (returns `list[CoreMappingData]`)
+- `_query_domain_spaces()` - Domain space relationships separately (returns `dict[str, list[str]]`)
+
+**Benefits:**
+- Eliminated nested OPTIONAL clauses for easier debugging
+- Removed GROUP_CONCAT string parsing complexity
+- Each query has single, clear responsibility
+- Deterministic ordering with explicit sorting
+- Proper type safety with `CoreMappingData` TypedDict (no `Any`)
+
+**Test Coverage:** All 12 integration tests pass (3 persistence + 9 router tests)
+
+**2025-11-16: BuildingMOTIF Model Persistence Fix**
+
+Fixed semantic mappings not persisting across server restarts:
+
+**Root Cause:**
+- BuildingMOTIF's `models` table has no unique constraint on `name` column
+- Previous implementation caught generic `Exception` in `get_or_create_model()`
+- When `Model.load(name=...)` failed with `MultipleResultsFound`, code created new model
+- Result: 22 duplicate models for same project, each with different graph_id
+
+**Implementation:**
+- Removed unnecessary model cache (Model.graph persists automatically via rdflib-sqlalchemy)
+- Added SQLAlchemy exception imports: `NoResultFound`, `MultipleResultsFound`
+- Replaced `get_or_create_model()` to use BuildingMOTIF's native pattern:
+  - Uses `bm.table_connection.get_db_model_by_name()` to load by name
+  - Catches `NoResultFound` to create new model
+  - Calls `bm.session.commit()` after `Model.create()` (required for persistence)
+  - Raises `RuntimeError` on `MultipleResultsFound` for debugging
+
+**Pattern Reference:** https://github.com/NREL/BuildingMOTIF/blob/develop/buildingmotif/api/views/model.py
+
+**Test Coverage:**
+- 11 unit tests pass (3 new tests for get_or_create_model scenarios)
+- 9 integration tests pass (mappings endpoints)
+
+**2025-11-16: Designer App Integration & Documentation Completion**
+
+Completed final tasks for Story 2.8:
+
+**Task 6: Designer App (AC: #8)**
+- ✅ TypeScript client already up-to-date from Story 2.5
+- ✅ `useSaveMappingsMutation()` working correctly with bulk endpoints
+- ✅ No sessionStorage usage found (all persistence via API)
+- ✅ Updated outdated comment in `bacnet-keys.ts:46` (removed sessionStorage reference)
+- ✅ End-to-end workflow verified by user: mappings persist across browser refresh
+
+**Task 7: Documentation**
+- ✅ Updated `mock_templates.py` docstring: Story 2.8 status PENDING → DONE
+- ✅ Reviewed Epic 2 tech spec: RDF persistence model and atomic transactions already well-documented in phase breakdown
+
+**Story Status:** All 8 acceptance criteria complete, all 8 tasks complete (0-7), ready for code review.
 
 ### File List

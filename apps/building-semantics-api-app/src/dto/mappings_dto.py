@@ -20,8 +20,15 @@ class SemanticMappingDTO(BaseModel):
     property_id: str = Field(
         ..., alias="propertyId", description="Property URN from template"
     )
-    space_id: str | None = Field(
-        None, alias="spaceId", description="Space instance URN (optional)"
+    physical_space_id: str | None = Field(
+        None,
+        alias="physicalSpaceId",
+        description="Physical space where equipment is located (s223:locatedIn)"
+    )
+    domain_space_ids: list[str] | None = Field(
+        None,
+        alias="domainSpaceIds",
+        description="Domain spaces equipment serves - HVAC zones, lighting zones, etc. (s223:hasDomain)"
     )
 
 

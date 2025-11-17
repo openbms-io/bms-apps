@@ -2,7 +2,7 @@
 
 NOTE:
 - Story 2.7 (Templates) - DONE, uses real BuildingMOTIF data
-- Story 2.8 (Mappings) - PENDING, will use real persistence (no mock needed)
+- Story 2.8 (Mappings) - DONE, uses real RDF persistence with BuildingMOTIF
 - Story 2.9 (Spaces) - PENDING, currently using MOCK_SPACES below
 
 This file will be deleted after Story 2.9 is implemented.

@@ -1,16 +1,13 @@
 """ASHRAE 223P Mappings router."""
 from fastapi import APIRouter, Query
 
+from ..controllers.mappings_controller import MappingsController
 from ..dto.mappings_dto import MappingsResponseDTO, SaveMappingsRequestDTO
 
 router = APIRouter(
     prefix="/api/v1/223p/mappings",
     tags=["ASHRAE 223P Mappings"],
 )
-
-# In-memory storage for mappings data (Phase 1 mock behavior)
-# Dictionary keyed by projectId for multi-project support
-_MAPPINGS_STORE: dict[str, MappingsResponseDTO] = {}
 
 
 @router.get(
@@ -30,7 +27,8 @@ _MAPPINGS_STORE: dict[str, MappingsResponseDTO] = {}
                                 "equipmentTypeId": "urn:223p:VAVReheatTerminalUnit",
                                 "deviceTypeId": "urn:223p:Damper",
                                 "propertyId": "urn:223p:DamperPosition",
-                                "spaceId": "urn:bms:PhysicalSpace:room-101",
+                                "physicalSpaceId": "urn:bms:PhysicalSpace:room-101",
+                                "domainSpaceIds": ["urn:bms:Zone:hvac-1"],
                             }
                         },
                     }
@@ -55,10 +53,8 @@ async def get_mappings(
     Raises:
         HTTPException: When operation fails
     """
-    return _MAPPINGS_STORE.get(
-        project_id,
-        MappingsResponseDTO(projectId=project_id, mappings={})
-    )
+    controller = MappingsController()
+    return await controller.get_mappings(project_id)
 
 
 @router.post(
@@ -81,7 +77,8 @@ async def get_mappings(
                                 "equipmentTypeId": "urn:223p:VAVReheatTerminalUnit",
                                 "deviceTypeId": "urn:223p:Damper",
                                 "propertyId": "urn:223p:DamperPosition",
-                                "spaceId": "urn:bms:PhysicalSpace:room-101",
+                                "physicalSpaceId": "urn:bms:PhysicalSpace:room-101",
+                                "domainSpaceIds": ["urn:bms:Zone:hvac-1"],
                             }
                         },
                     }
@@ -108,9 +105,5 @@ async def save_mappings(request: SaveMappingsRequestDTO) -> MappingsResponseDTO:
     Raises:
         HTTPException: When operation fails
     """
-    response = MappingsResponseDTO(
-        projectId=request.project_id,
-        mappings=request.mappings
-    )
-    _MAPPINGS_STORE[request.project_id] = response
-    return response
+    controller = MappingsController()
+    return await controller.save_mappings(request)

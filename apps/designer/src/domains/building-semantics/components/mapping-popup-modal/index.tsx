@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -15,31 +14,25 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { ChevronDown, AlertCircle } from 'lucide-react'
-import { PointContextCard } from './point-context-card'
-import { ConfidenceIndicator } from './confidence-indicator'
-import { OverallConfidenceBar } from './overall-confidence-bar'
-import { SearchableSelect } from './searchable-select'
-import { SpaceComboBox } from './space-combobox'
-import { SpaceMultiComboBox } from './space-multi-combobox'
-import { useTemplatesQuery } from '../api/queries/use-templates-query'
-import { useMappingSuggestionViewModel } from '../view-models/use-mapping-suggestion-view-model'
-import { useSpacesViewModel } from '../view-models/use-spaces-view-model'
-import { useCreateEquipmentMapping } from '../view-models/use-create-equipment-mapping'
-import { useSaveMappingsMutation } from '../api/mutations/use-save-mappings-mutation'
-import { useMappingsViewModel } from '../view-models/use-mappings-view-model'
-import type { SemanticMappingDto } from '../api/generated'
-import { toast } from 'sonner'
+import { ChevronDown } from 'lucide-react'
+import { PointContextCard } from '../point-context-card'
+import { ConfidenceIndicator } from '../confidence-indicator'
+import { OverallConfidenceBar } from '../overall-confidence-bar'
+import { SearchableSelect } from '../searchable-select'
+import { SpaceComboBox } from '../space-combobox'
+import { SpaceMultiComboBox } from '../space-multi-combobox'
+import { useTemplatesQuery } from '../../api/queries/use-templates-query'
+import { useMappingSuggestionViewModel } from '../../view-models/use-mapping-suggestion-view-model'
+import { useSpacesViewModel } from '../../view-models/use-spaces-view-model'
 import type {
   BACnetPointData,
   SemanticEquipment,
   BACnetControllerData,
-} from '../adapters/ashrae-223p/schemas'
-import {
-  createDeviceIdentifier,
-  createObjectIdentifier,
-  createCompositeKey,
-} from '../utils/bacnet-keys'
+} from '../../adapters/ashrae-223p/schemas'
+import { useMappingFormState } from './use-mapping-form-state'
+import { useTemplateOptions } from './use-template-options'
+import { useMappingConfirm } from './use-mapping-confirm'
+import { useMappingDelete } from './use-mapping-delete'
 
 interface MappingPopupModalProps {
   projectId: string
@@ -64,168 +57,45 @@ export function MappingPopupModal({
   onSkip,
   onOpenChange,
 }: MappingPopupModalProps) {
-  const [equipmentType, setEquipmentType] = useState('')
-  const [deviceType, setDeviceType] = useState('')
-  const [observableProperty, setObservableProperty] = useState('')
-  const [physicalSpaceName, setPhysicalSpaceName] = useState('')
-  const [domainSpaceNames, setDomainSpaceNames] = useState<string[]>([])
-  const [isSpaceSectionOpen, setIsSpaceSectionOpen] = useState(true)
-
   const { data: templates } = useTemplatesQuery()
   const { physicalSpaces, domainSpaces } = useSpacesViewModel(projectId)
-  const { data: currentMappings } = useMappingsViewModel({ projectId })
-
-  const { execute: createMapping } = useCreateEquipmentMapping(projectId)
-  const saveMappings = useSaveMappingsMutation()
-
   const suggestion = useMappingSuggestionViewModel(projectId, point)
 
-  const equipmentTypes =
-    templates?.systems.map((s) => ({ value: s.id, label: s.label })) ?? []
-  const selectedSystem = templates?.systems.find((s) => s.id === equipmentType)
-  const deviceTypes =
-    selectedSystem?.devices.map((d) => ({ value: d.id, label: d.label })) ?? []
-  const selectedDevice = selectedSystem?.devices.find(
-    (d) => d.id === deviceType
+  const formState = useMappingFormState(open, existingMapping, suggestion)
+  const { equipmentTypes, deviceTypes, observableProperties } = useTemplateOptions(
+    templates,
+    formState.state.equipmentType,
+    formState.state.deviceType
   )
-  const observableProperties =
-    selectedDevice?.properties.map((p) => ({
-      value: p.id,
-      label: p.label,
-      metadata: {
-        quantityKind: p.quantityKind,
-        unit: p.unit,
-        medium: p.medium,
-      },
-    })) ?? []
-
-  useEffect(() => {
-    if (open) {
-      if (existingMapping) {
-        setEquipmentType(existingMapping.equipmentTypeId)
-        setDeviceType(existingMapping.deviceTypeId)
-        setObservableProperty(existingMapping.propertyId)
-        setPhysicalSpaceName('')
-        setDomainSpaceNames([])
-      } else if (suggestion) {
-        setEquipmentType(suggestion.equipmentTypeId.id)
-        setDeviceType(suggestion.deviceTypeId.id)
-        setObservableProperty(suggestion.propertyId.id)
-        setPhysicalSpaceName(suggestion.physicalSpace?.id.label || '')
-        setDomainSpaceNames(
-          suggestion.domainSpaces?.map((ds) => ds.id.label) || []
-        )
-      }
-    }
-  }, [suggestion, existingMapping, open])
-
-  useEffect(() => {
-    if (equipmentType) {
-      setDeviceType('')
-      setObservableProperty('')
-    }
-  }, [equipmentType])
-
-  useEffect(() => {
-    if (deviceType) {
-      setObservableProperty('')
-    }
-  }, [deviceType])
+  const { confirmMapping } = useMappingConfirm(
+    projectId,
+    point,
+    controller,
+    observableProperties
+  )
+  const { deleteMapping } = useMappingDelete(projectId, point, controller)
 
   const handleConfirm = async () => {
-    if (!point) return
-
-    const propertyType = observableProperties.some(
-      (prop) => prop.value === observableProperty
-    )
-      ? 'quantifiable'
-      : 'enumerated'
-
-    const compositeKey = controller
-      ? createCompositeKey(
-          controller.deviceId,
-          point.objectType,
-          point.objectId
-        )
-      : point.pointId
-
-    const mapping = await createMapping({
-      projectId,
-      pointId: compositeKey,
-      equipmentTypeId: equipmentType,
-      deviceTypeId: deviceType,
-      propertyId: observableProperty,
-      propertyType,
-      physicalSpaceName,
-      domainSpaceNames,
-      externalReference: {
-        deviceIdentifier: controller
-          ? createDeviceIdentifier(controller.deviceId)
-          : undefined,
-        objectIdentifier: createObjectIdentifier(
-          point.objectType,
-          point.objectId
-        ),
-        objectName: point.name,
-        propertyIdentifier: 'present-value',
-      },
-    })
-
-    onConfirm(mapping)
-  }
-
-  const handleSkip = () => {
-    onSkip()
+    const mapping = await confirmMapping(formState.state)
+    if (mapping) onConfirm(mapping)
   }
 
   const handleDelete = () => {
-    if (!point?.pointId) {
-      toast.error('Cannot delete: missing point ID')
-      return
-    }
-
-    const compositeKey = controller
-      ? createCompositeKey(
-          controller.deviceId,
-          point.objectType,
-          point.objectId
-        )
-      : point.pointId
-
-    const updatedMappings: Record<string, SemanticMappingDto> = {}
-    if (currentMappings) {
-      currentMappings.forEach((value, key) => {
-        if (key !== compositeKey) {
-          updatedMappings[key] = {
-            equipmentTypeId: value.equipmentTypeId,
-            deviceTypeId: value.deviceTypeId,
-            propertyId: value.propertyId,
-            spaceId: value.physicalSpaceId ?? null,
-          }
-        }
-      })
-    }
-
-    saveMappings.mutate(
-      {
-        projectId,
-        mappings: updatedMappings,
-      },
-      {
-        onSuccess: () => {
-          toast.success('223P mapping removed')
-          onOpenChange(false)
-        },
-        onError: (error) => {
-          toast.error(
-            error instanceof Error ? error.message : 'Failed to remove mapping'
-          )
-        },
-      }
-    )
+    deleteMapping(() => onOpenChange(false))
   }
 
   if (!point) return null
+
+  const {
+    equipmentType,
+    deviceType,
+    observableProperty,
+    physicalSpaceName,
+    domainSpaceNames,
+    isSpaceSectionOpen,
+  } = formState.state
+
+  const isFormValid = equipmentType && deviceType && observableProperty
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -247,7 +117,7 @@ export function MappingPopupModal({
               <SearchableSelect
                 id="equipment-type"
                 value={equipmentType}
-                onValueChange={setEquipmentType}
+                onValueChange={formState.setEquipmentType}
                 options={equipmentTypes}
                 aiSuggestion={
                   suggestion
@@ -269,7 +139,7 @@ export function MappingPopupModal({
 
             <Collapsible
               open={isSpaceSectionOpen}
-              onOpenChange={setIsSpaceSectionOpen}
+              onOpenChange={formState.toggleSpaceSection}
               className="space-y-2"
             >
               <CollapsibleTrigger asChild>
@@ -299,7 +169,7 @@ export function MappingPopupModal({
                   <SpaceComboBox
                     id="physical-space"
                     value={physicalSpaceName}
-                    onValueChange={setPhysicalSpaceName}
+                    onValueChange={formState.setPhysicalSpaceName}
                     spaces={physicalSpaces}
                     aiSuggestion={
                       suggestion?.physicalSpace
@@ -328,7 +198,7 @@ export function MappingPopupModal({
                   <SpaceMultiComboBox
                     id="domain-spaces"
                     value={domainSpaceNames}
-                    onValueChange={setDomainSpaceNames}
+                    onValueChange={formState.setDomainSpaceNames}
                     spaces={domainSpaces}
                     aiSuggestions={suggestion?.domainSpaces?.map((ds) => ({
                       id: ds.id.label,
@@ -345,7 +215,7 @@ export function MappingPopupModal({
               <SearchableSelect
                 id="device-type"
                 value={deviceType}
-                onValueChange={setDeviceType}
+                onValueChange={formState.setDeviceType}
                 options={deviceTypes}
                 aiSuggestion={
                   suggestion
@@ -375,7 +245,7 @@ export function MappingPopupModal({
               <SearchableSelect
                 id="observable-property"
                 value={observableProperty}
-                onValueChange={setObservableProperty}
+                onValueChange={formState.setObservableProperty}
                 options={observableProperties}
                 aiSuggestion={
                   suggestion
@@ -416,13 +286,10 @@ export function MappingPopupModal({
               Delete Mapping
             </Button>
           )}
-          <Button variant="outline" onClick={handleSkip}>
+          <Button variant="outline" onClick={onSkip}>
             {mode === 'edit' ? 'Cancel' : 'Skip'}
           </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={!equipmentType || !deviceType || !observableProperty}
-          >
+          <Button onClick={handleConfirm} disabled={!isFormValid}>
             {mode === 'edit' ? 'Update' : 'Confirm'}
           </Button>
         </DialogFooter>

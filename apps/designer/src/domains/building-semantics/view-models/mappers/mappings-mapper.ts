@@ -50,8 +50,8 @@ function mapSemanticMappingToEquipment({
     deviceTypeId: mapping.deviceTypeId,
     propertyId: mapping.propertyId,
     propertyType: propertyType ?? 'quantifiable',
-    physicalSpaceId: mapping.spaceId ?? undefined,
-    domainSpaceIds: undefined,
+    physicalSpaceId: mapping.physicalSpaceId ?? undefined,
+    domainSpaceIds: mapping.domainSpaceIds ?? undefined,
     connectionPoints: undefined,
     externalReference: {
       compositeKey: pointId,

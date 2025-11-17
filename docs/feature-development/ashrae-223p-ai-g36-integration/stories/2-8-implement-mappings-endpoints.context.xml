@@ -3,7 +3,7 @@
     <epicId>2</epicId>
     <storyId>8</storyId>
     <title>Implement Mappings Endpoints with Real Persistence</title>
-    <status>drafted</status>
+    <status>in-progress</status>
     <generatedAt>2025-11-14</generatedAt>
     <generator>BMAD Story Context Workflow</generator>
     <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-8-implement-mappings-endpoints.md</sourceStoryPath>
@@ -32,12 +32,13 @@
           <subtask id="1.5">Add RDF namespace constants</subtask>
         </subtasks>
       </task>
-      <task id="2" name="Extend BuildingMOTIFAdapter with mappings methods">
+      <task id="2" name="Create MappingsModel with transaction support">
         <subtasks>
-          <subtask id="2.1">Add get_project_mappings() method</subtask>
-          <subtask id="2.2">Add clear_project_mappings() method</subtask>
-          <subtask id="2.3">Add add_mapping_triples() method</subtask>
-          <subtask id="2.4">Add transaction support</subtask>
+          <subtask id="2.1">Create src/models/mappings_model.py</subtask>
+          <subtask id="2.2">Implement get_all_mappings() method</subtask>
+          <subtask id="2.3">Implement replace_all_mappings() method with atomic transaction</subtask>
+          <subtask id="2.4">Add transaction() context manager</subtask>
+          <subtask id="2.5">Move SPARQL queries from adapter to model (_get_project_graph, _extract_mappings_from_graph)</subtask>
         </subtasks>
       </task>
       <task id="3" name="Implement MappingsController">
@@ -214,6 +215,13 @@
         <reason>Story 2.7 controller implementation. Follow same pattern for MappingsController: mediator pattern, singleton adapter access via get_instance(), type hints with TypeAlias, error handling with logging</reason>
       </artifact>
       <artifact>
+        <path>apps/building-semantics-api-app/src/models/mappings_model.py</path>
+        <kind>model</kind>
+        <symbol>MappingsModel</symbol>
+        <lines>25-374</lines>
+        <reason>Domain model for mappings with transaction support. Contains business logic (get_all_mappings, replace_all_mappings), transaction management (context manager), and all mappings-specific SPARQL queries (_get_project_graph, _extract_mappings_from_graph). Follows Model layer pattern from refactoring - same as TemplatesModel.</reason>
+      </artifact>
+      <artifact>
         <path>apps/building-semantics-api-app/tests/integration/conftest.py</path>
         <kind>test-fixture</kind>
         <symbol>shared_adapter</symbol>
@@ -244,9 +252,9 @@
   </artifacts>
 
   <constraints>
-    <constraint category="architecture">Router → Controller → Adapter (mediator pattern). No service layer. Controllers handle business logic directly.</constraint>
+    <constraint category="architecture">Router → Controller → Model → Adapter (mediator pattern). Model layer handles business logic, transactions, and domain-specific SPARQL queries. Adapter is pure BuildingMOTIF SDK wrapper. Controller orchestrates between router and model.</constraint>
     <constraint category="architecture">External project relationship: project s223:contains equipment (not embedded). Equipment instances must be pure 223P with no project metadata.</constraint>
-    <constraint category="architecture">Mapper functions are stateless but require adapter parameter for template lookups (template ID → class URI resolution via extract_rdf_class_uri pattern). Controller fetches data, passes to mapper with adapter reference, returns DTOs.</constraint>
+    <constraint category="architecture">Mapper functions are stateless but require adapter parameter for template lookups (template ID → class URI resolution via extract_rdf_class_uri pattern). Model layer calls mappers, passing adapter reference for template operations. Controller orchestrates, model executes business logic.</constraint>
     <constraint category="rdf">Use official ASHRAE 223P predicates: s223:contains, s223:hasProperty, s223:hasExternalReference, s223:locatedIn</constraint>
     <constraint category="rdf">BACnet references must use bacnet:device-identifier and bacnet:object-identifier (all optional per SHACL)</constraint>
     <constraint category="rdf">Point ID format from Designer: "device,{id}:{objectType},{instance}". Backend: simple split(":") - no parsing logic</constraint>
@@ -262,35 +270,35 @@
       <kind>controller-method</kind>
       <signature>async def get_mappings(self, project_id: str) -> MappingsResponseDTO</signature>
       <path>apps/building-semantics-api-app/src/controllers/mappings_controller.py</path>
-      <description>Mediator pattern. Fetch RDF graph from adapter, extract equipment URIs, pass to mapper for DTO conversion, return MappingsResponseDTO</description>
+      <description>Orchestrates between router and model. Delegates to MappingsModel.get_all_mappings(), returns MappingsResponseDTO</description>
     </interface>
     <interface>
       <name>MappingsController.save_mappings()</name>
       <kind>controller-method</kind>
       <signature>async def save_mappings(self, request: SaveMappingsRequestDTO) -> MappingsResponseDTO</signature>
       <path>apps/building-semantics-api-app/src/controllers/mappings_controller.py</path>
-      <description>Atomic transaction. Begin → Clear existing → Convert DTOs to RDF triples (mapper) → Add triples → Commit. Rollback on error</description>
+      <description>Orchestrates between router and model. Delegates to MappingsModel.replace_all_mappings() for atomic transaction</description>
     </interface>
     <interface>
-      <name>BuildingMOTIFAdapter.get_project_mappings()</name>
-      <kind>adapter-method</kind>
-      <signature>def get_project_mappings(self, project_id: str) -> Graph</signature>
-      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
-      <description>Query RDF graph for all equipment instances in project using external relationship filter</description>
+      <name>MappingsModel.get_all_mappings()</name>
+      <kind>model-method</kind>
+      <signature>def get_all_mappings(self, project_id: str) -> dict[str, SemanticMappingDTO]</signature>
+      <path>apps/building-semantics-api-app/src/models/mappings_model.py</path>
+      <description>Read operation. Query RDF graph for all equipment instances in project, extract mappings using SPARQL SELECT, return dictionary keyed by point ID</description>
     </interface>
     <interface>
-      <name>BuildingMOTIFAdapter.clear_project_mappings()</name>
-      <kind>adapter-method</kind>
-      <signature>def clear_project_mappings(self, project_id: str) -> None</signature>
-      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
-      <description>Delete all equipment instances for project. Part of atomic transaction pattern</description>
+      <name>MappingsModel.replace_all_mappings()</name>
+      <kind>model-method</kind>
+      <signature>def replace_all_mappings(self, project_id: str, mappings: dict[str, SemanticMappingDTO]) -> None</signature>
+      <path>apps/building-semantics-api-app/src/models/mappings_model.py</path>
+      <description>Atomic write operation. Uses transaction() context manager. Clear all existing triples → Create project instance → Add new mappings → Commit (or rollback on error)</description>
     </interface>
     <interface>
-      <name>BuildingMOTIFAdapter.add_mapping_triples()</name>
-      <kind>adapter-method</kind>
-      <signature>def add_mapping_triples(self, triples: list[tuple[URIRef, URIRef, URIRef | Literal]]) -> None</signature>
-      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
-      <description>Add RDF triples to graph in bulk. Used for batch operations</description>
+      <name>MappingsModel.transaction()</name>
+      <kind>context-manager</kind>
+      <signature>@contextmanager def transaction(self) -> Generator[None, None, None]</signature>
+      <path>apps/building-semantics-api-app/src/models/mappings_model.py</path>
+      <description>Provides atomic transaction semantics for RDF operations. Commits on success, rolls back to savepoint on exception. Uses BuildingMOTIF session.begin_nested()</description>
     </interface>
     <interface>
       <name>mapping_mapper.to_equipment_rdf_triples()</name>

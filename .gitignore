@@ -45,6 +45,8 @@ designer.db-shm
 designer.db-wal
 buildingmotif.db
 buildingmotif.db-journal
+data/test_persist.db-journal
+apps/building-semantics-api-app/data/test_persist.db-journal
 
 # Test database files
 designer-test.db

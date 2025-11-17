@@ -7,6 +7,7 @@ from buildingmotif.database.errors import TemplateNotFound
 from buildingmotif.dataclasses import Library, Model, Template
 from loguru import logger
 from rdflib import Graph, Namespace
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from src.config.settings import Settings, get_settings
 
 from .template_types import TemplateType
@@ -146,6 +147,36 @@ class BuildingMOTIFAdapter:
         model = Model.create(ns)
         logger.info(f"Created model with namespace: {namespace}")
         return model
+
+    def get_or_create_model(self, namespace: str) -> Model:
+        """
+        Get existing model or create new one with proper exception handling.
+
+        Args:
+            namespace: Unique namespace URI (e.g., "urn:project:project-123")
+
+        Returns:
+            Model instance for RDF operations
+
+        Raises:
+            RuntimeError: If multiple models found with same name (database integrity issue)
+        """
+        bm = self.get_buildingmotif_instance()
+
+        try:
+            db_model = bm.table_connection.get_db_model_by_name(namespace)
+            model = Model.load(id=db_model.id)
+            logger.debug(f"Loaded model: {namespace} (ID: {db_model.id}, triples: {len(model.graph)})")
+            return model
+        except NoResultFound:
+            ns = Namespace(namespace)
+            model = Model.create(ns)
+            bm.session.commit()
+            logger.info(f"Created model: {namespace} (ID: {model.id})")
+            return model
+        except MultipleResultsFound as e:
+            logger.error(f"Multiple models found for: {namespace}")
+            raise RuntimeError(f"Database integrity error: multiple models with name '{namespace}'") from e
 
     def query_model(self, model: Model, sparql_query: str) -> list[dict[str, str]]:
         """

@@ -1,6 +1,7 @@
 """Unit tests for BuildingMOTIF adapter."""
 import pytest
 from unittest.mock import Mock, patch
+from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
 from src.adapters import BuildingMOTIFAdapter, DeviceTemplate, SystemTemplate
 
@@ -133,3 +134,66 @@ def test_get_buildingmotif_instance(mock_buildingmotif) -> None:
     bm = adapter.get_buildingmotif_instance()
 
     assert bm == adapter.get_buildingmotif_instance()
+
+
+def test_get_or_create_model_loads_existing(mock_buildingmotif) -> None:
+    """Test get_or_create_model loads existing model from database."""
+    mock_bm_instance, mock_library = mock_buildingmotif
+
+    mock_db_model = Mock()
+    mock_db_model.id = 123
+
+    mock_table_connection = Mock()
+    mock_table_connection.get_db_model_by_name.return_value = mock_db_model
+    mock_bm_instance.return_value.table_connection = mock_table_connection
+
+    with patch("src.adapters.buildingmotif_adapter.Model") as mock_model_class:
+        mock_model = Mock()
+        mock_model.graph = Mock()
+        mock_model.graph.__len__ = Mock(return_value=42)
+        mock_model_class.load.return_value = mock_model
+
+        adapter = BuildingMOTIFAdapter("test.db")
+        model = adapter.get_or_create_model("urn:project:test")
+
+        assert model == mock_model
+        mock_table_connection.get_db_model_by_name.assert_called_once_with("urn:project:test")
+        mock_model_class.load.assert_called_once_with(id=123)
+
+
+def test_get_or_create_model_creates_new(mock_buildingmotif) -> None:
+    """Test get_or_create_model creates new model when not found."""
+    mock_bm_instance, mock_library = mock_buildingmotif
+
+    mock_table_connection = Mock()
+    mock_table_connection.get_db_model_by_name.side_effect = NoResultFound()
+    mock_bm_instance.return_value.table_connection = mock_table_connection
+
+    mock_session = Mock()
+    mock_bm_instance.return_value.session = mock_session
+
+    with patch("src.adapters.buildingmotif_adapter.Model") as mock_model_class:
+        mock_model = Mock()
+        mock_model.id = 456
+        mock_model_class.create.return_value = mock_model
+
+        adapter = BuildingMOTIFAdapter("test.db")
+        model = adapter.get_or_create_model("urn:project:new")
+
+        assert model == mock_model
+        mock_model_class.create.assert_called_once()
+        mock_session.commit.assert_called_once()
+
+
+def test_get_or_create_model_raises_on_duplicates(mock_buildingmotif) -> None:
+    """Test get_or_create_model raises error when multiple models found."""
+    mock_bm_instance, mock_library = mock_buildingmotif
+
+    mock_table_connection = Mock()
+    mock_table_connection.get_db_model_by_name.side_effect = MultipleResultsFound()
+    mock_bm_instance.return_value.table_connection = mock_table_connection
+
+    adapter = BuildingMOTIFAdapter("test.db")
+
+    with pytest.raises(RuntimeError, match="Database integrity error"):
+        adapter.get_or_create_model("urn:project:duplicate")

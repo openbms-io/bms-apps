@@ -14,7 +14,8 @@ def test_semantic_mapping_dto_uses_camelcase_aliases() -> None:
         equipment_type_id="urn:223p:VAVReheatTerminalUnit",
         device_type_id="urn:223p:Damper",
         property_id="urn:223p:DamperPosition",
-        space_id="urn:bms:PhysicalSpace:room-101",
+        physical_space_id="urn:bms:PhysicalSpace:room-101",
+        domain_space_ids=["urn:bms:Zone:hvac-zone-1", "urn:bms:Zone:lighting-zone-1"],
     )
 
     json_data = json.loads(dto.model_dump_json(by_alias=True))
@@ -22,9 +23,12 @@ def test_semantic_mapping_dto_uses_camelcase_aliases() -> None:
     assert "equipmentTypeId" in json_data
     assert "deviceTypeId" in json_data
     assert "propertyId" in json_data
-    assert "spaceId" in json_data
+    assert "physicalSpaceId" in json_data
+    assert "domainSpaceIds" in json_data
     assert "equipment_type_id" not in json_data
     assert "device_type_id" not in json_data
+    assert "physical_space_id" not in json_data
+    assert "domain_space_ids" not in json_data
 
 
 def test_mappings_response_dto_serializes_correctly() -> None:
@@ -36,7 +40,8 @@ def test_mappings_response_dto_serializes_correctly() -> None:
                 equipment_type_id="urn:223p:VAVReheatTerminalUnit",
                 device_type_id="urn:223p:Damper",
                 property_id="urn:223p:DamperPosition",
-                space_id=None,
+                physical_space_id=None,
+                domain_space_ids=None,
             )
         },
     )

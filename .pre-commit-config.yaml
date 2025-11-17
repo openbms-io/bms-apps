@@ -32,7 +32,7 @@ repos:
     hooks:
       - id: prettier
         files: \.(js|ts|jsx|tsx|json|css|md|yaml|yml)$
-        exclude: ^(apps/bms-iot-app/|packages/bms-schemas/python/|packages/bms-schemas/typescript/|packages/bms-schemas/json-schema/|packages/mqtt_topics/)
+        exclude: ^(apps/bms-iot-app/|packages/bms-schemas/python/|packages/bms-schemas/typescript/|packages/bms-schemas/json-schema/|packages/mqtt_topics/|.*/generated/)
 
   # Local schema validation
   - repo: local
