@@ -1,16 +1,20 @@
-import type { SpaceDTO } from '../../adapters/ashrae-223p/schemas'
+import type { SpaceInstanceDto } from '../../api/generated'
 import type { SpaceViewModel } from '../types'
 
-export function mapSpaceDTOToViewModel(dto: SpaceDTO): SpaceViewModel {
+export function mapSpaceDTOToViewModel(dto: SpaceInstanceDto): SpaceViewModel {
   return {
     id: dto.id,
-    label: dto.rdfsLabel,
-    type: dto.spaceType,
-    pointCount: dto.pointIds.length,
+    label: dto.label,
+    type: dto.spaceTypeId.includes('Physical')
+      ? 'PhysicalSpace'
+      : 'DomainSpace',
+    pointCount: 0,
     createdAt: new Date(dto.createdAt),
   }
 }
 
-export function mapSpacesDTOToViewModel(dtos: SpaceDTO[]): SpaceViewModel[] {
+export function mapSpacesDTOToViewModel(
+  dtos: SpaceInstanceDto[]
+): SpaceViewModel[] {
   return dtos.map(mapSpaceDTOToViewModel)
 }

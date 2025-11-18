@@ -43,7 +43,7 @@ export function createObjectIdentifier(
  * Creates a composite key for 223P mapping storage and lookup
  *
  * Combines device identifier and object identifier with a colon separator.
- * This format is used as the primary key in mappings storage (sessionStorage/API).
+ * This format is used as the primary key in mappings API storage.
  *
  * @param deviceId - The BACnet device ID number
  * @param objectType - The BACnet object type (e.g., "analog-input", "binary-output")

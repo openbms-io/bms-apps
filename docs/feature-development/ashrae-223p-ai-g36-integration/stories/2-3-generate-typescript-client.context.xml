@@ -1,0 +1,269 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>Epic 2</epicId>
+    <storyId>2.3</storyId>
+    <title>Generate TypeScript Client from OpenAPI Specification</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-10</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-3-generate-typescript-client.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>a type-safe TypeScript client auto-generated from the OpenAPI specification</iWant>
+    <soThat>the Designer app can call FastAPI endpoints with full type safety and contract validation</soThat>
+    <tasks>
+      <task id="1">Install @hey-api/openapi-ts in Designer app</task>
+      <task id="2">Add generate:api-client script to package.json</task>
+      <task id="3">Start FastAPI server to access /openapi.json endpoint</task>
+      <task id="4">Run client generation and verify directory structure</task>
+      <task id="5">Verify generated TypeScript types match Pydantic DTOs with camelCase fields</task>
+      <task id="6">Verify 5 API service functions generated (TemplatesService, MappingsService, SpacesService)</task>
+      <task id="7">Create API base URL configuration file</task>
+      <task id="8">Update .gitignore to exclude generated files</task>
+      <task id="9">Add prebuild script for automatic client generation</task>
+      <task id="10">Run TypeScript type checking to verify no errors</task>
+      <task id="11">Create test import file to verify all types/services accessible</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">@hey-api/openapi-ts installed in Designer app devDependencies</criterion>
+    <criterion id="2">OpenAPI client generation script added (generate:api-client) that connects to localhost:8000/openapi.json and outputs to src/domains/building-semantics/api/generated with fetch client</criterion>
+    <criterion id="3">Generated client directory structure includes index.ts, types.gen.ts, services.gen.ts, and core utilities</criterion>
+    <criterion id="4">Generated TypeScript types match Pydantic DTOs: TemplateSystem, TemplateDevice, TemplateProperty, SpaceType, SemanticMapping, MappingsResponse, SaveMappingsRequest, SpaceInstance, CreateSpaceRequest - all with camelCase fields</criterion>
+    <criterion id="5">Generated API service functions (5 total): TemplatesService.getTemplates(), MappingsService.getMappings(), MappingsService.saveMappings(), SpacesService.listSpaces(), SpacesService.createSpace()</criterion>
+    <criterion id="6">API base URL configuration created in src/domains/building-semantics/api/config.ts with environment variable support</criterion>
+    <criterion id="7">Integration with Designer build process via prebuild script that runs generate:api-client before build</criterion>
+    <criterion id="8">.gitignore updated to exclude src/domains/building-semantics/api/generated/</criterion>
+    <criterion id="9">TypeScript type checking passes with generated client</criterion>
+    <criterion id="10">Generated client exports are accessible via imports from @/domains/building-semantics/api/generated</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/tech-spec-review.md</path>
+        <title>Epic 2 Technical Specification Review</title>
+        <section>TypeScript Designer App Conventions (lines 843-868)</section>
+        <snippet>Defines TypeScript coding standards for Epic 2: camelCase field names from OpenAPI generator, type-safe implementations, ESLint/Prettier/TypeScript compiler for quality checks.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/tech-spec-review.md</path>
+        <title>Epic 2 Technical Specification Review</title>
+        <section>Field Naming and Serialization (lines 574-597)</section>
+        <snippet>Explains camelCase strategy: Pydantic uses serialization_alias for camelCase in JSON, OpenAPI generator produces correct TypeScript types automatically with no runtime conversion needed.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2 Phase Breakdown</title>
+        <section>Story 2.3: Generate TypeScript client from OpenAPI spec (lines 246-266)</section>
+        <snippet>Details Story 2.3 implementation: Choose @hey-api/openapi-ts generator, add generation script to Designer package.json, run against localhost:8000/openapi.json, verify TypeScript types and API client functions.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Development Guidelines</title>
+        <section>TDD Workflow and Testing Standards</section>
+        <snippet>Test-Driven Development approach: write tests first, implement to pass tests, use Jest for TypeScript testing. Focus on testing behavior, not implementation details.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/mappings.api.ts</path>
+        <kind>api-layer</kind>
+        <symbol>semanticMappingsApi</symbol>
+        <lines>1-79</lines>
+        <reason>Epic 1 sessionStorage-based mock implementation. Will be replaced by generated TypeScript client in Story 2.5 integration.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/spaces.api.ts</path>
+        <kind>api-layer</kind>
+        <symbol>spaces223pApi</symbol>
+        <lines>1-80</lines>
+        <reason>Epic 1 sessionStorage-based mock implementation. Will be replaced by generated TypeScript client in Story 2.5 integration.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/templates_dto.py</path>
+        <kind>dto</kind>
+        <symbol>TemplateSystemDTO, TemplateDeviceDTO, TemplatePropertyDTO, SpaceTypeDTO, TemplatesResponseDTO</symbol>
+        <lines>1-80</lines>
+        <reason>Defines OpenAPI schema for templates endpoint. Pydantic DTOs with alias="propertyType" and alias="spaceTypes" for camelCase serialization. TypeScript generator will produce matching types.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/mappings_dto.py</path>
+        <kind>dto</kind>
+        <symbol>SemanticMappingDTO, MappingsResponseDTO, SaveMappingsRequestDTO</symbol>
+        <lines>1-52</lines>
+        <reason>Defines OpenAPI schema for mappings endpoints. All snake_case fields have alias for camelCase (equipmentTypeId, deviceTypeId, propertyId, spaceId, projectId).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/spaces_dto.py</path>
+        <kind>dto</kind>
+        <symbol>SpaceInstanceDTO, CreateSpaceRequestDTO</symbol>
+        <lines>1-42</lines>
+        <reason>Defines OpenAPI schema for spaces endpoints. Fields space_type_id, created_at have aliases spaceTypeId, createdAt for camelCase.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/package.json</path>
+        <kind>config</kind>
+        <symbol>scripts, devDependencies</symbol>
+        <lines>6-18, 64-84</lines>
+        <reason>Designer build configuration. Need to add @hey-api/openapi-ts to devDependencies and generate:api-client script. Jest already configured (lines 79-81).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <dependency>
+        <name>@hey-api/openapi-ts</name>
+        <version>latest</version>
+        <package>apps/designer/package.json</package>
+        <type>devDependencies</type>
+        <reason>OpenAPI TypeScript client generator. Will read localhost:8000/openapi.json and generate type-safe client in src/domains/building-semantics/api/generated/</reason>
+      </dependency>
+      <dependency>
+        <name>Building Semantics API</name>
+        <runtime>localhost:8000</runtime>
+        <reason>FastAPI server must be running during client generation to access /openapi.json endpoint</reason>
+      </dependency>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <category>field-naming</category>
+      <rule>Generated TypeScript types MUST use camelCase field names (equipmentTypeId, deviceTypeId, propertyId, spaceTypeId, spaceTypes, propertyType, createdAt, projectId)</rule>
+      <rationale>Pydantic DTOs use serialization_alias for camelCase JSON. OpenAPI spec includes these aliases, so @hey-api/openapi-ts generator produces correct camelCase TypeScript types automatically</rationale>
+    </constraint>
+    <constraint>
+      <category>output-location</category>
+      <rule>Generated client MUST be in apps/designer/src/domains/building-semantics/api/generated/ directory</rule>
+      <rationale>Co-locates generated client with domain-specific API layer. Follows Designer app domain-driven architecture pattern</rationale>
+    </constraint>
+    <constraint>
+      <category>gitignore</category>
+      <rule>Generated files MUST be excluded from git. Create .gitignore in apps/designer/ if missing, add src/domains/building-semantics/api/generated/</rule>
+      <rationale>Generated code should not be committed. Regenerated during prebuild step before deployment</rationale>
+    </constraint>
+    <constraint>
+      <category>type-safety</category>
+      <rule>All generated types and service functions MUST pass TypeScript strict type checking (tsc --noEmit)</rule>
+      <rationale>TypeScript compiler configured with strict: true in tsconfig.json. Generated client must be type-safe</rationale>
+    </constraint>
+    <constraint>
+      <category>build-integration</category>
+      <rule>Client generation MUST run automatically via prebuild script before Designer build</rule>
+      <rationale>Ensures generated client is always up-to-date with latest OpenAPI spec before production build</rationale>
+    </constraint>
+    <constraint>
+      <category>testing</category>
+      <rule>Follow TDD approach - write test to verify generated client exports before running generator</rule>
+      <rationale>Per CLAUDE.md testing philosophy: write tests first, implement to pass tests</rationale>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <api>
+      <endpoint>
+        <method>GET</method>
+        <path>/api/v1/223p/templates</path>
+        <response>TemplatesResponseDTO</response>
+        <generated-function>TemplatesService.getTemplates()</generated-function>
+      </endpoint>
+      <endpoint>
+        <method>GET</method>
+        <path>/api/v1/223p/mappings/{projectId}</path>
+        <response>MappingsResponseDTO</response>
+        <generated-function>MappingsService.getMappings({ projectId: string })</generated-function>
+      </endpoint>
+      <endpoint>
+        <method>POST</method>
+        <path>/api/v1/223p/mappings</path>
+        <request>SaveMappingsRequestDTO</request>
+        <response>MappingsResponseDTO</response>
+        <generated-function>MappingsService.saveMappings({ body: SaveMappingsRequestDTO })</generated-function>
+      </endpoint>
+      <endpoint>
+        <method>GET</method>
+        <path>/api/v1/223p/spaces/{projectId}</path>
+        <response>SpaceInstanceDTO[]</response>
+        <generated-function>SpacesService.listSpaces({ projectId: string })</generated-function>
+      </endpoint>
+      <endpoint>
+        <method>POST</method>
+        <path>/api/v1/223p/spaces</path>
+        <request>CreateSpaceRequestDTO</request>
+        <response>SpaceInstanceDTO</response>
+        <generated-function>SpacesService.createSpace({ body: CreateSpaceRequestDTO })</generated-function>
+      </endpoint>
+    </api>
+    <types>
+      <type>
+        <name>TemplateSystemDTO</name>
+        <fields>id: string, label: string, description: string | null, devices: TemplateDeviceDTO[]</fields>
+        <source>apps/building-semantics-api-app/src/dto/templates_dto.py:35-49</source>
+      </type>
+      <type>
+        <name>TemplateDeviceDTO</name>
+        <fields>id: string, label: string, description: string | null, properties: TemplatePropertyDTO[]</fields>
+        <source>apps/building-semantics-api-app/src/dto/templates_dto.py:22-33</source>
+      </type>
+      <type>
+        <name>TemplatePropertyDTO</name>
+        <fields>id: string, label: string, propertyType: 'quantifiable' | 'enumerated', description: string | null</fields>
+        <source>apps/building-semantics-api-app/src/dto/templates_dto.py:7-20</source>
+      </type>
+      <type>
+        <name>SpaceTypeDTO</name>
+        <fields>id: string, label: string, description: string | null</fields>
+        <source>apps/building-semantics-api-app/src/dto/templates_dto.py:52-62</source>
+      </type>
+      <type>
+        <name>TemplatesResponseDTO</name>
+        <fields>systems: TemplateSystemDTO[], spaceTypes: SpaceTypeDTO[]</fields>
+        <source>apps/building-semantics-api-app/src/dto/templates_dto.py:64-80</source>
+      </type>
+      <type>
+        <name>SemanticMappingDTO</name>
+        <fields>equipmentTypeId: string, deviceTypeId: string, propertyId: string, spaceId: string | null</fields>
+        <source>apps/building-semantics-api-app/src/dto/mappings_dto.py:5-26</source>
+      </type>
+      <type>
+        <name>MappingsResponseDTO</name>
+        <fields>projectId: string, mappings: Record&lt;string, SemanticMappingDTO&gt;</fields>
+        <source>apps/building-semantics-api-app/src/dto/mappings_dto.py:28-38</source>
+      </type>
+      <type>
+        <name>SaveMappingsRequestDTO</name>
+        <fields>projectId: string, mappings: Record&lt;string, SemanticMappingDTO&gt;</fields>
+        <source>apps/building-semantics-api-app/src/dto/mappings_dto.py:41-52</source>
+      </type>
+      <type>
+        <name>SpaceInstanceDTO</name>
+        <fields>id: string, spaceTypeId: string, label: string, createdAt: string</fields>
+        <source>apps/building-semantics-api-app/src/dto/spaces_dto.py:5-26</source>
+      </type>
+      <type>
+        <name>CreateSpaceRequestDTO</name>
+        <fields>projectId: string, spaceTypeId: string, label: string</fields>
+        <source>apps/building-semantics-api-app/src/dto/spaces_dto.py:28-42</source>
+      </type>
+    </types>
+  </interfaces>
+
+  <tests>
+    <standards>Jest testing framework with @testing-library/react (already configured in package.json). TDD approach: write test first, run (should fail), implement feature, verify test passes. Focus on testing behavior not implementation. Mock external libraries but NOT system under test.</standards>
+    <locations>Test files co-located with source: src/**/*.spec.ts pattern. Generated client tests in apps/designer/src/domains/building-semantics/api/generated/client.spec.ts</locations>
+    <ideas>
+      <idea>Test that @hey-api/openapi-ts is installed in devDependencies</idea>
+      <idea>Test that generated directory exists at src/domains/building-semantics/api/generated/</idea>
+      <idea>Test that index.ts, types.gen.ts, services.gen.ts files exist in generated directory</idea>
+      <idea>Test that all 10 TypeScript types are exported from types.gen.ts (TemplateSystemDTO, TemplateDeviceDTO, TemplatePropertyDTO, SpaceTypeDTO, TemplatesResponseDTO, SemanticMappingDTO, MappingsResponseDTO, SaveMappingsRequestDTO, SpaceInstanceDTO, CreateSpaceRequestDTO)</idea>
+      <idea>Test that generated types have camelCase fields (equipmentTypeId not equipment_type_id, spaceTypes not space_types)</idea>
+      <idea>Test that 3 service classes exported from services.gen.ts (TemplatesService, MappingsService, SpacesService)</idea>
+      <idea>Test that 5 API functions exist with correct signatures (getTemplates, getMappings, saveMappings, listSpaces, createSpace)</idea>
+      <idea>Test that .gitignore includes src/domains/building-semantics/api/generated/ path</idea>
+      <idea>Test that prebuild script exists in package.json and includes generate:api-client</idea>
+      <idea>Test TypeScript compilation passes (tsc --noEmit) with generated client</idea>
+    </ideas>
+  </tests>
+</story-context>
