@@ -14,37 +14,37 @@ export class MockAISuggestionService implements IAISuggestionService {
     const nameLower = pointName.toLowerCase()
     const objectType = point.objectType.toLowerCase()
 
-    let equipmentType = 'urn:ashrae:223p:VAVReheatTerminalUnit'
-    let deviceType = 'urn:ashrae:223p:TemperatureSensor'
-    let observableProperty = 'urn:ashrae:223p:AirTemperature'
+    let equipmentType = 'vav-reheat'
+    let deviceType = 'sensor'
+    let observableProperty = 'air-temperature'
     let equipmentConfidence = 85
     let deviceConfidence = 90
     let propertyConfidence = 88
 
     if (nameLower.includes('vav')) {
-      equipmentType = 'urn:ashrae:223p:VAVReheatTerminalUnit'
+      equipmentType = 'vav-reheat'
       equipmentConfidence = 94
 
       if (nameLower.includes('temp')) {
-        deviceType = 'urn:ashrae:223p:TemperatureSensor'
-        observableProperty = 'urn:ashrae:223p:AirTemperature'
+        deviceType = 'sensor'
+        observableProperty = 'air-temperature'
         propertyConfidence = 92
       } else if (nameLower.includes('damper')) {
-        deviceType = 'urn:ashrae:223p:Damper'
-        observableProperty = 'urn:ashrae:223p:DamperCommand'
+        deviceType = 'damper'
+        observableProperty = 'damper-command'
         deviceConfidence = 93
         propertyConfidence = 91
       }
     } else if (nameLower.includes('ahu')) {
-      equipmentType = 'urn:ashrae:223p:AirHandlingUnit'
+      equipmentType = 'makeup-air-unit'
       equipmentConfidence = 96
 
       if (nameLower.includes('supply')) {
-        deviceType = 'urn:ashrae:223p:TemperatureSensor'
-        observableProperty = 'urn:ashrae:223p:AirTemperature'
+        deviceType = 'sensor'
+        observableProperty = 'air-temperature'
       } else if (nameLower.includes('fan')) {
-        deviceType = 'urn:ashrae:223p:Fan'
-        observableProperty = 'urn:ashrae:223p:VFDSpeed'
+        deviceType = 'fan'
+        observableProperty = 'vfd-speed'
       }
     }
 
@@ -54,23 +54,21 @@ export class MockAISuggestionService implements IAISuggestionService {
         confidence: equipmentConfidence,
         reasoning: `Pattern match on "${pointName}"`,
         alternatives: [
-          { id: 'urn:ashrae:223p:AirHandlingUnit', confidence: 75 },
-          { id: 'urn:ashrae:223p:ExhaustAirUnit', confidence: 65 },
+          { id: 'makeup-air-unit', confidence: 75 },
+          { id: 'exhaust-air-unit', confidence: 65 },
         ],
       },
       deviceTypeId: {
         id: deviceType,
         confidence: deviceConfidence,
         reasoning: `Based on object type "${objectType}" and name pattern`,
-        alternatives: [{ id: 'urn:ashrae:223p:Damper', confidence: 70 }],
+        alternatives: [{ id: 'damper', confidence: 70 }],
       },
       propertyId: {
         id: observableProperty,
         confidence: propertyConfidence,
         reasoning: `Inferred from point name and device type`,
-        alternatives: [
-          { id: 'urn:ashrae:223p:RelativeHumidity', confidence: 60 },
-        ],
+        alternatives: [{ id: 'relative-humidity', confidence: 60 }],
       },
       overallConfidence: Math.round(
         (equipmentConfidence + deviceConfidence + propertyConfidence) / 3

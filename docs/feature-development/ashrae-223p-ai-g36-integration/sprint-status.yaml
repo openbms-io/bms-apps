@@ -70,11 +70,12 @@ development_status:
   2-5-integrate-typescript-client: done
   2-6-setup-buildingmotif-sdk: done
   2-7-implement-templates-endpoint: done
-  2-8-implement-mappings-endpoints: done  # All AC complete, all tasks complete (0-7), Designer integration verified
-  2-9-implement-spaces-endpoints: backlog
-  2-10-implement-validation-endpoint: backlog
+  2-8-implement-mappings-endpoints: done # Partial rollback 2025-11-17: hasDomain field removed (space descoping - see ADR-001)
+  2-9a-space-architecture-mini-spec: out-of-scope # Descoped 2025-11-17 - moved to future Space Management epic (see ADR-001)
+  2-9-implement-spaces-endpoints: out-of-scope # Descoped 2025-11-17 - moved to future Space Management epic (see ADR-001)
+  2-10-implement-shacl-validation: review # Inline validation in mappings endpoint (see ADR-002) - ✅ 117/117 tests passing
   2-11-error-handling-and-integration-tests: backlog
   2-12-setup-vercel-ai-sdk-mem0: backlog
   2-13-implement-ai-suggestion-logic: backlog
-  2-14-advanced-tab-triple-inspector: backlog  # ⚠️ NEEDS REFINEMENT - Requires architecture decisions (UI design, data transfer, categorization, performance, serialization) before implementation
+  2-14-advanced-tab-triple-inspector: backlog # ⚠️ NEEDS REFINEMENT - Requires architecture decisions (UI design, data transfer, categorization, performance, serialization) before implementation
   epic-2-retrospective: optional

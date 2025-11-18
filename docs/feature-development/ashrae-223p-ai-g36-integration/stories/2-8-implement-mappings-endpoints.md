@@ -2,8 +2,9 @@
 
 **Epic:** Epic 2 - BuildingMOTIF API Integration
 **Phase:** Phase 2 - BuildingMOTIF SDK Integration
-**Status:** ready-for-dev
+**Status:** done
 **Created:** 2025-11-14
+**Completed:** 2025-11-17
 **Complexity:** 5 (High)
 **Estimated Hours:** 12-14 hours
 
@@ -998,16 +999,19 @@ def shared_adapter(tmp_path_factory):
 Addressed code review findings by decomposing complex SPARQL queries in `mappings_model.py`:
 
 **Part 1: `_get_project_graph()` decomposed into 4 focused CONSTRUCT queries:**
+
 - `_get_equipment_triples()` - Equipment instance triples only
 - `_get_device_triples()` - Device instance triples only
 - `_get_property_triples()` - Property instance triples only
 - `_get_bacnet_reference_triples()` - BACnet reference triples only
 
 **Part 2: `_extract_mappings_from_graph()` decomposed into 2 focused SELECT queries:**
+
 - `_query_core_mappings()` - Core mapping data without GROUP_CONCAT (returns `list[CoreMappingData]`)
 - `_query_domain_spaces()` - Domain space relationships separately (returns `dict[str, list[str]]`)
 
 **Benefits:**
+
 - Eliminated nested OPTIONAL clauses for easier debugging
 - Removed GROUP_CONCAT string parsing complexity
 - Each query has single, clear responsibility
@@ -1021,12 +1025,14 @@ Addressed code review findings by decomposing complex SPARQL queries in `mapping
 Fixed semantic mappings not persisting across server restarts:
 
 **Root Cause:**
+
 - BuildingMOTIF's `models` table has no unique constraint on `name` column
 - Previous implementation caught generic `Exception` in `get_or_create_model()`
 - When `Model.load(name=...)` failed with `MultipleResultsFound`, code created new model
 - Result: 22 duplicate models for same project, each with different graph_id
 
 **Implementation:**
+
 - Removed unnecessary model cache (Model.graph persists automatically via rdflib-sqlalchemy)
 - Added SQLAlchemy exception imports: `NoResultFound`, `MultipleResultsFound`
 - Replaced `get_or_create_model()` to use BuildingMOTIF's native pattern:
@@ -1038,6 +1044,7 @@ Fixed semantic mappings not persisting across server restarts:
 **Pattern Reference:** https://github.com/NREL/BuildingMOTIF/blob/develop/buildingmotif/api/views/model.py
 
 **Test Coverage:**
+
 - 11 unit tests pass (3 new tests for get_or_create_model scenarios)
 - 9 integration tests pass (mappings endpoints)
 
@@ -1046,6 +1053,7 @@ Fixed semantic mappings not persisting across server restarts:
 Completed final tasks for Story 2.8:
 
 **Task 6: Designer App (AC: #8)**
+
 - ✅ TypeScript client already up-to-date from Story 2.5
 - ✅ `useSaveMappingsMutation()` working correctly with bulk endpoints
 - ✅ No sessionStorage usage found (all persistence via API)
@@ -1053,9 +1061,74 @@ Completed final tasks for Story 2.8:
 - ✅ End-to-end workflow verified by user: mappings persist across browser refresh
 
 **Task 7: Documentation**
+
 - ✅ Updated `mock_templates.py` docstring: Story 2.8 status PENDING → DONE
 - ✅ Reviewed Epic 2 tech spec: RDF persistence model and atomic transactions already well-documented in phase breakdown
 
 **Story Status:** All 8 acceptance criteria complete, all 8 tasks complete (0-7), ready for code review.
+
+**2025-11-17: Final Verification & Story Completion**
+
+Story 2.8 verified complete and ready for Story 2.9:
+
+**Test Results:**
+
+- ✅ Full test suite: **104 tests passed** in 23.86s
+- ✅ 1 warning (acceptable)
+- ✅ All integration tests pass (mappings persistence + router endpoints)
+- ✅ All unit tests pass (adapters, mappers, DTOs)
+
+**Git Status:**
+
+- ✅ All implementation files committed
+- ✅ No uncommitted Story 2.8 work
+
+**End-to-End Verification:**
+
+- ✅ Designer app mappings persist across browser refresh (user confirmed)
+- ✅ RDF graph persistence working in BuildingMOTIF SQLite
+- ✅ Bulk operations (GET/POST) fully functional
+- ✅ External project relationship pattern validated
+
+**Next Story:** ~~Story 2.9 - Implement Spaces Endpoints~~ → **Descoped** (see below)
+
+---
+
+**2025-11-17: Spaces Descoped from Epic 2 - Partial Rollback**
+
+**Decision**: Space management (Stories 2.9/2.9a) descoped from Epic 2 to focus on G36 validation essentials.
+
+**Impact on Story 2.8**:
+
+- ⚠️ **`hasDomain` field removed** from equipment mapping DTOs (frontend & backend)
+- ✅ **Equipment type and device type mappings remain** (required for G36 validation)
+- ✅ **Core Story 2.8 functionality preserved** (equipment persistence, RDF graph, bulk operations)
+
+**Rationale**:
+
+- G36 validation doesn't require space relationships
+- Equipment → DomainSpace linking is optional metadata
+- Space management complexity warrants dedicated epic
+
+**What Was Removed**:
+
+- Frontend: "Domain Space" dropdown from equipment mapping modal
+- Backend: `hasDomain` field from POST request DTO
+- Backend: `domainSpaceIds` from GET response DTO
+- RDF: DomainSpace triple creation from equipment mappings
+
+**What Remains**:
+
+- Equipment type mapping (e.g., VAV, AHU, Fan)
+- Device type mapping (e.g., sensors, actuators)
+- Observable property mapping (e.g., temperature, pressure)
+- ASHRAE 223P Equipment RDF creation
+- External project relationship (`project s223:hasPart equipment`)
+
+**Reference**: See `epic2/adr-001-descope-spaces.md` for full rationale
+
+**Status**: Story 2.8 remains **done** with noted partial rollback. Space functionality will return in future "Space Management" epic.
+
+---
 
 ### File List

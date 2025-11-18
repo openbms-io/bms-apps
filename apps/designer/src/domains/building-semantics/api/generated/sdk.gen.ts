@@ -71,9 +71,9 @@ export const getMappingsApiV1223pMappingsGet = <ThrowOnError extends boolean = f
 };
 
 /**
- * Bulk save/replace all semantic mappings
+ * Bulk save/replace all semantic mappings with SHACL validation
  *
- * Replaces all mappings for project with provided mappings. This is a complete replacement operation, not incremental update.
+ * Replaces all mappings for project with provided mappings after validating against ASHRAE 223P SHACL constraints. This is a complete replacement operation, not incremental update. If any mapping fails SHACL validation, the entire operation is rejected (atomic transaction).
  */
 export const saveMappingsApiV1223pMappingsPost = <ThrowOnError extends boolean = false>(options: Options<SaveMappingsApiV1223pMappingsPostData, ThrowOnError>) => {
     return (options.client ?? client).post<SaveMappingsApiV1223pMappingsPostResponses, SaveMappingsApiV1223pMappingsPostErrors, ThrowOnError>({

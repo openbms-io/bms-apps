@@ -1,10 +1,12 @@
 """Controller for ASHRAE 223P mappings operations."""
 
+from fastapi import HTTPException, status
 from loguru import logger
 
 from ..adapters.buildingmotif_adapter import BuildingMOTIFAdapter
 from ..dto.mappings_dto import MappingsResponseDTO, SaveMappingsRequestDTO
 from ..models.mappings_model import MappingsModel
+from ..models.exceptions import ValidationException
 
 
 class MappingsController:
@@ -45,25 +47,46 @@ class MappingsController:
 
     async def save_mappings(self, request: SaveMappingsRequestDTO) -> MappingsResponseDTO:
         """
-        Bulk save/replace mappings (atomic transaction).
+        Save mappings with inline SHACL validation.
 
-        Delegates to model layer for transaction management.
+        Delegates to model layer for business logic.
+        Converts domain exceptions to HTTP exceptions.
 
         Args:
             request: SaveMappingsRequestDTO with projectId and mappings
 
         Returns:
             MappingsResponseDTO with saved mappings
+
+        Raises:
+            HTTPException(400): If SHACL validation fails
+            HTTPException(500): If persistence fails
         """
         try:
             project_id = request.project_id
 
-            # Delegate to model (handles transaction internally)
-            self.model.replace_all_mappings(project_id, request.mappings)
+            # Delegate to model (business logic)
+            self.model.replace_all_mappings_validated(project_id, request.mappings)
 
             logger.info(f"Saved {len(request.mappings)} mappings for project: {project_id}")
-            return MappingsResponseDTO(projectId=project_id, mappings=request.mappings)
+            return await self.get_mappings(project_id)
+
+        except ValidationException as e:
+            # Convert domain exception to HTTP 400
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "validationType": "SHACL",
+                    "isValid": False,
+                    "errors": e.errors,
+                    "warnings": e.warnings,
+                },
+            )
 
         except Exception as e:
+            # System errors → HTTP 500
             logger.error(f"Failed to save mappings for project {project_id}: {e}")
-            raise
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to save mappings: {str(e)}",
+            ) from e

@@ -518,9 +518,11 @@ apps/designer/src/domains/building-semantics/
 
 ---
 
-### Story 2.10: Implement `/api/v1/223p/validate` SHACL endpoint (1 endpoint - NEW)
+### Story 2.10: Implement SHACL Validation in Mappings Endpoint (inline validation)
 
 **Note:** This is **full implementation**, not migration - validation was deferred in Phase 1.
+
+**Architectural Decision:** Inline validation (validate on POST) rather than separate endpoint (see ADR-002)
 
 **Scope:**
 
@@ -532,22 +534,25 @@ apps/designer/src/domains/building-semantics/
   - `isValid: boolean`
   - `errors: string[]` - Constraint violations
   - `warnings: string[]` - Recommendations
-- Implement POST `/api/v1/223p/validate` endpoint (new in Phase 2)
+- **Integrate validation into existing POST `/api/v1/223p/mappings` endpoint:**
+  - Run SHACL validation **before** persisting RDF
+  - If invalid, return `400 Bad Request` with validation errors in response body
+  - If valid, persist to RDF and return `201 Created`
 - Add validation rules for:
   - Device type compatibility with equipment type
   - Property compatibility with device type
   - Required 223P constraints (hasDeviceType, monitors, locatedIn)
-- Handle validation input (mappings to validate)
 
 **Acceptance Criteria:**
 
-- [ ] Validation endpoint uses BuildingMOTIF SHACL engine
-- [ ] Returns real 223P compliance results
-- [ ] DTO matches Epic 1 structure
+- [ ] ValidationService uses BuildingMOTIF SHACL engine
+- [ ] POST /mappings validates before persisting
+- [ ] Returns 400 with SHACL errors if invalid
+- [ ] Returns 201 with mapping if valid
 - [ ] Validation errors displayed in Designer UI
-- [ ] Integration tests pass
+- [ ] Integration tests pass (valid + invalid cases)
 
-**Effort Estimate:** ~4 hours
+**Effort Estimate:** ~3 hours (reduced from ~4h - no new endpoint needed)
 
 ---
 
@@ -564,7 +569,7 @@ apps/designer/src/domains/building-semantics/
   - RDF query timeouts
 - Write end-to-end integration tests:
   - Designer → FastAPI → BuildingMOTIF flow
-  - All 5 endpoints tested (templates, spaces x2, mappings x2, validation)
+  - All 3 endpoints tested (templates, mappings x2 with inline validation)
   - Bulk operations workflows tested
   - Hierarchical templates loading tested
   - Error scenarios tested
@@ -577,14 +582,14 @@ apps/designer/src/domains/building-semantics/
 
 - [ ] All BuildingMOTIF exceptions handled
 - [ ] Retry logic for transient failures
-- [ ] E2E integration tests pass (all 5 endpoints)
+- [ ] E2E integration tests pass (all 3 endpoints)
 - [ ] Bulk operations performance tested
 - [ ] Hierarchical templates performance tested
 - [ ] Error messages user-friendly
 - [ ] Performance acceptable (< 1s for templates, < 500ms for others)
 - [ ] Epic 1 UI shows meaningful errors
 
-**Effort Estimate:** ~6 hours (reduced from ~8h due to fewer endpoints)
+**Effort Estimate:** ~5 hours (reduced from ~8h due to fewer endpoints and inline validation)
 
 ---
 
@@ -592,11 +597,11 @@ apps/designer/src/domains/building-semantics/
 
 **Overall Success:**
 
-- [ ] All 5 endpoints use real BuildingMOTIF SDK
+- [ ] All 3 endpoints use real BuildingMOTIF SDK (templates, mappings x2)
 - [ ] Hierarchical templates reduce client complexity
 - [ ] Bulk operations simplify state management
 - [ ] RDF graphs persist in SQLite database
-- [ ] SHACL validation returns real 223P compliance results
+- [ ] SHACL validation returns real 223P compliance results (inline on POST mappings)
 - [ ] Epic 1 UI works with real semantic tagging
 - [ ] Integration tests pass
 - [ ] Error handling robust
@@ -729,6 +734,7 @@ apps/designer/src/domains/building-semantics/
 **Status:** Backlog - needs architectural refinement before implementation
 
 **Dependencies:**
+
 - Story 2.6: BuildingMOTIF SDK Setup ✅
 - Story 2.7: Templates Endpoint ✅
 - Story 2.8: Mappings Endpoints ✅
@@ -768,13 +774,13 @@ apps/designer/src/domains/building-semantics/
 
 **15 stories across 4 phases:**
 
-| Phase       | Stories | Duration         | Key Deliverable                                   |
-| ----------- | ------- | ---------------- | ------------------------------------------------- |
-| **Phase 0** | 2       | ~1 day           | Foundation: Designer cleanup + FastAPI scaffold   |
-| **Phase 1** | 4       | ~2-3 days        | Interface validation with mock data (5 endpoints) |
-| **Phase 2** | 6       | ~3-4 days        | BuildingMOTIF SDK integration (5 endpoints)       |
+| Phase       | Stories | Duration         | Key Deliverable                                      |
+| ----------- | ------- | ---------------- | ---------------------------------------------------- |
+| **Phase 0** | 2       | ~1 day           | Foundation: Designer cleanup + FastAPI scaffold      |
+| **Phase 1** | 4       | ~2-3 days        | Interface validation with mock data (5 endpoints)    |
+| **Phase 2** | 6       | ~3-4 days        | BuildingMOTIF SDK integration (5 endpoints)          |
 | **Phase 3** | 3       | ~2-3 days        | AI enhancement + Triple Inspector (needs refinement) |
-| **Total**   | **15**  | **~2-2.5 weeks** | Full BuildingMOTIF integration + AI + Transparency |
+| **Total**   | **15**  | **~2-2.5 weeks** | Full BuildingMOTIF integration + AI + Transparency   |
 
 ### Story List
 

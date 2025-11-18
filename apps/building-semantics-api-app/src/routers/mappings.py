@@ -60,14 +60,16 @@ async def get_mappings(
 @router.post(
     "",
     response_model=MappingsResponseDTO,
-    summary="Bulk save/replace all semantic mappings",
+    status_code=201,
+    summary="Bulk save/replace all semantic mappings with SHACL validation",
     description=(
-        "Replaces all mappings for project with provided mappings. "
-        "This is a complete replacement operation, not incremental update."
+        "Replaces all mappings for project with provided mappings after validating against ASHRAE 223P SHACL constraints. "
+        "This is a complete replacement operation, not incremental update. "
+        "If any mapping fails SHACL validation, the entire operation is rejected (atomic transaction)."
     ),
     responses={
-        200: {
-            "description": "Mappings saved successfully",
+        201: {
+            "description": "Mappings validated and saved successfully",
             "content": {
                 "application/json": {
                     "example": {
@@ -85,7 +87,25 @@ async def get_mappings(
                 }
             },
         },
-        422: {"description": "Validation error"},
+        400: {
+            "description": "SHACL validation failed - mappings do not comply with ASHRAE 223P constraints",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": {
+                            "validationType": "SHACL",
+                            "isValid": False,
+                            "errors": [
+                                "Equipment type 'invalid-type' not found in ASHRAE 223P ontology",
+                                "Equipment must have at least one s223:contains relationship",
+                            ],
+                            "warnings": [],
+                        }
+                    }
+                }
+            },
+        },
+        422: {"description": "Request validation error (malformed request body)"},
         500: {"description": "Internal server error"},
     },
 )

@@ -1,7 +1,6 @@
 """Domain model for ASHRAE 223P mappings with transaction management."""
 
-from contextlib import contextmanager
-from typing import Generator, TypedDict
+from typing import TypedDict
 
 from loguru import logger
 from rdflib import Graph, Literal, Namespace, RDF, URIRef
@@ -14,6 +13,8 @@ from ..mappers.mapping_mapper import (
     to_equipment_rdf_triples,
     to_project_relationship_triples,
 )
+from ..services.validation_service import ValidationService
+from .exceptions import ValidationException
 
 # RDF namespaces
 S223 = Namespace("http://data.ashrae.org/standard223#")
@@ -51,46 +52,6 @@ class MappingsModel:
             adapter: BuildingMOTIF adapter instance
         """
         self.adapter = adapter
-
-    @contextmanager
-    def transaction(self) -> Generator[None, None, None]:
-        """
-        Context manager for atomic mapping operations.
-
-        Provides transaction semantics:
-        - All operations succeed together, or
-        - All operations rollback together
-
-        Usage:
-            with model.transaction():
-                model._clear_all_triples(model)
-                model._add_triples(model, triples)
-                # Commits on success, rolls back on exception
-
-        Yields:
-            None
-
-        Raises:
-            Exception: Re-raises any exception after rollback
-        """
-        bm = self.adapter.get_buildingmotif_instance()
-
-        # Start nested transaction (savepoint)
-        savepoint = bm.session.begin_nested()
-
-        try:
-            yield  # Execute operations inside 'with' block
-
-            # SUCCESS: Commit all operations
-            bm.session.commit()
-            logger.debug("Mapping transaction committed successfully")
-
-        except Exception as e:
-            # ERROR: Rollback to savepoint
-            savepoint.rollback()
-            bm.session.rollback()
-            logger.error(f"Mapping transaction rolled back: {e}")
-            raise
 
     def get_all_mappings(
         self, project_id: str
@@ -144,7 +105,7 @@ class MappingsModel:
         bm.session.commit()
 
         # ATOMIC TRANSACTION: All-or-nothing
-        with self.transaction():
+        with self.adapter.transaction():
             # Step 1: Clear all existing triples (simple reset)
             self._clear_all_triples(model)
 
@@ -161,6 +122,110 @@ class MappingsModel:
         bm.session.commit()
 
         logger.info(f"Replaced {len(mappings)} mappings for project: {project_id}")
+
+    def replace_all_mappings_validated(
+        self,
+        project_id: str,
+        mappings: dict[str, SemanticMappingDTO],
+    ) -> None:
+        """
+        Replace all mappings with SHACL validation (atomic operation).
+
+        Business logic:
+        1. Build RDF graph from DTOs
+        2. Validate against ASHRAE 223P SHACL
+        3. If valid, persist
+
+        Args:
+            project_id: Project identifier
+            mappings: New mappings to save
+
+        Raises:
+            ValidationException: If SHACL validation fails
+            Exception: If persistence fails (after rollback)
+        """
+        # Handle empty mappings (skip validation)
+        if not mappings:
+            self.replace_all_mappings(project_id, mappings)
+            logger.info(f"Cleared mappings for project: {project_id}")
+            return
+
+        # Step 1: Build RDF graph from DTOs
+        graph = self._build_graph_from_mappings(project_id, mappings)
+
+        logger.debug(f"Built graph with {len(graph)} triples for validation")
+
+        # Step 2: Validate with BuildingMOTIF SHACL
+        validation_result = ValidationService.validate_equipment_mapping(graph)
+
+        # Step 3: If invalid, raise domain exception
+        if not validation_result.isValid:
+            logger.warning(
+                f"SHACL validation failed for project {project_id}: {validation_result.errors}"
+            )
+            raise ValidationException(
+                errors=validation_result.errors,
+                warnings=validation_result.warnings
+            )
+
+        # Step 4: If valid, persist (extract triples from graph)
+        all_triples = list(graph)
+
+        model = self.adapter.get_or_create_model(f"urn:project:{project_id}")
+        bm = self.adapter.get_buildingmotif_instance()
+        bm.session.commit()
+
+        with self.adapter.transaction():
+            self._clear_all_triples(model)
+            self._create_project_instance(project_id, model)
+            self._add_triples(model, all_triples)
+
+        bm.session.commit()
+        logger.info(f"Saved {len(mappings)} validated mappings for project: {project_id}")
+
+    def _build_graph_from_mappings(
+        self,
+        project_id: str,
+        mappings: dict[str, SemanticMappingDTO],
+    ) -> Graph:
+        """
+        Build RDF graph from mapping DTOs.
+
+        Encapsulates RDF construction - internal representation.
+
+        Args:
+            project_id: Project identifier
+            mappings: Mappings to convert
+
+        Returns:
+            RDF Graph ready for validation or persistence
+        """
+        graph = Graph()
+        equipment_uris = []
+
+        logger.debug(f"Building RDF graph for {len(mappings)} mappings")
+
+        for point_id, mapping in mappings.items():
+            equipment_uri = create_equipment_uri(point_id)
+            equipment_uris.append(equipment_uri)
+
+            # Use mapper to build triples
+            triples = to_equipment_rdf_triples(
+                equipment_uri, point_id, mapping, self.adapter
+            )
+
+            for triple in triples:
+                graph.add(triple)
+
+        # Add project relationship triples
+        project_uri = create_project_uri(project_id)
+        project_triples = to_project_relationship_triples(project_uri, equipment_uris)
+
+        for triple in project_triples:
+            graph.add(triple)
+
+        logger.debug(f"Built graph with {len(graph)} triples for {len(mappings)} mappings")
+        return graph
 
     def _get_equipment_triples(self, project_id: str, model) -> Graph:
         """

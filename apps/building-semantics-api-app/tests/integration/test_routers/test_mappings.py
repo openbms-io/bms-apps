@@ -58,7 +58,7 @@ def test_post_mappings_returns_200_with_static_data(shared_adapter) -> None:
     }
 
     response = client.post("/api/v1/223p/mappings", json=request_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     data = response.json()
     assert "projectId" in data
@@ -94,7 +94,7 @@ def test_post_then_get_mappings_persists_data(shared_adapter) -> None:
     }
 
     post_response = client.post("/api/v1/223p/mappings", json=save_request)
-    assert post_response.status_code == 200
+    assert post_response.status_code == 201
 
     # Retrieve mappings
     get_response = client.get("/api/v1/223p/mappings?projectId=test-proj-persistence")
@@ -152,7 +152,7 @@ def test_post_mapping_with_physical_space_only(shared_adapter) -> None:
     }
 
     post_response = client.post("/api/v1/223p/mappings", json=save_request)
-    assert post_response.status_code == 200
+    assert post_response.status_code == 201
 
     get_response = client.get(f"/api/v1/223p/mappings?projectId={project_id}")
     assert get_response.status_code == 200
@@ -193,7 +193,7 @@ def test_post_mapping_with_domain_spaces_only(shared_adapter) -> None:
     }
 
     post_response = client.post("/api/v1/223p/mappings", json=save_request)
-    assert post_response.status_code == 200
+    assert post_response.status_code == 201
 
     get_response = client.get(f"/api/v1/223p/mappings?projectId={project_id}")
     assert get_response.status_code == 200
@@ -237,7 +237,7 @@ def test_post_mapping_with_both_physical_and_domain_spaces(shared_adapter) -> No
     }
 
     post_response = client.post("/api/v1/223p/mappings", json=save_request)
-    assert post_response.status_code == 200
+    assert post_response.status_code == 201
 
     get_response = client.get(f"/api/v1/223p/mappings?projectId={project_id}")
     assert get_response.status_code == 200
@@ -277,7 +277,7 @@ def test_post_mapping_with_no_spaces(shared_adapter) -> None:
     }
 
     post_response = client.post("/api/v1/223p/mappings", json=save_request)
-    assert post_response.status_code == 200
+    assert post_response.status_code == 201
 
     get_response = client.get(f"/api/v1/223p/mappings?projectId={project_id}")
     assert get_response.status_code == 200

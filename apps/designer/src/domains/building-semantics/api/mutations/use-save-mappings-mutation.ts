@@ -18,11 +18,16 @@ export function useSaveMappingsMutation() {
           mappings,
         },
       })
+
+      if ('error' in response && response.error) {
+        throw response.error
+      }
+
       return response.data
     },
     onSuccess: (_, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: ['mappings', projectId] })
     },
-    retry: 3,
+    retry: 1,
   })
 }

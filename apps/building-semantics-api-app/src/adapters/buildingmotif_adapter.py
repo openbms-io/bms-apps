@@ -1,6 +1,7 @@
 """BuildingMOTIF SDK adapter for ASHRAE 223P operations."""
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Generator
 
 from buildingmotif import BuildingMOTIF, get_building_motif
 from buildingmotif.database.errors import TemplateNotFound
@@ -282,3 +283,40 @@ class BuildingMOTIFAdapter:
             BuildingMOTIF instance
         """
         return self._bm
+
+    @contextmanager
+    def transaction(self) -> Generator[None, None, None]:
+        """
+        Context manager for atomic database operations.
+
+        Provides transaction semantics:
+        - All operations succeed together, or
+        - All operations rollback together
+
+        Usage:
+            with adapter.transaction():
+                model.graph.add(triple)
+                # Commits on success, rolls back on exception
+
+        Yields:
+            None
+
+        Raises:
+            Exception: Re-raises any exception after rollback
+        """
+        # Start nested transaction (savepoint)
+        savepoint = self._bm.session.begin_nested()
+
+        try:
+            yield  # Execute operations inside 'with' block
+
+            # SUCCESS: Commit all operations
+            self._bm.session.commit()
+            logger.debug("Transaction committed successfully")
+
+        except Exception as e:
+            # ERROR: Rollback to savepoint
+            savepoint.rollback()
+            self._bm.session.rollback()
+            logger.error(f"Transaction rolled back: {e}")
+            raise
