@@ -1,11 +1,10 @@
 """Service for ASHRAE 223P SHACL validation using BuildingMOTIF."""
-from buildingmotif import get_building_motif
 from buildingmotif.dataclasses import Model
 from loguru import logger
-from rdflib import Graph, Namespace
+from rdflib import Graph
 from rdflib.namespace import SH
 
-from src.adapters.buildingmotif_adapter import BuildingMOTIFAdapter
+from src.config.settings import get_settings
 from src.dto.validation_dto import ValidationResultDTO
 
 
@@ -13,56 +12,53 @@ class ValidationService:
     """Service for ASHRAE 223P SHACL validation using BuildingMOTIF."""
 
     @staticmethod
-    def validate_equipment_mapping(graph: Graph) -> ValidationResultDTO:
+    def validate_model(model: Model) -> ValidationResultDTO:
         """
-        Validate RDF graph against ASHRAE 223P SHACL constraints.
+        Validate BuildingMOTIF model against 223P SHACL constraints.
 
         Args:
-            graph: RDF graph containing equipment instances to validate
+            model: BuildingMOTIF Model instance to validate
 
         Returns:
             ValidationResultDTO with validation results
         """
+        settings = get_settings()
+
+        # Skip validation if disabled in settings
+        if not settings.enable_validation:
+            logger.debug("SHACL validation disabled by settings - skipping")
+            return ValidationResultDTO(isValid=True, errors=[], warnings=[])
+
         try:
-            logger.debug(f"Validating graph with {len(graph)} triples")
+            from src.adapters.buildingmotif_adapter import BuildingMOTIFAdapter
 
-            # Create temporary model from graph
-            temp_model = Model.create(Namespace("urn:validation:temp"))
-            for triple in graph:
-                temp_model.graph.add(triple)
+            logger.debug(f"Getting shapes for model with {len(model.graph)} triples")
 
-            # Get shape collection (already loaded in adapter)
             adapter = BuildingMOTIFAdapter.get_instance()
-            nrel_lib = adapter.get_nrel_library()
-            shape_collection = nrel_lib.get_shape_collection()
+            s223_shapes = adapter.get_223p_shapes()
+            unit_shapes = adapter.get_unit_shapes()
+            qk_shapes = adapter.get_quantitykind_shapes()
 
-            # Validate using BuildingMOTIF Model API
-            ctx = temp_model.validate([shape_collection])
-
-            valid = ctx.valid
-            report_string = ctx.report_string
-
-            logger.debug(f"Validation result: valid={valid}")
-
-            if valid:
-                return ValidationResultDTO(
-                    isValid=True,
-                    errors=[],
-                    warnings=[]
-                )
-
-            errors = ValidationService._parse_validation_report(report_string)
-
-            logger.debug(f"Validation failed with {len(errors)} errors")
-
-            return ValidationResultDTO(
-                isValid=False,
-                errors=errors,
-                warnings=[]
+            logger.debug(
+                f"Starting Validation: Using 223P shapes ({len(s223_shapes.graph)} triples), "
+                f"Unit shapes ({len(unit_shapes.graph)} triples), "
+                f"and QuantityKind shapes ({len(qk_shapes.graph)} triples)"
             )
 
+            ctx = model.validate([s223_shapes, unit_shapes, qk_shapes], error_on_missing_imports=False)
+            logger.debug("Validation completed")
+
+            if ctx.valid:
+                logger.debug("Validation passed")
+                return ValidationResultDTO(isValid=True, errors=[], warnings=[])
+
+            errors = ValidationService._parse_validation_report(ctx.report_string)
+            logger.debug(f"Validation failed with {len(errors)} errors")
+
+            return ValidationResultDTO(isValid=False, errors=errors, warnings=[])
+
         except Exception as e:
-            logger.error(f"SHACL validation failed: {e}")
+            logger.error(f"Model validation failed: {e}")
             return ValidationResultDTO(
                 isValid=False,
                 errors=[f"Validation error: {str(e)}"],
@@ -103,11 +99,13 @@ class ValidationService:
             has_results = False
             for row in results:
                 has_results = True
-                severity_uri = str(row.severity) if row.severity else None
+                severity = getattr(row, 'severity', None)
+                severity_uri = str(severity) if severity else None
                 is_violation = severity_uri and severity_uri.endswith("Violation")
 
                 if is_violation or not severity_uri:
-                    message = str(row.message) if row.message else "Unknown validation error"
+                    message_value = getattr(row, 'message', None)
+                    message = str(message_value) if message_value else "Unknown validation error"
                     errors.append(message)
 
             if not errors and has_results:

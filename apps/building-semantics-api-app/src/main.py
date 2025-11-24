@@ -1,11 +1,40 @@
 """FastAPI application entry point."""
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from loguru import logger
+
+from .adapters.buildingmotif_adapter import BuildingMOTIFAdapter
 from .config.settings import get_settings
-from .routers import mappings, spaces, templates, validation
+from .routers import bacnet_references, spaces, systems, templates, validation
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """
+    Lifespan context manager for application startup and shutdown.
+
+    Eagerly initializes BuildingMOTIF adapter at startup to:
+    1. Validate configuration and fail fast if misconfigured
+    2. Load templates and ontologies before accepting requests
+    3. Configure SQLite WAL mode for concurrent access
+    """
+    logger.info("=== Application Startup ===")
+    logger.info("Initializing BuildingMOTIF adapter...")
+
+    adapter = BuildingMOTIFAdapter.get_instance()
+    validation_status = "enabled" if adapter._settings.enable_validation else "disabled"
+    logger.info(f"✓ BuildingMOTIF adapter ready (validation={validation_status})")
+
+    yield
+
+    logger.info("=== Application Shutdown ===")
+
 
 app = FastAPI(
     title="Building Semantics API",
@@ -15,7 +44,17 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     root_path=settings.root_path,
+    lifespan=lifespan,
 )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    """Custom exception handler to return {error: message} instead of {detail: message}."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.detail},
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,7 +66,8 @@ app.add_middleware(
 
 app.include_router(templates.router)
 app.include_router(spaces.router)
-app.include_router(mappings.router)
+app.include_router(systems.router)
+app.include_router(bacnet_references.router)
 app.include_router(validation.router)
 
 

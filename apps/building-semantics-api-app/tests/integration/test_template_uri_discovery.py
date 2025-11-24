@@ -190,7 +190,7 @@ def test_extract_uri_from_multiple_templates(shared_adapter: BuildingMOTIFAdapte
     test_templates = [
         ("Device", DeviceTemplate.FAN),
         ("Device", DeviceTemplate.FILTER),
-        ("System", SystemTemplate.MAKEUP_AIR_UNIT),
+        ("System", SystemTemplate.LAB_VAV_REHEAT),
         ("Property", PropertyTemplate.STATIC_PRESSURE),
     ]
 

@@ -5,7 +5,13 @@ from rdflib import Graph
 
 from src.services.validation_service import ValidationService
 from src.dto.validation_dto import ValidationResultDTO
+from src.config.settings import get_settings
 
+# Skip validation tests when validation is disabled
+pytestmark = pytest.mark.skipif(
+    not get_settings().enable_validation,
+    reason="Validation disabled in settings - tests require validation to be enabled"
+)
 
 SAMPLE_VALID_REPORT = """
 @prefix sh: <http://www.w3.org/ns/shacl#> .

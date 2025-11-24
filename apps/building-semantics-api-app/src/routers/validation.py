@@ -6,4 +6,4 @@ router = APIRouter(
     tags=["ASHRAE 223P Validation"],
 )
 
-# Endpoints will be added in Story 2.4 (Phase 1)
+# TODO: Implementation later when validating models via API and not only during saving.

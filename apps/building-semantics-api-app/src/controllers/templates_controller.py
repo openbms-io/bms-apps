@@ -1,9 +1,8 @@
 """Controller for ASHRAE 223P templates operations."""
-from typing import Any
-
 from loguru import logger
 
 from ..adapters import BuildingMOTIFAdapter, TemplateType
+from ..adapters.buildingmotif_adapter import TemplateMetadata
 from ..dto.templates_dto import TemplatesResponseDTO
 from ..models.templates_model import TemplatesModel
 
@@ -95,7 +94,7 @@ class TemplatesController:
         logger.info(f"Getting template dependencies: {template_name}")
         return self.adapter.get_template_dependencies(template_name)
 
-    async def get_template_metadata(self, template_name: TemplateType) -> dict[str, Any]:
+    async def get_template_metadata(self, template_name: TemplateType) -> TemplateMetadata:
         """
         Get comprehensive metadata for a template including dependencies.
 

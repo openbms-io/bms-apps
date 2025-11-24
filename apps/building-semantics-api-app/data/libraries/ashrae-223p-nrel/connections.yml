@@ -4,7 +4,8 @@ air-outlet-cp:
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:OutletConnectionPoint ;
       s223:mapsTo P:mapsto ;
-      s223:hasMedium s223:Fluid-Air .
+      s223:hasMedium s223:Fluid-Air ;
+      s223:isConnectionPointOf P:equipment .
     P:mapsto a s223:OutletConnectionPoint ;
       s223:hasMedium s223:Fluid-Air .
   optional: ["mapsto"]
@@ -15,7 +16,8 @@ water-inlet-cp:
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:InletConnectionPoint ;
       s223:mapsTo P:mapsto ;
-      s223:hasMedium s223:Fluid-Water .
+      s223:hasMedium s223:Fluid-Water ;
+      s223:isConnectionPointOf P:equipment .
     P:mapsto a s223:InletConnectionPoint ;
       s223:hasMedium s223:Fluid-Water .
   optional: ["mapsto"]
@@ -26,7 +28,8 @@ water-outlet-cp:
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:OutletConnectionPoint ;
       s223:mapsTo P:mapsto ;
-      s223:hasMedium s223:Fluid-Water .
+      s223:hasMedium s223:Fluid-Water ;
+      s223:isConnectionPointOf P:equipment .
     P:mapsto a s223:OutletConnectionPoint ;
       s223:hasMedium s223:Fluid-Water .
   optional: ["mapsto"]
@@ -37,7 +40,8 @@ air-inlet-cp:
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:InletConnectionPoint ;
       s223:mapsTo P:mapsto ;
-      s223:hasMedium s223:Fluid-Air .
+      s223:hasMedium s223:Fluid-Air ;
+      s223:isConnectionPointOf P:equipment .
     P:mapsto a s223:InletConnectionPoint ;
       s223:hasMedium s223:Fluid-Air .
   optional: ["mapsto"]
@@ -88,47 +92,47 @@ junction:
     ]
   dependencies:
     - template: air-inlet-cp
-      args: { "name": "in1" }
+      args: { "name": "in1", "equipment": "name" }
     - template: air-inlet-cp
-      args: { "name": "in2" }
+      args: { "name": "in2", "equipment": "name" }
     - template: air-inlet-cp
-      args: { "name": "in3" }
+      args: { "name": "in3", "equipment": "name" }
     - template: air-inlet-cp
-      args: { "name": "in4" }
+      args: { "name": "in4", "equipment": "name" }
     - template: air-inlet-cp
-      args: { "name": "in5" }
+      args: { "name": "in5", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out1" }
+      args: { "name": "out1", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out2" }
+      args: { "name": "out2", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out3" }
+      args: { "name": "out3", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out4" }
+      args: { "name": "out4", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out5" }
+      args: { "name": "out5", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out6" }
+      args: { "name": "out6", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out7" }
+      args: { "name": "out7", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out8" }
+      args: { "name": "out8", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out9" }
+      args: { "name": "out9", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out10" }
+      args: { "name": "out10", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out11" }
+      args: { "name": "out11", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out12" }
+      args: { "name": "out12", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out13" }
+      args: { "name": "out13", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out14" }
+      args: { "name": "out14", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out15" }
+      args: { "name": "out15", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out16" }
+      args: { "name": "out16", "equipment": "name" }
 
 pipe:
   body: >

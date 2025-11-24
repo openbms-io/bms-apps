@@ -86,6 +86,30 @@ pytest tests/
 pnpm bms-iot:run
 ```
 
+#### Building Semantics API Development (TDD)
+
+```bash
+# IMPORTANT: Always run tests from PROJECT ROOT directory
+cd /Users/amol/Documents/ai-projects/bms-supervisor-controller
+
+# 1. Write failing test
+# Edit test file in apps/building-semantics-api-app/tests/
+
+# 2. Run unit tests (should fail)
+PYTHONPATH=.:packages:apps/building-semantics-api-app python -m pytest apps/building-semantics-api-app/tests/unit/ -v
+
+# 3. Run integration tests (should fail)
+PYTHONPATH=.:packages:apps/building-semantics-api-app python -m pytest apps/building-semantics-api-app/tests/integration/ -v
+
+# 4. Implement feature
+# Edit files in apps/building-semantics-api-app/src/
+
+# 5. Verify tests pass
+PYTHONPATH=.:packages:apps/building-semantics-api-app python -m pytest apps/building-semantics-api-app/tests/ -v
+
+# Note: Template paths in conftest.py are relative to project root
+```
+
 #### Component Development (TDD)
 
 ```bash

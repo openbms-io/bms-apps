@@ -8,9 +8,9 @@ damper:
       s223:hasConnectionPoint P:in, P:out .
   dependencies:
     - template: air-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: damper-command
       args: { "name": "command" }
     - template: damper-feedback
@@ -27,9 +27,9 @@ vlv-dmp:
       s223:hasProperty P:command, P:feedback .
   dependencies:
     - template: air-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: start-command
       args: { "name": "command" }
     - template: run-status
@@ -44,9 +44,9 @@ fan:
       s223:hasConnectionPoint P:in, P:out .
   dependencies:
     - template: air-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: start-command
       args: { "name": "start-cmd" }
     - template: run-status
@@ -79,9 +79,9 @@ filter:
       s223:hasConnectionPoint P:in, P:out .
   dependencies:
     - template: air-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: differential-pressure
       args: { "name": "differential-pressure" }
 
@@ -99,13 +99,13 @@ heat-recovery-coil:
       s223:hasConnectionPoint P:air-in, P:air-out, P:water-in, P:water-out .
   dependencies:
     - template: air-inlet-cp
-      args: { "name": "air-in" }
+      args: { "name": "air-in", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "air-out" }
+      args: { "name": "air-out", "equipment": "name" }
     - template: water-inlet-cp
-      args: { "name": "water-in" }
+      args: { "name": "water-in", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "water-out" }
+      args: { "name": "water-out", "equipment": "name" }
     - template: air-temperature
       args: { "name": "leaving-air-temp" }
     - template: air-temperature
@@ -120,7 +120,7 @@ chilled-water-coil:
     @prefix P: <urn:___param___#> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:CoolingCoil ;
-      s223:cnx P:air-in, P:air-out, P:water-in, P:water-out ;
+      s223:hasConnectionPoint P:air-in, P:air-out, P:water-in, P:water-out ;
       s223:contains P:pump, P:valve ;
       s223:hasProperty P:entering-air-temp, P:leaving-air-temp, P:supply-water-temp,
                        P:return-water-temp, P:leaving-air-wetbulb-temp .
@@ -130,13 +130,13 @@ chilled-water-coil:
     - template: chw-valve
       args: { "name": "valve" }
     - template: air-inlet-cp
-      args: { "name": "air-in" }
+      args: { "name": "air-in", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "air-out" }
+      args: { "name": "air-out", "equipment": "name" }
     - template: water-inlet-cp
-      args: { "name": "water-in" }
+      args: { "name": "water-in", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "water-out" }
+      args: { "name": "water-out", "equipment": "name" }
     - template: air-temperature
       args: { "name": "leaving-air-temp" }
     - template: air-temperature
@@ -160,13 +160,13 @@ hot-water-coil:
     - template: hw-valve
       args: { "name": "valve" }
     - template: air-inlet-cp
-      args: { "name": "air-in" }
+      args: { "name": "air-in", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "air-out" }
+      args: { "name": "air-out", "equipment": "name" }
     - template: water-inlet-cp
-      args: { "name": "water-in" }
+      args: { "name": "water-in", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "water-out" }
+      args: { "name": "water-out", "equipment": "name" }
     - template: water-temperature
       args: { "name": "supply-water-temp" }
     - template: water-temperature
@@ -205,9 +205,9 @@ chw-pump:
     - template: run-status
       args: { "name": "onoff-sts" }
     - template: water-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: vfd-current
       args: { "name": "vfd-cur" }
     - template: vfd-energy
@@ -240,9 +240,9 @@ hw-pump:
     - template: run-status
       args: { "name": "onoff-sts" }
     - template: water-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: vfd-current
       args: { "name": "vfd-cur" }
     - template: vfd-energy
@@ -305,9 +305,9 @@ chw-valve:
       s223:hasProperty P:command, P:feedback .
   dependencies:
     - template: water-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: start-command
       args: { "name": "command" }
     - template: run-status
@@ -323,9 +323,9 @@ hw-valve:
       s223:hasProperty P:command, P:feedback .
   dependencies:
     - template: water-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: start-command
       args: { "name": "command" }
     - template: run-status
@@ -388,13 +388,13 @@ evaporative-cooler:
     P:out s223:hasProperty P:leaving-air-temp, P:leaving-air-humidity .
   dependencies:
     - template: air-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "water-in" }
+      args: { "name": "water-in", "equipment": "name" }
     - template: water-inlet-cp
-      args: { "name": "water-out" }
+      args: { "name": "water-out", "equipment": "name" }
     - template: air-temperature
       args: { "name": "entering-air-temp" }
     - template: air-temperature
@@ -431,13 +431,13 @@ heat-exchanger:
                        P:chw-return-temperature, P:chw-flow .
   dependencies:
     - template: water-outlet-cp
-      args: { "name": "A-in" }
+      args: { "name": "A-in", "equipment": "name" }
     - template: water-inlet-cp
-      args: { "name": "A-out" }
+      args: { "name": "A-out", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "B-in" }
+      args: { "name": "B-in", "equipment": "name" }
     - template: water-inlet-cp
-      args: { "name": "B-out" }
+      args: { "name": "B-out", "equipment": "name" }
     - template: differential-pressure
       args: { "name": "A-chw-diff-press" }
     - template: differential-pressure
@@ -514,9 +514,9 @@ unit-heater:
     - template: fan
       args: { "name": "fan" }
     - template: air-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: air-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
 
 domestic-water-heater:
   body: >
@@ -533,9 +533,9 @@ domestic-water-heater:
     - template: hw-pump
       args: { "name": "dw-hwp" }
     - template: water-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: water-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
 
 HRC-BTU-meter:
   body: >
@@ -607,9 +607,9 @@ exhaust-fan:
       s223:hasConnectionPoint P:in, P:out .
   dependencies:
     - template: air-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: air-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: start-command
       args: { "name": "start-cmd" }
     - template: run-status

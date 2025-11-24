@@ -7,7 +7,7 @@ from loguru import logger
 
 from ..adapters.buildingmotif_adapter import BuildingMOTIFAdapter
 from ..adapters.template_types import DeviceTemplate, PropertyTemplate, SystemTemplate
-from ..dto.templates_dto import DeviceType, TemplatePropertyDTO, TemplatesResponseDTO
+from ..dto.templates_dto import DeviceType, SpaceTypeDTO, TemplatePropertyDTO, TemplatesResponseDTO
 from ..mappers.template_mapper import (
     is_device_template,
     is_property_template,
@@ -69,7 +69,7 @@ class TemplatesModel:
                 logger.error(f"Failed to process system {system_enum.value}: {e}")
                 continue
 
-        space_types = []
+        space_types: list[SpaceTypeDTO] = []
 
         all_observable_properties = self._get_all_observable_properties()
 
@@ -85,7 +85,7 @@ class TemplatesModel:
 
         return TemplatesResponseDTO(
             systems=systems,
-            space_types=space_types,
+            spaceTypes=space_types,
         )
 
     def _get_all_observable_properties(self) -> list[TemplatePropertyDTO]:

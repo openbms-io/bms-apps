@@ -1,0 +1,1954 @@
+{
+  "equipmentUrn": "urn:bms:hw-hx-chw-flow-sensor_57905835",
+  "nodes": [
+    {
+      "id": "urn:bms:dwh-dw-hwp-vfd-spd_0f3b8f49",
+      "type": "property",
+      "label": "Fan speed as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableActuatableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-onoff-sts_e68a70ae",
+      "type": "property",
+      "label": "Dwh Dw Hwp Onoff Sts",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-chw-return-temperature_aef12f15",
+      "type": "property",
+      "label": "Dwh Dw Hx Chw Return Temperature",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:chw-flow-sensor_92c59e32",
+      "type": "device",
+      "label": "Chw Flow Sensor",
+      "rdfClass": "ns1:Sensor"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-chw-flow_c4de0573",
+      "type": "property",
+      "label": "Dwh Dw Hx Chw Flow",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-A-chw-diff-press_17edda30",
+      "type": "property",
+      "label": "Dwh Dw Hx A Chw Diff Press",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-B-chw-diff-press-sensor_66677a68",
+      "type": "device",
+      "label": "Dwh Dw Hx B Chw Diff Press Sensor",
+      "rdfClass": "ns1:DifferentialSensor"
+    },
+    {
+      "id": "urn:bms:Device:device-599-analog-value-2",
+      "type": "equipment",
+      "label": "Heat Exchanger",
+      "rdfClass": "ns1:HeatExchanger"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-chw-supply-temperature_287f9c95",
+      "type": "property",
+      "label": "Dwh Dw Hx Chw Supply Temperature",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:B-in_bf3465e3",
+      "type": "connectionpoint",
+      "label": "B In",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:bypass-valve-command_d213e228",
+      "type": "property",
+      "label": "Bypass Valve Command",
+      "rdfClass": "ns1:EnumeratedActuatableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-vfd-volt_675d035e",
+      "type": "property",
+      "label": "Dwh Dw Hwp Vfd Volt",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:bypass-valve-in_424108d2",
+      "type": "connectionpoint",
+      "label": "Bypass Valve In",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-vfd-frq_032b55d8",
+      "type": "property",
+      "label": "Dwh Dw Hwp Vfd Frq",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-vfd-flt_a2f9d974",
+      "type": "property",
+      "label": "Lead Hw Pump Vfd Flt",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-vfd-spd_84de54f2",
+      "type": "property",
+      "label": "Fan speed as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableActuatableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-vfd-energy_a6f4a940",
+      "type": "property",
+      "label": "Standby Hw Pump Vfd Energy",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-A-in_dfa3e301",
+      "type": "connectionpoint",
+      "label": "Dwh Dw Hx A In",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-out_fd032237",
+      "type": "connectionpoint",
+      "label": "Lead Hw Pump Out",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-out_021e06f1",
+      "type": "connectionpoint",
+      "label": "Standby Hw Pump Out",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:Equipment:device-599-analog-value-2",
+      "type": "equipment",
+      "label": "Hot Water System",
+      "rdfClass": "ns1:System"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-vfd-fb_727e1aab",
+      "type": "property",
+      "label": "Fan speed feedback as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-onoff-cmd_c1c4a818",
+      "type": "property",
+      "label": "Standby Hw Pump Onoff Cmd",
+      "rdfClass": "ns1:EnumeratedActuatableProperty"
+    },
+    {
+      "id": "urn:bms:hw-hx-chw-flow-sensor_57905835",
+      "type": "device",
+      "label": "Hw Hx Chw Flow Sensor",
+      "rdfClass": "ns1:Sensor"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-vfd-cur_7c21fa90",
+      "type": "property",
+      "label": "Dwh Dw Hwp Vfd Cur",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-vfd-flt_bc783f9d",
+      "type": "property",
+      "label": "Standby Hw Booster Pump Vfd Flt",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:hw-hx-B-out_91fb7bee",
+      "type": "connectionpoint",
+      "label": "Hw Hx B Out",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:A-chw-diff-press-sensor_0dcc4359",
+      "type": "device",
+      "label": "A Chw Diff Press Sensor",
+      "rdfClass": "ns1:DifferentialSensor"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-in_61766d40",
+      "type": "connectionpoint",
+      "label": "Lead Hw Pump In",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx_e82f5a49",
+      "type": "equipment",
+      "label": "Dwh Dw Hx",
+      "rdfClass": "ns1:HeatExchanger"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-in_d34a5bb9",
+      "type": "connectionpoint",
+      "label": "Lead Hw Booster Pump In",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-vfd-frq_a29fae71",
+      "type": "property",
+      "label": "Lead Hw Pump Vfd Frq",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-vfd-cur_38ad96c0",
+      "type": "property",
+      "label": "Lead Hw Booster Pump Vfd Cur",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:hw-hx-A-chw-diff-press_3a22d038",
+      "type": "property",
+      "label": "Hw Hx A Chw Diff Press",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-A-chw-diff-press-sensor_8b7dc237",
+      "type": "device",
+      "label": "Dwh Dw Hx A Chw Diff Press Sensor",
+      "rdfClass": "ns1:DifferentialSensor"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump_50f6a4a7",
+      "type": "device",
+      "label": "Lead Hw Pump",
+      "rdfClass": "ns1:Pump"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-vfd-spd_3f00c13a",
+      "type": "property",
+      "label": "Fan speed as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableActuatableProperty"
+    },
+    {
+      "id": "urn:bms:B-out_2c66a50e",
+      "type": "connectionpoint",
+      "label": "B Out",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump_257acb53",
+      "type": "device",
+      "label": "Lead Hw Booster Pump",
+      "rdfClass": "ns1:Pump"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-vfd-fb_d2dd80c7",
+      "type": "property",
+      "label": "Fan speed feedback as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-out_4cc8c935",
+      "type": "connectionpoint",
+      "label": "Standby Hw Booster Pump Out",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-in_3f47460e",
+      "type": "connectionpoint",
+      "label": "Dwh Dw Hwp In",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:A-out_c55fada8",
+      "type": "connectionpoint",
+      "label": "A Out",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-vfd-fb_2bd74043",
+      "type": "property",
+      "label": "Fan speed feedback as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-vfd-volt_378f03bd",
+      "type": "property",
+      "label": "Lead Hw Pump Vfd Volt",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-vfd-pwr_33eda077",
+      "type": "property",
+      "label": "Standby Hw Booster Pump Vfd Pwr",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-vfd-volt_22b43d8b",
+      "type": "property",
+      "label": "Standby Hw Pump Vfd Volt",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-vfd-flt_109bff51",
+      "type": "property",
+      "label": "Dwh Dw Hwp Vfd Flt",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-vfd-cur_321346e2",
+      "type": "property",
+      "label": "Standby Hw Pump Vfd Cur",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-A-out_4a971c5d",
+      "type": "connectionpoint",
+      "label": "Dwh Dw Hx A Out",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-out_0439f353",
+      "type": "connectionpoint",
+      "label": "Lead Hw Booster Pump Out",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-vfd-fb_0e8b6c50",
+      "type": "property",
+      "label": "Fan speed feedback as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:A-in_5de14a6b",
+      "type": "connectionpoint",
+      "label": "A In",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-B-chw-diff-press_14ed7829",
+      "type": "property",
+      "label": "Dwh Dw Hx B Chw Diff Press",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:Property:device-599-analog-value-2",
+      "type": "property",
+      "label": "Quantifiable Observable Property",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:bypass-valve-feedback_1cdf737d",
+      "type": "property",
+      "label": "Bypass Valve Feedback",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:hw-hx-chw-flow_7a19a6a6",
+      "type": "property",
+      "label": "Hw Hx Chw Flow",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-vfd-energy_908b192f",
+      "type": "property",
+      "label": "Standby Hw Booster Pump Vfd Energy",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:B-chw-diff-press_46fc2246",
+      "type": "property",
+      "label": "B Chw Diff Press",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "type": "device",
+      "label": "Dwh Dw Hwp",
+      "rdfClass": "ns1:Pump"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-vfd-energy_111bf34c",
+      "type": "property",
+      "label": "Dwh Dw Hwp Vfd Energy",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:hw-hx-B-chw-diff-press_15360696",
+      "type": "property",
+      "label": "Hw Hx B Chw Diff Press",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:bypass-valve_154f1e19",
+      "type": "device",
+      "label": "Bypass Valve",
+      "rdfClass": "ns1:Valve"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-onoff-cmd_00b3decc",
+      "type": "property",
+      "label": "Lead Hw Pump Onoff Cmd",
+      "rdfClass": "ns1:EnumeratedActuatableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-vfd-fb_04476d69",
+      "type": "property",
+      "label": "Fan speed feedback as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-onoff-cmd_d94ab02a",
+      "type": "property",
+      "label": "Standby Hw Booster Pump Onoff Cmd",
+      "rdfClass": "ns1:EnumeratedActuatableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-out_dace8717",
+      "type": "connectionpoint",
+      "label": "Dwh Out",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-vfd-pwr_e95dd95a",
+      "type": "property",
+      "label": "Dwh Dw Hwp Vfd Pwr",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-onoff-sts_9fddf8a6",
+      "type": "property",
+      "label": "Standby Hw Pump Onoff Sts",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-vfd-volt_84e2f5a5",
+      "type": "property",
+      "label": "Lead Hw Booster Pump Vfd Volt",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:BACnetRef:device-599-analog-value-2",
+      "type": "externalreference",
+      "label": "B A Cnet External Reference",
+      "rdfClass": "ns1:BACnetExternalReference"
+    },
+    {
+      "id": "urn:bms:hw-hx-A-in_5f6d2119",
+      "type": "connectionpoint",
+      "label": "Hw Hx A In",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-chw-flow-sensor_73a0a7bd",
+      "type": "device",
+      "label": "Dwh Dw Hx Chw Flow Sensor",
+      "rdfClass": "ns1:Sensor"
+    },
+    {
+      "id": "urn:bms:B-chw-diff-press-sensor_1c640352",
+      "type": "device",
+      "label": "B Chw Diff Press Sensor",
+      "rdfClass": "ns1:DifferentialSensor"
+    },
+    {
+      "id": "urn:bms:Project:475938fc-ee40-482c-861a-0e943ccda099",
+      "type": "connectionpoint",
+      "label": "urn:bms: Project",
+      "rdfClass": "ns2:Project"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-B-in_3086efd5",
+      "type": "connectionpoint",
+      "label": "Dwh Dw Hx B In",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:chw-return-temperature_41b60b31",
+      "type": "property",
+      "label": "Chw Return Temperature",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:bypass-valve-out_ee6960e0",
+      "type": "connectionpoint",
+      "label": "Bypass Valve Out",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:hw-hx-chw-supply-temperature_bf554f47",
+      "type": "property",
+      "label": "Hw Hx Chw Supply Temperature",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-out_5dc7f681",
+      "type": "connectionpoint",
+      "label": "Dwh Dw Hwp Out",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-vfd-pwr_1561d521",
+      "type": "property",
+      "label": "Lead Hw Booster Pump Vfd Pwr",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-vfd-energy_6f11c234",
+      "type": "property",
+      "label": "Lead Hw Booster Pump Vfd Energy",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh_3a20ee43",
+      "type": "equipment",
+      "label": "domestic water heater",
+      "rdfClass": "ns1:Equipment"
+    },
+    {
+      "id": "urn:bms:hw-hx-chw-return-temperature_50e13cec",
+      "type": "property",
+      "label": "Hw Hx Chw Return Temperature",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-vfd-frq_1780352c",
+      "type": "property",
+      "label": "Lead Hw Booster Pump Vfd Frq",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-vfd-cur_426c535d",
+      "type": "property",
+      "label": "Lead Hw Pump Vfd Cur",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-vfd-energy_0d1e1231",
+      "type": "property",
+      "label": "Lead Hw Pump Vfd Energy",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-onoff-sts_dc126b12",
+      "type": "property",
+      "label": "Lead Hw Booster Pump Onoff Sts",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hwp-onoff-cmd_2bdb7d7c",
+      "type": "property",
+      "label": "Dwh Dw Hwp Onoff Cmd",
+      "rdfClass": "ns1:EnumeratedActuatableProperty"
+    },
+    {
+      "id": "urn:bms:A-chw-diff-press_e9b586b2",
+      "type": "property",
+      "label": "A Chw Diff Press",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:hw-hx-A-chw-diff-press-sensor_c22d09d4",
+      "type": "device",
+      "label": "Hw Hx A Chw Diff Press Sensor",
+      "rdfClass": "ns1:DifferentialSensor"
+    },
+    {
+      "id": "urn:bms:dwh-dw-hx-B-out_2a64896a",
+      "type": "connectionpoint",
+      "label": "Dwh Dw Hx B Out",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:chw-supply-temperature_18bd82d7",
+      "type": "property",
+      "label": "Chw Supply Temperature",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:chw-flow_d3241df4",
+      "type": "property",
+      "label": "Chw Flow",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:hw-hx-B-chw-diff-press-sensor_3259cd96",
+      "type": "device",
+      "label": "Hw Hx B Chw Diff Press Sensor",
+      "rdfClass": "ns1:DifferentialSensor"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-vfd-volt_0c935448",
+      "type": "property",
+      "label": "Standby Hw Booster Pump Vfd Volt",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:hw-hx-B-in_f4046a3c",
+      "type": "connectionpoint",
+      "label": "Hw Hx B In",
+      "rdfClass": "ns1:OutletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-vfd-flt_ab156df4",
+      "type": "property",
+      "label": "Lead Hw Booster Pump Vfd Flt",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-vfd-pwr_4dd0250e",
+      "type": "property",
+      "label": "Standby Hw Pump Vfd Pwr",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:dwh-in_3293ebc6",
+      "type": "connectionpoint",
+      "label": "Dwh In",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-vfd-frq_0896c0f3",
+      "type": "property",
+      "label": "Standby Hw Pump Vfd Frq",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump_809851ff",
+      "type": "device",
+      "label": "Standby Hw Booster Pump",
+      "rdfClass": "ns1:Pump"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-in_bbafd601",
+      "type": "connectionpoint",
+      "label": "Standby Hw Booster Pump In",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-vfd-cur_fe0fc03a",
+      "type": "property",
+      "label": "Standby Hw Booster Pump Vfd Cur",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-onoff-sts_6ec2f306",
+      "type": "property",
+      "label": "Lead Hw Pump Onoff Sts",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-pump-vfd-pwr_615b9d32",
+      "type": "property",
+      "label": "Lead Hw Pump Vfd Pwr",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-vfd-frq_724e8535",
+      "type": "property",
+      "label": "Standby Hw Booster Pump Vfd Frq",
+      "rdfClass": "ns1:QuantifiableObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-in_084e46c8",
+      "type": "connectionpoint",
+      "label": "Standby Hw Pump In",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:hw-hx_c4d1afdd",
+      "type": "equipment",
+      "label": "Hw Hx",
+      "rdfClass": "ns1:HeatExchanger"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump-vfd-flt_4070bcb0",
+      "type": "property",
+      "label": "Standby Hw Pump Vfd Flt",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-onoff-sts_aed60d83",
+      "type": "property",
+      "label": "Standby Hw Booster Pump Onoff Sts",
+      "rdfClass": "ns1:EnumeratedObservableProperty"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-onoff-cmd_57104002",
+      "type": "property",
+      "label": "Lead Hw Booster Pump Onoff Cmd",
+      "rdfClass": "ns1:EnumeratedActuatableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-booster-pump-vfd-spd_380c5c8d",
+      "type": "property",
+      "label": "Fan speed as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableActuatableProperty"
+    },
+    {
+      "id": "urn:bms:standby-hw-pump_745b1b53",
+      "type": "device",
+      "label": "Standby Hw Pump",
+      "rdfClass": "ns1:Pump"
+    },
+    {
+      "id": "urn:bms:hw-hx-A-out_2fdc6566",
+      "type": "connectionpoint",
+      "label": "Hw Hx A Out",
+      "rdfClass": "ns1:InletConnectionPoint"
+    },
+    {
+      "id": "urn:bms:lead-hw-booster-pump-vfd-spd_fb5f1b18",
+      "type": "property",
+      "label": "Fan speed as percentage of maximum frequency",
+      "rdfClass": "ns1:QuantifiableActuatableProperty"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_c0ca7c0f",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-chw-flow-sensor_57905835",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_197d8bb3",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-vfd-frq_0896c0f3",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_efc129bd",
+      "source": "urn:bms:Equipment:device-599-analog-value-2",
+      "target": "urn:bms:lead-hw-booster-pump_257acb53",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_0fddbf58",
+      "source": "urn:bms:bypass-valve_154f1e19",
+      "target": "urn:bms:bypass-valve-out_ee6960e0",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_f513c658",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-vfd-cur_321346e2",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_362d1e87",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:A-chw-diff-press-sensor_0dcc4359",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_7741bae4",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-vfd-spd_3f00c13a",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_18165bb6",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-vfd-spd_84de54f2",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_f3bd5949",
+      "source": "urn:bms:dwh_3a20ee43",
+      "target": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_193c51ff",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-in_bbafd601",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_da902f5a",
+      "source": "urn:bms:B-chw-diff-press-sensor_1c640352",
+      "target": "urn:bms:B-chw-diff-press_46fc2246",
+      "property": "s223:observes",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_3906d91e",
+      "source": "urn:bms:Equipment:device-599-analog-value-2",
+      "target": "urn:bms:bypass-valve_154f1e19",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_bf077fb6",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-chw-flow-sensor_73a0a7bd",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_c6f0eb9a",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-onoff-cmd_c1c4a818",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_6b219dab",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-vfd-flt_ab156df4",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_443f6c80",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-vfd-pwr_33eda077",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_008a1b6c",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-vfd-flt_109bff51",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_da0dbe16",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-onoff-sts_6ec2f306",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_c5d8e6b6",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-out_4cc8c935",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_251bdd75",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-out_fd032237",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_50994320",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-vfd-spd_380c5c8d",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_98415a59",
+      "source": "urn:bms:dwh-dw-hx-A-chw-diff-press-sensor_8b7dc237",
+      "target": "urn:bms:dwh-dw-hx-A-out_4a971c5d",
+      "property": "s223:hasObservationLocationLow",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_7b79f5fa",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-vfd-cur_7c21fa90",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_5a3757e4",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-vfd-energy_111bf34c",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_41f248d2",
+      "source": "urn:bms:dwh-dw-hx-B-chw-diff-press-sensor_66677a68",
+      "target": "urn:bms:dwh-dw-hx-B-chw-diff-press_14ed7829",
+      "property": "s223:observes",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_70d10050",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-vfd-energy_6f11c234",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_3606a673",
+      "source": "urn:bms:hw-hx-A-chw-diff-press-sensor_c22d09d4",
+      "target": "urn:bms:hw-hx-A-chw-diff-press_3a22d038",
+      "property": "s223:observes",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_3461d417",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-onoff-sts_e68a70ae",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_87707529",
+      "source": "urn:bms:hw-hx-A-chw-diff-press-sensor_c22d09d4",
+      "target": "urn:bms:hw-hx-A-in_5f6d2119",
+      "property": "s223:hasObservationLocationHigh",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_e9b89a85",
+      "source": "urn:bms:Equipment:device-599-analog-value-2",
+      "target": "urn:bms:lead-hw-pump_50f6a4a7",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_2a4a5ec6",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-vfd-flt_bc783f9d",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_956c16ef",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-A-chw-diff-press-sensor_8b7dc237",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_5545e381",
+      "source": "urn:bms:A-chw-diff-press-sensor_0dcc4359",
+      "target": "urn:bms:A-chw-diff-press_e9b586b2",
+      "property": "s223:observes",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_2ff7c9fc",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-onoff-sts_9fddf8a6",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_1e51401d",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-vfd-frq_724e8535",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_9620dc55",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:chw-return-temperature_41b60b31",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_4b5f90dd",
+      "source": "urn:bms:dwh_3a20ee43",
+      "target": "urn:bms:dwh-dw-hx_e82f5a49",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_0f6722bb",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-vfd-pwr_615b9d32",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_121e0f19",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-chw-return-temperature_aef12f15",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_f005b052",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-vfd-fb_d2dd80c7",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_edecf7a0",
+      "source": "urn:bms:hw-hx-chw-flow-sensor_57905835",
+      "target": "urn:bms:hw-hx-chw-flow_7a19a6a6",
+      "property": "s223:observes",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_029f317a",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:chw-supply-temperature_18bd82d7",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_634712f9",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-vfd-spd_fb5f1b18",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_52c3273c",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-A-in_5f6d2119",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_1b8aead2",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-vfd-energy_908b192f",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_0c6e7517",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-vfd-cur_38ad96c0",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_661efb42",
+      "source": "urn:bms:dwh-dw-hx-A-chw-diff-press-sensor_8b7dc237",
+      "target": "urn:bms:dwh-dw-hx-A-chw-diff-press_17edda30",
+      "property": "s223:observes",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_7eeaba99",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-onoff-sts_dc126b12",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_06032fb6",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-vfd-fb_2bd74043",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_48a5091a",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-B-out_91fb7bee",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_cfb1c283",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-chw-flow_7a19a6a6",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_3c54467f",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:B-in_bf3465e3",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_2e056712",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-vfd-frq_032b55d8",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_8879c1b3",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-B-chw-diff-press-sensor_66677a68",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_9551109d",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-vfd-frq_a29fae71",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_28c2ec80",
+      "source": "urn:bms:Equipment:device-599-analog-value-2",
+      "target": "urn:bms:standby-hw-booster-pump_809851ff",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_00fc2528",
+      "source": "urn:bms:Equipment:device-599-analog-value-2",
+      "target": "urn:bms:hw-hx_c4d1afdd",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_c283b873",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-vfd-pwr_4dd0250e",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_3d500ad7",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-vfd-pwr_1561d521",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_09ac50ca",
+      "source": "urn:bms:hw-hx-B-chw-diff-press-sensor_3259cd96",
+      "target": "urn:bms:hw-hx-B-out_91fb7bee",
+      "property": "s223:hasObservationLocationLow",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_6472f6e6",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-vfd-spd_0f3b8f49",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_75d88d14",
+      "source": "urn:bms:chw-flow-sensor_92c59e32",
+      "target": "urn:bms:B-out_2c66a50e",
+      "property": "s223:hasObservationLocation",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_f75d2fc3",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-vfd-fb_04476d69",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_2ab8107a",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-onoff-cmd_00b3decc",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_254d76f6",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-vfd-volt_84e2f5a5",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_979940df",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-in_3f47460e",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_13e30191",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-chw-supply-temperature_bf554f47",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_e399cbc7",
+      "source": "urn:bms:bypass-valve_154f1e19",
+      "target": "urn:bms:bypass-valve-in_424108d2",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_6ce33319",
+      "source": "urn:bms:dwh-dw-hx-B-chw-diff-press-sensor_66677a68",
+      "target": "urn:bms:dwh-dw-hx-B-out_2a64896a",
+      "property": "s223:hasObservationLocationLow",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_89214b8b",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-vfd-energy_0d1e1231",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_e6a66928",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-A-chw-diff-press_17edda30",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_29a70263",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-B-in_f4046a3c",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_b03858df",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-vfd-volt_0c935448",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_656e0dae",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-vfd-flt_a2f9d974",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_459feeb9",
+      "source": "urn:bms:dwh-dw-hx-chw-flow-sensor_73a0a7bd",
+      "target": "urn:bms:dwh-dw-hx-chw-flow_c4de0573",
+      "property": "s223:observes",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_04b100b2",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-vfd-cur_fe0fc03a",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_f2927392",
+      "source": "urn:bms:Equipment:device-599-analog-value-2",
+      "target": "urn:bms:standby-hw-pump_745b1b53",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_b3e16683",
+      "source": "urn:bms:hw-hx-A-chw-diff-press-sensor_c22d09d4",
+      "target": "urn:bms:hw-hx-A-out_2fdc6566",
+      "property": "s223:hasObservationLocationLow",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_e0324c9a",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:A-chw-diff-press_e9b586b2",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_5996f25e",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-A-in_dfa3e301",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_b14e68c6",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-vfd-energy_a6f4a940",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_b7ba4df2",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-vfd-frq_1780352c",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_0960f4d3",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-in_61766d40",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_0110ed4c",
+      "source": "urn:bms:dwh_3a20ee43",
+      "target": "urn:bms:dwh-in_3293ebc6",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_93a61117",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-B-chw-diff-press_15360696",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_393bd3e4",
+      "source": "urn:bms:chw-flow-sensor_92c59e32",
+      "target": "urn:bms:chw-flow_d3241df4",
+      "property": "s223:observes",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_79cf32d5",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-onoff-sts_aed60d83",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_848a4ee5",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-vfd-fb_0e8b6c50",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_1b32de09",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-vfd-flt_4070bcb0",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_90dc6de4",
+      "source": "urn:bms:Property:device-599-analog-value-2",
+      "target": "urn:bms:BACnetRef:device-599-analog-value-2",
+      "property": "s223:hasExternalReference",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_7276644c",
+      "source": "urn:bms:Equipment:device-599-analog-value-2",
+      "target": "urn:bms:Device:device-599-analog-value-2",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_2ee41ebe",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:A-in_5de14a6b",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_ce1aa069",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-A-out_4a971c5d",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_5bcb4c1e",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-B-out_2a64896a",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_48d2079d",
+      "source": "urn:bms:hw-hx-B-chw-diff-press-sensor_3259cd96",
+      "target": "urn:bms:hw-hx-B-chw-diff-press_15360696",
+      "property": "s223:observes",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_b993d01b",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-vfd-cur_426c535d",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_05031532",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:A-out_c55fada8",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_d20bcb9f",
+      "source": "urn:bms:dwh-dw-hx-B-chw-diff-press-sensor_66677a68",
+      "target": "urn:bms:dwh-dw-hx-B-in_3086efd5",
+      "property": "s223:hasObservationLocationHigh",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_bc8f0e9f",
+      "source": "urn:bms:Equipment:device-599-analog-value-2",
+      "target": "urn:bms:dwh_3a20ee43",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_41360832",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-onoff-cmd_57104002",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_f8497164",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-B-chw-diff-press-sensor_3259cd96",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_be2b25d7",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:chw-flow_d3241df4",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_aa3ce76b",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-A-chw-diff-press_3a22d038",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_aed209fa",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-in_d34a5bb9",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_ec81e13d",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:chw-flow-sensor_92c59e32",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_bf370627",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-A-out_2fdc6566",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_bb455f1d",
+      "source": "urn:bms:dwh-dw-hx-A-chw-diff-press-sensor_8b7dc237",
+      "target": "urn:bms:dwh-dw-hx-A-in_dfa3e301",
+      "property": "s223:hasObservationLocationHigh",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_065d64f2",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-in_084e46c8",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_db78dc31",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:Property:device-599-analog-value-2",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_19c62346",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:B-chw-diff-press-sensor_1c640352",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_fc021d82",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-chw-supply-temperature_287f9c95",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_ccb03d62",
+      "source": "urn:bms:dwh-dw-hx-chw-flow-sensor_73a0a7bd",
+      "target": "urn:bms:dwh-dw-hx-B-out_2a64896a",
+      "property": "s223:hasObservationLocation",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_b28ec611",
+      "source": "urn:bms:dwh_3a20ee43",
+      "target": "urn:bms:dwh-out_dace8717",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_70d828ea",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-vfd-volt_22b43d8b",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_8538afcf",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-B-in_3086efd5",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_962db5f1",
+      "source": "urn:bms:B-chw-diff-press-sensor_1c640352",
+      "target": "urn:bms:B-out_2c66a50e",
+      "property": "s223:hasObservationLocationLow",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_abd58db2",
+      "source": "urn:bms:lead-hw-pump_50f6a4a7",
+      "target": "urn:bms:lead-hw-pump-vfd-volt_378f03bd",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_8e7daf3b",
+      "source": "urn:bms:B-chw-diff-press-sensor_1c640352",
+      "target": "urn:bms:B-in_bf3465e3",
+      "property": "s223:hasObservationLocationHigh",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_818d7f23",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:B-chw-diff-press_46fc2246",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_9598cea1",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-vfd-pwr_e95dd95a",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_531bb568",
+      "source": "urn:bms:bypass-valve_154f1e19",
+      "target": "urn:bms:bypass-valve-command_d213e228",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_cd61e20e",
+      "source": "urn:bms:hw-hx-chw-flow-sensor_57905835",
+      "target": "urn:bms:hw-hx-B-out_91fb7bee",
+      "property": "s223:hasObservationLocation",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_1df32754",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-chw-flow_c4de0573",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_9833184a",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-A-chw-diff-press-sensor_c22d09d4",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_f8cb53bf",
+      "source": "urn:bms:Project:475938fc-ee40-482c-861a-0e943ccda099",
+      "target": "urn:bms:Equipment:device-599-analog-value-2",
+      "property": "s223:contains",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_b5714d38",
+      "source": "urn:bms:hw-hx_c4d1afdd",
+      "target": "urn:bms:hw-hx-chw-return-temperature_50e13cec",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_e6aa2f48",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-onoff-cmd_2bdb7d7c",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_6e2975f1",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-vfd-volt_675d035e",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_e1296da3",
+      "source": "urn:bms:standby-hw-booster-pump_809851ff",
+      "target": "urn:bms:standby-hw-booster-pump-onoff-cmd_d94ab02a",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_e16a4e0c",
+      "source": "urn:bms:A-chw-diff-press-sensor_0dcc4359",
+      "target": "urn:bms:A-out_c55fada8",
+      "property": "s223:hasObservationLocationLow",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_5a1c1ad8",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-out_5dc7f681",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_7125ab98",
+      "source": "urn:bms:A-chw-diff-press-sensor_0dcc4359",
+      "target": "urn:bms:A-in_5de14a6b",
+      "property": "s223:hasObservationLocationHigh",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_c4d4a2de",
+      "source": "urn:bms:hw-hx-B-chw-diff-press-sensor_3259cd96",
+      "target": "urn:bms:hw-hx-B-in_f4046a3c",
+      "property": "s223:hasObservationLocationHigh",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_6224d70a",
+      "source": "urn:bms:lead-hw-booster-pump_257acb53",
+      "target": "urn:bms:lead-hw-booster-pump-out_0439f353",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_c3084919",
+      "source": "urn:bms:bypass-valve_154f1e19",
+      "target": "urn:bms:bypass-valve-feedback_1cdf737d",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_9fe11df7",
+      "source": "urn:bms:dwh-dw-hwp_8a09fb76",
+      "target": "urn:bms:dwh-dw-hwp-vfd-fb_727e1aab",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_a7978c94",
+      "source": "urn:bms:dwh-dw-hx_e82f5a49",
+      "target": "urn:bms:dwh-dw-hx-B-chw-diff-press_14ed7829",
+      "property": "s223:hasProperty",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": null
+    },
+    {
+      "id": "e_fd207a21",
+      "source": "urn:bms:Device:device-599-analog-value-2",
+      "target": "urn:bms:B-out_2c66a50e",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    },
+    {
+      "id": "e_b0d27449",
+      "source": "urn:bms:standby-hw-pump_745b1b53",
+      "target": "urn:bms:standby-hw-pump-out_021e06f1",
+      "property": "s223:hasConnectionPoint",
+      "type": "rdf:Property",
+      "isBidirectional": false,
+      "inverseProperty": "s223:isConnectionPointOf"
+    }
+  ]
+}

@@ -5,14 +5,20 @@ They accept BuildingMOTIF Template objects and return Pydantic DTOs.
 """
 
 from buildingmotif.dataclasses import Template
-from rdflib import RDF, Namespace
+from rdflib import RDF
 
 from ..adapters.template_types import DeviceTemplate, PropertyTemplate, SystemTemplate
+from ..constants.namespaces import QUDT, S223
 from ..dto.templates_dto import (
     SpaceTypeDTO,
     TemplateDeviceDTO,
     TemplatePropertyDTO,
     TemplateSystemDTO,
+)
+from ..utils.property_semantics import (
+    determine_property_type,
+    format_template_label,
+    is_actuatable,
 )
 
 
@@ -28,53 +34,11 @@ def extract_rdf_class_uri(template: Template) -> str:
     Raises:
         ValueError: If no s223 class URI found in template
     """
-    s223 = Namespace("http://data.ashrae.org/standard223#")
-
     for subj, pred, obj in template.body:
-        if pred == RDF.type and str(obj).startswith(str(s223)):
+        if pred == RDF.type and str(obj).startswith(str(S223)):
             return str(obj)
 
     raise ValueError(f"No s223 class URI found in template: {template.name}")
-
-
-def _format_label(template_name: str) -> str:
-    """Convert template name to human-readable label.
-
-    Args:
-        template_name: Template name (e.g., "vav-reheat")
-
-    Returns:
-        Formatted label (e.g., "VAV Reheat")
-    """
-    return template_name.replace("-", " ").title()
-
-
-def _determine_property_type(class_uri: str) -> str:
-    """Determine property type from ASHRAE 223P class URI.
-
-    Args:
-        class_uri: HTTP URI for property class
-
-    Returns:
-        "quantifiable" or "enumerated"
-    """
-    # Most properties are quantifiable
-    # Enumerated properties have "Enumerable" in the class name
-    if "Enumerable" in class_uri or "EnumeratedObservable" in class_uri:
-        return "enumerated"
-    return "quantifiable"
-
-
-def _is_actuatable_property(class_uri: str) -> bool:
-    """Check if property is actuatable from class URI.
-
-    Args:
-        class_uri: ASHRAE 223P property class URI
-
-    Returns:
-        True if actuatable, False if observable
-    """
-    return "Actuatable" in class_uri
 
 
 def _format_uri_to_label(uri: str) -> str:
@@ -105,11 +69,9 @@ def _extract_qudt_property(template: Template, predicate_name: str) -> str | Non
     Returns:
         Formatted label or None if not found
     """
-    qudt = Namespace("http://qudt.org/schema/qudt/")
-
     for _, pred, obj in template.body:
         pred_str = str(pred)
-        if pred_str == str(qudt[predicate_name]):
+        if pred_str == str(QUDT[predicate_name]):
             return _format_uri_to_label(str(obj))
 
     return None
@@ -125,11 +87,9 @@ def _extract_s223_property(template: Template, predicate_name: str) -> str | Non
     Returns:
         Formatted label or None if not found
     """
-    s223 = Namespace("http://data.ashrae.org/standard223#")
-
     for _, pred, obj in template.body:
         pred_str = str(pred)
-        if pred_str == str(s223[predicate_name]):
+        if pred_str == str(S223[predicate_name]):
             return _format_uri_to_label(str(obj))
 
     return None
@@ -145,8 +105,8 @@ def to_property_dto(template: Template) -> TemplatePropertyDTO:
         TemplatePropertyDTO with template name as ID, class URI, metadata fields
     """
     class_uri = extract_rdf_class_uri(template)
-    property_type = _determine_property_type(class_uri)
-    is_actuatable = _is_actuatable_property(class_uri)
+    property_type = determine_property_type(class_uri)
+    is_actuatable_result = is_actuatable(class_uri)
 
     # Extract QUDT metadata
     quantity_kind = _extract_qudt_property(template, "hasQuantityKind")
@@ -158,14 +118,14 @@ def to_property_dto(template: Template) -> TemplatePropertyDTO:
 
     return TemplatePropertyDTO(
         id=template.name,
-        label=_format_label(template.name),
+        label=format_template_label(template.name),
         class_uri=class_uri,
         property_type=property_type,  # type: ignore
         quantity_kind=quantity_kind,
         unit=unit,
         medium=medium,
         enumeration_kind=enumeration_kind,
-        is_actuatable=is_actuatable,
+        is_actuatable=is_actuatable_result,
         description=None,
     )
 
@@ -196,9 +156,9 @@ def to_device_dto(
 
     return TemplateDeviceDTO(
         id=template.name,
-        label=_format_label(template.name),
-        class_uri=class_uri,
-        device_type=device_type,
+        label=format_template_label(template.name),
+        classUri=class_uri,
+        deviceType=device_type,
         description=None,
         properties=properties,
     )
@@ -228,8 +188,8 @@ def to_system_dto(
 
     return TemplateSystemDTO(
         id=template.name,
-        label=_format_label(template.name),
-        class_uri=class_uri,
+        label=format_template_label(template.name),
+        classUri=class_uri,
         description=None,
         devices=devices,
     )
@@ -248,7 +208,7 @@ def to_space_type_dto(template: Template) -> SpaceTypeDTO:
 
     return SpaceTypeDTO(
         id=class_uri,
-        label=_format_label(template.name),
+        label=format_template_label(template.name),
         description=None,
     )
 

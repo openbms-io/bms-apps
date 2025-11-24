@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
 from src.adapters import BuildingMOTIFAdapter, DeviceTemplate, SystemTemplate
+from src.config.settings import Settings
 
 
 @pytest.fixture
@@ -12,14 +13,18 @@ def mock_buildingmotif():
     with patch("src.adapters.buildingmotif_adapter.BuildingMOTIF") as mock_bm:
         with patch("src.adapters.buildingmotif_adapter.Library") as mock_lib:
             with patch("src.adapters.buildingmotif_adapter.Path") as mock_path:
-                mock_library = Mock()
-                mock_lib.load.return_value = mock_library
+                with patch("src.adapters.buildingmotif_adapter.get_building_motif") as mock_get_bm:
+                    mock_library = Mock()
+                    mock_lib.load.return_value = mock_library
 
-                mock_path_instance = Mock()
-                mock_path_instance.exists.return_value = True
-                mock_path.return_value = mock_path_instance
+                    mock_path_instance = Mock()
+                    mock_path_instance.exists.return_value = True
+                    mock_path.return_value = mock_path_instance
 
-                yield mock_bm, mock_library
+                    # Mock get_building_motif to raise exception (not yet initialized)
+                    mock_get_bm.side_effect = Exception("Not initialized")
+
+                    yield mock_bm, mock_library
 
 
 def test_adapter_initialization(mock_buildingmotif) -> None:
@@ -28,7 +33,8 @@ def test_adapter_initialization(mock_buildingmotif) -> None:
 
     adapter = BuildingMOTIFAdapter("test.db")
 
-    mock_bm.assert_called_once_with("sqlite:///test.db")
+    # Verify BuildingMOTIF was initialized with correct parameters
+    mock_bm.assert_called_once_with("sqlite:///test.db", shacl_engine="topquadrant", log_level=20)
     assert adapter.get_nrel_library() == mock_library
 
 
@@ -110,6 +116,43 @@ def test_query_model(mock_buildingmotif) -> None:
     assert len(results) == 2
     assert results[0] == {"var1": "value1", "var2": "value2"}
     assert results[1] == {"var1": "value3", "var2": "value4"}
+
+
+def test_query_model_with_optional_fields(mock_buildingmotif) -> None:
+    """Test SPARQL query handling OPTIONAL fields (should return None, not 'None')."""
+    mock_bm, mock_library = mock_buildingmotif
+
+    mock_model = Mock()
+    mock_graph = Mock()
+    mock_results = Mock()
+    mock_results.vars = ["uri", "label", "optional_field"]
+
+    mock_row1 = {"uri": "urn:test:1", "label": "Device 1", "optional_field": "value"}
+    mock_row2 = {"uri": "urn:test:2", "label": "Device 2", "optional_field": None}
+
+    mock_results.__iter__ = Mock(return_value=iter([mock_row1, mock_row2]))
+    mock_graph.query.return_value = mock_results
+    mock_model.graph = mock_graph
+
+    adapter = BuildingMOTIFAdapter("test.db")
+    results = adapter.query_model(mock_model, "SELECT * WHERE { ?s ?p ?o }")
+
+    assert len(results) == 2
+
+    assert results[0] == {
+        "uri": "urn:test:1",
+        "label": "Device 1",
+        "optional_field": "value"
+    }
+
+    assert results[1] == {
+        "uri": "urn:test:2",
+        "label": "Device 2",
+        "optional_field": None
+    }
+
+    assert results[1]["optional_field"] is None
+    assert results[1]["optional_field"] != "None"
 
 
 def test_add_graph(mock_buildingmotif) -> None:

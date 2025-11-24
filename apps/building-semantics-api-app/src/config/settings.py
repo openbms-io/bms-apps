@@ -27,6 +27,21 @@ class Settings(BaseSettings):
         default=None,
         description="Custom path to ASHRAE 223P library (optional, uses bundled NREL templates if not specified)",
     )
+    buildingmotif_223p_path: str = Field(default="apps/building-semantics-api-app/data/libraries/ontologies/223p.ttl",
+                                         description="Path to 223P ontology")
+    buildingmotif_qudt_path: str = Field(default="apps/building-semantics-api-app/data/libraries/ontologies/qudt-all.ttl",
+                                         description="Path to combined QUDT ontology (units + quantitykinds)")
+    should_use_qudt_all: bool = Field(default=False,
+                                      description="Use combined qudt-all.ttl (True) or separate unit/quantitykind files (False)")
+    buildingmotif_quantity_kind_path: str = Field(default="apps/building-semantics-api-app/data/libraries/ontologies/quantitykind",
+                                                   description="Path to QuantityKind library")
+    buildingmotif_unit_path: str = Field(default="apps/building-semantics-api-app/data/libraries/ontologies/unit",
+                                         description="Path to QUDT ontology library")
+
+    enable_validation: bool = Field(
+        default=False,
+        description="Enable SHACL validation against 223P constraints (disabled by default for faster initialization)"
+    )
 
     cors_origins: list[str] = ["http://localhost:3003"]
 

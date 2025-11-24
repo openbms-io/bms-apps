@@ -2,6 +2,7 @@
 from loguru import logger
 
 from ..adapters.buildingmotif_adapter import BuildingMOTIFAdapter
+from ..dto.spaces_dto import CreateSpaceRequestDTO, SpaceInstanceDTO
 
 
 class SpacesController:
@@ -11,7 +12,7 @@ class SpacesController:
         """Initialize controller with singleton BuildingMOTIF adapter."""
         self.adapter = BuildingMOTIFAdapter.get_instance()
 
-    async def list_spaces(self, project_id: str) -> list[dict]:
+    async def list_spaces(self, project_id: str) -> list[SpaceInstanceDTO]:
         """
         List all spaces for a project.
 
@@ -24,7 +25,9 @@ class SpacesController:
         logger.info(f"Listing spaces for project: {project_id}")
         return []
 
-    async def create_space(self, project_id: str, space_data: dict) -> dict:
+    async def create_space(
+        self, project_id: str, space_data: CreateSpaceRequestDTO
+    ) -> SpaceInstanceDTO:
         """
         Create a new space instance.
 
@@ -36,4 +39,4 @@ class SpacesController:
             Created space instance
         """
         logger.info(f"Creating space for project: {project_id}")
-        return space_data
+        raise NotImplementedError("Space creation not yet implemented")

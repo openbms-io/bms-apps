@@ -113,9 +113,12 @@ async def test_bacnet_external_reference_223p_compliance(shared_adapter):
     - Uses bacnet:device-identifier property
     - Uses bacnet:object-identifier property
     - All bacnet: properties are optional (per SHACL)
+    - BACnet reference attached to Property (not Equipment) per ASHRAE 223P
     """
     adapter: BuildingMOTIFAdapter = shared_adapter
     equipment_uri = URIRef("urn:bms:Equipment:test-bacnet-1")
+    device_uri = URIRef("urn:bms:Device:test-bacnet-dev-1")
+    property_uri = URIRef("urn:bms:Property:test-bacnet-prop-1")
     bacnet_ref_uri = URIRef("urn:bms:BACnetRef:test-bacnet-ref-1")
     point_id = "device,123:analog-input,1"
 
@@ -128,7 +131,11 @@ async def test_bacnet_external_reference_223p_compliance(shared_adapter):
     # Add BACnetExternalReference triples (223P-compliant)
     bacnet_triples = [
         (equipment_uri, RDF.type, S223.TerminalUnit),
-        (equipment_uri, S223.hasExternalReference, bacnet_ref_uri),
+        (equipment_uri, S223.contains, device_uri),
+        (device_uri, RDF.type, S223.Damper),
+        (device_uri, S223.hasProperty, property_uri),
+        (property_uri, RDF.type, S223.DamperPosition),
+        (property_uri, S223.hasExternalReference, bacnet_ref_uri),
         (bacnet_ref_uri, RDF.type, S223.BACnetExternalReference),
         (bacnet_ref_uri, BACNET["device-identifier"], Literal(device_id)),
         (bacnet_ref_uri, BACNET["object-identifier"], Literal(object_id)),
@@ -154,9 +161,9 @@ async def test_bacnet_external_reference_223p_compliance(shared_adapter):
     identifier = model.graph.value(bacnet_ref_uri, DCTERMS.identifier)
     assert identifier == Literal(point_id), f"Expected {point_id}, got {identifier}"
 
-    # Verify: Equipment has external reference
-    external_ref = model.graph.value(equipment_uri, S223.hasExternalReference)
-    assert external_ref == bacnet_ref_uri, "Equipment missing s223:hasExternalReference"
+    # Verify: Property has external reference (per ASHRAE 223P)
+    external_ref = model.graph.value(property_uri, S223.hasExternalReference)
+    assert external_ref == bacnet_ref_uri, "Property missing s223:hasExternalReference"
 
 
 async def test_point_id_format_split_no_parsing(shared_adapter):
@@ -218,12 +225,12 @@ async def test_clean_223p_ttl_export_no_project_metadata(shared_adapter):
         # Equipment (pure 223P)
         (equipment_uri, RDF.type, S223.TerminalUnit),
         (equipment_uri, S223.contains, device_uri),
-        (equipment_uri, S223.hasExternalReference, bacnet_ref_uri),
         # Device
         (device_uri, RDF.type, S223.Damper),
         (device_uri, S223.hasProperty, property_uri),
         # Property
         (property_uri, RDF.type, S223.DamperPosition),
+        (property_uri, S223.hasExternalReference, bacnet_ref_uri),
         # BACnet reference
         (bacnet_ref_uri, RDF.type, S223.BACnetExternalReference),
         (bacnet_ref_uri, BACNET["device-identifier"], Literal("device,123")),
@@ -263,13 +270,13 @@ async def test_clean_223p_ttl_export_no_project_metadata(shared_adapter):
                 OPTIONAL {{
                     ?device s223:hasProperty ?property .
                     ?property ?propertyP ?propertyO .
-                }}
-            }}
 
-            # BACnet reference triples (optional)
-            OPTIONAL {{
-                ?equipment s223:hasExternalReference ?bacnetRef .
-                ?bacnetRef ?bacnetP ?bacnetO .
+                    # BACnet reference triples (optional, attached to property per ASHRAE 223P)
+                    OPTIONAL {{
+                        ?property s223:hasExternalReference ?bacnetRef .
+                        ?bacnetRef ?bacnetP ?bacnetO .
+                    }}
+                }}
             }}
         }}
     """
