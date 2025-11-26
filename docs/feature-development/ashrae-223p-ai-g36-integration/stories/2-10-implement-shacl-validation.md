@@ -2,7 +2,7 @@
 
 **Epic:** Epic 2 - BuildingMOTIF API Integration
 **Phase:** Phase 2 - BuildingMOTIF SDK Integration
-**Status:** ready-for-dev
+**Status:** done
 **Created:** 2025-11-17
 **Complexity:** 3 (Medium)
 **Estimated Hours:** 3 hours

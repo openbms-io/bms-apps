@@ -1,0 +1,610 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>epic-2</epicId>
+    <storyId>2-12</storyId>
+    <title>System Instances &amp; BACnet References Re-Architecture</title>
+    <status>in-progress</status>
+    <generatedAt>2025-11-22</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-12-system-instances-rearchitecture.md</sourceStoryPath>
+  </metadata>
+
+  <completionStatus>
+    <phase name="Phase 0: Deprecation" status="complete">
+      <completedAt>2025-11-19</completedAt>
+      <notes>Deprecated 5 backend files, removed old mapping router, created database backup</notes>
+    </phase>
+    <phase name="Phase 1: Backend Systems" status="complete">
+      <completedAt>2025-11-20</completedAt>
+      <notes>Implemented single fill pattern, SPARQL queries with s223:contains* for arbitrary depth, all data in RDF graph</notes>
+      <deferred>Tasks 1.5 (unit tests), 1.6 (integration tests) - deferred to Phase 4</deferred>
+    </phase>
+    <phase name="Phase 2: Backend BACnet References" status="complete-enhanced">
+      <completedAt>2025-11-22</completedAt>
+      <notes>SPARQL-based references, enriched queries, BACnet filtering ENHANCED beyond AC #4</notes>
+      <enhancements>
+        - Extended BACnet object type filtering from properties to devices
+        - DRY refactor: _is_compatible_with_bacnet_type() helper function
+        - Device-level filtering prevents sensors from showing for output points
+        - Mutation retry disabled for validation errors
+        - Settings-based validation bypass implemented
+      </enhancements>
+      <deferred>Tasks 2.5 (unit tests), 2.6 (integration tests) - deferred to Phase 4</deferred>
+    </phase>
+    <phase name="Phase 3: Frontend Components" status="complete">
+      <completedAt>2025-11-20</completedAt>
+      <notes>5 new React components created, TypeScript API client generated, all using shadcn/ui</notes>
+    </phase>
+    <phase name="Phase 4: Testing &amp; Cleanup" status="partial">
+      <notes>Validation bypass complete, tests and cleanup pending</notes>
+      <pending>
+        - Task 4.1: E2E tests
+        - Task 4.2: SHACL validation (partial - bypass implemented, template fixes pending)
+        - Task 4.3: Error handling and user feedback
+        - Task 4.4: Performance optimization
+        - Task 4.5: Documentation
+        - Task 4.6: Delete deprecated code
+      </pending>
+    </phase>
+  </completionStatus>
+
+  <story>
+    <asA>building automation engineer</asA>
+    <iWant>to create reusable system instances from ASHRAE 223P templates and map BACnet points through a cascading selection interface</iWant>
+    <soThat>I can efficiently model building equipment hierarchies with proper semantic relationships, eliminate redundant configuration, and maintain a single source of truth in RDF format</soThat>
+    <tasks>
+## Phase 0: Deprecation &amp; Clean Slate (AC: #6, #11)
+
+- Task 0.1: Deprecate old mapping code
+  - Rename mappings.py → mappings_deprecated.py
+  - Rename mappings_model.py → mappings_model_deprecated.py
+  - Rename mappings_controller.py → mappings_controller_deprecated.py
+  - Rename mapping_mapper.py → mapping_mapper_deprecated.py
+  - Rename mappings_dto.py → mappings_dto_deprecated.py
+- Task 0.2: Clean active codebase
+  - Remove all imports/references to deprecated code from active codebase
+  - Comment out old mapping endpoints in OpenAPI spec
+  - Add deprecation notice at top of each deprecated file
+- Task 0.3: Reset data
+  - Clear BuildingMOTIF database (or delete project models) from /Users/amol/Documents/ai-projects/bms-supervisor-controller/data/buildingmotif.db
+
+## Phase 1: Backend Systems (RDF-only) (AC: #1, #2, #7, #8)
+
+- Task 1.1: Create systems domain model
+  - Implement systems_model.py with template.fill() instantiation
+  - Add label metadata to filled graphs (rdfs:label, bms:hasTemplateId, dcterms:created)
+  - Implement system CRUD operations (create, get, list, delete)
+- Task 1.2: Create devices domain model
+  - Implement devices_model.py with SPARQL queries for devices/properties
+  - Implement device/property query operations (read-only)
+- Task 1.3: Create controllers
+  - Implement systems_controller.py (delegates to systems_model)
+  - Implement devices_controller.py (delegates to devices_model)
+- Task 1.4: Create router and DTOs
+  - Implement systems.py router (uses both systems_controller and devices_controller)
+  - Create DTOs: SystemInstanceDTO, SystemSummaryDTO, DeviceDTO, PropertyDTO
+- Task 1.5: Write unit tests
+  - Test template instantiation logic
+  - Test SPARQL query construction
+  - Test URN generation and metadata addition
+- Task 1.6: Write integration tests
+  - Test create system → verify in BuildingMOTIF
+  - Test query devices/properties from system
+  - Test system deletion
+
+## Phase 2: Backend BACnet References (SPARQL queries) (AC: #4, #5)
+
+- Task 2.1: Create BACnet references domain model
+  - Implement bacnet_references_model.py (SPARQL-based)
+  - Implement create/update/get/delete reference operations
+- Task 2.2: Create controller
+  - Implement bacnet_references_controller.py (delegates to bacnet_references_model)
+- Task 2.3: Create router and DTOs
+  - Implement bacnet_references.py router
+  - Create DTOs: BACnetReferenceDTO, CreateBACnetReferenceRequest
+- Task 2.4: Implement BACnet object type filtering
+  - Filter properties by analog-input/binary-input (observable only)
+  - Filter properties by analog-output/binary-output (actuatable only)
+  - Filter properties by analog-value/binary-value (both)
+- Task 2.5: Write unit tests
+  - Test SPARQL queries for reference creation
+  - Test property filtering logic
+  - Test validation of property existence in system
+- Task 2.6: Write integration tests
+  - Test create reference → verify in graph
+  - Test query enriched reference (system → device → property chain)
+
+## Phase 3: Frontend Components (AC: #3, #6)
+
+- Task 3.1: Rename Equipment → System
+  - Global find/replace across frontend codebase
+  - Update DTOs, types, component names
+  - Update labels, tooltips, documentation
+- Task 3.2: Create SystemSelector component
+  - Implement dropdown/search of existing systems
+  - Add "Create New" button → opens SystemCreateModal
+  - Display format: "{label} ({templateId})"
+- Task 3.3: Create SystemCreateModal component
+  - Template dropdown (from GET /223p/templates)
+  - Label input field
+  - Preview of devices/properties (from template metadata)
+  - Calls POST /projects/{projectId}/systems
+- Task 3.4: Create DeviceSelector component (cascading)
+  - Loads from GET /projects/{projectId}/systems/{systemId}/devices
+  - Disabled until systemId selected
+  - Display format: "{label} ({templateId})"
+- Task 3.5: Create PropertySelector component (cascading + filtering)
+  - Loads from GET /projects/{projectId}/systems/{systemId}/devices/{deviceId}/properties?bacnetObjectType={type}
+  - Automatically filtered by BACnet object type
+  - Disabled until deviceId selected
+  - Display format: "{label} ({templateId})"
+- Task 3.6: Update mapping flow UI
+  - Replace old equipment/device/property selection with new cascading selectors
+  - Update save handler to call PUT /projects/{projectId}/bacnet-references/{bacnetPointId}
+- Task 3.7: Generate API clients
+  - Generate TypeScript client from OpenAPI spec
+
+## Phase 4: Testing &amp; Cleanup (AC: #9, #10, #11)
+
+- Task 4.1: E2E tests
+  - Test create system → map point → query
+  - Test reusing system across multiple BACnet points
+  - Test cascading dropdown interactions
+- Task 4.2: SHACL validation (optional)
+  - Add SHACL validation on system creation
+  - Report validation errors to user
+- Task 4.3: Error handling and user feedback
+  - Add error handling for all API calls
+  - Implement user-friendly error messages
+  - Add loading states and success confirmations
+- Task 4.4: Performance optimization
+  - Implement SPARQL query caching
+  - Optimize large system queries
+- Task 4.5: Documentation
+  - Update API documentation
+  - Update user guide with new UX flow
+  - Document RDF data model
+- Task 4.6: Delete deprecated code
+  - Delete all *_deprecated.py files (after new implementation is stable and tested)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. User can create reusable system instances from templates
+2. System instances prefill devices/properties automatically
+3. Cascading dropdowns: System → Device → Property
+4. Properties filtered by BACnet object type (input/output/value)
+5. BACnet point maps to specific property URN
+6. Correct ASHRAE 223P terminology (System, not Equipment)
+7. Single template.fill() per system (not per mapping)
+8. All data in RDF graph (no SQL tables)
+9. No hardcoded hierarchy assumptions
+10. Supports nested equipment (Equipment → Equipment → Device)
+11. Clean API design (project-scoped, RESTful)
+  </acceptanceCriteria>
+
+  <technicalDecisions>
+    <decision>
+      <title>Device-Level BACnet Filtering</title>
+      <date>2025-11-22</date>
+      <context>AC #4 specified property filtering, but sensors were still visible in device dropdown when mapping output points, creating UX confusion</context>
+      <decision>Extended filtering from properties to devices. Query both s223:hasProperty and s223:observes relationships, filter devices with no compatible properties</decision>
+      <consequences>Better UX, prevents invalid selections, DRY code with _is_compatible_with_bacnet_type() helper</consequences>
+    </decision>
+    <decision>
+      <title>Disable Mutation Retry for Validation Errors</title>
+      <date>2025-11-22</date>
+      <context>Global retry config caused 3x requests on validation failures (400 Bad Request)</context>
+      <decision>Set retry: false on useSaveBacnetReferenceMutation specifically</decision>
+      <consequences>Validation errors fail immediately, reduces unnecessary network traffic</consequences>
+    </decision>
+    <decision>
+      <title>Settings-Based Validation Bypass</title>
+      <date>2025-11-22</date>
+      <context>NREL templates failing SHACL validation due to missing metadata</context>
+      <decision>Add enable_validation flag to settings, check in ValidationService before running SHACL</decision>
+      <consequences>Temporary workaround until templates fixed, validation can be re-enabled later</consequences>
+    </decision>
+  </technicalDecisions>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/mini-specs/2-12-system-instances-rearchitecture.md</path>
+        <title>Mini-Spec: System Instances Re-Architecture</title>
+        <section>Complete Specification</section>
+        <snippet>Comprehensive specification covering architecture overview, template instantiation strategy, URN/label handling, API endpoints, backend architecture separation of concerns, and complete implementation phases. Key decision: Use BuildingMOTIF auto-generated URNs + rdfs:label properties (no custom URN generation).</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2 Phase Breakdown</title>
+        <section>Phase Planning</section>
+        <snippet>Breaks down Epic 2 into 4 phases with interface-first development approach. Phase 0: Foundation, Phase 1: Mock validation, Phase 2: BuildingMOTIF integration, Phase 3: AI enhancement. Story 2-12 represents re-architecture required after learning from Phase 2 stories.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/adr-001-descope-spaces.md</path>
+        <title>ADR-001: Descope Spaces</title>
+        <section>Architectural Decision</section>
+        <snippet>Decision to descope Space Management from Epic 2 due to complexity. Spaces moved to future epic. Story 2-12 should NOT include space-related functionality - focus solely on System instances and BACnet references.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/adr-002-inline-validation.md</path>
+        <title>ADR-002: Inline Validation</title>
+        <section>Architectural Decision</section>
+        <snippet>Decision to implement SHACL validation inline within mappings/systems endpoints rather than as separate service. Validation happens during POST/PUT operations. Story 2-12 can optionally include SHACL validation in Phase 4 (marked optional).</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Python Standards</section>
+        <snippet>PEP 8 compliance, Google Python Style Guide. Use snake_case for functions/variables, PascalCase for classes, type hints required, docstrings in Google format. Tools: Black (88 chars), Ruff linter, mypy type checker. 4-space indentation.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Instructions</title>
+        <section>Development Philosophy</section>
+        <snippet>Test-Driven Development (TDD) required. DO NOT OVERENGINEER. Fail fast, prop up issues quickly. NO COMMENTS except for WHY (not WHAT). Follow SOLID principles, YAGNI. Mock external libraries for tests, never mock system under test.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>BuildingMOTIFAdapter</symbol>
+        <lines>1-323</lines>
+        <reason>Singleton adapter for BuildingMOTIF SDK. Provides methods for template operations (get_template_with_dependencies, get_template_by_name), model operations (get_or_create_model, create_model), SPARQL queries (query_model), and transaction management. Story 2-12 will heavily use this adapter for system instantiation and device/property queries.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/models/systems_model.py</path>
+        <kind>model</kind>
+        <symbol>SystemsModel</symbol>
+        <lines>1-242</lines>
+        <status>complete</status>
+        <reason>System CRUD operations with template.fill() instantiation. Single fill per system, metadata added (rdfs:label, bms:hasTemplateId, dcterms:created). All data in RDF graph.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/models/devices_model.py</path>
+        <kind>model</kind>
+        <symbol>DevicesModel</symbol>
+        <lines>1-434</lines>
+        <status>complete-enhanced</status>
+        <reason>Device/property queries with SPARQL s223:contains*. ENHANCED with device-level BACnet filtering. DRY helper: _is_compatible_with_bacnet_type(). Supports arbitrary depth hierarchies.</reason>
+        <enhancements>
+          - _filter_devices_by_bacnet_type() method (lines 379-398)
+          - _is_compatible_with_bacnet_type() DRY helper (lines 409-434)
+          - _filter_device_properties_by_bacnet_type() refactored (lines 368-377)
+        </enhancements>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/models/bacnet_references_model.py</path>
+        <kind>model</kind>
+        <symbol>BACnetReferencesModel</symbol>
+        <lines>1-233</lines>
+        <status>complete</status>
+        <reason>SPARQL-based BACnet point → property URI mapping. Enriched queries return full system → device → property chain.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/controllers/systems_controller.py</path>
+        <kind>controller</kind>
+        <symbol>SystemsController</symbol>
+        <lines>1-93</lines>
+        <status>complete</status>
+        <reason>Delegates to systems_model. No business logic in controller layer.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/controllers/devices_controller.py</path>
+        <kind>controller</kind>
+        <symbol>DevicesController</symbol>
+        <lines>1-58</lines>
+        <status>complete</status>
+        <reason>Delegates to devices_model. Updated to pass bacnet_object_type parameter.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/controllers/bacnet_references_controller.py</path>
+        <kind>controller</kind>
+        <symbol>BACnetReferencesController</symbol>
+        <lines>1-81</lines>
+        <status>complete</status>
+        <reason>Delegates to bacnet_references_model.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/systems.py</path>
+        <kind>router</kind>
+        <symbol>router</symbol>
+        <lines>1-280</lines>
+        <status>complete</status>
+        <reason>RESTful API for systems, devices, properties. ENHANCED: bacnetObjectType query param for device filtering (line 120).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/bacnet_references.py</path>
+        <kind>router</kind>
+        <symbol>router</symbol>
+        <lines>1-155</lines>
+        <status>complete</status>
+        <reason>RESTful API for BACnet references. PUT/GET/DELETE operations.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/systems_dto.py</path>
+        <kind>dto</kind>
+        <symbol>SystemInstanceDTO, SystemSummaryDTO, DeviceDTO, PropertyDTO</symbol>
+        <lines>1-128</lines>
+        <status>complete</status>
+        <reason>Pydantic v2 DTOs for systems domain.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/bacnet_references_dto.py</path>
+        <kind>dto</kind>
+        <symbol>BACnetReferenceDTO, CreateBACnetReferenceRequest, EnrichedBACnetReferenceDTO</symbol>
+        <lines>1-95</lines>
+        <status>complete</status>
+        <reason>Pydantic v2 DTOs for BACnet references.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/services/validation_service.py</path>
+        <kind>service</kind>
+        <symbol>ValidationService</symbol>
+        <lines>1-121</lines>
+        <status>complete</status>
+        <reason>SHACL validation service with settings-based bypass (lines 28-30). Temporary until NREL templates fixed.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/models/templates_model.py</path>
+        <kind>model</kind>
+        <symbol>TemplatesModel</symbol>
+        <lines>1-160</lines>
+        <reason>Domain model pattern for template operations. Shows separation of business logic from controllers. Story 2-12 should follow same pattern for systems_model.py, devices_model.py, and bacnet_references_model.py. Methods include: get_all_templates, _load_devices_with_properties, _load_properties_for_device.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/controllers/templates_controller.py</path>
+        <kind>controller</kind>
+        <symbol>TemplatesController</symbol>
+        <reason>Controller pattern: delegates to model, no business logic. Story 2-12 should create systems_controller.py, devices_controller.py, bacnet_references_controller.py following this pattern.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+        <kind>router</kind>
+        <symbol>router</symbol>
+        <reason>FastAPI router pattern with dependency injection. Story 2-12 should create systems.py and bacnet_references.py routers following this pattern. Uses controller via get_templates_controller() dependency.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/templates_dto.py</path>
+        <kind>dto</kind>
+        <symbol>TemplatesResponseDTO, TemplateSystemDTO, TemplateDeviceDTO, TemplatePropertyDTO</symbol>
+        <reason>Pydantic v2 DTO patterns. Story 2-12 should create systems_dto.py and bacnet_references_dto.py with similar structure: SystemInstanceDTO, SystemSummaryDTO, DeviceDTO, PropertyDTO, BACnetReferenceDTO.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+        <kind>router</kind>
+        <symbol>mappings_deprecated.py (after Phase 0)</symbol>
+        <reason>OLD mapping implementation to be deprecated in Phase 0. Rename to mappings_deprecated.py. Do NOT use this pattern - Story 2-12 introduces new architecture.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/scripts/visualize_equipment_graphs.py</path>
+        <kind>script</kind>
+        <symbol>visualize_equipment_graphs</symbol>
+        <lines>1-297</lines>
+        <reason>Shows how to traverse RDF graphs and extract equipment/device/property hierarchies. Demonstrates graph traversal patterns that may be useful for SPARQL query construction in devices_model.py.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/system-selector.tsx</path>
+        <kind>component</kind>
+        <symbol>SystemSelector</symbol>
+        <status>complete</status>
+        <reason>System selection dropdown with "Create New" button. Uses shadcn/ui Select component.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/system-create-modal.tsx</path>
+        <kind>component</kind>
+        <symbol>SystemCreateModal</symbol>
+        <status>complete</status>
+        <reason>Modal for creating system instances from templates. Template selection + label input.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/device-selector.tsx</path>
+        <kind>component</kind>
+        <symbol>DeviceSelector</symbol>
+        <status>complete</status>
+        <reason>Cascading device selector. Disabled until system selected.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/property-selector.tsx</path>
+        <kind>component</kind>
+        <symbol>PropertySelector</symbol>
+        <status>complete</status>
+        <reason>Cascading property selector with BACnet filtering. Disabled until device selected.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/system-mapping-modal.tsx</path>
+        <kind>component</kind>
+        <symbol>SystemMappingModal</symbol>
+        <status>complete-enhanced</status>
+        <reason>Complete mapping flow with all cascading selectors. ENHANCED: Passes bacnetObjectType to useDevicesQuery (line 68).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/components/shacl-validation-error-modal.tsx</path>
+        <kind>component</kind>
+        <symbol>ShaclValidationErrorModal</symbol>
+        <status>complete</status>
+        <reason>Modal for displaying SHACL validation errors from backend.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/mutations/use-save-bacnet-reference-mutation.ts</path>
+        <kind>mutation-hook</kind>
+        <symbol>useSaveBacnetReferenceMutation</symbol>
+        <status>complete</status>
+        <reason>React Query mutation for saving BACnet references. FIXED: retry: false (line 14) prevents retrying validation errors.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/building-semantics/api/queries/use-devices-query.ts</path>
+        <kind>query-hook</kind>
+        <symbol>useDevicesQuery</symbol>
+        <status>complete-enhanced</status>
+        <reason>React Query hook for fetching devices. ENHANCED: Accepts bacnetObjectType parameter for filtering.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="fastapi" version="&gt;=0.104.0" />
+        <package name="uvicorn[standard]" version="&gt;=0.24.0" />
+        <package name="pydantic" version="2.5.3" />
+        <package name="pydantic-settings" version="&gt;=2.0.0" />
+        <package name="python-dotenv" version="&gt;=1.0.0" />
+        <package name="loguru" version="0.7.3" />
+        <package name="python-multipart" version="&gt;=0.0.6" />
+        <package name="buildingmotif" version="&gt;=0.4.0" />
+        <package name="sqlalchemy" version="&lt;2.0.0,&gt;=1.4.44" />
+        <package name="rdflib" version="via buildingmotif" />
+      </python>
+      <python-test>
+        <package name="pytest" version="&gt;=7.4.0" />
+        <package name="pytest-asyncio" version="&gt;=0.21.0" />
+        <package name="httpx" version="0.25.2" />
+        <package name="pytest-cov" version="&gt;=4.1.0" />
+        <package name="pytest-mock" version="&gt;=3.11.1" />
+        <package name="pytest-xdist" version="&gt;=3.3.0" />
+        <package name="pytest-forked" version="&gt;=1.6.0" />
+        <package name="pytest-isolate" />
+      </python-test>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Follow Test-Driven Development (TDD): Write tests first, then implement (Red-Green-Refactor cycle)</constraint>
+    <constraint>DO NOT OVERENGINEER: Simple, direct implementations. Avoid premature abstractions.</constraint>
+    <constraint>Use project-relative paths only (strip /Users/amol/Documents/ai-projects/bms-supervisor-controller/ prefix)</constraint>
+    <constraint>NO custom URN generation: Use BuildingMOTIF auto-generated URNs from template.fill()</constraint>
+    <constraint>Single template.fill() per system instance (not per mapping/reference)</constraint>
+    <constraint>All data in RDF graph via BuildingMOTIF (NO SQL tables for system instances or BACnet references)</constraint>
+    <constraint>System labels user-customizable (rdfs:label), device/property labels from templates only (NOT customizable)</constraint>
+    <constraint>Deprecate old mapping code in Phase 0 (rename to *_deprecated.py, add notices, remove imports)</constraint>
+    <constraint>Do NOT delete deprecated code until new implementation is stable and tested (Phase 4, Task 4.6)</constraint>
+    <constraint>Follow existing patterns: Controller → Model delegation, Pydantic v2 DTOs, FastAPI dependency injection</constraint>
+    <constraint>NO COMMENTS except for WHY (not WHAT): Use clear function/variable names</constraint>
+    <constraint>SOLID principles: Single Responsibility, Separation of Concerns (systems_model, devices_model, bacnet_references_model)</constraint>
+    <constraint>Backend API layer MUST NOT leak database relationships: Keep RDF graph operations in model layer</constraint>
+    <constraint>ASHRAE 223P terminology: Use "System" not "Equipment" (rename required in frontend - Phase 3, Task 3.1)</constraint>
+    <constraint>Device filtering by BACnet object type: Prevents sensors from appearing in device dropdown for output points (analog-output, binary-output require actuatable devices only)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>BuildingMOTIFAdapter.get_template_with_dependencies</name>
+      <kind>adapter method</kind>
+      <signature>def get_template_with_dependencies(self, template_name: TemplateType) -&gt; Template</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py:211-227</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.get_or_create_model</name>
+      <kind>adapter method</kind>
+      <signature>def get_or_create_model(self, namespace: str) -&gt; Model</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py:152-180</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.transaction</name>
+      <kind>context manager</kind>
+      <signature>@contextmanager def transaction(self) -&gt; Generator[None, None, None]</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py:287-323</path>
+    </interface>
+    <interface>
+      <name>BuildingMOTIFAdapter.query_model</name>
+      <kind>adapter method</kind>
+      <signature>def query_model(self, model: Model, sparql_query: str) -&gt; list[dict[str, str]]</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py:182-198</path>
+    </interface>
+    <interface>
+      <name>Template.fill</name>
+      <kind>BuildingMOTIF SDK method</kind>
+      <signature>def fill(self, namespace: Namespace) -&gt; tuple[dict[str, URIRef], Graph]</signature>
+      <path>buildingmotif SDK (external)</path>
+    </interface>
+    <interface>
+      <name>POST /projects/{projectId}/systems</name>
+      <kind>REST endpoint (to create)</kind>
+      <signature>Request: {template_id: str, label: str} -&gt; Response: SystemInstanceDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/systems.py (Phase 1, Task 1.4)</path>
+    </interface>
+    <interface>
+      <name>GET /projects/{projectId}/systems/{systemId}/devices</name>
+      <kind>REST endpoint (to create)</kind>
+      <signature>Response: list[DeviceDTO]</signature>
+      <path>apps/building-semantics-api-app/src/routers/systems.py (Phase 1, Task 1.4)</path>
+    </interface>
+    <interface>
+      <name>GET /projects/{projectId}/systems/{systemId}/devices/{deviceId}/properties</name>
+      <kind>REST endpoint (to create)</kind>
+      <signature>Query params: bacnetObjectType (optional) -&gt; Response: list[PropertyDTO]</signature>
+      <path>apps/building-semantics-api-app/src/routers/systems.py (Phase 1, Task 1.4)</path>
+    </interface>
+    <interface>
+      <name>PUT /projects/{projectId}/bacnet-references/{bacnetPointId}</name>
+      <kind>REST endpoint (to create)</kind>
+      <signature>Request: {property_urn: str} -&gt; Response: BACnetReferenceDTO</signature>
+      <path>apps/building-semantics-api-app/src/routers/bacnet_references.py (Phase 2, Task 2.3)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Follow Test-Driven Development (TDD): Write tests first, implement second. Use pytest with async support (pytest-asyncio). Unit tests in tests/unit/, integration tests in tests/integration/. Mock external libraries (BuildingMOTIF SDK methods) for integration tests, NEVER mock system under test. Test file naming: test_*.py. Use pytest fixtures for adapter setup. Follow existing patterns in test_templates_endpoint.py and test_buildingmotif_integration.py. Run tests with: PYTHONPATH=.:packages:apps/building-semantics-api-app python -m pytest
+    </standards>
+    <locations>
+apps/building-semantics-api-app/tests/unit/
+apps/building-semantics-api-app/tests/integration/
+apps/building-semantics-api-app/tests/unit/test_models/
+apps/building-semantics-api-app/tests/unit/test_controllers/
+apps/building-semantics-api-app/tests/integration/test_routers/
+    </locations>
+    <ideas>
+      <idea ac="1,2,7,8">
+        <description>Test system creation with template.fill() - Verify single fill generates all URNs, metadata added correctly (rdfs:label, bms:hasTemplateId, dcterms:created), system saved to RDF graph</description>
+        <testType>integration</testType>
+        <location>tests/integration/test_routers/test_systems.py or tests/integration/test_models/test_systems_model.py</location>
+      </idea>
+      <idea ac="3,4,5">
+        <description>Test cascading device/property queries - POST system → GET devices → GET properties (filtered by bacnetObjectType). Verify SPARQL queries return correct filtered results, URNs reference actual graph nodes.</description>
+        <testType>integration</testType>
+        <location>tests/integration/test_routers/test_systems.py</location>
+      </idea>
+      <idea ac="4">
+        <description>Test BACnet object type filtering - analog-input returns only observable properties (is_actuatable: false), analog-output returns only actuatable properties (is_actuatable: true), analog-value returns both</description>
+        <testType>unit</testType>
+        <location>tests/unit/test_models/test_devices_model.py</location>
+      </idea>
+      <idea ac="5">
+        <description>Test BACnet reference creation - PUT /bacnet-references/{pointId} with property_urn. Verify reference saved to RDF graph, enriched query returns system → device → property chain.</description>
+        <testType>integration</testType>
+        <location>tests/integration/test_routers/test_bacnet_references.py</location>
+      </idea>
+      <idea ac="7">
+        <description>Test single fill per system - Create system once, map multiple BACnet points to different properties. Verify no duplicate template.fill() calls, URNs reused across references.</description>
+        <testType>integration</testType>
+        <location>tests/integration/test_systems_reuse.py</location>
+      </idea>
+      <idea ac="8">
+        <description>Test RDF-only persistence - Verify no SQL tables created for systems or BACnet references. All data queryable via SPARQL on BuildingMOTIF model graph.</description>
+        <testType>integration</testType>
+        <location>tests/integration/test_rdf_persistence.py</location>
+      </idea>
+      <idea ac="9,10">
+        <description>Test nested equipment hierarchies - Load system with Equipment → Equipment → Device nesting. Verify SPARQL queries traverse arbitrary depth, no hardcoded assumptions about hierarchy levels.</description>
+        <testType>integration</testType>
+        <location>tests/integration/test_nested_hierarchies.py</location>
+      </idea>
+      <idea ac="11">
+        <description>Test project-scoped API - Verify all endpoints scoped to /projects/{projectId}, different projects isolated in separate BuildingMOTIF models (urn:project:{projectId})</description>
+        <testType>integration</testType>
+        <location>tests/integration/test_routers/test_systems.py</location>
+      </idea>
+      <idea ac="phase0">
+        <description>Test deprecation - Verify old mapping code renamed, imports removed from active codebase, deprecation notices added. Test new endpoints do NOT import deprecated modules.</description>
+        <testType>unit</testType>
+        <location>tests/unit/test_deprecation.py</location>
+      </idea>
+      <idea ac="device-filtering-enhancement">
+        <description>Test device-level BACnet filtering - Verify sensors not returned when querying devices for analog-output points. Test DRY helper _is_compatible_with_bacnet_type() logic.</description>
+        <testType>unit</testType>
+        <location>tests/unit/test_models/test_devices_model.py</location>
+      </idea>
+    </ideas>
+  </tests>
+</story-context>

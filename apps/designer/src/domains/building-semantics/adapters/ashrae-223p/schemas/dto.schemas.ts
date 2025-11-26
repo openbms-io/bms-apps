@@ -1,9 +1,5 @@
 import { z } from 'zod'
-import {
-  SpaceTypeSchema,
-  ConnectionPointTypeSchema,
-  ValidationErrorCodeSchema,
-} from './enum.schemas'
+import { ValidationErrorCodeSchema } from './enum.schemas'
 
 /**
  * ASHRAE 223P DTO Schemas
@@ -48,12 +44,6 @@ export const BACnetExternalReferenceDTOSchema = z
   })
   .transform((data) => ({
     ...data,
-    // Computed composite key: "device,123:analog-input,1"
-    // Uniquely identifies point across devices for BuildingMOTIF API
-    compositeKey:
-      data.deviceIdentifier && data.objectIdentifier
-        ? `${data.deviceIdentifier}:${data.objectIdentifier}`
-        : undefined,
   }))
 
 export type BACnetExternalReferenceDTO = z.infer<
@@ -100,56 +90,33 @@ export interface BACnetPointData {
  * @example
  * {
  *   deviceId: 123,
- *   controllerId: "550e8400-e29b-41d4-a716-446655440000",
- *   name: "VAV-2-01 Controller"
+ *   ipAddress: "192.168.1.100"
  * }
  */
 export interface BACnetControllerData {
   deviceId: number // BACnet device ID
-  controllerId: string // Designer internal UUID
-  name: string // Controller name for display
+  ipAddress: string // Controller IP address
 }
 
 /**
- * Equipment 223P DTO
+ * Semantic Equipment for Tree Display
  *
- * Complete 223P semantic mapping for a BACnet point.
- * Maps physical BACnet objects to ASHRAE 223P ontology concepts.
- *
- * Space Associations (ASHRAE 223P):
- * - physicalSpaceId: Where the equipment is physically installed (e.g., mechanical room)
- * - domainSpaceIds: Which functional areas the equipment serves (e.g., conference rooms)
+ * Minimal semantic mapping data derived from EnrichedBACnetReferenceDTO.
+ * Used to display semantic mapping badges in the BACnet device tree.
  *
  * @example
  * {
- *   equipmentType: "VAV Reheat Terminal Unit",
- *   physicalSpaceId: "urn:bms:PhysicalSpace:space-550e8400-...",
- *   domainSpaceIds: ["urn:bms:DomainSpace:space-661f9511-..."],
- *   deviceType: "Sensor",
- *   observableProperty: "air-temperature",
- *   propertyType: "quantifiable",
- *   connectionPoints: ["air-in", "air-out"],
- *   externalReference: {
- *     deviceName: "VAV-2-01",
- *     objectName: "ZoneTemp",
- *     objectIdentifier: "analog-input,1"
- *   },
- *   schemaVersion: "223p-2023"
+ *   systemLabel: "AHU-1 VAV System",
+ *   deviceLabel: "VAV Box Sensor",
+ *   propertyLabel: "Zone Temperature",
+ *   systemTemplate: "vav-reheat"
  * }
- *
- * Epic 1: Flat structure with optional fields
- * Epic 3: May become nested graph structure (RDF/JSON-LD)
  */
 export const SemanticEquipmentSchema = z.object({
-  equipmentTypeId: z.string(),
-  physicalSpaceId: z.string().optional(),
-  domainSpaceIds: z.array(z.string()).optional(),
-  deviceTypeId: z.string(),
-  propertyId: z.string(),
-  propertyType: z.enum(['quantifiable', 'enumerated']),
-  connectionPoints: z.array(ConnectionPointTypeSchema).optional(),
-  externalReference: BACnetExternalReferenceDTOSchema,
-  schemaVersion: z.literal('223p-2023'),
+  systemLabel: z.string(),
+  deviceLabel: z.string(),
+  propertyLabel: z.string(),
+  systemTemplate: z.string(),
 })
 
 export type SemanticEquipment = z.infer<typeof SemanticEquipmentSchema>

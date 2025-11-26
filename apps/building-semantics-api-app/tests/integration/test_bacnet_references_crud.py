@@ -1,7 +1,9 @@
 """Integration tests for BACnetReferencesModel CRUD operations."""
 import pytest
+from rdflib import RDF
 
 from src.adapters import BuildingMOTIFAdapter, SystemTemplate, DeviceTemplate, PropertyTemplate
+from src.constants.namespaces import S223, BACNET, DCTERMS
 from src.models.bacnet_references_model import BACnetReferencesModel
 from src.models.systems_model import SystemsModel
 from src.models.devices_model import DevicesModel
@@ -78,6 +80,9 @@ def test_create_reference_persists_in_buildingmotif(shared_adapter: BuildingMOTI
         project_id="integration-test-bacnet-refs",
         bacnet_point_id="device_100.analog-input_1",
         property_uri=property_uri,
+        device_identifier="device,100",
+        object_identifier="analog-input,1",
+        external_identifier="192.168.1.100:device,100:analog-input,1",
     )
 
     assert reference_result["bacnet_point_id"] == "device_100.analog-input_1"
@@ -121,6 +126,9 @@ def test_get_reference_returns_enriched_system_device_property_chain(shared_adap
         project_id="integration-test-enriched-query",
         bacnet_point_id="device_200.analog-input_5",
         property_uri=property_uri,
+        device_identifier="device,200",
+        object_identifier="analog-input,5",
+        external_identifier="192.168.1.200:device,200:analog-input,5",
     )
 
     retrieved = bacnet_model.get_reference(
@@ -161,6 +169,9 @@ def test_create_reference_rollback_on_validation_failure(shared_adapter: Buildin
             project_id="integration-test-rollback",
             bacnet_point_id="device_400.analog-input_1",
             property_uri="urn:invalid:property:rollback-test",
+            device_identifier="device,400",
+            object_identifier="analog-input,1",
+            external_identifier="192.168.1.400:device,400:analog-input,1",
         )
     except ValidationException:
         pass
@@ -203,18 +214,27 @@ def test_get_all_references_returns_multiple_references(shared_adapter: Building
         project_id="integration-test-list-refs",
         bacnet_point_id="device_500.analog-input_1",
         property_uri=property_uris[0],
+        device_identifier="device,500",
+        object_identifier="analog-input,1",
+        external_identifier="192.168.1.500:device,500:analog-input,1",
     )
 
     bacnet_model.create_or_update_reference(
         project_id="integration-test-list-refs",
         bacnet_point_id="device_500.analog-input_2",
         property_uri=property_uris[1],
+        device_identifier="device,500",
+        object_identifier="analog-input,2",
+        external_identifier="192.168.1.500:device,500:analog-input,2",
     )
 
     bacnet_model.create_or_update_reference(
         project_id="integration-test-list-refs",
         bacnet_point_id="device_500.analog-input_3",
         property_uri=property_uris[2],
+        device_identifier="device,500",
+        object_identifier="analog-input,3",
+        external_identifier="192.168.1.500:device,500:analog-input,3",
     )
 
     all_references = bacnet_model.get_all_references(
@@ -266,12 +286,18 @@ def test_update_existing_reference_replaces_property_uri(shared_adapter: Buildin
         project_id="integration-test-update-ref",
         bacnet_point_id="device_600.analog-input_1",
         property_uri=property_a,
+        device_identifier="device,600",
+        object_identifier="analog-input,1",
+        external_identifier="192.168.1.600:device,600:analog-input,1",
     )
 
     bacnet_model.create_or_update_reference(
         project_id="integration-test-update-ref",
         bacnet_point_id="device_600.analog-input_1",
         property_uri=property_b,
+        device_identifier="device,600",
+        object_identifier="analog-input,1",
+        external_identifier="192.168.1.600:device,600:analog-input,1",
     )
 
     retrieved = bacnet_model.get_reference(
@@ -313,6 +339,9 @@ def test_delete_reference_removes_from_buildingmotif(shared_adapter: BuildingMOT
         project_id="integration-test-delete-ref",
         bacnet_point_id="device_700.analog-input_1",
         property_uri=property_uri,
+        device_identifier="device,700",
+        object_identifier="analog-input,1",
+        external_identifier="192.168.1.700:device,700:analog-input,1",
     )
 
     retrieved = bacnet_model.get_reference(
@@ -389,3 +418,80 @@ def test_validate_property_exists_returns_false_for_invalid_property(shared_adap
     )
 
     assert result is False
+
+
+def test_create_reference_creates_223p_compliant_bacnet_external_reference(shared_adapter: BuildingMOTIFAdapter):
+    """
+    Test that creating a BACnet reference creates a 223P-compliant s223:BACnetExternalReference.
+
+    End-to-end flow:
+    1. Create system with properties
+    2. Create BACnet reference with device/object identifiers
+    3. Query RDF graph directly for BACnetExternalReference entity
+    4. Verify all required triples exist:
+       - s223:BACnetExternalReference type
+       - bacnet:device-identifier
+       - bacnet:object-identifier
+       - dcterms:identifier
+       - s223:hasExternalReference link from property
+    """
+    systems_model = SystemsModel(shared_adapter)
+    bacnet_model = BACnetReferencesModel(shared_adapter)
+
+    # Create system with properties
+    system_result = systems_model.create_system(
+        project_id="integration-test-223p-structure",
+        template_id=SystemTemplate.VAV_REHEAT.value,
+        label="VAV for 223P Test"
+    )
+
+    property_uri = _get_property_uri_from_system(
+        shared_adapter,
+        "integration-test-223p-structure",
+        system_result["system_uri"]
+    )
+
+    # Create BACnet reference with metadata
+    bacnet_model.create_or_update_reference(
+        project_id="integration-test-223p-structure",
+        bacnet_point_id="device_800.analog-input_1",
+        property_uri=property_uri,
+        device_identifier="device,800",
+        object_identifier="analog-input,1",
+        external_identifier="192.168.1.800:device,800:analog-input,1",
+    )
+
+    # Query RDF graph directly for verification
+    model = shared_adapter.get_or_create_model("urn:project:integration-test-223p-structure")
+    from rdflib import URIRef
+
+    property_uri_ref = URIRef(property_uri)
+
+    # Find the BACnetExternalReference linked to this property
+    external_refs = list(model.graph.objects(property_uri_ref, S223.hasExternalReference))
+    assert len(external_refs) == 1, "Property should have exactly one external reference"
+
+    bacnet_ref_uri = external_refs[0]
+
+    # Verify: BACnetExternalReference type
+    ref_type = model.graph.value(bacnet_ref_uri, RDF.type)
+    assert ref_type == S223.BACnetExternalReference, f"Expected s223:BACnetExternalReference, got {ref_type}"
+
+    # Verify: bacnet:device-identifier
+    device_id = model.graph.value(bacnet_ref_uri, BACNET["device-identifier"])
+    assert device_id is not None, "device-identifier should be present"
+    assert str(device_id) == "device,800", f"Expected 'device,800', got {device_id}"
+
+    # Verify: bacnet:object-identifier
+    object_id = model.graph.value(bacnet_ref_uri, BACNET["object-identifier"])
+    assert object_id is not None, "object-identifier should be present"
+    assert str(object_id) == "analog-input,1", f"Expected 'analog-input,1', got {object_id}"
+
+    # Verify: dcterms:identifier (external identifier with IP)
+    external_id = model.graph.value(bacnet_ref_uri, DCTERMS.identifier)
+    assert external_id is not None, "external identifier should be present"
+    assert str(external_id) == "192.168.1.800:device,800:analog-input,1", f"Expected full external identifier, got {external_id}"
+
+    # Verify: Property links to external reference
+    has_link = (property_uri_ref, S223.hasExternalReference, bacnet_ref_uri) in model.graph
+    assert has_link, "Property should link to BACnetExternalReference via s223:hasExternalReference"

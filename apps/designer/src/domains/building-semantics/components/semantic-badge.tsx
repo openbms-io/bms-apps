@@ -6,24 +6,13 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import type { SemanticEquipment } from '../adapters/ashrae-223p/schemas'
-import { useTemplatesQuery } from '../api/queries/use-templates-query'
-import { getMappingLabels } from '../utils/template-labels'
 
 interface SemanticBadgeProps {
   mapping: SemanticEquipment
 }
 
 export function SemanticBadge({ mapping }: SemanticBadgeProps) {
-  const { data: templates } = useTemplatesQuery()
-
-  const labels = getMappingLabels({
-    templates,
-    equipmentTypeUrn: mapping.equipmentTypeId,
-    deviceTypeUrn: mapping.deviceTypeId,
-    propertyUrn: mapping.propertyId,
-  })
-
-  const tooltipText = `${labels.equipment} | ${labels.device} | ${labels.property}`
+  const tooltipText = `${mapping.systemLabel} | ${mapping.deviceLabel} | ${mapping.propertyLabel}`
 
   return (
     <TooltipProvider>

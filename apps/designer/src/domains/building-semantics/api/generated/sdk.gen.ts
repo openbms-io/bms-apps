@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateSpaceApiV1223pSpacesPostData, CreateSpaceApiV1223pSpacesPostErrors, CreateSpaceApiV1223pSpacesPostResponses, GetMappingsApiV1223pMappingsGetData, GetMappingsApiV1223pMappingsGetErrors, GetMappingsApiV1223pMappingsGetResponses, GetTemplatesApiV1223pTemplatesGetData, GetTemplatesApiV1223pTemplatesGetErrors, GetTemplatesApiV1223pTemplatesGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, ListSpacesApiV1223pSpacesGetData, ListSpacesApiV1223pSpacesGetErrors, ListSpacesApiV1223pSpacesGetResponses, SaveMappingsApiV1223pMappingsPostData, SaveMappingsApiV1223pMappingsPostErrors, SaveMappingsApiV1223pMappingsPostResponses } from './types.gen';
+import type { CreateOrUpdateReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdPutData, CreateOrUpdateReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdPutErrors, CreateOrUpdateReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdPutResponses, CreateSpaceApiV1223pSpacesPostData, CreateSpaceApiV1223pSpacesPostErrors, CreateSpaceApiV1223pSpacesPostResponses, CreateSystemApiV1ProjectsProjectIdSystemsPostData, CreateSystemApiV1ProjectsProjectIdSystemsPostErrors, CreateSystemApiV1ProjectsProjectIdSystemsPostResponses, DeleteReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdDeleteData, DeleteReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdDeleteErrors, DeleteReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdDeleteResponses, DeleteSystemApiV1ProjectsProjectIdSystemsSystemIdDeleteData, DeleteSystemApiV1ProjectsProjectIdSystemsSystemIdDeleteErrors, DeleteSystemApiV1ProjectsProjectIdSystemsSystemIdDeleteResponses, GetDevicesForSystemApiV1ProjectsProjectIdSystemsDevicesGetData, GetDevicesForSystemApiV1ProjectsProjectIdSystemsDevicesGetErrors, GetDevicesForSystemApiV1ProjectsProjectIdSystemsDevicesGetResponses, GetPropertiesForDeviceApiV1ProjectsProjectIdSystemsPropertiesGetData, GetPropertiesForDeviceApiV1ProjectsProjectIdSystemsPropertiesGetErrors, GetPropertiesForDeviceApiV1ProjectsProjectIdSystemsPropertiesGetResponses, GetReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdGetData, GetReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdGetErrors, GetReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdGetResponses, GetSystemApiV1ProjectsProjectIdSystemsSystemIdGetData, GetSystemApiV1ProjectsProjectIdSystemsSystemIdGetErrors, GetSystemApiV1ProjectsProjectIdSystemsSystemIdGetResponses, GetTemplatesApiV1223pTemplatesGetData, GetTemplatesApiV1223pTemplatesGetErrors, GetTemplatesApiV1223pTemplatesGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, ListReferencesApiV1ProjectsProjectIdBacnetReferencesGetData, ListReferencesApiV1ProjectsProjectIdBacnetReferencesGetErrors, ListReferencesApiV1ProjectsProjectIdBacnetReferencesGetResponses, ListSpacesApiV1223pSpacesGetData, ListSpacesApiV1223pSpacesGetErrors, ListSpacesApiV1223pSpacesGetResponses, ListSystemsApiV1ProjectsProjectIdSystemsGetData, ListSystemsApiV1ProjectsProjectIdSystemsGetErrors, ListSystemsApiV1ProjectsProjectIdSystemsGetResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -59,30 +59,133 @@ export const createSpaceApiV1223pSpacesPost = <ThrowOnError extends boolean = fa
 };
 
 /**
- * Get all semantic mappings for project
+ * List all system instances in project
  *
- * Returns all semantic mappings as dictionary keyed by BACnet point ID.
+ * Retrieve all system instances for the specified project.
  */
-export const getMappingsApiV1223pMappingsGet = <ThrowOnError extends boolean = false>(options: Options<GetMappingsApiV1223pMappingsGetData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetMappingsApiV1223pMappingsGetResponses, GetMappingsApiV1223pMappingsGetErrors, ThrowOnError>({
-        url: '/api/v1/223p/mappings',
+export const listSystemsApiV1ProjectsProjectIdSystemsGet = <ThrowOnError extends boolean = false>(options: Options<ListSystemsApiV1ProjectsProjectIdSystemsGetData, ThrowOnError>) => {
+    return (options.client ?? client).get<ListSystemsApiV1ProjectsProjectIdSystemsGetResponses, ListSystemsApiV1ProjectsProjectIdSystemsGetErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/systems',
         ...options
     });
 };
 
 /**
- * Bulk save/replace all semantic mappings with SHACL validation
+ * Create reusable system instance from template
  *
- * Replaces all mappings for project with provided mappings after validating against ASHRAE 223P SHACL constraints. This is a complete replacement operation, not incremental update. If any mapping fails SHACL validation, the entire operation is rejected (atomic transaction).
+ * Create a system instance from an ASHRAE 223P template using template.fill(). The system instance is reusable across multiple BACnet points. BuildingMOTIF auto-generates all URNs, user provides custom label only.
  */
-export const saveMappingsApiV1223pMappingsPost = <ThrowOnError extends boolean = false>(options: Options<SaveMappingsApiV1223pMappingsPostData, ThrowOnError>) => {
-    return (options.client ?? client).post<SaveMappingsApiV1223pMappingsPostResponses, SaveMappingsApiV1223pMappingsPostErrors, ThrowOnError>({
-        url: '/api/v1/223p/mappings',
+export const createSystemApiV1ProjectsProjectIdSystemsPost = <ThrowOnError extends boolean = false>(options: Options<CreateSystemApiV1ProjectsProjectIdSystemsPostData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateSystemApiV1ProjectsProjectIdSystemsPostResponses, CreateSystemApiV1ProjectsProjectIdSystemsPostErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/systems',
         ...options,
         headers: {
             'Content-Type': 'application/json',
             ...options.headers
         }
+    });
+};
+
+/**
+ * Get devices for system (cascading dropdown)
+ *
+ * Get all devices within a system instance. Used for cascading dropdown: System → Device → Property. Supports arbitrary depth hierarchies (Equipment → Equipment → Device). Optionally filters by BACnet object type compatibility.
+ */
+export const getDevicesForSystemApiV1ProjectsProjectIdSystemsDevicesGet = <ThrowOnError extends boolean = false>(options: Options<GetDevicesForSystemApiV1ProjectsProjectIdSystemsDevicesGetData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetDevicesForSystemApiV1ProjectsProjectIdSystemsDevicesGetResponses, GetDevicesForSystemApiV1ProjectsProjectIdSystemsDevicesGetErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/systems/devices',
+        ...options
+    });
+};
+
+/**
+ * Get properties for device (cascading dropdown + filtering)
+ *
+ * Get all properties for a device within a system. Optionally filtered by BACnet object type for compatibility:
+ * - analog-input, binary-input → Observable only (is_actuatable: false)
+ * - analog-output, binary-output → Actuatable only (is_actuatable: true)
+ * - analog-value, binary-value → Both (no filter)
+ */
+export const getPropertiesForDeviceApiV1ProjectsProjectIdSystemsPropertiesGet = <ThrowOnError extends boolean = false>(options: Options<GetPropertiesForDeviceApiV1ProjectsProjectIdSystemsPropertiesGetData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetPropertiesForDeviceApiV1ProjectsProjectIdSystemsPropertiesGetResponses, GetPropertiesForDeviceApiV1ProjectsProjectIdSystemsPropertiesGetErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/systems/properties',
+        ...options
+    });
+};
+
+/**
+ * Delete system instance
+ *
+ * Delete a system instance from the project.
+ */
+export const deleteSystemApiV1ProjectsProjectIdSystemsSystemIdDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemApiV1ProjectsProjectIdSystemsSystemIdDeleteData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteSystemApiV1ProjectsProjectIdSystemsSystemIdDeleteResponses, DeleteSystemApiV1ProjectsProjectIdSystemsSystemIdDeleteErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/systems/{system_id}',
+        ...options
+    });
+};
+
+/**
+ * Get system instance details
+ *
+ * Retrieve detailed information about a specific system instance.
+ */
+export const getSystemApiV1ProjectsProjectIdSystemsSystemIdGet = <ThrowOnError extends boolean = false>(options: Options<GetSystemApiV1ProjectsProjectIdSystemsSystemIdGetData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetSystemApiV1ProjectsProjectIdSystemsSystemIdGetResponses, GetSystemApiV1ProjectsProjectIdSystemsSystemIdGetErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/systems/{system_id}',
+        ...options
+    });
+};
+
+/**
+ * Delete BACnet reference
+ *
+ * Remove BACnet point → property URN mapping.
+ */
+export const deleteReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdDeleteData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdDeleteResponses, DeleteReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdDeleteErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/bacnet-references/{bacnet_point_id}',
+        ...options
+    });
+};
+
+/**
+ * Get BACnet reference with enriched data
+ *
+ * Retrieve BACnet reference with complete system → device → property chain. Returns enriched data including labels and template IDs for UI display.
+ */
+export const getReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdGet = <ThrowOnError extends boolean = false>(options: Options<GetReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdGetData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdGetResponses, GetReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdGetErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/bacnet-references/{bacnet_point_id}',
+        ...options
+    });
+};
+
+/**
+ * Create or update BACnet reference with SHACL validation
+ *
+ * Map a BACnet point to a specific property URN from a system instance. If reference already exists, it will be updated. Validates against ASHRAE 223P SHACL constraints before saving.
+ */
+export const createOrUpdateReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdPut = <ThrowOnError extends boolean = false>(options: Options<CreateOrUpdateReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdPutData, ThrowOnError>) => {
+    return (options.client ?? client).put<CreateOrUpdateReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdPutResponses, CreateOrUpdateReferenceApiV1ProjectsProjectIdBacnetReferencesBacnetPointIdPutErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/bacnet-references/{bacnet_point_id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * List all BACnet references for project
+ *
+ * Retrieve all BACnet references for a project with complete system → device → property chains. Returns enriched data including labels and template IDs for UI display.
+ */
+export const listReferencesApiV1ProjectsProjectIdBacnetReferencesGet = <ThrowOnError extends boolean = false>(options: Options<ListReferencesApiV1ProjectsProjectIdBacnetReferencesGetData, ThrowOnError>) => {
+    return (options.client ?? client).get<ListReferencesApiV1ProjectsProjectIdBacnetReferencesGetResponses, ListReferencesApiV1ProjectsProjectIdBacnetReferencesGetErrors, ThrowOnError>({
+        url: '/api/v1/projects/{project_id}/bacnet-references',
+        ...options
     });
 };
 

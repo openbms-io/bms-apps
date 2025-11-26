@@ -19,7 +19,7 @@ import {
   NodeTypeString,
 } from '@/types/infrastructure'
 import type { SemanticEquipment } from '@/domains/building-semantics'
-import { createCompositeKey } from '@/domains/building-semantics/utils/bacnet-keys'
+import type { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 import { NodeData } from '@/types/node-data-types'
 import type {
   CalculationOperation,
@@ -37,7 +37,6 @@ import { projectsApi } from '@/lib/api/projects'
 import {
   serializeWorkflow,
   deserializeWorkflow,
-  createNodeFactory,
   type ReactFlowObject,
   type WorkflowMetadata,
 } from '@/lib/workflow/serializer'
@@ -46,7 +45,10 @@ export interface DraggedPoint {
   type: 'bacnet-point'
   config: BacnetConfig
   draggedFrom: 'controllers-tree'
-  controller?: { id: string; name: string; deviceId: number }
+  controller?: Pick<
+    IotDeviceController,
+    'id' | 'deviceId' | 'ipAddress' | 'name'
+  >
 }
 
 export interface DraggedLogicNode {
@@ -268,22 +270,10 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
     set({ edges: updatedEdges })
   },
 
-  addNodeFromInfrastructure: async (
-    draggedPoint,
-    position,
-    semanticMapping
-  ) => {
-    const { config, controller } = draggedPoint
+  addNodeFromInfrastructure: async (draggedPoint, position) => {
+    const { config } = draggedPoint
 
-    // Compute composite key for lookup
-    const semanticMappingKey =
-      semanticMapping && controller
-        ? createCompositeKey(
-            controller.deviceId,
-            config.objectType,
-            config.objectId
-          )
-        : undefined
+    const semanticMappingKey = config.pointId
 
     const dataNode = await createDataNodeFromBacnetConfig({
       config,

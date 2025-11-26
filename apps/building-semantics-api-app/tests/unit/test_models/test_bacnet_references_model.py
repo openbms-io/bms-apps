@@ -6,10 +6,7 @@ from rdflib import Graph, Literal, Namespace, URIRef
 from src.models.bacnet_references_model import BACnetReferencesModel
 from src.models.exceptions import ValidationException
 from src.dto.validation_dto import ValidationResultDTO
-
-
-BMS = Namespace("urn:bms:")
-BACNET = Namespace("urn:bacnet:")
+from src.constants.namespaces import BMS, BMS_BACNET_INDEX
 
 
 @pytest.fixture
@@ -35,13 +32,14 @@ def test_create_reference_maps_bacnet_point_to_property_urn(mock_adapter):
     Test creating BACnet reference links BACnet point to property URN.
 
     Verifies:
-    - bms:mapsToProperty triple added
+    - BACnetExternalReference entity created with 223P properties
+    - bms-bacnet:mapsToProperty index triple added
     - ValidationService called
     - session.commit() called
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
-    mock_graph.triples.return_value = []
+    mock_graph.objects.return_value = []
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
 
@@ -56,16 +54,25 @@ def test_create_reference_maps_bacnet_point_to_property_urn(mock_adapter):
             project_id="test-project",
             bacnet_point_id="device_123.analog-input_1",
             property_uri="urn:bldgmotif:vav-101-temp-sensor-1",
+            device_identifier="device,123",
+            object_identifier="analog-input,1",
+            external_identifier="192.168.1.100:device,123:analog-input,1",
         )
 
         assert result["bacnet_point_id"] == "device_123.analog-input_1"
         assert result["property_uri"] == "urn:bldgmotif:vav-101-temp-sensor-1"
 
-        mock_graph.add.assert_called_once()
-        add_call_args = mock_graph.add.call_args[0][0]
-        assert add_call_args[0] == URIRef("urn:bacnet:device_123.analog-input_1")
-        assert add_call_args[1] == BMS.mapsToProperty
-        assert add_call_args[2] == URIRef("urn:bldgmotif:vav-101-temp-sensor-1")
+        # Verify graph.add was called 6 times (5 for 223P entity + 1 for index)
+        assert mock_graph.add.call_count == 6
+
+        # Check that index triple was added
+        add_calls = [call[0][0] for call in mock_graph.add.call_args_list]
+        index_triple = (
+            BMS_BACNET_INDEX["device_123.analog-input_1"],
+            BMS_BACNET_INDEX.mapsToProperty,
+            URIRef("urn:bldgmotif:vav-101-temp-sensor-1")
+        )
+        assert index_triple in add_calls
 
         mock_validation.validate_model.assert_called_once()
 
@@ -83,7 +90,7 @@ def test_create_reference_validates_property_exists_via_shacl(mock_adapter):
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
-    mock_graph.triples.return_value = []
+    mock_graph.objects.return_value = []
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
 
@@ -98,6 +105,9 @@ def test_create_reference_validates_property_exists_via_shacl(mock_adapter):
             project_id="test-project",
             bacnet_point_id="device_42.analog-input_1",
             property_uri="urn:property:valid",
+            device_identifier="device,42",
+            object_identifier="analog-input,1",
+            external_identifier="192.168.1.100:device,42:analog-input,1",
         )
 
         mock_validation.validate_model.assert_called_once_with(mock_model)
@@ -117,7 +127,7 @@ def test_create_reference_rolls_back_on_validation_failure(mock_adapter):
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
-    mock_graph.triples.return_value = []
+    mock_graph.objects.return_value = []
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
 
@@ -133,6 +143,9 @@ def test_create_reference_rolls_back_on_validation_failure(mock_adapter):
                 project_id="test-project",
                 bacnet_point_id="device_42.analog-input_1",
                 property_uri="urn:property:invalid",
+                device_identifier="device,42",
+                object_identifier="analog-input,1",
+                external_identifier="192.168.1.100:device,42:analog-input,1",
             )
 
         assert "Property does not exist in system" in exc_info.value.errors
@@ -231,7 +244,7 @@ def test_get_all_references_filters_by_project_id(mock_adapter):
 
     mock_adapter.query_model.return_value = [
         {
-            "bacnet_point_uri": "urn:bacnet:device_1.analog-input_1",
+            "bacnet_point_uri": "urn:bms:bacnet:device_1.analog-input_1",
             "property_uri": "urn:property:1",
             "property_label": "Temp 1",
             "property_template": "air-temperature",
@@ -243,7 +256,7 @@ def test_get_all_references_filters_by_project_id(mock_adapter):
             "system_template": "vav-reheat",
         },
         {
-            "bacnet_point_uri": "urn:bacnet:device_2.analog-input_2",
+            "bacnet_point_uri": "urn:bms:bacnet:device_2.analog-input_2",
             "property_uri": "urn:property:2",
             "property_label": "Temp 2",
             "property_template": "air-temperature",
@@ -269,20 +282,20 @@ def test_get_all_references_filters_by_project_id(mock_adapter):
 
 def test_delete_reference_removes_all_bacnet_metadata(mock_adapter):
     """
-    Test delete_reference removes bms:mapsToProperty triple.
+    Test delete_reference removes both index and BACnetExternalReference entity.
 
     Verifies:
-    - model.graph.remove() called for bms:mapsToProperty triple
+    - model.graph.value() called to find property via index
+    - model.graph.remove() called for index triple
+    - model.graph.remove() called for entire entity
+    - model.graph.remove() called for hasExternalReference link
     - session.commit() called
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
 
-    bacnet_uri = URIRef("urn:bacnet:device_123.analog-input_1")
     property_uri = URIRef("urn:property:456")
-    triple = (bacnet_uri, BMS.mapsToProperty, property_uri)
-
-    mock_graph.triples.return_value = [triple]
+    mock_graph.value.return_value = property_uri  # Mock index lookup
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
 
@@ -292,7 +305,12 @@ def test_delete_reference_removes_all_bacnet_metadata(mock_adapter):
     )
 
     assert result is True
-    mock_graph.remove.assert_called_once_with(triple)
+
+    # Verify graph.value was called to look up property_uri
+    mock_graph.value.assert_called_once()
+
+    # Verify graph.remove was called 3 times (index + entity + forward link)
+    assert mock_graph.remove.call_count == 3
 
     # Verify transaction context manager was used
     mock_adapter.transaction.assert_called_once()
@@ -303,12 +321,12 @@ def test_delete_reference_returns_false_when_not_found(mock_adapter):
     Test delete_reference returns False when reference doesn't exist.
 
     Verifies:
-    - Returns False when no triples found
+    - Returns False when index lookup returns None
     - No removal attempted
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
-    mock_graph.triples.return_value = []
+    mock_graph.value.return_value = None  # Mock index lookup returns None (not found)
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
 
@@ -374,17 +392,15 @@ def test_create_or_update_updates_existing_reference(mock_adapter):
     Test create_or_update_reference updates existing BACnet point mapping.
 
     Verifies:
-    - Existing triple removed
-    - New triple added with new property_uri
+    - Existing structures removed (index + entity)
+    - New structures added with new property_uri
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
 
-    bacnet_uri = URIRef("urn:bacnet:device_123.analog-input_1")
-    old_property_uri = URIRef("urn:property:old")
-    old_triple = (bacnet_uri, BMS.mapsToProperty, old_property_uri)
-
-    mock_graph.triples.return_value = [old_triple]
+    # Mock existing external reference
+    old_ref_uri = URIRef("urn:bms:bacnet:device_123.analog-input_1")
+    mock_graph.objects.return_value = []  # No old hasExternalReference links
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
 
@@ -399,12 +415,16 @@ def test_create_or_update_updates_existing_reference(mock_adapter):
             project_id="test-project",
             bacnet_point_id="device_123.analog-input_1",
             property_uri="urn:property:new",
+            device_identifier="device,123",
+            object_identifier="analog-input,1",
+            external_identifier="192.168.1.100:device,123:analog-input,1",
         )
 
-        mock_graph.remove.assert_called_once_with(old_triple)
+        # Verify removal was called (old index, old entity)
+        assert mock_graph.remove.call_count >= 2
 
-        add_call_args = mock_graph.add.call_args[0][0]
-        assert add_call_args[2] == URIRef("urn:property:new")
+        # Verify new triples were added (6 total)
+        assert mock_graph.add.call_count == 6
 
         assert result["property_uri"] == "urn:property:new"
 

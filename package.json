@@ -12,6 +12,7 @@
     "dev": "./scripts/start-dev.sh",
     "build": "pnpm --recursive run build",
     "test": "jest && pnpm --filter designer test && pnpm bms-iot:test",
+    "designer:dev": "pnpm --filter designer dev",
     "test:js": "jest && pnpm --filter designer test",
     "test:python": "pnpm bms-iot:test && pnpm mqtt-topics:test",
     "lint": "pnpm --recursive run lint",

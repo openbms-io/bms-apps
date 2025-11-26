@@ -20,16 +20,10 @@ import { useAllControllerPoints } from '@/hooks/use-all-controller-points'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-client'
 import { AddControllerDialog } from '@/components/modals/add-controller-dialog'
-import { useMappingsViewModel } from '@/domains/building-semantics/view-models/use-mappings-view-model'
-import { MappingPopupModal } from '@/domains/building-semantics/components'
-import type {
-  BACnetPointData,
-  BACnetControllerData,
-  SemanticEquipment,
-} from '@/domains/building-semantics'
+import { BuildingSemanticsModal } from '@/domains/building-semantics'
+import { useTemplatesQuery } from '@/domains/building-semantics/api'
+import { useBacnetReferencesQuery } from '@/domains/building-semantics/api/queries/use-bacnet-references-query'
 import { useGetConfigPayload } from '@/hooks/use-get-config-payload'
-import { useEditMapping } from '@/domains/building-semantics/hooks/use-edit-mapping'
-import { useCreateSemanticModal } from '@/domains/building-semantics/hooks/use-create-semantic-modal'
 import { useFlowStore } from '@/store/use-flow-store'
 import { CommandNameEnum } from 'mqtt-topics'
 import { toast } from 'sonner'
@@ -49,6 +43,7 @@ import {
 } from '@/types/infrastructure'
 import { DraggedPoint } from '@/store/slices/flow-slice'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
+import { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 
 function convertPointToBacnetConfig(
   point: ControllerPoint,
@@ -139,24 +134,19 @@ export function ControllersTreeContainer({
     controllerIds
   )
 
-  const { data: semanticMappings = new Map() } = useMappingsViewModel({
-    projectId,
-  })
+  const { data: templates = [] } = useTemplatesQuery()
+  const { data: semanticMappings = new Map() } =
+    useBacnetReferencesQuery(projectId)
 
-  const { editState, openEdit, closeEdit } = useEditMapping(
-    projectId,
-    controllers,
-    pointsByController,
-    semanticMappings,
-    project?.iotDeviceId
-  )
-
-  const { semanticModalState, openSemanticModal, closeSemanticModal } =
-    useCreateSemanticModal(
-      controllers,
-      pointsByController,
-      project?.iotDeviceId
-    )
+  const [mappingModalState, setMappingModalState] = useState<{
+    isOpen: boolean
+    bacnetPointId: string
+    bacnetObjectType: BacnetObjectType
+    pointLabel: string
+    objectId: number
+    controllerDeviceId: number
+    controllerIPAddress: string
+  } | null>(null)
 
   const queryClient = useQueryClient()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
@@ -198,6 +188,42 @@ export function ControllersTreeContainer({
     ? filterTreeNodes(treeData, searchValue.toLowerCase())
     : treeData
 
+  const openMappingModal = useCallback(
+    (nodeId: string) => {
+      if (!project?.iotDeviceId) return
+
+      let foundPoint: ControllerPoint | undefined
+      let foundController: IotDeviceController | undefined
+
+      for (const controller of controllers) {
+        const points = pointsByController[controller.id] || []
+        const point = points.find((p) => p.id === nodeId)
+        if (point) {
+          foundPoint = point
+          foundController = controller
+          break
+        }
+      }
+
+      if (!foundPoint || !foundController) return
+
+      setMappingModalState({
+        isOpen: true,
+        bacnetPointId: foundPoint.id,
+        bacnetObjectType: foundPoint.pointType as BacnetObjectType,
+        pointLabel: foundPoint.pointName || '',
+        objectId: foundPoint.instanceNumber,
+        controllerDeviceId: foundController.deviceId,
+        controllerIPAddress: foundController.ipAddress,
+      })
+    },
+    [controllers, pointsByController, project?.iotDeviceId]
+  )
+
+  const closeMappingModal = useCallback(() => {
+    setMappingModalState(null)
+  }, [])
+
   const handleDragStart = useCallback(
     (e: React.DragEvent, node: TreeNodeType) => {
       if (node.type === 'point' && node.data && project?.iotDeviceId) {
@@ -218,6 +244,7 @@ export function ControllersTreeContainer({
                 id: controller.id,
                 name: controller.name,
                 deviceId: controller.deviceId,
+                ipAddress: controller.ipAddress,
               }
             : undefined,
         }
@@ -307,13 +334,11 @@ export function ControllersTreeContainer({
     )
   }, [controllerToDelete, deleteController, orgId, siteId, projectId, project])
 
-  const handleCreate223PMapping = useCallback(
-    (mapping: SemanticEquipment) => {
-      toast.success('223P mapping created')
-      closeSemanticModal()
-    },
-    [closeSemanticModal]
-  )
+  const handleMappingSaved = useCallback(() => {
+    toast.success('BACnet reference saved successfully')
+    closeMappingModal()
+    queryClient.invalidateQueries({ queryKey: ['bacnet-references'] })
+  }, [closeMappingModal, queryClient])
 
   return (
     <div className="flex flex-col h-full" onClick={handleContainerClick}>
@@ -366,8 +391,8 @@ export function ControllersTreeContainer({
             onToggle={toggleNode}
             onSelect={selectPoint}
             onDelete={handleDeleteClick}
-            onAdd223PMapping={openSemanticModal}
-            onEdit223PMapping={openEdit}
+            onAdd223PMapping={openMappingModal}
+            onEdit223PMapping={openMappingModal}
             isDraggable={true}
             onDragStart={handleDragStart}
             className="min-h-0"
@@ -419,28 +444,24 @@ export function ControllersTreeContainer({
         </DialogContent>
       </Dialog>
 
-      <MappingPopupModal
-        projectId={projectId}
-        open={editState.isOpen}
-        point={editState.point}
-        controller={editState.controller}
-        existingMapping={editState.mapping}
-        mode="edit"
-        onConfirm={closeEdit}
-        onSkip={closeEdit}
-        onOpenChange={closeEdit}
-      />
-
-      <MappingPopupModal
-        projectId={projectId}
-        open={semanticModalState.isOpen}
-        point={semanticModalState.point}
-        controller={semanticModalState.controller}
-        mode="create"
-        onConfirm={handleCreate223PMapping}
-        onSkip={closeSemanticModal}
-        onOpenChange={closeSemanticModal}
-      />
+      {mappingModalState && (
+        <BuildingSemanticsModal
+          projectId={projectId}
+          open={mappingModalState.isOpen}
+          bacnetPointId={mappingModalState.bacnetPointId}
+          bacnetObjectType={mappingModalState.bacnetObjectType}
+          buildingSemanticsBacnetConfig={{
+            objectType: mappingModalState.bacnetObjectType,
+            objectId: mappingModalState.objectId,
+            controllerDeviceId: mappingModalState.controllerDeviceId,
+            controllerIPAddress: mappingModalState.controllerIPAddress,
+          }}
+          pointLabel={mappingModalState.pointLabel}
+          templates={templates}
+          onSaved={handleMappingSaved}
+          onOpenChange={closeMappingModal}
+        />
+      )}
     </div>
   )
 }

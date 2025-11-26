@@ -26,7 +26,8 @@ export class MultistateValueNode extends BaseBacnetNode {
     )
   }
 
-  canConnectWith(target: DataNode): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  canConnectWith(_target: DataNode): boolean {
     return true
   }
 }

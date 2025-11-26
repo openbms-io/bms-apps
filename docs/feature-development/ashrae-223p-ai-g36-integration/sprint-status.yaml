@@ -61,7 +61,7 @@ development_status:
   epic-1-retrospective: completed
 
   # Epic 2: BuildingMOTIF API Integration (3 services, 5 endpoints)
-  epic-2: contexted
+  epic-2: done
   2-0-consolidate-service-naming: skipped # DO NOT IMPLEMENT - Epic 1 → Phase 1 transition done in Story 2.5
   2-1-create-fastapi-app-scaffolding: done
   2-2-design-openapi-specification: done
@@ -73,9 +73,9 @@ development_status:
   2-8-implement-mappings-endpoints: done # Partial rollback 2025-11-17: hasDomain field removed (space descoping - see ADR-001)
   2-9a-space-architecture-mini-spec: out-of-scope # Descoped 2025-11-17 - moved to future Space Management epic (see ADR-001)
   2-9-implement-spaces-endpoints: out-of-scope # Descoped 2025-11-17 - moved to future Space Management epic (see ADR-001)
-  2-10-implement-shacl-validation: review # Inline validation in mappings endpoint (see ADR-002) - ✅ 117/117 tests passing
-  2-11-error-handling-and-integration-tests: backlog
-  2-12-setup-vercel-ai-sdk-mem0: backlog
-  2-13-implement-ai-suggestion-logic: backlog
-  2-14-advanced-tab-triple-inspector: backlog # ⚠️ NEEDS REFINEMENT - Requires architecture decisions (UI design, data transfer, categorization, performance, serialization) before implementation
+  2-10-implement-shacl-validation: done # Inline validation in mappings endpoint (see ADR-002) - ✅ 119/119 tests passing
+  2-11-advanced-tab-triple-inspector: ready-for-dev # GitHub Issue #66 - Architecture finalized in mini-spec, blocker (2-12) resolved
+  2-12-system-instances-rearchitecture: done # ✅ Code review completed 2025-11-22 - PASS WITH RECOMMENDATIONS - All ACs met, 116 tests passing, technical debt items documented for future work
+  2-13-setup-vercel-ai-sdk-mem0: ready-for-dev # GitHub Issue #67 - AI infrastructure setup for Phase 3
+  2-14-implement-ai-suggestion-logic: ready-for-dev # GitHub Issue #68 - Real AI suggestions with BuildingMOTIF templates
   epic-2-retrospective: optional

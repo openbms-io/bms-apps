@@ -25,14 +25,20 @@ class BACnetReferencesController:
         project_id: str,
         bacnet_point_id: str,
         property_uri: str,
+        device_identifier: str,
+        object_identifier: str,
+        external_identifier: str,
     ) -> dict[str, str]:
         """
-        Create or update BACnet point → property URN reference.
+        Create or update BACnet point → property URN reference with 223P metadata.
 
         Args:
             project_id: Unique project identifier
             bacnet_point_id: BACnet point identifier
             property_uri: Property URI from system instance
+            device_identifier: BACnet device identifier (e.g., "device,123")
+            object_identifier: BACnet object identifier (e.g., "analog-input,1")
+            external_identifier: External identifier with IP (e.g., "192.168.1.100:device,123:analog-input,1")
 
         Returns:
             Dictionary with bacnet_point_id and property_uri
@@ -47,7 +53,12 @@ class BACnetReferencesController:
 
         # This may raise ValidationException - let it propagate to router
         return self.model.create_or_update_reference(
-            project_id, bacnet_point_id, property_uri
+            project_id=project_id,
+            bacnet_point_id=bacnet_point_id,
+            property_uri=property_uri,
+            device_identifier=device_identifier,
+            object_identifier=object_identifier,
+            external_identifier=external_identifier,
         )
 
     async def get_reference(

@@ -1,10 +1,20 @@
 """Domain model for BACnet reference operations (SPARQL-based)."""
 
+import uuid
 from loguru import logger
 from rdflib import BNode, Literal, URIRef
 
 from ..adapters.buildingmotif_adapter import BuildingMOTIFAdapter
-from ..constants.namespaces import BACNET, BMS
+from ..constants.namespaces import (
+    BACNET,
+    BMS,
+    BMS_BACNET_INDEX,
+    BMS_BACNET_INDEX_STRING,
+    DCTERMS,
+    RDF,
+    S223,
+    SPARQL_PREFIXES,
+)
 from ..services.validation_service import ValidationService
 from ..utils.label_utils import get_label_or_extract
 from .exceptions import ValidationException
@@ -35,18 +45,24 @@ class BACnetReferencesModel:
         project_id: str,
         bacnet_point_id: str,
         property_uri: str,
+        device_identifier: str,
+        object_identifier: str,
+        external_identifier: str,
     ) -> dict[str, str]:
         """
-        Create or update BACnet point → property URN reference.
+        Create or update BACnet point → property URN reference with 223P-compliant external reference.
 
-        Stores reference as RDF triple in BuildingMOTIF graph.
-        If reference already exists, updates it.
+        Creates s223:BACnetExternalReference entity with device/object identifiers per ASHRAE 223P.
+        If reference already exists, removes old reference and creates new one.
         Validates against ASHRAE 223P SHACL constraints before committing.
 
         Args:
             project_id: Unique project identifier
-            bacnet_point_id: BACnet point identifier (e.g., "device123.analog-input-1")
+            bacnet_point_id: BACnet point identifier (UUID)
             property_uri: Property URI from system instance
+            device_identifier: BACnet device identifier (e.g., "device,123")
+            object_identifier: BACnet object identifier (e.g., "analog-input,1")
+            external_identifier: External identifier with IP (e.g., "192.168.1.100:device,123:analog-input,1")
 
         Returns:
             Dictionary with bacnet_point_id and property_uri
@@ -62,20 +78,34 @@ class BACnetReferencesModel:
         try:
             model = self.adapter.get_or_create_model(f"urn:project:{project_id}")
 
-            bacnet_point_uri = URIRef(f"{BACNET}{bacnet_point_id}")
+            # Generate URIs (reuse bacnet_point_id as URI for both 223P entity and index)
             property_uri_ref = URIRef(property_uri)
+            bacnet_ref_uri = BMS_BACNET_INDEX[bacnet_point_id]
 
             with self.adapter.transaction():
-                existing_refs = list(
-                    model.graph.triples((bacnet_point_uri, BMS.mapsToProperty, None))
-                )
-                for triple in existing_refs:
-                    model.graph.remove(triple)
-                    logger.debug(f"Removed existing reference: {triple}")
+                # Remove old structures (if updating)
+                model.graph.remove((bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, None))  # Remove old index
+                model.graph.remove((bacnet_ref_uri, None, None))  # Delete old BACnetExternalReference entity
+                for ref_uri in list(model.graph.objects(property_uri_ref, S223.hasExternalReference)):
+                    model.graph.remove((ref_uri, None, None))  # Delete any other old entities
+                    logger.debug(f"Removed existing BACnetExternalReference: {ref_uri}")
+                model.graph.remove((property_uri_ref, S223.hasExternalReference, None))
 
-                model.graph.add(
-                    (bacnet_point_uri, BMS.mapsToProperty, property_uri_ref)
-                )
+                # Create 223P-compliant BACnetExternalReference
+                model.graph.add((bacnet_ref_uri, RDF.type, S223.BACnetExternalReference))
+                model.graph.add((bacnet_ref_uri, BACNET["device-identifier"], Literal(device_identifier)))
+                model.graph.add((bacnet_ref_uri, BACNET["object-identifier"], Literal(object_identifier)))
+                model.graph.add((bacnet_ref_uri, DCTERMS.identifier, Literal(external_identifier)))
+                model.graph.add((property_uri_ref, S223.hasExternalReference, bacnet_ref_uri))
+
+                # Create internal index triple for efficient reverse lookup
+                model.graph.add((bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, property_uri_ref))
+
+                logger.debug(f"Created BACnetExternalReference: {bacnet_ref_uri}")
+                logger.debug(f"  device-identifier: {device_identifier}")
+                logger.debug(f"  object-identifier: {object_identifier}")
+                logger.debug(f"  external-identifier: {external_identifier}")
+                logger.debug(f"  internal-index: {bacnet_ref_uri} → {property_uri}")
 
                 # SHACL validation BEFORE commit
                 logger.debug("Validating BACnet reference against SHACL constraints")
@@ -127,15 +157,13 @@ class BACnetReferencesModel:
             model = self.adapter.get_or_create_model(f"urn:project:{project_id}")
 
             query = f"""
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX bms: <urn:bms:>
-            PREFIX s223: <http://data.ashrae.org/standard223#>
+            {SPARQL_PREFIXES}
 
             SELECT ?property_uri ?property_label
                    ?device_uri ?device_label
                    ?system_uri ?system_label ?system_template
             WHERE {{
-                <urn:bacnet:{bacnet_point_id}> bms:mapsToProperty ?property_uri .
+                <{BMS_BACNET_INDEX_STRING}{bacnet_point_id}> bms-bacnet:mapsToProperty ?property_uri .
 
                 OPTIONAL {{ ?property_uri rdfs:label ?property_label . }}
 
@@ -208,28 +236,25 @@ class BACnetReferencesModel:
         try:
             model = self.adapter.get_or_create_model(f"urn:project:{project_id}")
 
-            query = """
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX bms: <urn:bms:>
-            PREFIX s223: <http://data.ashrae.org/standard223#>
-            PREFIX bacnet: <urn:bacnet:>
+            query = f"""
+            {SPARQL_PREFIXES}
 
             SELECT ?bacnet_point_uri ?property_uri ?property_label
                    ?device_uri ?device_label
                    ?system_uri ?system_label ?system_template
-            WHERE {
-                ?bacnet_point_uri bms:mapsToProperty ?property_uri .
-                FILTER (STRSTARTS(STR(?bacnet_point_uri), "urn:bacnet:"))
+            WHERE {{
+                ?bacnet_point_uri bms-bacnet:mapsToProperty ?property_uri .
+                FILTER (STRSTARTS(STR(?bacnet_point_uri), "{BMS_BACNET_INDEX_STRING}"))
 
-                OPTIONAL { ?property_uri rdfs:label ?property_label . }
+                OPTIONAL {{ ?property_uri rdfs:label ?property_label . }}
 
                 ?device_uri s223:hasProperty|s223:observes ?property_uri .
-                OPTIONAL { ?device_uri rdfs:label ?device_label . }
+                OPTIONAL {{ ?device_uri rdfs:label ?device_label . }}
 
                 ?system_uri s223:contains+ ?device_uri .
                 ?system_uri bms:hasTemplateId ?system_template .
                 ?system_uri rdfs:label ?system_label .
-            }
+            }}
             ORDER BY ?bacnet_point_uri
             """
 
@@ -238,7 +263,7 @@ class BACnetReferencesModel:
             references = []
             for result in results:
                 bacnet_point_uri = str(result["bacnet_point_uri"])
-                bacnet_point_id = bacnet_point_uri.replace("urn:bacnet:", "")
+                bacnet_point_id = bacnet_point_uri.replace(BMS_BACNET_INDEX_STRING, "")
 
                 property_uri = result["property_uri"]
                 device_uri = result["device_uri"]
@@ -293,24 +318,27 @@ class BACnetReferencesModel:
         try:
             model = self.adapter.get_or_create_model(f"urn:project:{project_id}")
 
-            bacnet_point_uri = URIRef(f"{BACNET}{bacnet_point_id}")
-            triples_to_remove = list(
-                model.graph.triples((bacnet_point_uri, BMS.mapsToProperty, None))
-            )
+            bacnet_ref_uri = BMS_BACNET_INDEX[bacnet_point_id]
 
-            if not triples_to_remove:
-                logger.warning(
-                    f"BACnet reference not found for deletion: {bacnet_point_id}"
-                )
+            # Find property_uri from internal index
+            property_uri = model.graph.value(bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty)
+
+            if property_uri is None:
+                logger.warning(f"BACnet reference not found for deletion: {bacnet_point_id}")
                 return False
 
             with self.adapter.transaction():
-                for triple in triples_to_remove:
-                    model.graph.remove(triple)
+                # Delete internal index triple
+                model.graph.remove((bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, property_uri))
 
-            logger.info(
-                f"BACnet reference deleted: {bacnet_point_id} ({len(triples_to_remove)} triples)"
-            )
+                # Delete BACnetExternalReference entity (all its properties)
+                model.graph.remove((bacnet_ref_uri, None, None))
+                logger.debug(f"Deleted BACnetExternalReference entity: {bacnet_ref_uri}")
+
+                # Delete forward link from property
+                model.graph.remove((property_uri, S223.hasExternalReference, bacnet_ref_uri))
+
+            logger.info(f"BACnet reference deleted: {bacnet_point_id}")
             return True
 
         except Exception as e:

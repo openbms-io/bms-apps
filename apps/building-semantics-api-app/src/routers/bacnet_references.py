@@ -84,6 +84,9 @@ async def create_or_update_reference(
             project_id=project_id,
             bacnet_point_id=bacnet_point_id,
             property_uri=request.property_uri,
+            device_identifier=request.device_identifier,
+            object_identifier=request.object_identifier,
+            external_identifier=request.external_identifier,
         )
         return BACnetReferenceDTO(**result)
 

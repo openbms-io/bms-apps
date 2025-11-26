@@ -14,25 +14,25 @@ export interface ShaclValidationError {
  * HTTP 400 error response detail containing SHACL validation errors
  */
 export interface ValidationErrorResponse {
-  detail: ShaclValidationError
+  error: ShaclValidationError
 }
 
 /**
  * Type guard to check if an error is a SHACL validation error
  *
  * Hey-API client throws the parsed JSON response directly:
- * { detail: { validationType: 'SHACL', isValid: false, errors: [...], warnings: [...] } }
+ * { error: { validationType: 'SHACL', isValid: false, errors: [...], warnings: [...] } }
  */
 export function isShaclValidationError(
   error: unknown
 ): error is ValidationErrorResponse {
   if (typeof error !== 'object' || error === null) return false
 
-  const err = error as any
+  const err = error as Record<string, Record<string, unknown>>
   return (
-    err.detail?.validationType === 'SHACL' &&
-    err.detail?.isValid === false &&
-    Array.isArray(err.detail?.errors)
+    err.error?.validationType === 'SHACL' &&
+    err.error?.isValid === false &&
+    Array.isArray(err.error?.errors)
   )
 }
 
@@ -41,7 +41,7 @@ export function isShaclValidationError(
  */
 export function extractShaclErrors(error: unknown): string[] {
   if (isShaclValidationError(error)) {
-    return error.detail.errors
+    return error.error.errors
   }
   return []
 }

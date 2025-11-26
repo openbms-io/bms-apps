@@ -3,6 +3,7 @@
 import { memo, useState, useMemo } from 'react'
 import { Handle, Position, NodeProps } from '@xyflow/react'
 import { useShallow } from 'zustand/react/shallow'
+import { useParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,33 +22,19 @@ import {
 } from '@/types/bacnet-properties'
 import { BacnetNodeData } from '@/types/node-data-types'
 import { useFlowStore } from '@/store/use-flow-store'
-import { useMappingsViewModel } from '@/domains/building-semantics/view-models/use-mappings-view-model'
-import { useTemplatesQuery } from '@/domains/building-semantics/api/queries/use-templates-query'
-import { getMappingLabels } from '@/domains/building-semantics/utils/template-labels'
+import { useBacnetReferenceQuery } from '@/domains/building-semantics/api/queries/use-bacnet-reference-query'
 
 export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
   const typedData = data as BacnetNodeData
   const [showProperties, setShowProperties] = useState(false)
 
-  const projectId = useFlowStore((s) => s.projectId)
-  const { data: semanticMappings = new Map() } = useMappingsViewModel({
+  const params = useParams<{ projectId: string }>()
+  const projectId = params?.projectId
+  const bacnetPointId = typedData.pointId
+  const { data: mappingData } = useBacnetReferenceQuery({
     projectId,
+    bacnetPointId,
   })
-
-  const mapping = typedData.semanticMappingKey
-    ? semanticMappings.get(typedData.semanticMappingKey)
-    : undefined
-
-  const { data: templates } = useTemplatesQuery()
-
-  const mappingLabels = mapping
-    ? getMappingLabels({
-        templates,
-        equipmentTypeUrn: mapping.equipmentTypeId,
-        deviceTypeUrn: mapping.deviceTypeId,
-        propertyUrn: mapping.propertyId,
-      })
-    : null
 
   const discoveredProperties = useFlowStore(
     useShallow((state) => {
@@ -115,27 +102,32 @@ export const BacnetNodeUI = memo(({ data, id }: NodeProps) => {
           </div>
 
           {/* 223P Metadata */}
-          {mapping && (
-            <div className="mb-2 p-2 bg-primary/5 rounded border border-primary/20">
-              <div className="flex items-center gap-1 mb-1">
-                <span className="text-[10px] font-semibold text-primary">
-                  🏷️ Tag
-                </span>
+          {mappingData && (
+            <div className="mb-2 p-2 bg-muted/50 rounded-md border text-xs space-y-0.5">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-semibold">ASHRAE 223P Mapping</span>
+                <Badge variant="secondary" className="text-xs">
+                  223P
+                </Badge>
               </div>
-              <div className="space-y-0.5 text-[10px]">
-                <div className="truncate">
-                  <span className="text-muted-foreground">Equipment:</span>{' '}
-                  <span className="font-medium">
-                    {mappingLabels?.equipment}
+              <div className="text-muted-foreground">
+                <div>
+                  System:{' '}
+                  <span className="text-foreground font-medium">
+                    {mappingData.systemLabel}
                   </span>
                 </div>
-                <div className="truncate">
-                  <span className="text-muted-foreground">Device:</span>{' '}
-                  <span className="font-medium">{mappingLabels?.device}</span>
+                <div>
+                  Device:{' '}
+                  <span className="text-foreground font-medium">
+                    {mappingData.deviceLabel}
+                  </span>
                 </div>
-                <div className="truncate">
-                  <span className="text-muted-foreground">Property:</span>{' '}
-                  <span className="font-medium">{mappingLabels?.property}</span>
+                <div>
+                  Property:{' '}
+                  <span className="text-foreground font-medium">
+                    {mappingData.propertyLabel}
+                  </span>
                 </div>
               </div>
             </div>

@@ -6,7 +6,7 @@ export function useTemplatesQuery() {
     queryKey: ['templates'],
     queryFn: async () => {
       const response = await getTemplatesApiV1223pTemplatesGet()
-      return response.data
+      return response.data?.systems ?? []
     },
     staleTime: 5 * 60 * 1000,
     retry: 3,

@@ -6,11 +6,7 @@ import {
   VersionedWorkflowConfigSchema as StrictVersionedWorkflowConfigSchema,
 } from '@/lib/workflow/config-schema'
 import type { ValidatedWorkflowConfig } from '@/lib/workflow/config-schema'
-import {
-  serializeNodeData,
-  deserializeNodeData,
-  type SerializedNodeData,
-} from '../node-serializer'
+import { serializeNodeData, type SerializedNodeData } from '../node-serializer'
 import factory from '@/lib/data-nodes/factory'
 import { type ConstantNodeMetadata } from '@/lib/data-nodes/constant-node'
 import { type CalculationOperation } from '@/lib/data-nodes/calculation-node'
