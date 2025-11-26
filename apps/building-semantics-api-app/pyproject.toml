@@ -1,0 +1,73 @@
+[project]
+name = "building-semantics-api-app"
+version = "0.1.0"
+description = "FastAPI wrapper for BuildingMOTIF SDK - ASHRAE 223P semantic tagging"
+requires-python = ">=3.11"
+
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic==2.5.3",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "loguru==0.7.3",
+    "python-multipart>=0.0.6",
+    "buildingmotif>=0.4.0",
+    "sqlalchemy<2.0.0,>=1.4.44",
+    "brick-tq-shacl>=0.3.0,<0.4.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx==0.25.2",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.1",
+    "pytest-xdist>=3.3.0",
+    "pytest-forked>=1.6.0",
+    "pytest-isolate",
+]
+dev = [
+    "mypy>=1.7.0",
+    "black>=23.11.0",
+    "ruff>=0.1.6",
+]
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "buildingmotif.*"
+ignore_missing_imports = true
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "buildingmotif"
+ignore_missing_imports = true
+ignore_errors = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra -q --asyncio-mode=auto --forked"
+asyncio_mode = "auto"

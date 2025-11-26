@@ -1,10 +1,5 @@
 import type { IAISuggestionService } from './interfaces/ai-suggestion'
-import type {
-  BACnetPointData,
-  SystemType,
-  DeviceType,
-  ObservableProperty,
-} from '../schemas'
+import type { BACnetPointData } from '../schemas'
 import type { Equipment223PRecommendation } from '@/lib/ai'
 
 export class MockAISuggestionService implements IAISuggestionService {
@@ -19,61 +14,61 @@ export class MockAISuggestionService implements IAISuggestionService {
     const nameLower = pointName.toLowerCase()
     const objectType = point.objectType.toLowerCase()
 
-    let equipmentType: SystemType = 'VAV Reheat Terminal Unit'
-    let deviceType: DeviceType = 'Sensor'
-    let observableProperty: ObservableProperty = 'air-temperature'
+    let equipmentType = 'vav-reheat'
+    let deviceType = 'sensor'
+    let observableProperty = 'air-temperature'
     let equipmentConfidence = 85
     let deviceConfidence = 90
     let propertyConfidence = 88
 
     if (nameLower.includes('vav')) {
-      equipmentType = 'VAV Reheat Terminal Unit'
+      equipmentType = 'vav-reheat'
       equipmentConfidence = 94
 
       if (nameLower.includes('temp')) {
-        deviceType = 'Sensor'
+        deviceType = 'sensor'
         observableProperty = 'air-temperature'
         propertyConfidence = 92
       } else if (nameLower.includes('damper')) {
-        deviceType = 'Damper'
-        observableProperty = 'static-pressure'
+        deviceType = 'damper'
+        observableProperty = 'damper-command'
         deviceConfidence = 93
         propertyConfidence = 91
       }
     } else if (nameLower.includes('ahu')) {
-      equipmentType = 'Makeup Air Unit'
+      equipmentType = 'makeup-air-unit'
       equipmentConfidence = 96
 
       if (nameLower.includes('supply')) {
-        deviceType = 'Sensor'
+        deviceType = 'sensor'
         observableProperty = 'air-temperature'
       } else if (nameLower.includes('fan')) {
-        deviceType = 'Fan'
-        observableProperty = 'vfd-frequency'
+        deviceType = 'fan'
+        observableProperty = 'vfd-speed'
       }
     }
 
     return {
-      equipmentType: {
-        value: equipmentType,
+      equipmentTypeId: {
+        id: equipmentType,
         confidence: equipmentConfidence,
         reasoning: `Pattern match on "${pointName}"`,
         alternatives: [
-          { value: 'Makeup Air Unit', confidence: 75 },
-          { value: 'Exhaust Air Unit', confidence: 65 },
+          { id: 'makeup-air-unit', confidence: 75 },
+          { id: 'exhaust-air-unit', confidence: 65 },
         ],
       },
-      deviceType: {
-        value: deviceType,
+      deviceTypeId: {
+        id: deviceType,
         confidence: deviceConfidence,
         reasoning: `Based on object type "${objectType}" and name pattern`,
-        alternatives: [{ value: 'Damper', confidence: 70 }],
+        alternatives: [{ id: 'damper', confidence: 70 }],
       },
-      observableProperty: {
-        value: observableProperty,
+      propertyId: {
+        id: observableProperty,
         confidence: propertyConfidence,
         reasoning: `Inferred from point name and device type`,
-        alternatives: [{ value: 'relative-humidity', confidence: 60 }],
+        alternatives: [{ id: 'relative-humidity', confidence: 60 }],
       },
       overallConfidence: Math.round(
         (equipmentConfidence + deviceConfidence + propertyConfidence) / 3

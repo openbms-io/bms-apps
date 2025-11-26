@@ -1,8 +1,4 @@
-import {
-  deserializeWorkflow,
-  createNodeFactory,
-  type VersionedWorkflowConfig,
-} from './serializer'
+import { deserializeWorkflow, type VersionedWorkflowConfig } from './serializer'
 import { SCHEMA_VERSION } from '@/lib/schemas'
 import {
   NodeType,
@@ -15,10 +11,6 @@ import { AnalogInputNode } from '@/lib/data-nodes/analog-input-node'
 describe('WorkflowSerializer factory compatibility', () => {
   const mockMqttBus = { pointBulkStream$: { subscribe: jest.fn() } }
   const mockOnDataChange = jest.fn()
-  const nodeFactory = createNodeFactory({
-    mqttBus: mockMqttBus as any,
-    onDataChange: mockOnDataChange,
-  })
 
   function versionedOf(
     data: VersionedWorkflowConfig['data']

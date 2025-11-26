@@ -3,7 +3,6 @@ import { TreeNode } from '@/types/infrastructure'
 import { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
 import type { SemanticEquipment } from '@/domains/building-semantics'
-import { createCompositeKey } from '@/domains/building-semantics/utils/bacnet-keys'
 
 export interface TreeUISlice {
   // UI State only
@@ -114,23 +113,7 @@ export const createTreeUISlice: StateCreator<
 
         if (controllerNode.isExpanded && hasPoints) {
           points.forEach((point) => {
-            // Find controller to get BACnet deviceId
-            const controller = controllers.find(
-              (c) => c.id === point.controllerId
-            )
-
-            // Construct composite key: "device,123:analog-input,1"
-            const compositeKey = controller
-              ? createCompositeKey(
-                  controller.deviceId,
-                  point.pointType,
-                  point.instanceNumber
-                )
-              : null
-
-            const semanticMapping = compositeKey
-              ? semanticMappings.get(compositeKey)
-              : undefined
+            const semanticMapping = semanticMappings.get(point.id)
 
             const pointNode: TreeNode = {
               id: point.id,

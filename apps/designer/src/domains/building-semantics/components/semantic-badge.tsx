@@ -12,9 +12,7 @@ interface SemanticBadgeProps {
 }
 
 export function SemanticBadge({ mapping }: SemanticBadgeProps) {
-  // Format: "Equipment | Device | Property"
-  // Example: "VAV Reheat Terminal Unit | Sensor | air-temperature"
-  const tooltipText = `${mapping.equipmentType} | ${mapping.deviceType} | ${mapping.observableProperty}`
+  const tooltipText = `${mapping.systemLabel} | ${mapping.deviceLabel} | ${mapping.propertyLabel}`
 
   return (
     <TooltipProvider>

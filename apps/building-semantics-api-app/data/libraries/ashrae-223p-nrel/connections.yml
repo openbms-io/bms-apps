@@ -1,0 +1,143 @@
+air-outlet-cp:
+  body: >
+    @prefix P: <urn:___param___#> .
+    @prefix s223: <http://data.ashrae.org/standard223#> .
+    P:name a s223:OutletConnectionPoint ;
+      s223:mapsTo P:mapsto ;
+      s223:hasMedium s223:Fluid-Air ;
+      s223:isConnectionPointOf P:equipment .
+    P:mapsto a s223:OutletConnectionPoint ;
+      s223:hasMedium s223:Fluid-Air .
+  optional: ["mapsto"]
+
+water-inlet-cp:
+  body: >
+    @prefix P: <urn:___param___#> .
+    @prefix s223: <http://data.ashrae.org/standard223#> .
+    P:name a s223:InletConnectionPoint ;
+      s223:mapsTo P:mapsto ;
+      s223:hasMedium s223:Fluid-Water ;
+      s223:isConnectionPointOf P:equipment .
+    P:mapsto a s223:InletConnectionPoint ;
+      s223:hasMedium s223:Fluid-Water .
+  optional: ["mapsto"]
+
+water-outlet-cp:
+  body: >
+    @prefix P: <urn:___param___#> .
+    @prefix s223: <http://data.ashrae.org/standard223#> .
+    P:name a s223:OutletConnectionPoint ;
+      s223:mapsTo P:mapsto ;
+      s223:hasMedium s223:Fluid-Water ;
+      s223:isConnectionPointOf P:equipment .
+    P:mapsto a s223:OutletConnectionPoint ;
+      s223:hasMedium s223:Fluid-Water .
+  optional: ["mapsto"]
+
+air-inlet-cp:
+  body: >
+    @prefix P: <urn:___param___#> .
+    @prefix s223: <http://data.ashrae.org/standard223#> .
+    P:name a s223:InletConnectionPoint ;
+      s223:mapsTo P:mapsto ;
+      s223:hasMedium s223:Fluid-Air ;
+      s223:isConnectionPointOf P:equipment .
+    P:mapsto a s223:InletConnectionPoint ;
+      s223:hasMedium s223:Fluid-Air .
+  optional: ["mapsto"]
+
+duct:
+  body: >
+    @prefix P: <urn:___param___#> .
+    @prefix s223: <http://data.ashrae.org/standard223#> .
+    P:name a s223:Duct ;
+      s223:hasMedium s223:Fluid-Air ;
+      s223:cnx P:a, P:b .
+    # issue here is that 'connectsAt' requires a,b to be conn points
+    # but we can't instantiate that class directly *and* being a conn point
+    # involves other properties that must be included (e.g. hasmedium).
+    # TODO: how to solve this?
+    # P:a a s223:ConnectionPoint .
+    # P:b a s223:ConnectionPoint .
+
+junction:
+  body: >
+    @prefix P: <urn:___param___#> .
+    @prefix s223: <http://data.ashrae.org/standard223#> .
+    P:name a s223:Junction ;
+      s223:hasMedium s223:Fluid-Air ;
+      s223:cnx P:in1, P:in2, P:out1, P:out2, P:out3, P:out4, P:out5, P:out6, P:out7,
+      P:out8, P:out9, P:out10, P:out11, P:out12, P:out13, P:out14, P:out15, P:out16 .
+  optional:
+    [
+      "in2",
+      "in3",
+      "in4",
+      "in5",
+      "out2",
+      "out3",
+      "out4",
+      "out5",
+      "out6",
+      "out7",
+      "out8",
+      "out9",
+      "out10",
+      "out11",
+      "out12",
+      "out13",
+      "out14",
+      "out15",
+      "out16",
+    ]
+  dependencies:
+    - template: air-inlet-cp
+      args: { "name": "in1", "equipment": "name" }
+    - template: air-inlet-cp
+      args: { "name": "in2", "equipment": "name" }
+    - template: air-inlet-cp
+      args: { "name": "in3", "equipment": "name" }
+    - template: air-inlet-cp
+      args: { "name": "in4", "equipment": "name" }
+    - template: air-inlet-cp
+      args: { "name": "in5", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out1", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out2", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out3", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out4", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out5", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out6", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out7", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out8", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out9", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out10", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out11", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out12", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out13", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out14", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out15", "equipment": "name" }
+    - template: air-outlet-cp
+      args: { "name": "out16", "equipment": "name" }
+
+pipe:
+  body: >
+    @prefix P: <urn:___param___#> .
+    @prefix s223: <http://data.ashrae.org/standard223#> .
+    P:name a s223:Pipe ;
+      s223:hasMedium s223:Fluid-Water ;
+      s223:cnx P:a, P:b .

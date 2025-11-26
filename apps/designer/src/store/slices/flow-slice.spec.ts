@@ -4,7 +4,6 @@ import { projectsApi } from '@/lib/api/projects'
 import {
   serializeWorkflow,
   deserializeWorkflow,
-  createNodeFactory,
 } from '@/lib/workflow/serializer'
 import type { Project } from '@/app/api/organizations/[orgId]/sites/[siteId]/projects/schemas'
 
@@ -21,9 +20,6 @@ const mockSerializeWorkflow = serializeWorkflow as jest.MockedFunction<
 >
 const mockDeserializeWorkflow = deserializeWorkflow as jest.MockedFunction<
   typeof deserializeWorkflow
->
-const mockCreateNodeFactory = createNodeFactory as jest.MockedFunction<
-  typeof createNodeFactory
 >
 
 describe('FlowSlice - Save/Load Integration', () => {

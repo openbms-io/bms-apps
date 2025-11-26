@@ -27,7 +27,6 @@ export function useWorkflowLoader({
   const startMqtt = useFlowStore((s) => s.startMqtt)
   const stopMqtt = useFlowStore((s) => s.stopMqtt)
   const clearAllNodes = useFlowStore((s) => s.clearAllNodes)
-  const connectionStatus = useFlowStore((s) => s.connectionStatus)
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -80,7 +79,6 @@ export function useWorkflowLoader({
     projectId,
     showError,
     isLoadingProject,
-    connectionStatus,
   ])
 
   // Load workflow when ready

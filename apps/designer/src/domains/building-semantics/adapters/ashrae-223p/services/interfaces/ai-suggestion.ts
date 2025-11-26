@@ -1,9 +1,5 @@
 import type { Equipment223PRecommendation } from '@/lib/ai'
-import type {
-  BACnetPointData,
-  SemanticEquipment,
-  SpaceDTO,
-} from '../../schemas'
+import type { BACnetPointData } from '../../schemas'
 
 /**
  * AI Suggestion Service Interface

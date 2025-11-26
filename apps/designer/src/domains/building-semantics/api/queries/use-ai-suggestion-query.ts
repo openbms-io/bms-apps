@@ -5,7 +5,7 @@ import type { BACnetPointData } from '../../adapters/ashrae-223p/schemas'
 
 export function useAISuggestionQuery(
   projectId: string | undefined,
-  point: BACnetPointData | null
+  point: BACnetPointData | undefined
 ) {
   return useQuery({
     queryKey: semanticQueryKeys.aiSuggestions.detail(

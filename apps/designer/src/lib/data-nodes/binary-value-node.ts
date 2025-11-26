@@ -6,7 +6,8 @@ export class BinaryValueNode extends BaseBacnetNode {
   readonly type = NodeType.BINARY_VALUE
   readonly direction = NodeDirection.BIDIRECTIONAL
 
-  canConnectWith(target: DataNode): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  canConnectWith(_target: DataNode): boolean {
     return true
   }
 }

@@ -13,6 +13,7 @@
     "test:coverage": "jest --coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "generate:api-client": "openapi-ts --input http://localhost:8000/openapi.json --output ./src/domains/building-semantics/api/generated --client @hey-api/client-fetch && sed -i '' \"s|baseUrl: 'http://localhost:8000'|baseUrl: '/building-semantics'|g\" ./src/domains/building-semantics/api/generated/client.gen.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
@@ -20,6 +21,7 @@
   "dependencies": {
     "@libsql/client": "^0.10.0",
     "@monaco-editor/react": "^4.7.0",
+    "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
@@ -63,6 +65,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@hey-api/openapi-ts": "^0.87.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",

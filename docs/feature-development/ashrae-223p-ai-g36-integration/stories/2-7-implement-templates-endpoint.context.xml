@@ -1,0 +1,318 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.7</storyId>
+    <title>Implement Templates Endpoint with BuildingMOTIF</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-13</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-7-implement-templates-endpoint.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>backend developer</asA>
+    <iWant>the `/api/v1/223p/templates` endpoint to return real ASHRAE 223P templates from BuildingMOTIF</iWant>
+    <soThat>the Designer app can display actual template hierarchies instead of mock data</soThat>
+    <tasks>
+### Task 1: Update TemplatesController with real implementation
+- 1.1: Import BuildingMOTIF adapter and template enums
+- 1.2: Implement `get_all_templates()` method
+- 1.3: Create helper method `_build_system_hierarchy()`
+- 1.4: Create helper method `_build_device_dto()`
+- 1.5: Create helper method `_get_space_types()`
+
+### Task 2: Update templates router to use controller
+- 2.1: Update `src/routers/templates.py`
+- 2.2: Add error handling with HTTPException
+
+### Task 3: Performance optimization
+- 3.1: Measure baseline performance
+- 3.2: Implement caching if needed
+
+### Task 4: Write integration tests
+- 4.1: Create `tests/integration/test_templates_endpoint.py`
+- 4.2: Test hierarchical nesting
+- 4.3: Test performance
+
+### Task 5: Verify Designer integration
+- 5.1: Start both apps (Designer + API)
+- 5.2: Test templates dropdown in 223P popup
+- 5.3: Verify hierarchical structure
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Hierarchical structure with real BuildingMOTIF data - systems, devices, properties, spaceTypes
+2. Use type-safe template enums from Story 2.6 (DeviceTemplate, SystemTemplate, PropertyTemplate)
+3. Implement pure mapper functions for DTO conversion (stateless, no adapter dependency) in src/mappers/template_mapper.py
+4. Update TemplatesController with real implementation using BuildingMOTIFAdapter.get_instance() - controller acts as mediator
+5. Use real ASHRAE 223P HTTP URIs extracted from RDF graph (Breaking Change: http://data.ashrae.org/standard223#ClassName not urn:ashrae:223p:ClassName)
+6. Error handling for BuildingMOTIF failures with HTTPException
+7. Integration tests with real BuildingMOTIF using session-scoped adapter fixture - verify HTTP URI format
+8. Designer app works with real data - no frontend changes required (DTO contract unchanged)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-6-setup-buildingmotif-sdk.md</path>
+        <title>Story 2.6: Setup BuildingMOTIF SDK Infrastructure</title>
+        <section>Architecture &amp; Implementation</section>
+        <snippet>Created BuildingMOTIFAdapter class with singleton pattern, template enums (DeviceTemplate, SystemTemplate, PropertyTemplate), MVC architecture (Router → Controller → Adapter), and session-scoped pytest fixtures.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>BMS Supervisor Controller Architecture</title>
+        <section>BuildingMOTIF Service</section>
+        <snippet>FastAPI microservice for ASHRAE 223P semantic modeling, SHACL validation, template library. Pydantic → OpenAPI → TypeScript client pattern. Designer integrates via generated TypeScript client.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Python Conventions</section>
+        <snippet>PEP 8 style guide, snake_case for functions/variables, PascalCase for classes, UPPER_CASE for constants, 4-space indentation, private methods with leading underscore.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/specs/2025-10-24-buildingmotif-integration-spec.md</path>
+        <title>BuildingMOTIF Integration Specification</title>
+        <section>Architecture Decision</section>
+        <snippet>FastAPI microservice wrapping BuildingMOTIF SDK. Schema direction: Pydantic → OpenAPI → TypeScript. ASHRAE 223P independent from G36, G36 depends on 223P. SHACL validation for both.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2 Phase Breakdown</title>
+        <section>Story 2.7 Requirements</section>
+        <snippet>Replace mock templates endpoint with real BuildingMOTIF queries. Build hierarchical structure (systems → devices → properties). Performance &lt; 1s. Integration tests with session-scoped fixtures.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>BuildingMOTIFAdapter</symbol>
+        <lines>14-245</lines>
+        <reason>Singleton adapter providing BuildingMOTIF SDK operations: get_template_by_name(), list_templates(), get_template_dependencies(), get_template_metadata()</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/adapters/template_types.py</path>
+        <kind>enum</kind>
+        <symbol>DeviceTemplate, SystemTemplate, PropertyTemplate</symbol>
+        <lines>5-120</lines>
+        <reason>Type-safe enums for 59 ASHRAE 223P templates: 25 devices, 8 systems, 26 properties</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/templates_dto.py</path>
+        <kind>dto</kind>
+        <symbol>TemplatesResponseDTO, TemplateSystemDTO, TemplateDeviceDTO, TemplatePropertyDTO, SpaceTypeDTO</symbol>
+        <lines>1-80</lines>
+        <reason>Pydantic DTOs for hierarchical template response structure matching OpenAPI spec</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/controllers/templates_controller.py</path>
+        <kind>controller</kind>
+        <symbol>TemplatesController</symbol>
+        <lines>9-81</lines>
+        <reason>Business logic controller with stub methods to be replaced: list_all_templates(), get_template_info(), get_template_dependencies(), get_template_metadata(). Controller acts as mediator: fetches from adapter → passes to mapper → returns DTOs</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/mappers/template_mapper.py</path>
+        <kind>mapper</kind>
+        <symbol>to_system_dto, to_device_dto, to_property_dto, to_space_type_dto, extract_rdf_class_uri</symbol>
+        <lines>NEW FILE</lines>
+        <reason>Pure mapper functions for DTO conversion. Stateless functions with zero adapter dependency. Extract ASHRAE 223P HTTP URIs from RDF graph. Controller passes BuildingMOTIF templates to these functions.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+        <kind>router</kind>
+        <symbol>get_templates</symbol>
+        <lines>13-83</lines>
+        <reason>FastAPI router endpoint currently returning MOCK_TEMPLATES, needs to call TemplatesController.get_all_templates() instead</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/tests/integration/conftest.py</path>
+        <kind>test-fixture</kind>
+        <symbol>shared_adapter</symbol>
+        <lines>7-19</lines>
+        <reason>Session-scoped pytest fixture for BuildingMOTIF adapter initialization (avoids 30s+ ontology loading per test)</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/tests/integration/test_buildingmotif_integration.py</path>
+        <kind>test</kind>
+        <symbol>test_real_template_loading, test_real_list_templates, test_get_template_dependencies_*</symbol>
+        <lines>22-308</lines>
+        <reason>Existing integration tests demonstrating adapter usage patterns and expected behaviors</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/tests/integration/test_template_uri_discovery.py</path>
+        <kind>test-documentation</kind>
+        <symbol>test_document_device_template_structure, test_compare_mock_vs_real_uris, test_document_mapper_implementation_guidance</symbol>
+        <lines>18-212</lines>
+        <reason>Integration test documenting BuildingMOTIF Template URI structure. Shows real ASHRAE 223P HTTP URIs (http://data.ashrae.org/standard223#Damper) vs Epic 1 mock URNs (urn:ashrae:223p:Damper). Provides mapper implementation guidance for extracting URIs from RDF graph using RDF.type predicate.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="buildingmotif" version="latest">BuildingMOTIF SDK for ASHRAE 223P semantic modeling</package>
+        <package name="fastapi" version="^0.100.0">Web framework for REST API</package>
+        <package name="pydantic" version="^2.0.0">Data validation and DTOs</package>
+        <package name="loguru" version="latest">Structured logging</package>
+        <package name="rdflib" version="latest">RDF graph operations</package>
+        <package name="pytest" version="latest">Testing framework</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>MVC Architecture with Mediator: Router (HTTP) → Controller (Mediator: fetch + map + return) → Adapter (BuildingMOTIF SDK). No service layer.</constraint>
+    <constraint>Mapper Functions: Pure stateless functions in src/mappers/template_mapper.py. Zero adapter dependency. Controller passes data to mapper, not vice versa.</constraint>
+    <constraint>Use template enums exclusively - DeviceTemplate, SystemTemplate, PropertyTemplate. Never use raw strings for template names.</constraint>
+    <constraint>Singleton pattern: BuildingMOTIFAdapter.get_instance() returns cached instance. Do not instantiate directly.</constraint>
+    <constraint>URI Format - Templates vs Instances: Templates are ASHRAE 223P class definitions using HTTP URIs (http://data.ashrae.org/standard223#Damper). Extract from RDF graph using RDF.type predicate and s223 namespace. Epic 1 mock URNs (urn:ashrae:223p:*) were placeholders. Instances (Story 2.8+) will use project-specific URNs (urn:building/project-*/instance-id). Reference test_template_uri_discovery.py for extraction pattern and templates vs instances distinction.</constraint>
+    <constraint>Performance optimization: Explicitly OUT OF SCOPE for Story 2.7. No caching implementation. Focus on correctness first.</constraint>
+    <constraint>Error handling: Catch all exceptions and raise HTTPException(status_code=500) with clear error messages.</constraint>
+    <constraint>Logging: Use loguru logger for info/debug/error messages. No print statements.</constraint>
+    <constraint>Testing: Use session-scoped shared_adapter fixture from conftest.py. Never create adapter directly in tests. Verify HTTP URI format in all tests.</constraint>
+    <constraint>Python style: PEP 8, snake_case functions, PascalCase classes, type hints everywhere, 4-space indentation.</constraint>
+    <constraint>DTOs unchanged: Frontend contract remains identical. No breaking changes to TemplatesResponseDTO structure (only id value changes from URN to HTTP URI).</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>BuildingMOTIFAdapter</name>
+      <kind>class interface</kind>
+      <signature>
+# Singleton pattern
+adapter = BuildingMOTIFAdapter.get_instance()
+
+# Template operations
+templates: list[str] = adapter.list_templates()
+template: Template = adapter.get_template_by_name(DeviceTemplate.DAMPER)
+dependencies: list[str] = adapter.get_template_dependencies(SystemTemplate.VAV_REHEAT)
+metadata: dict[str, Any] = adapter.get_template_metadata(DeviceTemplate.FAN)
+
+# Template with dependencies inlined
+template_with_deps: Template = adapter.get_template_with_dependencies(DeviceTemplate.DAMPER)
+
+# Library access
+nrel_lib: Library = adapter.get_nrel_library()
+      </signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+
+    <interface>
+      <name>Template Mapper Functions</name>
+      <kind>pure functions</kind>
+      <signature>
+# Pure functions - no adapter dependency
+def extract_rdf_class_uri(template: Template) -> str:
+    # Extract ASHRAE 223P HTTP URI from RDF graph
+    # Returns: "http://data.ashrae.org/standard223#Damper"
+
+def to_system_dto(template: Template, dependencies: list[str]) -> TemplateSystemDTO:
+    # Convert BuildingMOTIF template to SystemDTO with nested devices
+
+def to_device_dto(template: Template, dependencies: list[str]) -> TemplateDeviceDTO:
+    # Convert BuildingMOTIF template to DeviceDTO with nested properties
+
+def to_property_dto(template: Template) -> TemplatePropertyDTO:
+    # Convert BuildingMOTIF template to PropertyDTO
+
+def to_space_type_dto(template: Template) -> SpaceTypeDTO:
+    # Convert BuildingMOTIF template to SpaceTypeDTO
+
+# Controller usage (mediator pattern):
+template = adapter.get_template_by_name(DeviceTemplate.DAMPER)
+deps = adapter.get_template_dependencies(DeviceTemplate.DAMPER)
+device_dto = to_device_dto(template, deps)  # Pure function call
+      </signature>
+      <path>apps/building-semantics-api-app/src/mappers/template_mapper.py</path>
+    </interface>
+
+    <interface>
+      <name>GET /api/v1/223p/templates</name>
+      <kind>REST endpoint</kind>
+      <signature>
+@router.get("", response_model=TemplatesResponseDTO)
+async def get_templates() -> TemplatesResponseDTO:
+    # Returns hierarchical structure with systems, devices, properties, spaceTypes
+    # HTTP 200: Success with TemplatesResponseDTO
+    # HTTP 500: BuildingMOTIF failure
+      </signature>
+      <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+    </interface>
+
+    <interface>
+      <name>TemplatesResponseDTO</name>
+      <kind>Pydantic DTO</kind>
+      <signature>
+class TemplatesResponseDTO(BaseModel):
+    systems: list[TemplateSystemDTO]  # Nested: devices → properties
+    space_types: list[SpaceTypeDTO]   # Alias: spaceTypes
+
+class TemplateSystemDTO(BaseModel):
+    id: str  # URN format: "urn:223p:VAVReheat"
+    label: str
+    description: str | None
+    devices: list[TemplateDeviceDTO]
+
+class TemplateDeviceDTO(BaseModel):
+    id: str
+    label: str
+    description: str | None
+    properties: list[TemplatePropertyDTO]
+
+class TemplatePropertyDTO(BaseModel):
+    id: str
+    label: str
+    property_type: Literal["quantifiable", "enumerated"]  # Alias: propertyType
+    description: str | None
+      </signature>
+      <path>apps/building-semantics-api-app/src/dto/templates_dto.py</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+pytest framework with FastAPI TestClient for router integration tests. Session-scoped fixtures (shared_adapter) for BuildingMOTIF adapter initialization to avoid 30s+ ontology loading per test. Use httpx for async testing if needed. Test structure: tests/unit/ for isolated tests, tests/integration/ for end-to-end flows with real BuildingMOTIF SDK. All tests must use type hints and follow PEP 8 style.
+    </standards>
+    <locations>
+tests/integration/test_templates_endpoint.py (new file for Story 2.7)
+tests/integration/test_routers/test_templates.py (existing mock endpoint tests)
+tests/integration/conftest.py (session-scoped shared_adapter fixture)
+tests/integration/test_buildingmotif_integration.py (adapter usage examples)
+    </locations>
+    <ideas>
+      <test ac="1,2,3,4">
+        <description>Test GET /api/v1/223p/templates returns hierarchical structure with real BuildingMOTIF data</description>
+        <approach>Use shared_adapter fixture, call endpoint, verify systems list contains TemplateSystemDTO with nested devices and properties. Assert systems have HTTP URI format ids (http://data.ashrae.org/standard223#*). Verify spaceTypes list populated.</approach>
+      </test>
+      <test ac="2">
+        <description>Test template enums are used correctly in controller</description>
+        <approach>Mock adapter.get_template_by_name() calls, verify DeviceTemplate/SystemTemplate enums passed (not raw strings). Test KeyError handling when template not found.</approach>
+      </test>
+      <test ac="3">
+        <description>Test mapper functions are pure (no adapter dependency)</description>
+        <approach>Import mapper functions directly. Pass Template objects without any adapter instance. Verify functions work in isolation. Test extract_rdf_class_uri() returns correct HTTP URI format. Test to_device_dto(), to_system_dto(), to_property_dto() with mock Template objects.</approach>
+      </test>
+      <test ac="5">
+        <description>Test HTTP URI format (Breaking Change from Epic 1)</description>
+        <approach>Verify all DTO ids use format: http://data.ashrae.org/standard223#ClassName. Assert no custom URNs (urn:ashrae:223p:*) present in response. Reference test_template_uri_discovery.py for URI validation patterns. Test extract_rdf_class_uri() extracts correct URI from RDF.type predicate.</approach>
+      </test>
+      <test ac="6">
+        <description>Test error handling for BuildingMOTIF failures</description>
+        <approach>Mock adapter to raise exception, verify HTTPException(status_code=500) returned with clear error message. Verify loguru logger.error() called.</approach>
+      </test>
+      <test ac="7">
+        <description>Test hierarchical nesting depth and structure</description>
+        <approach>Assert systems[0].devices is list of TemplateDeviceDTO. Assert devices[0].properties is list of TemplatePropertyDTO. Verify parent-child relationships correct. Verify all nested DTOs use HTTP URI format.</approach>
+      </test>
+      <test ac="8">
+        <description>Test DTO structure matches OpenAPI spec (frontend contract)</description>
+        <approach>Validate response against TemplatesResponseDTO Pydantic schema. Ensure no breaking changes: systems (not Systems), spaceTypes alias works, property_type uses propertyType alias. Verify only id values changed (URN → HTTP URI).</approach>
+      </test>
+      <test ac="4">
+        <description>Test controller acts as mediator (fetch → map → return)</description>
+        <approach>Mock adapter and mapper functions. Verify controller: 1) calls adapter.get_template_by_name(), 2) calls adapter.get_template_dependencies(), 3) passes results to mapper functions, 4) returns mapper output. Test controller does NOT perform DTO conversion itself.</approach>
+      </test>
+    </ideas>
+  </tests>
+</story-context>

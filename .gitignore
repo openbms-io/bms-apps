@@ -5,6 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+local.db
 .npm
 .npmrc
 dist/
@@ -42,6 +43,12 @@ designer.db
 designer.db-journal
 designer.db-shm
 designer.db-wal
+buildingmotif.db
+buildingmotif.db-journal
+*.db-shm
+*.db-wal
+data/test_persist.db-journal
+apps/building-semantics-api-app/data/test_persist.db-journal
 
 # Test database files
 designer-test.db
@@ -216,3 +223,6 @@ $RECYCLE.BIN/
 
 # Project-specific
 test_hook.py
+
+# Python app-specific virtual environments
+apps/*/.venv/

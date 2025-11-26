@@ -38,32 +38,3 @@ export function createObjectIdentifier(
 ): string {
   return `${objectType},${objectId}`
 }
-
-/**
- * Creates a composite key for 223P mapping storage and lookup
- *
- * Combines device identifier and object identifier with a colon separator.
- * This format is used as the primary key in mappings storage (sessionStorage/API).
- *
- * @param deviceId - The BACnet device ID number
- * @param objectType - The BACnet object type (e.g., "analog-input", "binary-output")
- * @param objectId - The BACnet object instance number
- * @returns Composite key in format "device,{deviceId}:{objectType},{objectId}"
- *
- * @example
- * createCompositeKey(123, "analog-input", 1)
- * // Returns: "device,123:analog-input,1"
- *
- * @example
- * createCompositeKey(456, "binary-output", 5)
- * // Returns: "device,456:binary-output,5"
- */
-export function createCompositeKey(
-  deviceId: number,
-  objectType: string,
-  objectId: number
-): string {
-  const deviceIdentifier = createDeviceIdentifier(deviceId)
-  const objectIdentifier = createObjectIdentifier(objectType, objectId)
-  return `${deviceIdentifier}:${objectIdentifier}`
-}

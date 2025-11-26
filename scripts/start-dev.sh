@@ -85,10 +85,10 @@ start_bms_iot_app() {
 
   if [ "$log_level" = "DEBUG" ] || [ "$log_level" = "ALL" ]; then
     # Show all logs (DEBUG and above)
-    PYTHONPATH=.:apps/bms-iot-app python -m src.cli run-main 2>&1 | sed 's/^/[BMS-IoT] /' &
+    pnpm bms-iot:run 2>&1 | sed 's/^/[BMS-IoT] /' &
   else
     # Show only WARNING, ERROR, CRITICAL (with line buffering)
-    PYTHONPATH=.:apps/bms-iot-app python -m src.cli run-main 2>&1 |
+    pnpm bms-iot:run 2>&1 |
       grep --line-buffered -E "(WARNING|ERROR|CRITICAL)" | sed 's/^/[BMS-IoT] /' &
   fi
 }
@@ -97,16 +97,21 @@ start_designer_app() {
   PORT=3003 pnpm --filter designer dev 2>&1 | sed 's/^/[Designer] /' &
 }
 
+start_building_semantics_api() {
+  pnpm building-semantics:run 2>&1 | sed 's/^/[Semantics-API] /' &
+}
+
 # --- Shutdown Management ---
 
 setup_shutdown_trap() {
   local pid_python="$1"
-  local pid_designer="$2"
+  local pid_api="$2"
+  local pid_designer="$3"
 
   trap "
     echo ''
     echo '▶ Shutting down services...'
-    kill $pid_python $pid_designer 2>/dev/null || true
+    kill $pid_python $pid_api $pid_designer 2>/dev/null || true
     if [ \"$KEEP_INFRA\" != \"true\" ]; then
       stop_infrastructure
     else
@@ -132,22 +137,28 @@ main() {
 
   cd "$ROOT_DIR"
 
-  # Start both services and capture PIDs
-  start_bms_iot_app "$BMS_LOG_LEVEL"
-  PID_PYTHON=$!
+
+  start_building_semantics_api
+  PID_API=$!
 
   start_designer_app
   PID_DESIGNER=$!
 
+  # Start all services and capture PIDs
+  start_bms_iot_app "$BMS_LOG_LEVEL"
+  PID_PYTHON=$!
+
+
   # Setup clean shutdown
-  setup_shutdown_trap "$PID_PYTHON" "$PID_DESIGNER"
+  setup_shutdown_trap "$PID_PYTHON" "$PID_API" "$PID_DESIGNER"
 
   echo "▶ Services started:"
   echo "   - BMS IoT App (PID: $PID_PYTHON, Log Level: $BMS_LOG_LEVEL)"
+  echo "   - Building Semantics API (PID: $PID_API, Port: 8000)"
   echo "   - Designer (PID: $PID_DESIGNER, Port: 3003)"
   echo ""
 
-  # Wait for both processes
+  # Wait for all processes
   wait
 }
 

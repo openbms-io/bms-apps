@@ -1,0 +1,312 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.10</storyId>
+    <title>Implement SHACL Validation in Mappings Endpoint</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-17</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-10-implement-shacl-validation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>backend developer and frontend developer</asA>
+    <iWant>SHACL validation integrated into the POST `/api/v1/223p/mappings` endpoint</iWant>
+    <soThat>invalid equipment mappings are rejected before persistence, ensuring ASHRAE 223P compliance</soThat>
+    <tasks>- Task 1: Create ValidationService with BuildingMOTIF SHACL
+  - Subtask 1.1: Create src/services/validation_service.py
+  - Subtask 1.2: Implement SHACL validation logic
+  - Subtask 1.3: Implement _parse_validation_report() helper
+  - Subtask 1.4: Add unit tests for ValidationService
+- Task 2: Create ValidationResultDTO
+  - Subtask 2.1: Create src/dto/validation_dto.py
+- Task 3: Integrate validation into MappingsController
+  - Subtask 3.1: Update src/controllers/mappings_controller.py
+  - Subtask 3.2: Update error handling in save_mappings()
+- Task 4: Update mappings router response model
+  - Subtask 4.1: Add validation error response model to src/routers/mappings.py
+- Task 5: Write integration tests
+  - Subtask 5.1: Create tests/integration/test_mappings_validation.py
+  - Subtask 5.2: Test valid mapping passes validation
+  - Subtask 5.3: Test invalid equipment type returns 400
+  - Subtask 5.4: Test invalid device type returns 400
+  - Subtask 5.5: Test missing required relationship returns 400
+  - Subtask 5.6: Test empty mappings succeeds
+  - Subtask 5.7: Test bulk validation with mixed valid/invalid
+- Task 6: Update Designer UI to display validation errors
+  - Subtask 6.1: Update TypeScript client
+  - Subtask 6.2: Update useSaveMappingsMutation error handling
+  - Subtask 6.3: Add validation error display component
+  - Subtask 6.4: Manual end-to-end test
+- Task 7: Update documentation
+  - Subtask 7.1: Update Epic 2 phase breakdown
+  - Subtask 7.2: Add code comments to ValidationService</tasks>
+  </story>
+
+  <acceptanceCriteria>1. ValidationService uses BuildingMOTIF SHACL engine
+   - Create src/services/validation_service.py with ValidationService class
+   - Use BuildingMOTIF.validate(graph) for SHACL validation
+   - Return structured ValidationResultDTO with isValid, errors, warnings
+   - Service is stateless (no instance variables)
+
+2. POST /mappings validates before persisting
+   - Integrate ValidationService into MappingsController.save_mappings()
+   - Before persisting to RDF: Build temporary RDF graph, validate, reject if invalid
+   - Validation happens inside transaction (rollback on validation failure)
+
+3. Returns 400 with SHACL errors if invalid
+   - Invalid mapping request returns 400 Bad Request
+   - Response includes validationType: "SHACL", isValid: false, errors array, warnings array
+
+4. Returns 201 with mapping if valid
+   - Valid mappings pass validation and persist successfully
+   - Response includes created mappings (unchanged from Story 2.8)
+   - No performance degradation (validation < 100ms for typical mapping)
+
+5. Validation errors displayed in Designer UI
+   - Frontend catches 400 status code from POST /mappings
+   - Extracts detail.errors array from response
+   - Displays SHACL errors in modal UI with clear messaging
+   - Updates TypeScript client to handle validation response type
+
+6. Integration tests pass (valid + invalid cases)
+   - Test valid mapping: Passes validation, persists successfully
+   - Test invalid equipment type: Returns 400 with SHACL error
+   - Test invalid device type: Returns 400 with SHACL error
+   - Test missing required relationship: Returns 400 with SHACL error
+   - Test empty mappings: Returns 201 (no validation needed)
+   - Test bulk operations: All mappings validated, atomic transaction</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/adr-002-inline-validation.md</path>
+        <title>ADR-002: Inline SHACL Validation in Mappings Endpoint</title>
+        <section>Decision</section>
+        <snippet>We will implement SHACL validation inline within the existing POST /api/v1/223p/mappings endpoint, rather than creating a separate POST /api/v1/223p/validate endpoint. Validates all mappings before persisting. If any validation fails, returns 400 with detailed errors.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/epic-2-phase-breakdown.md</path>
+        <title>Epic 2: BuildingMOTIF API Integration - Phase Breakdown</title>
+        <section>Story 2.10: Implement SHACL Validation in Mappings Endpoint</section>
+        <snippet>Implement ValidationService with BuildingMOTIF SHACL validation engine. Integrate validation into existing POST /api/v1/223p/mappings endpoint - run SHACL validation before persisting RDF. If invalid, return 400 Bad Request with validation errors. If valid, persist to RDF and return 201 Created.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/stories/2-8-implement-mappings-endpoints.md</path>
+        <title>Story 2.8: Implement Mappings Endpoints with Real Persistence</title>
+        <section>Architecture Pattern</section>
+        <snippet>Router → Controller → Adapter pattern (mediator). Controllers handle business logic and orchestration. Adapters are singletons. Mappers are pure functions (stateless). Use session-scoped BuildingMOTIF fixtures for testing to avoid 30s+ ontology reload per test.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>BMS Supervisor Controller - Architecture</title>
+        <section>Backend Architecture</section>
+        <snippet>FastAPI backend with layered architecture: Routers (HTTP layer), Controllers (business logic), Services (domain logic), Adapters (external integrations), Mappers (pure transformation functions). Follow separation of concerns and dependency injection patterns.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Python Standards</section>
+        <snippet>Use complete type hints (PEP 484). Prefer specific return types over generic list/dict. Use TypeAlias for complex nested types. Follow fail-fast principle. Log errors with context. Raise HTTPException with appropriate status codes.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/buildingmotif-research.md</path>
+        <title>BuildingMOTIF Research</title>
+        <section>SHACL Validation</section>
+        <snippet>BuildingMOTIF provides SHACL validation via validate() method. Returns tuple: (valid: bool, graph, report_string). Report contains sh:ValidationResult entries with sh:resultMessage for error messages. Filter by sh:resultSeverity (Violation = error, Warning = warning).</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/controllers/mappings_controller.py</path>
+        <kind>controller</kind>
+        <symbol>MappingsController</symbol>
+        <lines>10-70</lines>
+        <reason>Contains save_mappings() method where SHACL validation will be integrated. Currently delegates to MappingsModel.replace_all_mappings() - needs to add validation before persistence.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>BuildingMOTIFAdapter</symbol>
+        <lines>15-40</lines>
+        <reason>Singleton adapter for BuildingMOTIF SDK. Has get_instance() method. BuildingMOTIF.validate() will be accessed through this adapter for SHACL validation.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/mappers/mapping_mapper.py</path>
+        <kind>mapper</kind>
+        <symbol>to_equipment_rdf_triples, create_equipment_uri, create_project_uri</symbol>
+        <lines>27-100</lines>
+        <reason>Pure functions for building RDF triples from DTOs. Will be reused to build temp graph for validation (Build Once pattern - construct triples, validate, then persist same triples).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+        <kind>router</kind>
+        <symbol>save_mappings</symbol>
+        <lines>N/A</lines>
+        <reason>HTTP endpoint for POST /api/v1/223p/mappings. Needs to add 400 Bad Request response model for SHACL validation errors in OpenAPI spec.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/mappings_dto.py</path>
+        <kind>dto</kind>
+        <symbol>SaveMappingsRequestDTO, MappingsResponseDTO, SemanticMappingDTO</symbol>
+        <lines>N/A</lines>
+        <reason>Existing DTOs for mappings endpoints. Will create new ValidationResultDTO in src/dto/validation_dto.py following same Pydantic patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/tests/integration/conftest.py</path>
+        <kind>test-fixture</kind>
+        <symbol>shared_adapter</symbol>
+        <lines>8-27</lines>
+        <reason>Session-scoped BuildingMOTIF adapter fixture. Reuse this pattern for validation tests to avoid 30s+ ontology reload per test.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/tests/integration/test_routers/test_mappings.py</path>
+        <kind>test</kind>
+        <symbol>test_mappings_router</symbol>
+        <lines>N/A</lines>
+        <reason>Existing router tests for mappings endpoints. Will add validation tests in new file: tests/integration/test_mappings_validation.py</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <framework name="FastAPI" version=">=0.104.0" purpose="Web framework for REST API" />
+        <framework name="Pydantic" version="2.5.3" purpose="Data validation and DTOs" />
+        <framework name="BuildingMOTIF" version=">=0.4.0" purpose="ASHRAE 223P SHACL validation and RDF operations" />
+        <framework name="RDFLib" version="via buildingmotif" purpose="RDF graph operations and SPARQL queries" />
+        <framework name="SQLAlchemy" version=">=1.4.44,&lt;2.0.0" purpose="Database ORM (used by BuildingMOTIF)" />
+        <framework name="loguru" version="0.7.3" purpose="Logging" />
+        <test name="pytest" version=">=7.4.0" purpose="Testing framework" />
+        <test name="pytest-asyncio" version=">=0.21.0" purpose="Async test support" />
+        <test name="httpx" version="0.25.2" purpose="HTTP client for integration tests" />
+      </python>
+      <nodejs>
+        <framework name="Next.js" version="15.5.2" purpose="React framework" />
+        <framework name="React" version="19.1.0" purpose="UI library" />
+        <framework name="@tanstack/react-query" version="^5.86.0" purpose="Data fetching and mutations (useSaveMappingsMutation)" />
+        <framework name="@hey-api/openapi-ts" version="^0.87.1" purpose="TypeScript client generation from OpenAPI" />
+        <framework name="Zod" version="^3.22.0" purpose="Schema validation" />
+        <framework name="TypeScript" version="via next" purpose="Type-safe JavaScript" />
+        <ui name="@radix-ui/*" version="various" purpose="shadcn/ui component primitives" />
+        <test name="Jest" version="via @types/jest" purpose="Testing framework" />
+        <test name="@testing-library/react" version="^16.3.0" purpose="React component testing" />
+      </nodejs>
+    </dependencies>
+  </artifacts>
+
+  <constraints>- **Architecture Pattern**: Router → Controller → Adapter/Model (mediator). ValidationService should be stateless service layer.
+- **Build Once Pattern**: Build RDF triples once, use for both validation and persistence. Do NOT build graph twice.
+- **Fail Fast**: Validate before persisting. If SHACL validation fails, raise HTTPException(400) immediately.
+- **Testing**: Use session-scoped shared_adapter fixture (conftest.py) to avoid 30s+ ontology reload per test.
+- **Type Hints**: Complete Python type hints (PEP 484). Use specific return types, not generic list/dict.
+- **Error Handling**: Catch HTTPException (validation failure) - re-raise. Catch generic Exception (RDF persistence) - log and raise 500.
+- **SHACL Report Parsing**: Parse report_string as RDF graph (rdflib). Query for sh:ValidationResult entries. Extract sh:resultMessage for error messages.
+- **No Duplication**: Reuse existing mapper functions (to_equipment_rdf_triples, create_*_uri). Do not recreate RDF triple building logic.</constraints>
+
+  <interfaces>
+    <interface>
+      <name>BuildingMOTIF.validate()</name>
+      <kind>method</kind>
+      <signature>BuildingMOTIF.validate(graph: Graph) -&gt; tuple[bool, Graph, str]</signature>
+      <path>buildingmotif (external library)</path>
+      <description>SHACL validation engine. Returns (valid, graph, report_string). Report is RDF/Turtle format with sh:ValidationResult entries.</description>
+    </interface>
+    <interface>
+      <name>MappingsController.save_mappings()</name>
+      <kind>method</kind>
+      <signature>async def save_mappings(self, request: SaveMappingsRequestDTO) -&gt; MappingsResponseDTO</signature>
+      <path>apps/building-semantics-api-app/src/controllers/mappings_controller.py</path>
+      <description>Current implementation delegates to model. Needs to add: 1) Build RDF triples, 2) Validate with ValidationService, 3) Raise HTTPException(400) if invalid, 4) Persist if valid.</description>
+    </interface>
+    <interface>
+      <name>to_equipment_rdf_triples()</name>
+      <kind>function</kind>
+      <signature>def to_equipment_rdf_triples(equipment_uri: URIRef, point_id: str, mapping: SemanticMappingDTO, adapter: BuildingMOTIFAdapter) -&gt; list[RDFTriple]</signature>
+      <path>apps/building-semantics-api-app/src/mappers/mapping_mapper.py</path>
+      <description>Pure function that builds RDF triples for equipment mapping. Reuse for building temp graph for validation.</description>
+    </interface>
+    <interface>
+      <name>POST /api/v1/223p/mappings</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/v1/223p/mappings -&gt; 201 Created | 400 Bad Request</signature>
+      <path>apps/building-semantics-api-app/src/routers/mappings.py</path>
+      <description>Endpoint that will validate mappings. On SHACL error: return 400 with {detail: {validationType: "SHACL", isValid: false, errors: string[], warnings: string[]}}.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Python testing uses pytest with session-scoped fixtures. Integration tests use FastAPI TestClient with shared_adapter fixture to avoid 30s+ BuildingMOTIF ontology reload per test. Tests follow AAA pattern (Arrange-Act-Assert). Use descriptive test names with test_[action]_[expected_result] format. Type hints required in test functions. Tests located in tests/integration/ for API tests, tests/unit/ for service/mapper tests. Use pytest-asyncio for async tests. Pre-create BuildingMOTIF models and commit database operations before HTTP requests to avoid locking issues.</standards>
+    <locations>- apps/building-semantics-api-app/tests/integration/ - Integration tests (router endpoints)
+- apps/building-semantics-api-app/tests/integration/test_routers/ - Router-specific tests
+- apps/building-semantics-api-app/tests/unit/ - Unit tests (services, mappers)
+- apps/building-semantics-api-app/tests/integration/conftest.py - Shared fixtures (shared_adapter)</locations>
+    <ideas>&lt;!-- AC 1: ValidationService uses BuildingMOTIF SHACL engine --&gt;
+&lt;test ac="1" type="unit"&gt;
+  &lt;name&gt;test_validation_service_valid_graph_returns_isvalid_true&lt;/name&gt;
+  &lt;description&gt;Create valid RDF graph with proper 223P equipment. Call ValidationService.validate(). Assert isValid=True, errors=[]&lt;/description&gt;
+  &lt;file&gt;tests/unit/services/test_validation_service.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;test ac="1" type="unit"&gt;
+  &lt;name&gt;test_validation_service_invalid_equipment_type_returns_errors&lt;/name&gt;
+  &lt;description&gt;Create graph with invalid equipment type. Call ValidationService.validate(). Assert isValid=False, len(errors) &gt; 0, error message contains equipment type info&lt;/description&gt;
+  &lt;file&gt;tests/unit/services/test_validation_service.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;test ac="1" type="unit"&gt;
+  &lt;name&gt;test_parse_validation_report_extracts_error_messages&lt;/name&gt;
+  &lt;description&gt;Test _parse_validation_report() with sample SHACL report. Assert error messages extracted correctly from sh:resultMessage&lt;/description&gt;
+  &lt;file&gt;tests/unit/services/test_validation_service.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;!-- AC 2 &amp; 3: POST /mappings validates before persisting, returns 400 if invalid --&gt;
+&lt;test ac="2,3" type="integration"&gt;
+  &lt;name&gt;test_post_mappings_invalid_equipment_type_returns_400&lt;/name&gt;
+  &lt;description&gt;POST /mappings with invalid equipmentTypeId. Assert 400 status, detail.validationType="SHACL", detail.isValid=False, len(detail.errors) &gt; 0&lt;/description&gt;
+  &lt;file&gt;tests/integration/test_mappings_validation.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;test ac="2,3" type="integration"&gt;
+  &lt;name&gt;test_post_mappings_invalid_device_type_returns_400&lt;/name&gt;
+  &lt;description&gt;POST /mappings with invalid deviceTypeId. Assert 400 with SHACL errors&lt;/description&gt;
+  &lt;file&gt;tests/integration/test_mappings_validation.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;test ac="2,3" type="integration"&gt;
+  &lt;name&gt;test_post_mappings_missing_required_relationship_returns_400&lt;/name&gt;
+  &lt;description&gt;POST /mappings with missing s223:contains relationship. Assert 400 with SHACL constraint violation&lt;/description&gt;
+  &lt;file&gt;tests/integration/test_mappings_validation.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;!-- AC 4: Returns 201 with mapping if valid --&gt;
+&lt;test ac="4" type="integration"&gt;
+  &lt;name&gt;test_post_mappings_valid_passes_validation_returns_201&lt;/name&gt;
+  &lt;description&gt;POST /mappings with valid 223P mapping. Assert 201 status, mapping persisted, GET returns same mapping&lt;/description&gt;
+  &lt;file&gt;tests/integration/test_mappings_validation.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;test ac="4" type="integration"&gt;
+  &lt;name&gt;test_post_mappings_empty_mappings_succeeds&lt;/name&gt;
+  &lt;description&gt;POST /mappings with empty mappings dict. Assert 201 status (no validation needed for empty)&lt;/description&gt;
+  &lt;file&gt;tests/integration/test_mappings_validation.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;!-- AC 6: Integration tests - bulk operations --&gt;
+&lt;test ac="6" type="integration"&gt;
+  &lt;name&gt;test_post_mappings_bulk_validation_mixed_valid_invalid&lt;/name&gt;
+  &lt;description&gt;POST /mappings with 5 mappings (3 valid, 2 invalid). Assert 400 status, errors for both invalid mappings, none persisted (atomic transaction)&lt;/description&gt;
+  &lt;file&gt;tests/integration/test_mappings_validation.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;test ac="6" type="integration"&gt;
+  &lt;name&gt;test_post_mappings_validation_performance_100_mappings&lt;/name&gt;
+  &lt;description&gt;POST /mappings with 100 valid mappings. Assert validation + persistence &lt; 500ms total&lt;/description&gt;
+  &lt;file&gt;tests/integration/test_mappings_validation.py&lt;/file&gt;
+&lt;/test&gt;
+
+&lt;!-- AC 5: Frontend validation errors (manual E2E test) --&gt;
+&lt;test ac="5" type="manual"&gt;
+  &lt;name&gt;Manual E2E: Designer UI shows SHACL validation errors&lt;/name&gt;
+  &lt;description&gt;1. Open Designer app, 2. Create mapping with invalid equipment type, 3. Click "Confirm", 4. Verify validation error modal appears with SHACL errors listed, 5. Fix type, retry, verify success&lt;/description&gt;
+&lt;/test&gt;</ideas>
+  </tests>
+</story-context>

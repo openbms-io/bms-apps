@@ -7,16 +7,10 @@
 
 // Enum Schemas and Types
 export {
-  SystemTypeSchema,
-  DeviceTypeSchema,
-  ObservablePropertySchema,
   SpaceTypeSchema,
   ConnectionPointTypeSchema,
   BacnetObjectTypeSchema,
   ValidationErrorCodeSchema,
-  type SystemType,
-  type DeviceType,
-  type ObservableProperty,
   type SpaceType,
   type ConnectionPointType,
   type BacnetObjectType,
@@ -26,14 +20,12 @@ export {
 // DTO Schemas and Types
 export {
   BACnetExternalReferenceDTOSchema,
-  SpaceDTOSchema,
   SemanticEquipmentSchema,
   ValidationErrorDTOSchema,
   ValidationResultDTOSchema,
   type BACnetExternalReferenceDTO,
   type BACnetPointData,
   type BACnetControllerData,
-  type SpaceDTO,
   type SemanticEquipment,
   type ValidationErrorDTO,
   type ValidationResultDTO,

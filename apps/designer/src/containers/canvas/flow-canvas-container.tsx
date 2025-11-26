@@ -2,14 +2,17 @@
 
 import { useRef, useCallback } from 'react'
 import { FlowCanvas } from '@/components/canvas/flow-canvas'
-import { MappingPopupModal } from '@/domains/building-semantics/components'
-import { useMappingsQuery } from '@/domains/building-semantics/api/queries/use-mappings-query'
-import { useCanvasOrchestration } from '@/hooks/use-canvas-orchestration'
+import { BuildingSemanticsModal } from '@/domains/building-semantics'
+import {
+  useTemplatesQuery,
+  useBacnetReferencesQuery,
+} from '@/domains/building-semantics/api'
+import { useSemanticMappingModal } from './use-semantic-mapping-modal'
+import { useNodeCreation } from './use-node-creation'
+import { useDragAndDrop } from './use-drag-and-drop'
 import { useFlowStore } from '@/store/use-flow-store'
-import { useProject } from '@/hooks/use-projects'
-import { useIotDeviceControllers } from '@/hooks/use-iot-device-controllers'
-import { useAllControllerPoints } from '@/hooks/use-all-controller-points'
 import type { ReactFlowInstance, Connection } from '@xyflow/react'
+import type { BacnetObjectType } from '@/types/infrastructure'
 
 interface FlowCanvasContainerProps {
   orgId: string
@@ -30,24 +33,9 @@ export function FlowCanvasContainer({
   const onEdgesChange = useFlowStore((s) => s.onEdgesChange)
   const connectNodes = useFlowStore((s) => s.connectNodes)
 
-  const { data: project } = useProject({ orgId, siteId, projectId })
-  const { data: controllers = [] } = useIotDeviceControllers(
-    orgId,
-    siteId,
-    projectId,
-    project?.iotDeviceId
-  )
-
-  const controllerIds = controllers.map((c) => c.id)
-  const { data: pointsByController = {} } = useAllControllerPoints(
-    orgId,
-    siteId,
-    projectId,
-    project?.iotDeviceId,
-    controllerIds
-  )
-
-  const { data: semanticMappings = new Map() } = useMappingsQuery(projectId)
+  const { data: templates = [] } = useTemplatesQuery()
+  const { data: semanticMappings = new Map() } =
+    useBacnetReferencesQuery(projectId)
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -63,22 +51,40 @@ export function FlowCanvasContainer({
     [connectNodes]
   )
 
-  const {
-    handleDrop,
-    show223PModal,
-    setShow223PModal,
-    modal223PPoint,
-    modal223PController,
-    handle223PConfirm,
-    handle223PSkip,
-  } = useCanvasOrchestration(
-    projectId,
+  const modalHandlers = useSemanticMappingModal()
+  const nodeCreation = useNodeCreation()
+  const { handleDrop } = useDragAndDrop({
     reactFlowInstanceRef,
     semanticMappings,
-    controllers,
-    pointsByController,
-    project?.iotDeviceId
-  )
+    modalHandlers,
+    nodeCreation,
+  })
+
+  const handleModalConfirm = useCallback(async () => {
+    if (!modalHandlers.pendingDraggedPoint || !modalHandlers.pendingPosition) {
+      modalHandlers.closeModal()
+      return
+    }
+
+    await nodeCreation.createNode(
+      modalHandlers.pendingDraggedPoint,
+      modalHandlers.pendingPosition
+    )
+    modalHandlers.closeModal()
+  }, [modalHandlers, nodeCreation])
+
+  const handleModalSkip = useCallback(async () => {
+    if (!modalHandlers.pendingDraggedPoint || !modalHandlers.pendingPosition) {
+      modalHandlers.closeModal()
+      return
+    }
+
+    await nodeCreation.createNode(
+      modalHandlers.pendingDraggedPoint,
+      modalHandlers.pendingPosition
+    )
+    modalHandlers.closeModal()
+  }, [modalHandlers, nodeCreation])
 
   return (
     <>
@@ -95,15 +101,26 @@ export function FlowCanvasContainer({
         projectId={projectId}
       />
 
-      <MappingPopupModal
-        projectId={projectId}
-        open={show223PModal}
-        point={modal223PPoint}
-        controller={modal223PController}
-        onConfirm={handle223PConfirm}
-        onSkip={handle223PSkip}
-        onOpenChange={setShow223PModal}
-      />
+      {modalHandlers.bacnetPoint && modalHandlers.bacnetController && (
+        <BuildingSemanticsModal
+          projectId={projectId}
+          open={modalHandlers.isOpen}
+          bacnetPointId={modalHandlers.bacnetPoint.pointId}
+          bacnetObjectType={modalHandlers.bacnetPoint.objectType}
+          buildingSemanticsBacnetConfig={{
+            objectType: modalHandlers.bacnetPoint
+              .objectType as BacnetObjectType,
+            objectId: modalHandlers.bacnetPoint.objectId,
+            controllerDeviceId: modalHandlers.bacnetController.deviceId,
+            controllerIPAddress: modalHandlers.bacnetController.ipAddress,
+          }}
+          pointLabel={modalHandlers.bacnetPoint.name}
+          templates={templates}
+          onSaved={handleModalConfirm}
+          onSkip={handleModalSkip}
+          onOpenChange={modalHandlers.setIsOpen}
+        />
+      )}
     </>
   )
 }
