@@ -449,7 +449,15 @@ Contributors will be recognized in:
 
 ## 📄 License
 
-By contributing to BMS Supervisor Controller, you agree that your contributions will be licensed under the AGPL-3.0 License.
+BMS Supervisor Controller is licensed under AGPL-3.0 with commercial 
+licenses available.
+
+By contributing, you agree to our [Contributor License Agreement](CLA.md), 
+which grants OpenBMS the right to distribute your contributions under 
+both the AGPL-3.0 license and commercial licenses. Contributions may 
+also be incorporated into premium features.
+
+This enables us to sustain the project while keeping the core open source.
 
 ---
 
