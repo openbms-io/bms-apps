@@ -1,0 +1,176 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.2</storyId>
+    <title>FMU State and Lifecycle Exploration</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-27</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.2-fmu-state-lifecycle.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>understand FMU state management and lifecycle behavior</iWant>
+    <soThat>we can design the G36 Service architecture correctly</soThat>
+    <tasks>
+      <task id="1">Implement state persistence test - run FMU with same inputs multiple times, observe if outputs change based on history</task>
+      <task id="2">Implement pure function test - same inputs at different simulation times, verify if output depends only on current inputs</task>
+      <task id="3">Document FMU lifecycle (instantiate -> initialize -> step -> terminate)</task>
+      <task id="4">Test state serialization - check if canGetAndSetFMUstate=true, attempt save/restore</task>
+      <task id="5">Test both API lifecycle patterns: single instance vs fresh instance per call</task>
+      <task id="6">Document findings answering POC Questions #1-4</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">Answer: How are states managed in FMU? (Question #1)</criterion>
+    <criterion id="AC2">Answer: Is FMU a pure function or stateful? (Question #4)</criterion>
+    <criterion id="AC3">Answer: Does FMU keep running or is it step-on-demand? (Question #3)</criterion>
+    <criterion id="AC4">Answer: Do we need to save/restore state? (Question #2)</criterion>
+    <criterion id="AC5">Findings documented in README.md</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/feature-development/g36-implementation/specs/tech-spec-epic-poc-1.md">
+        POC Tech Spec - defines 13 POC questions, G36 I/O reference, architecture alignment
+      </doc>
+      <doc path="docs/feature-development/g36-implementation/stories/story-1.1-fmu-loading-poc.md">
+        Story 1.1 (Complete) - FMU loading validated, FMPy chosen, inspect_fmu.py created
+      </doc>
+    </docs>
+    <code>
+      <file path="apps/g36-api-app/fmu-sequence/scripts/inspect_fmu.py">
+        FMPy-based FMU inspector - loads FMU, categorizes variables by causality (input/output/parameter)
+        Key functions: inspect_fmu(), get_type_name(), format_value()
+        Validated: 17 inputs, 15 outputs, 42 parameters discovered
+      </file>
+      <file path="apps/g36-api-app/fmu-sequence/scripts/build-fmu.sh">
+        macOS-compatible FMU build script - patches CMakeLists.txt for Apple Clang compatibility
+        Creates FMU zip from OpenModelica-generated source
+      </file>
+      <file path="apps/g36-api-app/fmu-sequence/modelica/ReheatControllerFMU.mo">
+        G36 Reheat wrapper model - extends Buildings.Controls.OBC.ASHRAE.G36.TerminalUnits.Reheat.Controller
+        Provides default values for required parameters (venStd, VAreBreZon_flow, etc.)
+      </file>
+      <file path="apps/g36-api-app/fmu-sequence/output/ReheatControllerFMU.fmu">
+        Built FMU file - FMU 2.0 Co-Simulation format, darwin64 platform
+      </file>
+    </code>
+    <dependencies>
+      <dependency>Story 1.1: FMU Loading POC (Complete)</dependency>
+      <dependency>fmpy library (installed, validated)</dependency>
+      <dependency>ReheatControllerFMU.fmu (built, validated)</dependency>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>FMU uses FMI 2.0 Co-Simulation standard</constraint>
+    <constraint>All units in SI (Kelvin for temperature, m3/s for airflow)</constraint>
+    <constraint>G36 controller likely has integral terms that accumulate state over time</constraint>
+    <constraint>API design must support both stateful and stateless patterns until POC determines which</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="FMU Lifecycle API (FMI 2.0)">
+      <method>fmi2Instantiate() - Create FMU instance</method>
+      <method>fmi2SetupExperiment() - Configure simulation time</method>
+      <method>fmi2EnterInitializationMode() - Prepare for initialization</method>
+      <method>fmi2ExitInitializationMode() - Complete initialization</method>
+      <method>fmi2DoStep() - Advance simulation by stepSize</method>
+      <method>fmi2GetFMUstate() - Save internal state (if supported)</method>
+      <method>fmi2SetFMUstate() - Restore internal state (if supported)</method>
+      <method>fmi2Terminate() - End simulation</method>
+      <method>fmi2FreeInstance() - Release resources</method>
+    </interface>
+    <interface name="G36 Reheat FMU I/O">
+      <inputs>
+        <real>TZon (K), TCooSet (K), THeaSet (K), TDis (K), VDis_flow (m3/s), TSup (K), TSupSet (K)</real>
+        <boolean>u1Fan</boolean>
+        <integer>uOpeMod (1-7)</integer>
+      </inputs>
+      <outputs>
+        <real>yDam (0-1), yVal (0-1), VSet_flow (m3/s)</real>
+        <integer>yZonTemResReq (0-3), yZonPreResReq (0-3), yLowFloAla (0-2)</integer>
+      </outputs>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      <standard>Manual testing via script execution</standard>
+      <standard>Console output verification</standard>
+      <standard>Document observations with evidence</standard>
+    </standards>
+    <locations>
+      <location>apps/g36-api-app/fmu-sequence/scripts/explore_lifecycle.py (to be created)</location>
+    </locations>
+    <ideas>
+      <idea id="T1">Statefulness test: Run TZon=291K,THeaSet=293K for steps 1-10, observe if yVal increases (integral action)</idea>
+      <idea id="T2">Pure function test: Reset FMU, repeat step 1, verify same yVal as original step 1</idea>
+      <idea id="T3">Lifecycle timing: Measure instantiate/initialize/step/terminate times</idea>
+      <idea id="T4">API Pattern A: Single instance per zone (session-based) - step repeatedly</idea>
+      <idea id="T5">API Pattern B: Fresh instance per call (stateless) - instantiate/step/terminate each call</idea>
+      <idea id="T6">State persistence: Check modelDescription.xml for canGetAndSetFMUstate=true</idea>
+      <idea id="T7">Memory footprint: Measure memory before/after instantiation</idea>
+    </ideas>
+  </tests>
+
+  <experiments>
+    <experiment id="1" name="Lifecycle Test">
+      <description>Compare single instance vs fresh instance per call patterns</description>
+      <patternA>instantiate -> initialize -> doStep -> doStep -> ... -> terminate</patternA>
+      <patternB>instantiate -> initialize -> doStep -> terminate (repeat)</patternB>
+      <measure>Startup time, memory, output consistency</measure>
+    </experiment>
+    <experiment id="2" name="Statefulness Test">
+      <description>Determine if FMU accumulates state (integral action)</description>
+      <scenario>Sustained heating demand: TZon=291K (18C), THeaSet=293K (20C)</scenario>
+      <steps>
+        <step>Step 1: Set inputs, observe yVal</step>
+        <step>Steps 2-10: Same inputs, observe if yVal increases</step>
+        <step>Reset FMU, repeat Step 1, compare yVal to original</step>
+      </steps>
+      <answers>Q1 (state management), Q4 (pure function)</answers>
+    </experiment>
+    <experiment id="3" name="State Persistence Test">
+      <description>Check if FMU supports save/restore state</description>
+      <steps>
+        <step>Check modelDescription.xml for canGetAndSetFMUstate=true</step>
+        <step>If supported: get state after step 5, continue to step 10, restore to step 5</step>
+        <step>Compare outputs</step>
+      </steps>
+      <answers>Q2 (save/restore needed)</answers>
+    </experiment>
+    <experiment id="4" name="Step Timing Test">
+      <description>Understand FMU time semantics</description>
+      <questions>
+        <question>Does doStep(stepSize=300) mean "advance 5 minutes of simulated time"?</question>
+        <question>Is it real-time or simulated time?</question>
+        <question>Does FMU run continuously or wait for step calls?</question>
+      </questions>
+      <answers>Q3 (always running vs step-on-demand)</answers>
+    </experiment>
+  </experiments>
+
+  <expectedFindings>
+    <finding question="Q1">FMUs are typically stateful - internal state evolves with simulation time</finding>
+    <finding question="Q2">State save/restore may be supported via fmi2GetFMUstate/fmi2SetFMUstate</finding>
+    <finding question="Q3">FMU is step-on-demand (not continuously running)</finding>
+    <finding question="Q4">G36 controller likely has integral terms - NOT a pure function</finding>
+  </expectedFindings>
+
+  <apiDesignImpact>
+    <ifStateful>
+      <recommendation>Session-based API with zone-specific FMU instances</recommendation>
+      <recommendation>State persistence for crash recovery</recommendation>
+      <recommendation>Consider state serialization to database</recommendation>
+    </ifStateful>
+    <ifStateless>
+      <recommendation>Simple REST API - instantiate/step/terminate per request</recommendation>
+      <recommendation>No persistence needed</recommendation>
+      <recommendation>Simpler architecture</recommendation>
+    </ifStateless>
+  </apiDesignImpact>
+</story-context>

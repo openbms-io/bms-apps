@@ -1,0 +1,197 @@
+<story-context id="story-1.6-project-setup-scaffolding" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>6</storyId>
+    <title>Project Setup and Scaffolding</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.6-project-setup-scaffolding.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>set up the control-sequence-api-app project structure</iWant>
+    <soThat>we have a foundation for implementing the Control Sequence API</soThat>
+    <tasks>
+      <task id="1" ac="1">Create pyproject.toml
+        <subtask>Add FastAPI, uvicorn dependencies</subtask>
+        <subtask>Add FMPy dependency</subtask>
+        <subtask>Add pydantic-settings dependency</subtask>
+        <subtask>Add pytest, pytest-asyncio for testing</subtask>
+        <subtask>Configure project metadata</subtask>
+      </task>
+      <task id="2" ac="2">Create MVC folder structure
+        <subtask>Create src/adapters/ with __init__.py</subtask>
+        <subtask>Create src/config/ with __init__.py</subtask>
+        <subtask>Create src/controllers/ with __init__.py</subtask>
+        <subtask>Create src/dto/ with __init__.py</subtask>
+        <subtask>Create src/models/ with __init__.py</subtask>
+        <subtask>Create src/routers/ with __init__.py</subtask>
+      </task>
+      <task id="3" ac="3">Implement settings.py
+        <subtask>Create Settings class with pydantic-settings</subtask>
+        <subtask>Add API_HOST, API_PORT settings</subtask>
+        <subtask>Add FMU_PATH_REHEAT setting with default path</subtask>
+        <subtask>Add get_fmu_path() helper method</subtask>
+        <subtask>Support .env file loading</subtask>
+      </task>
+      <task id="4" ac="4,5">Implement main.py
+        <subtask>Create FastAPI app instance</subtask>
+        <subtask>Add lifespan context manager for startup/shutdown</subtask>
+        <subtask>Add FMU path validation at startup</subtask>
+        <subtask>Configure CORS middleware</subtask>
+        <subtask>Add placeholder health router</subtask>
+      </task>
+      <task id="5" ac="6">Create test folder structure
+        <subtask>Create tests/unit/ folder</subtask>
+        <subtask>Create tests/integration/ folder</subtask>
+        <subtask>Create tests/conftest.py with fixtures</subtask>
+      </task>
+      <task id="6" ac="5">Verify app runs
+        <subtask>Run uvicorn and verify /docs loads</subtask>
+        <subtask>Verify settings load from environment</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">pyproject.toml with dependencies (FastAPI, FMPy, pydantic-settings, uvicorn)</criterion>
+    <criterion id="2">MVC folder structure created: src/adapters/, src/config/, src/controllers/, src/dto/, src/models/, src/routers/</criterion>
+    <criterion id="3">settings.py with pydantic-settings configuration (FMU paths, API host/port)</criterion>
+    <criterion id="4">main.py with FastAPI app entry point and lifespan handler</criterion>
+    <criterion id="5">App runs with uvicorn and serves /docs (Swagger UI)</criterion>
+    <criterion id="6">Tests folder structure: tests/unit/, tests/integration/</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Tech Spec</title>
+        <section>3. Architecture - MVC Structure</section>
+        <snippet>Defines MVC structure: adapters/, config/, controllers/, dto/, models/, routers/. Settings use pydantic-settings with env file support.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Tech Spec</title>
+        <section>3.3 Configuration</section>
+        <snippet>Environment variables: API_HOST (0.0.0.0), API_PORT (8001), FMU_PATH_REHEAT. Use prefix-based pattern for multiple FMU types.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/poc-findings.md</path>
+        <title>POC Findings</title>
+        <section>FMU Integration</section>
+        <snippet>FMPy library selected for FMU integration. FMU path: apps/g36-api-app/fmu-sequence/builds/ReheatControllerFMU.fmu</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Guidelines</title>
+        <section>Development Philosophy</section>
+        <snippet>TDD workflow, no over-engineering, fail fast, SOLID principles. Tests drive design decisions.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/config/settings.py</path>
+        <kind>config</kind>
+        <symbol>Settings</symbol>
+        <lines>1-53</lines>
+        <reason>Reference implementation for pydantic-settings pattern. Copy structure: BaseSettings, SettingsConfigDict, Field with defaults, get_settings() cached function.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/main.py</path>
+        <kind>entrypoint</kind>
+        <symbol>app, lifespan</symbol>
+        <lines>1-82</lines>
+        <reason>Reference implementation for FastAPI app structure. Copy pattern: asynccontextmanager lifespan, CORSMiddleware, health endpoint, exception handler.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/pyproject.toml</path>
+        <kind>config</kind>
+        <symbol>pyproject</symbol>
+        <lines>1-74</lines>
+        <reason>Reference for pyproject.toml structure. Copy: project metadata, dependencies layout, optional-dependencies for test/dev, tool configs.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/g36-api-app/fmu-sequence/builds/ReheatControllerFMU.fmu</path>
+        <kind>resource</kind>
+        <symbol>FMU file</symbol>
+        <reason>FMU file location for FMU_PATH_REHEAT default value. Validate this path exists at startup.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="fastapi" version=">=0.104.0">Web framework for API</package>
+        <package name="uvicorn" version="[standard]>=0.24.0">ASGI server</package>
+        <package name="pydantic" version=">=2.5.0">Data validation</package>
+        <package name="pydantic-settings" version=">=2.0.0">Settings management</package>
+        <package name="python-dotenv" version=">=1.0.0">Environment file loading</package>
+        <package name="fmpy" version=">=0.3.0">FMU execution library</package>
+        <package name="loguru" version=">=0.7.0">Logging</package>
+        <package name="pytest" version=">=7.4.0" optional="test">Testing framework</package>
+        <package name="pytest-asyncio" version=">=0.21.0" optional="test">Async test support</package>
+        <package name="httpx" version=">=0.25.0" optional="test">HTTP client for testing</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint source="tech-spec">Follow building-semantics-api-app patterns exactly for MVC structure</constraint>
+    <constraint source="tech-spec">Use pydantic-settings with BaseSettings and SettingsConfigDict</constraint>
+    <constraint source="tech-spec">Port 8001 to avoid conflict with building-semantics-api (8000)</constraint>
+    <constraint source="tech-spec">App name: control-sequence-api-app (NOT g36-api-app)</constraint>
+    <constraint source="tech-spec">Lazy FMU loading: Startup validates files exist, extract on first use</constraint>
+    <constraint source="CLAUDE.md">TDD workflow - write tests first</constraint>
+    <constraint source="CLAUDE.md">No over-engineering - simple, direct implementations</constraint>
+    <constraint source="CLAUDE.md">No comments unless explaining WHY</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Settings</name>
+      <kind>class</kind>
+      <signature>class Settings(BaseSettings): api_host, api_port, fmu_path_reheat, get_fmu_path()</signature>
+      <path>apps/control-sequence-api-app/src/config/settings.py</path>
+    </interface>
+    <interface>
+      <name>get_settings</name>
+      <kind>function</kind>
+      <signature>@lru_cache def get_settings() -> Settings</signature>
+      <path>apps/control-sequence-api-app/src/config/settings.py</path>
+    </interface>
+    <interface>
+      <name>lifespan</name>
+      <kind>async context manager</kind>
+      <signature>@asynccontextmanager async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]</signature>
+      <path>apps/control-sequence-api-app/src/main.py</path>
+    </interface>
+    <interface>
+      <name>health_check</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /health -> {"status": "healthy", "service": "control-sequence-api"}</signature>
+      <path>apps/control-sequence-api-app/src/main.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Follow pytest with pytest-asyncio for async tests. Use httpx TestClient for API integration tests. Mock external dependencies. Tests in tests/unit/ and tests/integration/ directories. TDD approach - write failing tests first.</standards>
+    <locations>
+      <location>apps/control-sequence-api-app/tests/unit/</location>
+      <location>apps/control-sequence-api-app/tests/integration/</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Test pyproject.toml can be parsed and has required dependencies</idea>
+      <idea ac="3">Test Settings loads defaults correctly</idea>
+      <idea ac="3">Test Settings loads from environment variables</idea>
+      <idea ac="3">Test Settings loads from .env file</idea>
+      <idea ac="3">Test get_fmu_path returns correct path for reheat</idea>
+      <idea ac="4">Test lifespan validates FMU path exists at startup</idea>
+      <idea ac="4">Test lifespan logs startup/shutdown messages</idea>
+      <idea ac="5">Integration test: GET /docs returns 200</idea>
+      <idea ac="5">Integration test: GET /health returns healthy status</idea>
+    </ideas>
+  </tests>
+</story-context>

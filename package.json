@@ -34,6 +34,13 @@
     "building-semantics:typecheck": "PYTHONPATH=.:apps/building-semantics-api-app apps/building-semantics-api-app/.venv/bin/mypy apps/building-semantics-api-app/src/",
     "building-semantics:lint": "apps/building-semantics-api-app/.venv/bin/ruff check apps/building-semantics-api-app/src/",
     "building-semantics:format": "apps/building-semantics-api-app/.venv/bin/black apps/building-semantics-api-app/src/ apps/building-semantics-api-app/tests/",
+    "control-sequence:install": "apps/control-sequence-api-app/.venv/bin/pip install -e 'apps/control-sequence-api-app[test,dev]'",
+    "control-sequence:run": "ROOT_PATH=/control-sequence PYTHONPATH=.:apps/control-sequence-api-app apps/control-sequence-api-app/.venv/bin/python -m uvicorn src.main:app --reload --port 8001",
+    "control-sequence:test": "PYTHONPATH=.:apps/control-sequence-api-app apps/control-sequence-api-app/.venv/bin/pytest apps/control-sequence-api-app/tests/",
+    "control-sequence:test:verbose": "PYTHONPATH=.:apps/control-sequence-api-app apps/control-sequence-api-app/.venv/bin/pytest apps/control-sequence-api-app/tests/ -v -s",
+    "control-sequence:typecheck": "PYTHONPATH=.:apps/control-sequence-api-app apps/control-sequence-api-app/.venv/bin/mypy apps/control-sequence-api-app/src/",
+    "control-sequence:lint": "apps/control-sequence-api-app/.venv/bin/ruff check apps/control-sequence-api-app/src/",
+    "control-sequence:format": "apps/control-sequence-api-app/.venv/bin/black apps/control-sequence-api-app/src/ apps/control-sequence-api-app/tests/",
     "setup:hooks": "python -m pip install pre-commit && pre-commit install",
     "hooks:update": "pre-commit autoupdate",
     "hooks:run": "pre-commit run --all-files"

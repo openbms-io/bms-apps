@@ -14,6 +14,11 @@ const apps = [
     path: "apps/building-semantics-api-app",
     extras: "[test,dev]",
   },
+  {
+    name: "control-sequence-api-app",
+    path: "apps/control-sequence-api-app",
+    extras: "[test,dev]",
+  },
 ];
 
 function run(cmd, cwd) {

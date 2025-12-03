@@ -1,0 +1,234 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.5</storyId>
+    <title>Control Sequence API Tech Spec</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-30</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.5-control-sequence-api-tech-spec.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>create a technical specification for the Control Sequence API</iWant>
+    <soThat>we have a clear requirements-driven architecture document before implementation</soThat>
+    <tasks>
+      <task id="1">Tech spec created at specs/control-sequence-api-tech-spec.md</task>
+      <task id="2">Requirements section complete</task>
+      <task id="3">Use cases defined</task>
+      <task id="4">MVC architecture documented</task>
+      <task id="5">API endpoints derived from use cases</task>
+      <task id="6">Implementation stories listed</task>
+      <task id="7">Tech spec reviewed and approved</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">Requirements documented (what the API must do)</criterion>
+    <criterion id="AC2">Use cases defined (how clients will use the API)</criterion>
+    <criterion id="AC3">MVC architecture defined (following building-semantics-api-app patterns)</criterion>
+    <criterion id="AC4">API endpoints derived from requirements</criterion>
+    <criterion id="AC5">Integration points defined (bms-iot-app, Designer)</criterion>
+    <criterion id="AC6">Implementation stories derived from tech spec</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/poc-findings.md</path>
+        <title>G36 FMU POC Findings</title>
+        <section>Full Document</section>
+        <snippet>Consolidates FMU integration findings: FMPy library selected, ~0.1ms step time, session-based architecture recommended, input validation required before FMU calls.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/PRD.md</path>
+        <title>G36 Visual Programming Blocks PRD</title>
+        <section>Requirements</section>
+        <snippet>FR006: System shall load and execute G36 Reheat FMU at runtime. FR015-FR019: Runtime execution requirements. NFR001: FMU execution within 100ms.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/epics.md</path>
+        <title>G36 Epic Breakdown</title>
+        <section>Phase 1A: POC &amp; Backend Service</section>
+        <snippet>Story 1.5 produces tech spec for control-sequence-api-app. Implementation stories derived from this spec.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>BMS Supervisor Controller Architecture</title>
+        <section>Long-Term Future</section>
+        <snippet>FMU/Modelica Service planned for G36 HVAC sequence simulation. Designer integrates via generated TypeScript client.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Python Coding Standards</section>
+        <snippet>PEP 8, type hints required, 88 char line length (Black). Follows Google Python Style Guide.</snippet>
+      </doc>
+      <doc>
+        <path>apps/building-semantics-api-app/README.md</path>
+        <title>Building Semantics API README</title>
+        <section>Project Structure</section>
+        <snippet>Reference MVC pattern: routers/, controllers/, models/, adapters/, dto/, config/. FastAPI + pydantic-settings + pyproject.toml.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>BuildingMOTIFAdapter</symbol>
+        <lines>25-80</lines>
+        <reason>Reference singleton adapter pattern for FMU adapter. get_instance() classmethod, lazy initialization, settings injection.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/config/settings.py</path>
+        <kind>config</kind>
+        <symbol>Settings, get_settings</symbol>
+        <lines>1-53</lines>
+        <reason>Reference pydantic-settings pattern with BaseSettings, .env loading, and @lru_cache singleton.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/main.py</path>
+        <kind>entrypoint</kind>
+        <symbol>app, lifespan</symbol>
+        <lines>1-82</lines>
+        <reason>Reference FastAPI app setup: lifespan context manager, CORS middleware, router includes, exception handler.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+        <kind>router</kind>
+        <symbol>router</symbol>
+        <lines>1-60</lines>
+        <reason>Reference router pattern: APIRouter with prefix/tags, response_model, HTTP methods calling controller.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/controllers/templates_controller.py</path>
+        <kind>controller</kind>
+        <symbol>TemplatesController</symbol>
+        <lines>1-60</lines>
+        <reason>Reference controller pattern: init with adapter, async methods, delegates to model, error handling.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/g36-api-app/fmu-sequence/scripts/inspect_fmu.py</path>
+        <kind>script</kind>
+        <symbol>inspect_fmu</symbol>
+        <lines>1-60</lines>
+        <reason>POC FMPy usage: read_model_description for variable discovery.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/g36-api-app/fmu-sequence/scripts/validate_fmu_execution.py</path>
+        <kind>script</kind>
+        <symbol>validate_fmu_execution</symbol>
+        <reason>POC FMPy usage: FMU2Slave instantiation, doStep execution, input/output handling.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <note>Follow building-semantics-api-app pattern for control-sequence-api-app</note>
+        <core>
+          <package>fastapi>=0.104.0</package>
+          <package>uvicorn[standard]>=0.24.0</package>
+          <package>pydantic>=2.5.0</package>
+          <package>pydantic-settings>=2.0.0</package>
+          <package>python-dotenv>=1.0.0</package>
+          <package>loguru>=0.7.0</package>
+        </core>
+        <fmu>
+          <package>fmpy>=0.3.0</package>
+        </fmu>
+        <database>
+          <package>sqlmodel>=0.0.8</package>
+        </database>
+        <test>
+          <package>pytest>=7.4.0</package>
+          <package>pytest-asyncio>=0.21.0</package>
+          <package>httpx>=0.25.0</package>
+          <package>pytest-cov>=4.1.0</package>
+          <package>pytest-mock>=3.11.1</package>
+        </test>
+        <dev>
+          <package>mypy>=1.7.0</package>
+          <package>ruff>=0.1.6</package>
+          <package>black>=23.11.0</package>
+        </dev>
+      </python>
+      <tooling>
+        <build-system>setuptools or hatchling</build-system>
+        <formatter>black (line-length=88)</formatter>
+        <linter>ruff</linter>
+        <type-checker>mypy (strict mode)</type-checker>
+      </tooling>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="C1">Follow MVC pattern: routers/ (view) → controllers/ (business logic) → models/ (domain) with adapters/ for external services</constraint>
+    <constraint id="C2">Use pyproject.toml for dependencies (NOT requirements.txt)</constraint>
+    <constraint id="C3">Use pydantic-settings with .env files for configuration</constraint>
+    <constraint id="C4">
+      <title>Pre-validate all FMU inputs</title>
+      <reason>FMU accepts ANY input without throwing errors (tested: TZon=-100K, VDis_flow=-1, uOpeMod=99 all accepted)</reason>
+      <requirement>API must validate before calling doStep(): Temperature 250-350K, Airflow >= 0, Operation mode 1-7</requirement>
+      <source>POC Q13: specs/poc-findings.md</source>
+    </constraint>
+    <constraint id="C5">
+      <title>No native FMU state persistence</title>
+      <reason>FMU reports canGetAndSetFMUstate=False, canSerializeFMUstate=False - cannot save/restore internal state</reason>
+      <workaround>FMU is pure function of (inputs, simulation_time). Track simulation_time in database. On restart, replay to last simulation_time with single large step.</workaround>
+      <source>POC Q2: specs/poc-findings.md</source>
+    </constraint>
+    <constraint id="C6">FMPy library only (not PyFMI) - simpler installation and sufficient for needs</constraint>
+    <constraint id="C7">Singleton adapter pattern for FMU management (like BuildingMOTIFAdapter)</constraint>
+    <constraint id="C8">Python 3.11+ required, type hints mandatory, PEP 8 + Black formatting</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>BuildingMOTIFAdapter.get_instance()</name>
+      <kind>singleton pattern</kind>
+      <signature>@classmethod get_instance(cls, db_path: str | None = None, settings: Settings | None = None) -> BuildingMOTIFAdapter</signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+    <interface>
+      <name>Settings</name>
+      <kind>pydantic BaseSettings</kind>
+      <signature>class Settings(BaseSettings): model_config = SettingsConfigDict(env_file=".env")</signature>
+      <path>apps/building-semantics-api-app/src/config/settings.py</path>
+    </interface>
+    <interface>
+      <name>APIRouter pattern</name>
+      <kind>FastAPI router</kind>
+      <signature>router = APIRouter(prefix="/api/v1/...", tags=["..."])</signature>
+      <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+    </interface>
+    <interface>
+      <name>FMPy FMU2Slave</name>
+      <kind>FMU runtime</kind>
+      <signature>fmu = FMU2Slave(guid, unzipDirectory, modelIdentifier, instanceName); fmu.doStep(currentCommunicationPoint, communicationStepSize)</signature>
+      <path>External: fmpy library</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+      TDD approach required per CLAUDE.md. Use pytest with pytest-asyncio for async tests.
+      Follow building-semantics-api-app test structure: tests/unit/ for isolated unit tests,
+      tests/integration/ for API and adapter tests. Use conftest.py for shared fixtures.
+      Mock external services (FMU) in unit tests. Integration tests use real FMU with tmp_path.
+      Type hints required. Test naming: test_*.py files, test_* functions.
+    </standards>
+    <locations>
+      <location>apps/control-sequence-api-app/tests/unit/</location>
+      <location>apps/control-sequence-api-app/tests/integration/</location>
+      <location>apps/control-sequence-api-app/tests/conftest.py</location>
+    </locations>
+    <ideas>
+      <idea ac="AC1">Test requirements document structure is complete and traceable</idea>
+      <idea ac="AC2">Test use cases cover all FMU interaction patterns</idea>
+      <idea ac="AC3">Test MVC structure follows building-semantics-api-app patterns exactly</idea>
+      <idea ac="AC4">Test API endpoint specs are complete with request/response schemas</idea>
+      <idea ac="AC5">Test integration points documentation covers Designer and bms-iot-app</idea>
+      <idea ac="AC6">Test implementation stories are actionable and properly scoped</idea>
+      <idea note="This is a documentation story - testing focuses on spec completeness review, not code tests">Documentation review checklist</idea>
+    </ideas>
+  </tests>
+</story-context>

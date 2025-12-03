@@ -340,3 +340,17 @@ Test commands are in package.json. Use these commands to run tests.
 - Dont add unnecessary comments. Make method names clear enough
 - Remember the API layer SHOULD NOT HAVE or leak database relationship. The relationship should belong in Database layer.
 - Use shadcn/ui components always.
+
+# To run modellica in docker container on a mac.
+
+# First, run this in your macOS terminal to allow local connections
+
+xhost +localhost
+
+# Then run the docker container
+
+docker run -it --rm \
+ -e DISPLAY=host.docker.internal:0 \
+ -v $HOME:$HOME \
+ -v /tmp/.X11-unix:/tmp/.X11-unix \
+ openmodelica/openmodelica:v1.27.5-gui OMEdit

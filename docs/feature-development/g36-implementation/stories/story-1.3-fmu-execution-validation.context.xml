@@ -1,0 +1,178 @@
+<story-context id="story-1.3-fmu-execution-validation" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.3</storyId>
+    <title>FMU Execution &amp; Validation</title>
+    <status>Draft</status>
+    <generatedAt>2025-11-27</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.3-fmu-execution-validation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>to execute the G36 FMU with sample inputs and validate outputs</iWant>
+    <soThat>we confirm the FMU works correctly and understand performance characteristics</soThat>
+    <tasks>
+      <task n="1">Create validate_fmu_execution.py script</task>
+      <task n="2">Run heating scenario validation (TZon=291.15 &lt; THeaSet=293.15)</task>
+      <task n="3">Run cooling scenario validation (TZon=299.15 &gt; TCooSet=297.15)</task>
+      <task n="4">Run satisfied scenario validation (THeaSet &lt; TZon &lt; TCooSet)</task>
+      <task n="5">Test required vs optional inputs (Q10)</task>
+      <task n="6">Multi-instance test with 5 concurrent FMUs (Q8)</task>
+      <task n="7">Capture step execution time using time.perf_counter() (Q11)</task>
+      <task n="8">Capture memory footprint using tracemalloc (Q12)</task>
+      <task n="9">Test error handling with invalid inputs (Q13)</task>
+      <task n="10">Update fmu-audit/reheat-terminal document with Q7-13 findings</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1">Set sample inputs (hardcoded values)</ac>
+    <ac id="2">Step FMU and print outputs to console</ac>
+    <ac id="3">Verify outputs (yDam, yVal) look reasonable (Q9)</ac>
+    <ac id="4">Test multiple steps with changing inputs</ac>
+    <ac id="5">Answer: What's the step time semantics? (Q7) - reference Story 1.2 findings</ac>
+    <ac id="6">Answer: Which inputs are truly required? (Q10)</ac>
+    <ac id="7">Answer: Can we run multiple instances? (Q8)</ac>
+    <ac id="8">Capture step execution time (Q11)</ac>
+    <ac id="9">Capture memory footprint (Q12)</ac>
+    <ac id="10">Test invalid inputs - document behavior (Q13)</ac>
+    <ac id="11">Document Q7-13 findings in apps/g36-api-app/docs/fmu-audit/reheat-terminal/</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.3-fmu-execution-validation.md</path>
+        <title>Story 1.3: FMU Execution &amp; Validation</title>
+        <section>Technical Requirements</section>
+        <snippet>Sample inputs in Kelvin. Validation scenarios: Heating (TZon &lt; THeaSet), Cooling (TZon &gt; TCooSet), Satisfied (deadband).</snippet>
+      </doc>
+      <doc>
+        <path>apps/g36-api-app/docs/fmu-audit/reheat-terminal/reheat-terminal-behavior.md</path>
+        <title>FMU Audit: G36 VAV Reheat Terminal Unit Controller</title>
+        <section>Behavior Characteristics</section>
+        <snippet>Q1-4 findings: FMU is pure function of (inputs, sim_time), step-on-demand, state save/restore NOT SUPPORTED.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.2-fmu-state-lifecycle.md</path>
+        <title>Story 1.2: FMU State &amp; Lifecycle Exploration</title>
+        <section>POC Answers</section>
+        <snippet>Q7 (step time semantics) already answered: simulated time, wall clock ~0.2-1.3ms regardless of step size.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <file>
+        <path>apps/g36-api-app/fmu-sequence/scripts/explore_lifecycle.py</path>
+        <kind>script</kind>
+        <symbol>create_fmu_instance, get_variable_references, set_default_inputs, get_key_outputs</symbol>
+        <lines>57-98</lines>
+        <reason>Reusable FMU helper functions for instantiation and I/O</reason>
+      </file>
+      <file>
+        <path>apps/g36-api-app/fmu-sequence/builds/ReheatControllerFMU.fmu</path>
+        <kind>binary</kind>
+        <symbol>FMU</symbol>
+        <lines>N/A</lines>
+        <reason>Target FMU for validation testing</reason>
+      </file>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="fmpy">FMU loading and simulation library</package>
+        <package name="tracemalloc">Memory profiling (Python stdlib)</package>
+        <package name="time">Performance timing (Python stdlib)</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <interfaces>
+    <interface>
+      <name>FMPy FMU2Slave</name>
+      <kind>Python class</kind>
+      <signature>FMU2Slave(guid, unzipDirectory, modelIdentifier, instanceName)</signature>
+      <path>fmpy.fmi2</path>
+    </interface>
+    <interface>
+      <name>FMU doStep</name>
+      <kind>method</kind>
+      <signature>doStep(currentCommunicationPoint: float, communicationStepSize: float)</signature>
+      <path>fmpy.fmi2.FMU2Slave</path>
+    </interface>
+    <interface>
+      <name>FMU setReal/getReal</name>
+      <kind>method</kind>
+      <signature>setReal(refs: list, values: list) / getReal(refs: list) -&gt; list</signature>
+      <path>fmpy.fmi2.FMU2Slave</path>
+    </interface>
+  </interfaces>
+
+  <constraints>
+    <constraint>Use hardcoded sample values - no BOPTEST integration in this POC</constraint>
+    <constraint>Temperatures in Kelvin (SI units)</constraint>
+    <constraint>Airflow in m³/s</constraint>
+    <constraint>Outputs yDam and yVal should be in range [0, 1]</constraint>
+    <constraint>FMU path: apps/g36-api-app/fmu-sequence/builds/ReheatControllerFMU.fmu</constraint>
+    <constraint>Findings output: apps/g36-api-app/docs/fmu-audit/reheat-terminal/</constraint>
+  </constraints>
+
+  <tests>
+    <standards>Console output validation. Print all outputs for manual verification. Document findings in FMU audit markdown.</standards>
+    <locations>
+      <location>apps/g36-api-app/fmu-sequence/scripts/</location>
+      <location>apps/g36-api-app/docs/fmu-audit/reheat-terminal/</location>
+    </locations>
+    <ideas>
+      <idea ac="1,2">Run FMU with sample inputs, verify no errors</idea>
+      <idea ac="3">Verify yDam/yVal in [0,1] range for all scenarios</idea>
+      <idea ac="4">Change TZon mid-simulation, verify output changes</idea>
+      <idea ac="5">Reference Story 1.2 Q7 findings on step time semantics</idea>
+      <idea ac="6">Remove inputs one-by-one, document which cause errors</idea>
+      <idea ac="7">Instantiate 5 FMUs, step all, verify no interference</idea>
+      <idea ac="8">Use time.perf_counter() around doStep()</idea>
+      <idea ac="9">Use tracemalloc before/after FMU instantiation</idea>
+      <idea ac="10">Test None, negative temps, invalid mode, negative airflow</idea>
+      <idea ac="11">Append Q7-13 section to reheat-terminal-behavior.md</idea>
+    </ideas>
+  </tests>
+
+  <sampleInputs>
+    <input name="TZon" value="295.15" unit="K" desc="22°C room temp"/>
+    <input name="TCooSet" value="297.15" unit="K" desc="24°C cooling setpoint"/>
+    <input name="THeaSet" value="293.15" unit="K" desc="20°C heating setpoint"/>
+    <input name="TDis" value="286.15" unit="K" desc="13°C discharge air"/>
+    <input name="VDis_flow" value="0.1" unit="m³/s" desc="Primary airflow"/>
+    <input name="TSup" value="286.15" unit="K" desc="13°C AHU supply air"/>
+    <input name="TSupSet" value="285.15" unit="K" desc="12°C AHU supply setpoint"/>
+    <input name="u1Fan" value="True" type="Boolean" desc="AHU fan running"/>
+    <input name="uOpeMod" value="1" type="Integer" desc="Occupied mode"/>
+  </sampleInputs>
+
+  <validationScenarios>
+    <scenario name="Heating">
+      <condition>TZon=291.15 &lt; THeaSet=293.15</condition>
+      <expected>yVal &gt; 0 (heating valve opens)</expected>
+    </scenario>
+    <scenario name="Cooling">
+      <condition>TZon=299.15 &gt; TCooSet=297.15</condition>
+      <expected>yDam increases</expected>
+    </scenario>
+    <scenario name="Satisfied">
+      <condition>THeaSet &lt; TZon &lt; TCooSet</condition>
+      <expected>Minimal control action</expected>
+    </scenario>
+  </validationScenarios>
+
+  <pocQuestions>
+    <question id="7" topic="Step time semantics">Reference Story 1.2 - simulated time, wall clock ~0.2-1.3ms</question>
+    <question id="8" topic="Multiple concurrent instances">Test with 5 FMU instances</question>
+    <question id="9" topic="Reasonable G36 outputs">Validate yDam/yVal in [0,1], correct response to scenarios</question>
+    <question id="10" topic="Required vs optional inputs">Test minimal inputs, document errors</question>
+    <question id="11" topic="Step execution time">Measure with time.perf_counter()</question>
+    <question id="12" topic="Memory footprint">Measure with tracemalloc</question>
+    <question id="13" topic="Error handling">Test None, invalid values, document exceptions</question>
+  </pocQuestions>
+</story-context>

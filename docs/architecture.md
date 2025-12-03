@@ -1,6 +1,6 @@
 # BMS Supervisor Controller — Architecture
 
-**Last Updated:** 2025-10-31 (verified from codebase)
+**Last Updated:** 2025-12-03
 **Status:** Living Document (reflects current + planned architecture)
 
 ---
@@ -13,72 +13,289 @@ Visual programming platform for building management systems with BACnet/MQTT IoT
 
 ---
 
+## Architecture Vision
+
+### Domain-First Architecture
+
+The system is organized around **business domains**, not technology layers. Each domain is isolated with enforced boundaries to enable:
+
+- **Independent evolution** - Change one domain without affecting others
+- **Clear ownership** - Each domain has defined responsibilities
+- **Swappable implementations** - Libraries are internal details, not contracts
+- **Future micro-frontend support** - Domains can become separate deployables
+
+### Apps Structure
+
+```
+apps/
+├── designer/                    # Next.js - UI + domain frontends
+├── bms-backend-api/             # Node.js - TypeScript backend (cron, notifications, historian) [future]
+├── building-semantics-api/      # Python - Building Semantics domain
+├── control-sequence-api/        # Python - Control Sequence domain
+├── bms-iot-app/                 # Python - Device I/O domain
+```
+
+### Language Assignment
+
+| Need                                   | Language   | Location                |
+| -------------------------------------- | ---------- | ----------------------- |
+| UI + frontend logic                    | TypeScript | Designer domains        |
+| Backend business logic (no Python lib) | TypeScript | bms-backend-api domains |
+| Cron/background jobs                   | TypeScript | bms-backend-api         |
+| Domain requires Python library         | Python     | Dedicated Python API    |
+
+### Python API = Domain Owner
+
+Python APIs **own their domain**, not just wrap a library:
+
+- The API defines domain operations and contracts
+- Libraries are **implementation details** that can be swapped
+- API contract stays stable even if underlying library changes
+- Example: `building-semantics-api` could swap BuildingMOTIF for another RDF library without changing the API
+
+### When to Create a Python API
+
+| Condition                                               | Result                                   |
+| ------------------------------------------------------- | ---------------------------------------- |
+| Domain needs Python library (FMPy, BuildingMOTIF, BAC0) | Python API                               |
+| Domain needs stateful process isolation (FMU memory)    | Python API                               |
+| Otherwise                                               | TypeScript (Designer or bms-backend-api) |
+
+---
+
+## Domain Structure
+
+### Domains Overview
+
+| Domain                 | Description                                        | Language   | App                        |
+| ---------------------- | -------------------------------------------------- | ---------- | -------------------------- |
+| **Building Semantics** | ASHRAE 223P modeling, RDF graphs, SHACL validation | Python     | building-semantics-api     |
+| **Control Sequence**   | G36 HVAC sequences, FMU execution                  | Python     | control-sequence-api       |
+| **Device I/O**         | BACnet discovery, monitoring, MQTT                 | Python     | bms-iot-app                |
+| **Graphics**           | SVG/Canvas visualization (future MFE)              | TypeScript | Designer                   |
+| **Alarm**              | Alarm conditions, notifications (future MFE)       | TypeScript | Designer + bms-backend-api |
+| **Flow Designer**      | Visual programming canvas                          | TypeScript | Designer                   |
+
+### Domain Folder Pattern
+
+**Consistent structure across all apps:**
+
+**TypeScript Domains (Designer):**
+
+```
+src/domains/{domain-name}/
+├── adapters/                # External service wrappers
+├── api/                     # Generated clients, queries, mutations
+│   └── generated/           # OpenAPI-generated types + client
+├── components/              # UI components for this domain
+├── services/                # Domain services
+└── utils/                   # Helpers
+```
+
+**TypeScript Domains (bms-backend-api - Future):**
+
+```
+src/domains/{domain-name}/
+├── controllers/             # Request handlers
+├── services/                # Business logic
+├── jobs/                    # Cron jobs (if applicable)
+├── dto/                     # Data transfer objects
+└── utils/                   # Helpers
+```
+
+**Python Domains:**
+
+```
+src/
+├── adapters/                # Library implementations (swappable)
+├── controllers/             # Business logic orchestration
+├── dto/                     # Request/Response schemas (Pydantic)
+├── models/                  # Domain models
+├── routers/                 # FastAPI endpoints
+├── config/                  # Settings
+└── services/                # Cross-cutting concerns
+```
+
+---
+
+## Decoupling Rules
+
+### 1. API-Only Communication
+
+Domains communicate **only via APIs** (REST, GraphQL, or Events):
+
+```
+✅ Designer → HTTP → building-semantics-api
+✅ Designer → HTTP → control-sequence-api
+✅ bms-backend-api → HTTP → control-sequence-api
+❌ Direct import across domain boundaries
+```
+
+### 2. No Cross-Domain Database Access
+
+Each domain owns its data:
+
+```
+✅ building-semantics-api owns RDF store
+✅ control-sequence-api owns FMU instance state
+✅ Designer owns project/flow database
+❌ Domain A directly queries Domain B's database
+```
+
+### 3. Contract-First Development
+
+API contracts are the **only interface** between domains:
+
+1. Python API defines Pydantic DTOs
+2. FastAPI generates OpenAPI spec
+3. `openapi-ts` generates TypeScript client + types
+4. Designer imports generated types
+
+```
+Python DTO → OpenAPI → TypeScript Types
+(source of truth)     (generated, not manual)
+```
+
+### 4. Expose Domain Concepts, Not Library Internals
+
+APIs should expose **what the domain does**, not **how the library works**.
+
+**Bad - Leaky Abstraction (exposes library):**
+
+```typescript
+// Caller must know SPARQL and RDF concepts
+const result = await api.runSparqlQuery(
+  "SELECT ?s WHERE { ?s rdf:type s223:VAV }",
+);
+const graph = await api.getBuildingMotifModel(projectId);
+```
+
+If you swap BuildingMOTIF for another library, all callers must change.
+
+**Good - Domain Abstraction:**
+
+```typescript
+// Caller only knows domain concepts
+const vavUnits = await api.getEquipmentByType(projectId, "VAV");
+const systems = await api.getSystems(projectId);
+```
+
+If you swap the library, only the adapter layer changes. Callers are unaffected.
+
+### 5. Event-Driven Async Communication
+
+For real-time updates, use MQTT pub/sub:
+
+```
+Device I/O → MQTT → Designer (telemetry)
+Designer → MQTT → Device I/O (commands)
+```
+
+---
+
 ## System Architecture
 
-### Current Components (Implemented)
+### Domain-Aware Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Designer App (Next.js)                   │
-│  - Visual programming interface (React Flow)                │
-│  - Project management & validation (Zod schemas)            │
-│  - Real-time device monitoring (MQTT.js client)             │
-│  - Database: SQLite (local) / Turso (remote, Vercel)        │
-└──────────────────┬──────────────────────────────────────────┘
-                   │ MQTT (paho-mqtt / MQTT.js)
-                   │ JSON messages
-                   ↓
-┌─────────────────────────────────────────────────────────────┐
-│            BMS IoT App (Python asyncio actors)              │
-│  - BACnet device discovery & monitoring (BAC0, bacpypes3)   │
-│  - Actor-based concurrency (asyncio-based actors)           │
-│  - MQTT pub/sub messaging (paho-mqtt)                       │
-│  - Database: SQLite (local runtime cache)                   │
-│  - CLI interface (Typer)                                    │
-└──────────────────┬──────────────────────────────────────────┘
-                   │ BACnet/IP
-                   ↓
-           ┌───────────────────┐
-           │  BACnet Devices   │
-           │  (Controllers,    │
-           │   Sensors, etc.)  │
-           └───────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Designer (Next.js)                               │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │                         src/domains/                                 ││
+│  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌─────────────┐ ││
+│  │  │ building-    │ │ control-     │ │  graphics    │ │   alarm     │ ││
+│  │  │ semantics    │ │ sequence     │ │  (future)    │ │  (future)   │ ││
+│  │  └──────┬───────┘ └──────┬───────┘ └──────────────┘ └─────────────┘ ││
+│  └─────────┼────────────────┼──────────────────────────────────────────┘│
+│            │ HTTP           │ HTTP                                       │
+└────────────┼────────────────┼────────────────────────────────────────────┘
+             ▼                ▼
+┌────────────────────┐ ┌────────────────────┐
+│ building-semantics │ │ control-sequence   │
+│ -api (Python)      │ │ -api (Python)      │
+│                    │ │                    │
+│ • 223P modeling    │ │ • G36 sequences    │
+│ • RDF/SHACL        │ │ • FMU execution    │
+│                    │ │                    │
+│ Library:           │ │ Library:           │
+│ BuildingMOTIF      │ │ FMPy              │
+└────────────────────┘ └────────────────────┘
 ```
 
-### Near-Term Planned (Active Development)
+### MQTT + Data Flow
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│              BuildingMOTIF Service (FastAPI)                │
-│  - ASHRAE 223P semantic modeling (RDF graphs)               │
-│  - SHACL validation (equipment, G36 sequences)              │
-│  - Template library (VAV, AHU, CHW, etc.)                   │
-│  - RESTful API (Pydantic → OpenAPI → TypeScript types)      │
-│  ↑                                                           │
-│  └─ Designer integrates via generated TypeScript client     │
-└─────────────────────────────────────────────────────────────┘
-
-Spec: /docs/specs/2025-10-24-buildingmotif-integration-spec.md
-Status: Phase 0 complete, Phase 1-3 in progress
+┌──────────────────┐         HTTP          ┌──────────────────┐
+│     Designer     │◄─────────────────────►│  bms-backend-api │
+│                  │  (query history/agg)  │     (future)     │
+│ • UI telemetry   │                       │                  │
+│ • Send commands  │                       │ • Historian      │
+│                  │                       │ • Aggregation    │
+│                  │                       │ • Exposes API    │
+└────────┬─────────┘                       └────────┬─────────┘
+         │                                          │
+         │ MQTT (telemetry, commands)               │ MQTT (subscribe, sink)
+         │                                          │
+         └──────────────────┬───────────────────────┘
+                            ▼
+                ┌───────────────────────┐
+                │     MQTT Broker       │
+                └───────────────────────┘
+                            ▲
+                            │ MQTT (publish telemetry, recv commands)
+                            │
+                ┌───────────────────────┐
+                │     bms-iot-app       │
+                │                       │
+                │ • BACnet polling      │
+                │ • Publish to MQTT     │
+                │ • Only app that talks │
+                │   to physical devices │
+                └───────────┬───────────┘
+                            │ BACnet/IP
+                            ▼
+                ┌───────────────────────┐
+                │    BACnet Devices     │
+                └───────────────────────┘
 ```
 
-### Long-Term Future (Planned)
+### Future: bms-backend-api (TypeScript)
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│        FMU/Modelica Service (Python + PyFMI)                │
-│  - G36 HVAC sequence simulation                             │
-│  - Functional Mock-up Interface (FMU) runtime               │
-│  - Control logic validation                                 │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│          AI Integration Service (Python + LLM)              │
-│  - ASHRAE 223P → BACnet point mapping suggestions           │
-│  - Semantic analysis of BACnet metadata                     │
-│  - Equipment template recommendations                        │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      bms-backend-api (Node.js)                           │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │                         src/domains/                                 ││
+│  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                 ││
+│  │  │  historian   │ │ notification │ │   future     │                 ││
+│  │  │  • MQTT sub  │ │  • alerts    │ │   domains    │                 ││
+│  │  │  • aggregate │ │  • delivery  │ │              │                 ││
+│  │  │  • HTTP API  │ │              │ │              │                 ││
+│  │  └──────────────┘ └──────────────┘ └──────────────┘                 ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────────────┘
 ```
+
+### Communication Patterns
+
+| From            | To              | Protocol  | Purpose                              |
+| --------------- | --------------- | --------- | ------------------------------------ |
+| Designer        | Python APIs     | HTTP      | Request/response (CRUD, queries)     |
+| Designer        | bms-backend-api | HTTP      | Query historical/aggregated data     |
+| Designer        | MQTT Broker     | MQTT      | Real-time telemetry, send commands   |
+| bms-backend-api | MQTT Broker     | MQTT      | Subscribe to sink and aggregate data |
+| bms-iot-app     | MQTT Broker     | MQTT      | Publish telemetry, receive commands  |
+| bms-iot-app     | BACnet Devices  | BACnet/IP | Device polling, writes (only app)    |
+
+### Current Implementation Status
+
+| App                    | Status         | Description                                         |
+| ---------------------- | -------------- | --------------------------------------------------- |
+| designer               | ✅ Implemented | Visual programming, project management, MQTT client |
+| building-semantics-api | ✅ Implemented | ASHRAE 223P modeling, templates                     |
+| control-sequence-api   | 🚧 In Progress | G36 FMU execution                                   |
+| bms-iot-app            | ✅ Implemented | BACnet discovery, monitoring, MQTT                  |
+| bms-backend-api        | 📋 Planned     | Historian, notifications, cron jobs, HTTP API       |
 
 ---
 
@@ -864,7 +1081,7 @@ BuildingMOTIF Service (Python FastAPI)
 
 **Technology:**
 
-- Python + PyFMI (Modelica FMU runtime)
+- Python + FMPy (Modelica FMU runtime)
 - FastAPI for API endpoints
 - Integration with visual programming canvas
 
@@ -924,47 +1141,114 @@ Cloud Monitoring Apps
 ```
 bms-supervisor-controller/
 ├── apps/
-│   ├── designer/              # Next.js visual programming UI
+│   ├── designer/                    # Next.js - UI + domain frontends
 │   │   ├── src/
-│   │   │   ├── app/           # Next.js routes
-│   │   │   ├── components/    # React components
-│   │   │   ├── lib/           # Core logic, schemas, DB, MQTT
-│   │   │   ├── store/         # Zustand state management
-│   │   │   └── types/         # TypeScript types
-│   │   ├── drizzle.config.ts  # Drizzle ORM config
-│   │   ├── package.json
-│   │   └── jest.config.ts     # 306 test files
+│   │   │   ├── app/                 # Next.js routes + API routes
+│   │   │   ├── components/          # Shared React components
+│   │   │   ├── domains/             # Domain modules (see below)
+│   │   │   │   ├── building-semantics/
+│   │   │   │   ├── control-sequence/
+│   │   │   │   ├── graphics/        # (future MFE)
+│   │   │   │   └── alarm/           # (future MFE)
+│   │   │   ├── lib/                 # Core logic, schemas, DB, MQTT
+│   │   │   ├── store/               # Zustand state management
+│   │   │   └── types/               # TypeScript types
+│   │   ├── drizzle.config.ts
+│   │   └── package.json
 │   │
-│   └── bms-iot-app/           # Python BACnet/MQTT service
+│   ├── building-semantics-api/      # Python - Building Semantics domain
+│   │   ├── src/
+│   │   │   ├── adapters/            # Library wrappers (swappable)
+│   │   │   ├── controllers/         # Business logic
+│   │   │   ├── dto/                 # Pydantic DTOs
+│   │   │   ├── models/              # Domain models
+│   │   │   └── routers/             # FastAPI endpoints
+│   │   └── tests/
+│   │
+│   ├── control-sequence-api/        # Python - Control Sequence domain
+│   │   ├── src/                     # (same structure as above)
+│   │   └── tests/
+│   │
+│   ├── bms-iot-app/                 # Python - Device I/O domain
+│   │   ├── src/
+│   │   │   ├── actors/              # Actor model (asyncio)
+│   │   │   ├── controllers/         # Business logic
+│   │   │   ├── dto/                 # Pydantic DTOs
+│   │   │   ├── models/              # SQLModel (database)
+│   │   │   ├── network/             # MQTT client
+│   │   │   └── main.py
+│   │   └── tests/
+│   │
+│   └── bms-backend-api/             # Node.js - TypeScript backend (future)
 │       ├── src/
-│       │   ├── actors/        # Actor model (asyncio)
-│       │   ├── controllers/   # Business logic
-│       │   ├── dto/           # Pydantic DTOs
-│       │   ├── models/        # SQLModel (database)
-│       │   ├── network/       # MQTT client
-│       │   ├── utils/         # Logging, helpers
-│       │   └── main.py        # Entry point
-│       ├── tests/             # 800+ pytest tests
-│       ├── pyproject.toml
-│       └── migrations/        # SQLModel migrations
+│       │   └── domains/
+│       │       ├── historian/       # Data aggregation, cron
+│       │       └── notification/    # Alerts, delivery
+│       └── tests/
 │
 ├── packages/
-│   └── mqtt_topics/           # Shared MQTT topic definitions
-│       ├── topics.json        # Topic structure
-│       ├── src/               # TypeScript implementation
-│       └── python/            # Python implementation
+│   └── mqtt_topics/                 # Shared MQTT topic definitions
+│       ├── src/                     # TypeScript implementation
+│       └── python/                  # Python implementation
 │
 ├── docs/
-│   ├── architecture.md        # This file
+│   ├── architecture.md              # This file
 │   ├── coding-standards.md
-│   ├── specs/                 # Implementation specs
-│   └── research/              # Technology research
+│   └── specs/
 │
-├── CLAUDE.md                  # Developer context
-├── README.md                  # User documentation
-├── package.json               # Root package (PNPM workspace)
-└── pnpm-workspace.yaml        # Monorepo config
+├── CLAUDE.md
+├── README.md
+├── package.json
+└── pnpm-workspace.yaml
 ```
+
+---
+
+## Future: Micro-Frontends
+
+### Vision
+
+Graphics and Alarm domains will evolve into separate micro-frontends (MFEs), enabling:
+
+- **Independent deployment** - Release graphics fixes without touching alarm
+- **Team autonomy** - Different teams can own different MFEs
+- **Technology flexibility** - Each MFE can evolve independently
+
+### Migration Path
+
+```
+Current:
+┌─────────────────────────────────────────────┐
+│              Designer (Next.js)              │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐       │
+│  │graphics │ │  alarm  │ │  flow   │       │
+│  │ domain  │ │ domain  │ │ designer│       │
+│  └─────────┘ └─────────┘ └─────────┘       │
+└─────────────────────────────────────────────┘
+
+Future:
+┌─────────────────────────────────────────────┐
+│              Shell App (Router)              │
+└─────────────────────────────────────────────┘
+       │              │              │
+       ▼              ▼              ▼
+┌───────────┐  ┌───────────┐  ┌───────────┐
+│ Graphics  │  │   Alarm   │  │ Designer  │
+│   MFE     │  │    MFE    │  │   MFE     │
+└───────────┘  └───────────┘  └───────────┘
+```
+
+### Technology Decision
+
+Shell technology (Module Federation, single-spa, etc.) to be decided when MFE migration begins. Current domain structure in Designer prepares for this transition.
+
+### MFE API Pattern
+
+Each MFE will have its own Next.js API routes:
+
+- `/api/graphics/...` - Graphics MFE API
+- `/api/alarm/...` - Alarm MFE API
+- `/api/flows/...` - Designer MFE API
 
 ---
 
@@ -1091,6 +1375,7 @@ bms-supervisor-controller/
 
 ## Document History
 
+- **2025-12-03:** Added Architecture Vision - domain-first architecture with enforced decoupling, domain structure patterns, bms-backend-api for TypeScript cron/notifications, MFE roadmap for Graphics and Alarm domains
 - **2025-10-31:** Major update - verified from actual codebase, removed planned components that don't exist, added BuildingMOTIF near-term plans
 - **Previous:** Draft architecture (planned components, headless engine, supervisor-engine package)
 
