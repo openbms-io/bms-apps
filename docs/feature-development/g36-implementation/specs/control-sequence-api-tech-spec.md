@@ -52,14 +52,18 @@
 
 ## 2. Use Cases
 
-### UC1: Get Sequence Schema
+### ~~UC1: Get Sequence Schema~~ (SKIPPED)
 
-- **Actor:** Designer
-- **Trigger:** User drags G36 block onto canvas OR opens config panel
-- **Flow:**
-  1. Caller requests schema for sequence type (e.g., "reheat")
-  2. API returns parameters, inputs, and outputs with metadata (defaults, ranges, units)
-- **Output:** Schema with types, defaults, ranges, units, descriptions
+> **Decision:** Use OpenAPI-generated types instead of runtime schema endpoint.
+> Designer uses hardcoded node UI components and openapi-ts generates TypeScript types at build time.
+> Add schema endpoint later if dynamic form rendering is needed for multiple G36 types.
+
+- ~~**Actor:** Designer~~
+- ~~**Trigger:** User drags G36 block onto canvas OR opens config panel~~
+- ~~**Flow:**~~
+  ~~1. Caller requests schema for sequence type (e.g., "reheat")~~
+  ~~2. API returns parameters, inputs, and outputs with metadata (defaults, ranges, units)~~
+- ~~**Output:** Schema with types, defaults, ranges, units, descriptions~~
 
 ### UC2: Create FMU Instance
 
@@ -211,126 +215,21 @@ class Settings(BaseSettings):
 
 ### 4.1 Endpoints
 
-| Method | Path                                              | Description                                                   | UC  |
-| ------ | ------------------------------------------------- | ------------------------------------------------------------- | --- |
-| GET    | `/api/v1/g36/reheat/schema`                       | Get Reheat schema (parameters, inputs, outputs with metadata) | UC1 |
-| POST   | `/api/v1/g36/reheat/instances`                    | Create FMU instance with parameters                           | UC2 |
-| PUT    | `/api/v1/g36/reheat/instances/{instance_id}`      | Update instance parameters (resets FMU)                       | UC3 |
-| POST   | `/api/v1/g36/reheat/instances/{instance_id}/step` | Execute Reheat Terminal step                                  | UC4 |
-| DELETE | `/api/v1/g36/instances/{instance_id}`             | Delete FMU instance (sequence-agnostic)                       | UC5 |
-| GET    | `/api/v1/health`                                  | Health check                                                  | UC6 |
-| POST   | `/api/v1/g36/validate`                            | SHACL validation (stub)                                       | UC7 |
+| Method  | Path                                              | Description                                                  | UC      |
+| ------- | ------------------------------------------------- | ------------------------------------------------------------ | ------- |
+| ~~GET~~ | ~~`/api/v1/g36/reheat/schema`~~                   | ~~Get Reheat schema~~ - SKIPPED: Use OpenAPI-generated types | ~~UC1~~ |
+| POST    | `/api/v1/g36/reheat/instances`                    | Create FMU instance with parameters                          | UC2     |
+| PUT     | `/api/v1/g36/reheat/instances/{instance_id}`      | Update instance parameters (resets FMU)                      | UC3     |
+| POST    | `/api/v1/g36/reheat/instances/{instance_id}/step` | Execute Reheat Terminal step                                 | UC4     |
+| DELETE  | `/api/v1/g36/instances/{instance_id}`             | Delete FMU instance (sequence-agnostic)                      | UC5     |
+| GET     | `/api/v1/health`                                  | Health check                                                 | UC6     |
+| POST    | `/api/v1/g36/validate`                            | SHACL validation (stub)                                      | UC7     |
 
 ### 4.2 Request/Response Schemas
 
-#### GET `/api/v1/g36/reheat/schema`
+#### ~~GET `/api/v1/g36/reheat/schema`~~ (SKIPPED)
 
-**Response (200):**
-
-```json
-{
-  "sequence_type": "reheat",
-  "parameters": {
-    "VCooMax": {
-      "type": "float",
-      "default": 0.5,
-      "min": 0,
-      "unit": "m³/s",
-      "description": "Maximum cooling airflow"
-    },
-    "VHeaMax": {
-      "type": "float",
-      "default": 0.3,
-      "min": 0,
-      "unit": "m³/s",
-      "description": "Maximum heating airflow"
-    },
-    "VMin": {
-      "type": "float",
-      "default": 0.1,
-      "min": 0,
-      "unit": "m³/s",
-      "description": "Minimum airflow"
-    }
-  },
-  "inputs": {
-    "TZon": {
-      "type": "float",
-      "min": 250,
-      "max": 350,
-      "unit": "K",
-      "description": "Zone temperature"
-    },
-    "TCooSet": {
-      "type": "float",
-      "min": 250,
-      "max": 350,
-      "unit": "K",
-      "description": "Cooling setpoint"
-    },
-    "THeaSet": {
-      "type": "float",
-      "min": 250,
-      "max": 350,
-      "unit": "K",
-      "description": "Heating setpoint"
-    },
-    "TDis": {
-      "type": "float",
-      "min": 250,
-      "max": 350,
-      "unit": "K",
-      "description": "Discharge air temperature"
-    },
-    "VDis_flow": {
-      "type": "float",
-      "min": 0,
-      "unit": "m³/s",
-      "description": "Primary airflow"
-    },
-    "TSup": {
-      "type": "float",
-      "min": 250,
-      "max": 350,
-      "unit": "K",
-      "description": "AHU supply air temperature"
-    },
-    "TSupSet": {
-      "type": "float",
-      "min": 250,
-      "max": 350,
-      "unit": "K",
-      "description": "AHU supply setpoint"
-    },
-    "u1Fan": { "type": "boolean", "description": "AHU fan status" },
-    "uOpeMod": {
-      "type": "integer",
-      "min": 1,
-      "max": 7,
-      "description": "Operation mode"
-    }
-  },
-  "outputs": {
-    "yDam": {
-      "type": "float",
-      "min": 0,
-      "max": 1,
-      "description": "Damper position"
-    },
-    "yVal": {
-      "type": "float",
-      "min": 0,
-      "max": 1,
-      "description": "Heating valve position"
-    },
-    "VSet_flow": {
-      "type": "float",
-      "unit": "m³/s",
-      "description": "Airflow setpoint"
-    }
-  }
-}
-```
+> Schema endpoint skipped. Use OpenAPI-generated types from `/openapi.json` instead.
 
 #### POST `/api/v1/g36/reheat/instances`
 
@@ -624,16 +523,16 @@ class ReheatInputs(BaseModel):
 
 ## 6. Implementation Stories
 
-| Story | Description                        | Scope                                                                          |
-| ----- | ---------------------------------- | ------------------------------------------------------------------------------ |
-| 2.1   | Project Setup & Scaffolding        | pyproject.toml, MVC folders, settings, main.py                                 |
-| 2.2   | Reheat DTOs & Validation           | Pydantic schemas for parameters, inputs, outputs with Field metadata           |
-| 2.3   | Schema Endpoint                    | GET /schema - returns parameters, inputs, outputs with defaults, ranges, units |
-| 2.4   | FMU Adapter (Singleton)            | fmu_adapter.py - create, update, step, delete FMU instances                    |
-| 2.5   | G36 Controller                     | g36_controller.py - business logic, orchestrates adapter                       |
-| 2.6   | G36 Router & Endpoints             | g36_router.py - all Reheat endpoints (schema, create, update, step, delete)    |
-| 2.7   | Health Router                      | health_router.py - health check endpoint                                       |
-| 2.8   | SHACL Validation Stub              | validate endpoint - stub returning always valid                                |
-| 2.9   | API Documentation                  | Docstrings, Field descriptions, Swagger polish                                 |
-| 2.10  | Designer OpenAPI Client Generation | Add generate:g36-client script, generate types + client                        |
-| 2.11  | Unit & Integration Tests           | Tests for adapter, controller, router, DTOs                                    |
+| Story   | Description                        | Scope                                                                |
+| ------- | ---------------------------------- | -------------------------------------------------------------------- |
+| 2.1     | Project Setup & Scaffolding        | pyproject.toml, MVC folders, settings, main.py                       |
+| 2.2     | Reheat DTOs & Validation           | Pydantic schemas for parameters, inputs, outputs with Field metadata |
+| ~~2.3~~ | ~~Schema Endpoint~~                | ~~GET /schema~~ - SKIPPED: Use OpenAPI-generated types instead       |
+| 2.4     | FMU Adapter (Singleton)            | fmu_adapter.py - create, update, step, delete FMU instances          |
+| 2.5     | G36 Controller                     | g36_controller.py - business logic, orchestrates adapter             |
+| 2.6     | G36 Router & Endpoints             | g36_router.py - all Reheat endpoints (create, update, step, delete)  |
+| 2.7     | Health Router                      | health_router.py - health check endpoint                             |
+| 2.8     | SHACL Validation Stub              | validate endpoint - stub returning always valid                      |
+| 2.9     | API Documentation                  | Docstrings, Field descriptions, Swagger polish                       |
+| 2.10    | Designer OpenAPI Client Generation | Add generate:g36-client script, generate types + client              |
+| 2.11    | Unit & Integration Tests           | Tests for adapter, controller, router, DTOs                          |

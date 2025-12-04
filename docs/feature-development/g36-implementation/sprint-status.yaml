@@ -45,10 +45,10 @@ development_status:
   1-4-document-poc-findings: done
   1-5-control-sequence-api-tech-spec: done
   1-6-project-setup-scaffolding: done
-  1-7-nginx-proxy-configuration: ready-for-dev
-  1-8-reheat-dtos-validation: backlog
-  1-9-schema-endpoint: backlog
-  1-10-fmu-adapter-singleton: backlog
+  1-7-nginx-proxy-configuration: done
+  1-8-reheat-dtos-validation: done
+  1-9-schema-endpoint: skipped # Decision: Use generated types instead, add schema endpoint later if needed for multiple G36 types
+  1-10-fmu-adapter-singleton: ready-for-dev
   1-11-g36-controller: backlog
   1-12-g36-router-endpoints: backlog
   1-13-health-router: backlog
