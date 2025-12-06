@@ -1,4 +1,4 @@
-# BMS Supervisor Controller
+# OpenBMS
 
 [![Phase](https://img.shields.io/badge/Phase-6%2F8-yellow.svg)](docs/PROJECT_STATUS.md)
 [![Status](https://img.shields.io/badge/Status-Alpha-orange.svg)](docs/PROJECT_STATUS.md)
