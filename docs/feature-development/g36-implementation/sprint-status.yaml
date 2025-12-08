@@ -51,8 +51,8 @@ development_status:
   1-10-fmu-adapter-singleton: done
   1-11-g36-controller: done
   1-12-g36-router-endpoints: done
-  1-13-health-router: review
-  1-14-shacl-validation-stub: backlog
+  1-13-health-router: done
+  1-14-shacl-validation-stub: review
   1-15-api-documentation: backlog
   1-16-designer-openapi-client: backlog
   1-17-unit-integration-tests: backlog

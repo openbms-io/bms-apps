@@ -11,6 +11,7 @@ from .adapters.fmu_adapter import FmuAdapter
 from .config.settings import get_settings
 from .routers.g36_router import router as g36_router
 from .routers.health_router import router as health_router
+from .routers.validation_router import router as validation_router
 
 settings = get_settings()
 
@@ -65,3 +66,4 @@ app.add_middleware(
 
 app.include_router(g36_router)
 app.include_router(health_router)
+app.include_router(validation_router)
