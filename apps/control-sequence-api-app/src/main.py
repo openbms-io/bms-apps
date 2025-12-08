@@ -10,6 +10,7 @@ from loguru import logger
 from .adapters.fmu_adapter import FmuAdapter
 from .config.settings import get_settings
 from .routers.g36_router import router as g36_router
+from .routers.health_router import router as health_router
 
 settings = get_settings()
 
@@ -63,12 +64,4 @@ app.add_middleware(
 
 
 app.include_router(g36_router)
-
-
-@app.get("/health", tags=["Health"])
-async def health_check() -> dict[str, str]:
-    return {
-        "status": "healthy",
-        "service": "control-sequence-api",
-        "version": "0.1.0",
-    }
+app.include_router(health_router)

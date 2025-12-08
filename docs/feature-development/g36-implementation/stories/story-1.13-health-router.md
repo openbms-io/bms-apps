@@ -1,6 +1,6 @@
 # Story 1.13: Health Router
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -17,42 +17,42 @@ So that we can monitor API health and track resource usage.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create Health Router (AC: #1, #4)
+- [x] Task 1: Create Health Router (AC: #1, #4)
 
-  - [ ] Create `src/routers/health_router.py`
-  - [ ] Add GET /api/v1/health endpoint
-  - [ ] Return HealthResponse with status, active_instances, service, version
-  - [ ] Add docstring for OpenAPI documentation
+  - [x] Create `src/routers/health_router.py`
+  - [x] Add GET /api/v1/health endpoint
+  - [x] Return HealthResponse with status, active_instances, service, version
+  - [x] Add docstring for OpenAPI documentation
 
-- [ ] Task 2: Create Health DTOs (AC: #1)
+- [x] Task 2: Create Health DTOs (AC: #1)
 
-  - [ ] Create `src/dto/health_dto.py` or add to common_dto.py
-  - [ ] Define HealthResponse model with fields: status, active_instances, service, version
+  - [x] Create `src/dto/health_dto.py`
+  - [x] Define HealthResponse model with fields: status, active_instances, service, version
 
-- [ ] Task 3: Integrate with FmuAdapter (AC: #1)
+- [x] Task 3: Integrate with FmuAdapter (AC: #1)
 
-  - [ ] Inject FmuAdapter dependency to get active instance count
-  - [ ] Use `len(adapter.list_instance_ids())` or add `instance_count()` method
+  - [x] Inject FmuAdapter dependency to get active instance count
+  - [x] Use `len(adapter.list_instance_ids())` for active instance count
 
-- [ ] Task 4: Register Router in main.py (AC: #4)
+- [x] Task 4: Register Router in main.py (AC: #4)
 
-  - [ ] Import health_router in main.py
-  - [ ] Register with app.include_router(health_router)
-  - [ ] Remove or deprecate existing /health endpoint in main.py
+  - [x] Import health_router in main.py
+  - [x] Register with app.include_router(health_router)
+  - [x] Remove existing /health endpoint in main.py
 
-- [ ] Task 5: Unit Tests (AC: #1-3)
+- [x] Task 5: Unit Tests (AC: #1-3)
 
-  - [ ] Create `tests/unit/test_routers/test_health_router.py`
-  - [ ] Test health endpoint returns correct structure
-  - [ ] Test active_instances reflects actual FMU instances
-  - [ ] Verify response time <10ms
+  - [x] Create `tests/unit/test_routers/test_health_router.py`
+  - [x] Test health endpoint returns correct structure
+  - [x] Test active_instances reflects actual FMU instances
+  - [x] Verify response time <10ms
 
-- [ ] Task 6: Integration Tests (AC: #1, #4)
+- [x] Task 6: Integration Tests (AC: #1, #4)
 
-  - [ ] Add health endpoint test to integration tests
-  - [ ] Test health with 0 instances
-  - [ ] Test health with active instances
-  - [ ] Verify OpenAPI documentation includes health endpoint
+  - [x] Add health endpoint test to integration tests
+  - [x] Test health with 0 instances
+  - [x] Test health with active instances
+  - [x] Verify OpenAPI documentation includes health endpoint
 
 ## Dev Notes
 
@@ -154,16 +154,32 @@ Files to modify:
 
 ### Agent Model Used
 
-(to be filled during implementation)
+Claude Opus 4.5 (claude-opus-4-5-20251101)
 
 ### Debug Log References
 
-(to be filled during implementation)
+N/A - Implementation straightforward, no debugging needed.
 
 ### Completion Notes List
 
-(to be filled during implementation)
+- Implemented GET /api/v1/health endpoint following existing router patterns from g36_router.py
+- Created HealthResponse Pydantic model with status, service, version, active_instances fields
+- Used FastAPI Depends() for FmuAdapter injection following established DI pattern
+- Removed inline /health endpoint from main.py to avoid duplicate routes
+- 9 unit tests covering response structure, active instance count, and <10ms performance
+- 13 integration tests covering real FmuAdapter singleton, OpenAPI documentation
+- All 362 tests pass (no regressions)
 
 ### File List
 
-(to be filled during implementation)
+**Created:**
+
+- `apps/control-sequence-api-app/src/dto/health_dto.py`
+- `apps/control-sequence-api-app/src/routers/health_router.py`
+- `apps/control-sequence-api-app/tests/unit/test_routers/__init__.py`
+- `apps/control-sequence-api-app/tests/unit/test_routers/test_health_router.py`
+- `apps/control-sequence-api-app/tests/integration/test_health_router.py`
+
+**Modified:**
+
+- `apps/control-sequence-api-app/src/main.py` (import health_router, register router, remove inline endpoint)
