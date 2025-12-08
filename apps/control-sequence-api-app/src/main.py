@@ -9,6 +9,7 @@ from loguru import logger
 
 from .adapters.fmu_adapter import FmuAdapter
 from .config.settings import get_settings
+from .routers.g36_router import router as g36_router
 
 settings = get_settings()
 
@@ -59,6 +60,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(g36_router)
 
 
 @app.get("/health", tags=["Health"])

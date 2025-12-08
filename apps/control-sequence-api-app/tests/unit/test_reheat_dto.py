@@ -5,6 +5,10 @@ from pydantic import ValidationError
 
 from src.dto.reheat_dto import (
     CELSIUS_TO_KELVIN_OFFSET,
+    CFM_TO_M3_PER_S,
+    L_PER_S_TO_M3_PER_S,
+    M3_PER_H_TO_M3_PER_S,
+    AirflowUnit,
     CreateInstanceRequest,
     OperationMode,
     ReheatInputs,
@@ -13,6 +17,7 @@ from src.dto.reheat_dto import (
     ReheatParameters,
     StepRequest,
     TemperatureUnit,
+    airflow_in_m3_per_s,
     temp_in_kelvin,
 )
 
@@ -38,6 +43,37 @@ class TestTempInKelvin:
         assert temp_in_kelvin(212.0, TemperatureUnit.FAHRENHEIT) == 373.15
         result = temp_in_kelvin(71.6, TemperatureUnit.FAHRENHEIT)
         assert result == pytest.approx(295.15, rel=1e-2)
+
+
+class TestAirflowUnit:
+    def test_enum_values(self) -> None:
+        assert AirflowUnit.M3_PER_S == "m3/s"
+        assert AirflowUnit.CFM == "cfm"
+        assert AirflowUnit.L_PER_S == "L/s"
+        assert AirflowUnit.M3_PER_H == "m3/h"
+
+
+class TestAirflowInM3PerS:
+    def test_m3_per_s_unchanged(self) -> None:
+        assert airflow_in_m3_per_s(0.5, AirflowUnit.M3_PER_S) == 0.5
+        assert airflow_in_m3_per_s(1.0, AirflowUnit.M3_PER_S) == 1.0
+
+    def test_cfm_to_m3_per_s(self) -> None:
+        result = airflow_in_m3_per_s(1000.0, AirflowUnit.CFM)
+        assert result == pytest.approx(0.471947, rel=1e-4)
+        result = airflow_in_m3_per_s(500.0, AirflowUnit.CFM)
+        assert result == pytest.approx(0.2359735, rel=1e-4)
+
+    def test_l_per_s_to_m3_per_s(self) -> None:
+        assert airflow_in_m3_per_s(1000.0, AirflowUnit.L_PER_S) == 1.0
+        assert airflow_in_m3_per_s(500.0, AirflowUnit.L_PER_S) == 0.5
+        assert airflow_in_m3_per_s(100.0, AirflowUnit.L_PER_S) == 0.1
+
+    def test_m3_per_h_to_m3_per_s(self) -> None:
+        result = airflow_in_m3_per_s(3600.0, AirflowUnit.M3_PER_H)
+        assert result == pytest.approx(1.0, rel=1e-6)
+        result = airflow_in_m3_per_s(1800.0, AirflowUnit.M3_PER_H)
+        assert result == pytest.approx(0.5, rel=1e-6)
 
 
 class TestOperationMode:
@@ -300,6 +336,57 @@ class TestReheatInputsFromRequest:
             ReheatInputs.from_request(request)
         assert "zoneTemperature" in str(exc_info.value)
 
+    def test_cfm_to_m3_per_s_conversion(self) -> None:
+        request = ReheatInputsRequest(
+            temperatureUnit=TemperatureUnit.CELSIUS,
+            airflowUnit=AirflowUnit.CFM,
+            zoneTemperature=22.0,
+            coolingSetpoint=24.0,
+            heatingSetpoint=20.0,
+            dischargeAirTemperature=16.0,
+            primaryAirflow=1000.0,
+            supplyAirTemperature=13.0,
+            supplyAirTemperatureSetpoint=12.0,
+            fanStatus=True,
+            operationMode=OperationMode.STANDBY,
+        )
+        inputs = ReheatInputs.from_request(request)
+        assert inputs.primaryAirflow == pytest.approx(0.471947, rel=1e-4)
+
+    def test_l_per_s_to_m3_per_s_conversion(self) -> None:
+        request = ReheatInputsRequest(
+            temperatureUnit=TemperatureUnit.CELSIUS,
+            airflowUnit=AirflowUnit.L_PER_S,
+            zoneTemperature=22.0,
+            coolingSetpoint=24.0,
+            heatingSetpoint=20.0,
+            dischargeAirTemperature=16.0,
+            primaryAirflow=500.0,
+            supplyAirTemperature=13.0,
+            supplyAirTemperatureSetpoint=12.0,
+            fanStatus=True,
+            operationMode=OperationMode.STANDBY,
+        )
+        inputs = ReheatInputs.from_request(request)
+        assert inputs.primaryAirflow == 0.5
+
+    def test_m3_per_s_passthrough(self) -> None:
+        request = ReheatInputsRequest(
+            temperatureUnit=TemperatureUnit.CELSIUS,
+            airflowUnit=AirflowUnit.M3_PER_S,
+            zoneTemperature=22.0,
+            coolingSetpoint=24.0,
+            heatingSetpoint=20.0,
+            dischargeAirTemperature=16.0,
+            primaryAirflow=0.3,
+            supplyAirTemperature=13.0,
+            supplyAirTemperatureSetpoint=12.0,
+            fanStatus=True,
+            operationMode=OperationMode.STANDBY,
+        )
+        inputs = ReheatInputs.from_request(request)
+        assert inputs.primaryAirflow == 0.3
+
 
 class TestReheatOutputs:
     @pytest.fixture
@@ -372,21 +459,47 @@ class TestReheatOutputs:
 
 
 class TestCreateInstanceRequest:
-    def test_with_parameters(self) -> None:
+    def test_with_parameters_and_inputs(self) -> None:
         params = ReheatParameters(maxCoolingAirflow=0.6)
-        request = CreateInstanceRequest(instance_id="test-1", parameters=params)
+        inputs = ReheatInputsRequest(
+            zoneTemperature=22.0,
+            coolingSetpoint=24.0,
+            heatingSetpoint=20.0,
+            dischargeAirTemperature=16.0,
+            primaryAirflow=0.3,
+            supplyAirTemperature=13.0,
+            supplyAirTemperatureSetpoint=12.0,
+            fanStatus=True,
+            operationMode=OperationMode.OCCUPIED,
+        )
+        request = CreateInstanceRequest(
+            instance_id="test-1",
+            parameters=params,
+            inputs=inputs,
+        )
         assert request.instance_id == "test-1"
-        assert request.parameters is not None
         assert request.parameters.maxCoolingAirflow == 0.6
+        assert request.inputs.zoneTemperature == 22.0
 
-    def test_without_parameters(self) -> None:
-        request = CreateInstanceRequest(instance_id="test-1")
-        assert request.instance_id == "test-1"
-        assert request.parameters is None
+    def test_requires_parameters(self) -> None:
+        inputs = ReheatInputsRequest(
+            zoneTemperature=22.0,
+            coolingSetpoint=24.0,
+            heatingSetpoint=20.0,
+            dischargeAirTemperature=16.0,
+            primaryAirflow=0.3,
+            supplyAirTemperature=13.0,
+            supplyAirTemperatureSetpoint=12.0,
+            fanStatus=True,
+            operationMode=OperationMode.OCCUPIED,
+        )
+        with pytest.raises(ValidationError):
+            CreateInstanceRequest(instance_id="test-1", inputs=inputs)
 
-    def test_with_explicit_none_parameters(self) -> None:
-        request = CreateInstanceRequest(instance_id="test-1", parameters=None)
-        assert request.parameters is None
+    def test_requires_inputs(self) -> None:
+        params = ReheatParameters()
+        with pytest.raises(ValidationError):
+            CreateInstanceRequest(instance_id="test-1", parameters=params)
 
 
 class TestStepRequest:

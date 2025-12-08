@@ -49,9 +49,9 @@ development_status:
   1-8-reheat-dtos-validation: done
   1-9-schema-endpoint: skipped # Decision: Use generated types instead, add schema endpoint later if needed for multiple G36 types
   1-10-fmu-adapter-singleton: done
-  1-11-g36-controller: backlog
-  1-12-g36-router-endpoints: backlog
-  1-13-health-router: backlog
+  1-11-g36-controller: done
+  1-12-g36-router-endpoints: done
+  1-13-health-router: ready-for-dev
   1-14-shacl-validation-stub: backlog
   1-15-api-documentation: backlog
   1-16-designer-openapi-client: backlog

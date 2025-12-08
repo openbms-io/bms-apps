@@ -1,12 +1,21 @@
 """FMU Adapter singleton for managing FMU instances."""
 
 import uuid
+from dataclasses import dataclass
 
 from src.adapters.exceptions import FmuInstanceNotFoundError
 from src.adapters.fmu_data.base import FMUDataProtocol
 from src.adapters.fmu_lifecycle import FmuLifecycleManager
 from src.adapters.sequence_type import SequenceType
 from src.adapters.fmu_instance import FmuInstanceState
+
+
+@dataclass(frozen=True, slots=True)
+class UpsertResult:
+    """Result of upsert_fmu_instance operation."""
+
+    instance_id: str
+    is_created: bool
 
 
 class FmuAdapter:
@@ -48,10 +57,45 @@ class FmuAdapter:
         Typically completes in <100ms. Use asyncio.to_thread() if called
         from async context where blocking is unacceptable.
         """
+        return self._create_fmu_instance(sequence_type, fmu_data)
+
+    def _create_fmu_instance(
+        self,
+        sequence_type: SequenceType,
+        fmu_data: FMUDataProtocol,
+        instance_id: str | None = None,
+    ) -> str:
+        """Internal: Create FMU instance with optional caller-provided instance_id."""
+        if instance_id is None:
+            instance_id = str(uuid.uuid4())
         lifecycle = FmuLifecycleManager(sequence_type, fmu_data)
-        instance_id = str(uuid.uuid4())
         self._lifecycle_managers[instance_id] = lifecycle
         return instance_id
+
+    async def upsert_fmu_instance(
+        self,
+        sequence_type: SequenceType,
+        fmu_data: FMUDataProtocol,
+        instance_id: str,
+    ) -> UpsertResult:
+        """Create or recreate FMU instance.
+
+        If instance_id exists, terminates and recreates it.
+        If instance_id doesn't exist, creates new instance.
+
+        Returns UpsertResult with instance_id and is_created flag.
+
+        Upsert semantics: FMPy has no native reset, so recreation is
+        required for parameter changes.
+        """
+        is_created = instance_id not in self._lifecycle_managers
+
+        if not is_created:
+            await self._lifecycle_managers[instance_id].terminate()
+            del self._lifecycle_managers[instance_id]
+
+        self._create_fmu_instance(sequence_type, fmu_data, instance_id)
+        return UpsertResult(instance_id=instance_id, is_created=is_created)
 
     async def update_fmu_instance(
         self,

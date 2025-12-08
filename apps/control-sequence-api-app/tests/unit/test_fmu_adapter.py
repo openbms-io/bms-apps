@@ -285,6 +285,35 @@ class TestCreateInstance:
         mock_fmpy["fmu"].setReal.assert_called()
 
 
+class TestUpsertInstance:
+
+    @pytest.mark.asyncio
+    async def test_upsert_creates_new_instance(self, adapter, fmu_data):
+        result = await adapter.upsert_fmu_instance(
+            SequenceType.REHEAT, fmu_data, instance_id="my-custom-id"
+        )
+        assert result.instance_id == "my-custom-id"
+        assert result.is_created is True
+        assert adapter.has_instance("my-custom-id")
+
+    @pytest.mark.asyncio
+    async def test_upsert_recreates_existing_instance(self, adapter, fmu_data, mock_fmpy):
+        result1 = await adapter.upsert_fmu_instance(
+            SequenceType.REHEAT, fmu_data, instance_id="recreate-me"
+        )
+        assert result1.instance_id == "recreate-me"
+        assert result1.is_created is True
+
+        mock_fmpy["fmu"].terminate.reset_mock()
+        result2 = await adapter.upsert_fmu_instance(
+            SequenceType.REHEAT, fmu_data, instance_id="recreate-me"
+        )
+        assert result2.instance_id == "recreate-me"
+        assert result2.is_created is False
+        mock_fmpy["fmu"].terminate.assert_called_once()
+        assert adapter.has_instance("recreate-me")
+
+
 class TestUpdateInstance:
 
     @pytest.mark.asyncio
