@@ -25,3 +25,4 @@ static const MMC_DEFSTRUCTLIT(boxvar_lit_Buildings_Utilities_Math_Functions_roun
 }
 #endif
 #endif
+

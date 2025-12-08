@@ -56,3 +56,4 @@ int freeTotalPivotData(void** data);
 int solveTotalPivot(DATA *data, threadData_t *threadData, int sysNumber, double* aux_x);
 
 #endif
+

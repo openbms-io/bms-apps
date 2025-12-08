@@ -61,3 +61,4 @@ int omc_get_max_threads(void)
   return 1;
 #endif
 }
+

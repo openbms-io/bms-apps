@@ -63,17 +63,17 @@ class TestOperationMode:
 class TestReheatParameters:
     def test_valid_defaults(self) -> None:
         params = ReheatParameters()
-        assert params.maxCoolingAirflow == 0.5
-        assert params.maxHeatingAirflow == 0.3
-        assert params.minAirflow == 0.1
+        assert params.maxCoolingAirflow == 1.5
+        assert params.maxHeatingAirflow == 1.2
+        assert params.minHeatingAirflow == 0.5
 
     def test_valid_custom_values(self) -> None:
         params = ReheatParameters(
-            maxCoolingAirflow=0.8, maxHeatingAirflow=0.5, minAirflow=0.2
+            maxCoolingAirflow=0.8, maxHeatingAirflow=0.5, minHeatingAirflow=0.2
         )
         assert params.maxCoolingAirflow == 0.8
         assert params.maxHeatingAirflow == 0.5
-        assert params.minAirflow == 0.2
+        assert params.minHeatingAirflow == 0.2
 
     def test_rejects_negative_max_cooling_airflow(self) -> None:
         with pytest.raises(ValidationError) as exc_info:
@@ -85,18 +85,18 @@ class TestReheatParameters:
             ReheatParameters(maxHeatingAirflow=-0.1)
         assert "maxHeatingAirflow" in str(exc_info.value)
 
-    def test_rejects_negative_min_airflow(self) -> None:
+    def test_rejects_negative_min_heating_airflow(self) -> None:
         with pytest.raises(ValidationError) as exc_info:
-            ReheatParameters(minAirflow=-0.1)
-        assert "minAirflow" in str(exc_info.value)
+            ReheatParameters(minHeatingAirflow=-0.1)
+        assert "minHeatingAirflow" in str(exc_info.value)
 
     def test_allows_zero_values(self) -> None:
         params = ReheatParameters(
-            maxCoolingAirflow=0, maxHeatingAirflow=0, minAirflow=0
+            maxCoolingAirflow=0, maxHeatingAirflow=0, minHeatingAirflow=0
         )
         assert params.maxCoolingAirflow == 0
         assert params.maxHeatingAirflow == 0
-        assert params.minAirflow == 0
+        assert params.minHeatingAirflow == 0
 
 
 class TestReheatInputsRequest:
@@ -302,46 +302,72 @@ class TestReheatInputsFromRequest:
 
 
 class TestReheatOutputs:
-    def test_valid_outputs(self) -> None:
-        outputs = ReheatOutputs(
-            damperPosition=0.75, valvePosition=0.0, airflowSetpoint=0.35
-        )
+    @pytest.fixture
+    def valid_outputs_data(self) -> dict[str, Any]:
+        return {
+            "damperPosition": 0.75,
+            "valvePosition": 0.0,
+            "airflowSetpoint": 0.35,
+            "minOutdoorAirflow": 0.1,
+            "adjAreaBreathingZoneFlow": 0.0,
+            "adjPopBreathingZoneFlow": 0.0,
+            "flowSensorAlarm": 0,
+            "heatingValveRequest": 0,
+            "hotWaterPlantRequest": 0,
+            "leakingDamperAlarm": 0,
+            "leakingValveAlarm": 0,
+            "lowFlowAlarm": 0,
+            "lowTempAlarm": 0,
+            "zonePressureRequest": 0,
+            "zoneTempRequest": 0,
+        }
+
+    def test_valid_outputs(self, valid_outputs_data: dict[str, Any]) -> None:
+        outputs = ReheatOutputs(**valid_outputs_data)
         assert outputs.damperPosition == 0.75
         assert outputs.valvePosition == 0.0
         assert outputs.airflowSetpoint == 0.35
+        assert outputs.minOutdoorAirflow == 0.1
+        assert outputs.flowSensorAlarm == 0
 
-    def test_boundary_values_min(self) -> None:
-        outputs = ReheatOutputs(
-            damperPosition=0, valvePosition=0, airflowSetpoint=0
-        )
+    def test_boundary_values_min(self, valid_outputs_data: dict[str, Any]) -> None:
+        valid_outputs_data["damperPosition"] = 0
+        valid_outputs_data["valvePosition"] = 0
+        valid_outputs_data["airflowSetpoint"] = 0
+        outputs = ReheatOutputs(**valid_outputs_data)
         assert outputs.damperPosition == 0
         assert outputs.valvePosition == 0
 
-    def test_boundary_values_max(self) -> None:
-        outputs = ReheatOutputs(
-            damperPosition=1, valvePosition=1, airflowSetpoint=0.5
-        )
+    def test_boundary_values_max(self, valid_outputs_data: dict[str, Any]) -> None:
+        valid_outputs_data["damperPosition"] = 1
+        valid_outputs_data["valvePosition"] = 1
+        valid_outputs_data["airflowSetpoint"] = 0.5
+        outputs = ReheatOutputs(**valid_outputs_data)
         assert outputs.damperPosition == 1
         assert outputs.valvePosition == 1
 
-    def test_rejects_damper_position_above_max(self) -> None:
+    def test_rejects_damper_position_above_max(self, valid_outputs_data: dict[str, Any]) -> None:
+        valid_outputs_data["damperPosition"] = 1.1
         with pytest.raises(ValidationError) as exc_info:
-            ReheatOutputs(damperPosition=1.1, valvePosition=0.5, airflowSetpoint=0.3)
+            ReheatOutputs(**valid_outputs_data)
         assert "damperPosition" in str(exc_info.value)
 
-    def test_rejects_damper_position_below_min(self) -> None:
+    def test_rejects_damper_position_below_min(self, valid_outputs_data: dict[str, Any]) -> None:
+        valid_outputs_data["damperPosition"] = -0.1
         with pytest.raises(ValidationError) as exc_info:
-            ReheatOutputs(damperPosition=-0.1, valvePosition=0.5, airflowSetpoint=0.3)
+            ReheatOutputs(**valid_outputs_data)
         assert "damperPosition" in str(exc_info.value)
 
-    def test_rejects_valve_position_above_max(self) -> None:
+    def test_rejects_valve_position_above_max(self, valid_outputs_data: dict[str, Any]) -> None:
+        valid_outputs_data["valvePosition"] = 1.5
         with pytest.raises(ValidationError) as exc_info:
-            ReheatOutputs(damperPosition=0.5, valvePosition=1.5, airflowSetpoint=0.3)
+            ReheatOutputs(**valid_outputs_data)
         assert "valvePosition" in str(exc_info.value)
 
-    def test_rejects_valve_position_below_min(self) -> None:
+    def test_rejects_valve_position_below_min(self, valid_outputs_data: dict[str, Any]) -> None:
+        valid_outputs_data["valvePosition"] = -0.1
         with pytest.raises(ValidationError) as exc_info:
-            ReheatOutputs(damperPosition=0.5, valvePosition=-0.1, airflowSetpoint=0.3)
+            ReheatOutputs(**valid_outputs_data)
         assert "valvePosition" in str(exc_info.value)
 
 

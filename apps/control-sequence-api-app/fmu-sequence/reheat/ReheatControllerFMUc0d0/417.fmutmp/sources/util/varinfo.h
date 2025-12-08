@@ -46,3 +46,4 @@ extern void freeVarInfo(VAR_INFO* info);
 #endif
 
 #endif
+

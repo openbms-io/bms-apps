@@ -28,18 +28,18 @@ static doublereal c_b19 = -1.;
 
     /* Local variables */
     integer i__, j, jb, nb;
-    extern /* Subroutine */ int dgemm_(char *, char *, integer *, integer *,
-	    integer *, doublereal *, doublereal *, integer *, doublereal *,
+    extern /* Subroutine */ int dgemm_(char *, char *, integer *, integer *, 
+	    integer *, doublereal *, doublereal *, integer *, doublereal *, 
 	    integer *, doublereal *, doublereal *, integer *);
     integer iinfo;
-    extern /* Subroutine */ int dtrsm_(char *, char *, char *, char *,
-	    integer *, integer *, doublereal *, doublereal *, integer *,
+    extern /* Subroutine */ int dtrsm_(char *, char *, char *, char *, 
+	    integer *, integer *, doublereal *, doublereal *, integer *, 
 	    doublereal *, integer *), dgetf2_(
-	    integer *, integer *, doublereal *, integer *, integer *, integer
+	    integer *, integer *, doublereal *, integer *, integer *, integer 
 	    *), xerbla_(char *, integer *);
-    extern integer ilaenv_(integer *, char *, char *, integer *, integer *,
+    extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *);
-    extern /* Subroutine */ int dlaswp_(integer *, doublereal *, integer *,
+    extern /* Subroutine */ int dlaswp_(integer *, doublereal *, integer *, 
 	    integer *, integer *, integer *, integer *);
 
 
@@ -195,7 +195,7 @@ static doublereal c_b19 = -1.;
 
 		i__3 = *n - j - jb + 1;
 		dtrsm_("Left", "Lower", "No transpose", "Unit", &jb, &i__3, &
-			c_b16, &a[j + j * a_dim1], lda, &a[j + (j + jb) *
+			c_b16, &a[j + j * a_dim1], lda, &a[j + (j + jb) * 
 			a_dim1], lda);
 		if (j + jb <= *m) {
 
@@ -203,8 +203,8 @@ static doublereal c_b19 = -1.;
 
 		    i__3 = *m - j - jb + 1;
 		    i__4 = *n - j - jb + 1;
-		    dgemm_("No transpose", "No transpose", &i__3, &i__4, &jb,
-			    &c_b19, &a[j + jb + j * a_dim1], lda, &a[j + (j +
+		    dgemm_("No transpose", "No transpose", &i__3, &i__4, &jb, 
+			    &c_b19, &a[j + jb + j * a_dim1], lda, &a[j + (j + 
 			    jb) * a_dim1], lda, &c_b16, &a[j + jb + (j + jb) *
 			     a_dim1], lda);
 		}

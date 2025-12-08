@@ -1,6 +1,6 @@
 CMakeFiles/417.dir/external_solvers/s_cmp.c.o: \
-  /Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/g36-api-app/fmu-sequence/reheat/ReheatControllerFMUc0d0/417.fmutmp/sources/external_solvers/s_cmp.c \
-  /Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/g36-api-app/fmu-sequence/reheat/ReheatControllerFMUc0d0/417.fmutmp/sources/external_solvers/f2c.h \
+  /Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/control-sequence-api-app/fmu-sequence/ReheatControllerFMUc0d0/417.fmutmp/sources/external_solvers/s_cmp.c \
+  /Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/control-sequence-api-app/fmu-sequence/ReheatControllerFMUc0d0/417.fmutmp/sources/external_solvers/f2c.h \
   /usr/include/math.h \
   /usr/include/aarch64-linux-gnu/bits/libc-header-start.h \
   /usr/include/features.h /usr/include/features-time64.h \

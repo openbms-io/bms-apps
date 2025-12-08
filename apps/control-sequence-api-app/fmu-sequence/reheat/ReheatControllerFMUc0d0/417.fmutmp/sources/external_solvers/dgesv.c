@@ -13,15 +13,15 @@
 #include "f2c.h"
 #include "blaswrap.h"
 
-/* Subroutine */ int dgesv_(integer *n, integer *nrhs, doublereal *a, integer
+/* Subroutine */ int dgesv_(integer *n, integer *nrhs, doublereal *a, integer 
 	*lda, integer *ipiv, doublereal *b, integer *ldb, integer *info)
 {
     /* System generated locals */
     integer a_dim1, a_offset, b_dim1, b_offset, i__1;
 
     /* Local variables */
-    extern /* Subroutine */ int dgetrf_(integer *, integer *, doublereal *,
-	    integer *, integer *, integer *), xerbla_(char *, integer *), dgetrs_(char *, integer *, integer *, doublereal *,
+    extern /* Subroutine */ int dgetrf_(integer *, integer *, doublereal *, 
+	    integer *, integer *, integer *), xerbla_(char *, integer *), dgetrs_(char *, integer *, integer *, doublereal *, 
 	    integer *, integer *, doublereal *, integer *, integer *);
 
 

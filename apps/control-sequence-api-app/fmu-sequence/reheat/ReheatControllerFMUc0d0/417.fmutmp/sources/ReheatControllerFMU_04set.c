@@ -13,3 +13,4 @@ void ReheatControllerFMU_initializeStateSets(int nStateSets, STATE_SET_DATA* sta
 #if defined(__cplusplus)
 }
 #endif
+

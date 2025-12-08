@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
+from .adapters.fmu_adapter import FmuAdapter
 from .config.settings import get_settings
 
 settings = get_settings()
@@ -22,6 +23,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             logger.warning(f"FMU file not found at {reheat_path}")
         else:
             logger.info(f"FMU file found at {reheat_path}")
+
+    FmuAdapter.get_instance()
+    logger.info("FmuAdapter singleton initialized")
 
     yield
 

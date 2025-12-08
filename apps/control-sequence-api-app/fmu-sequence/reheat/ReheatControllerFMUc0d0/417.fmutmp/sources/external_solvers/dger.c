@@ -13,8 +13,8 @@
 #include "f2c.h"
 #include "blaswrap.h"
 
-/* Subroutine */ int dger_(integer *m, integer *n, doublereal *alpha,
-	doublereal *x, integer *incx, doublereal *y, integer *incy,
+/* Subroutine */ int dger_(integer *m, integer *n, doublereal *alpha, 
+	doublereal *x, integer *incx, doublereal *y, integer *incy, 
 	doublereal *a, integer *lda)
 {
     /* System generated locals */

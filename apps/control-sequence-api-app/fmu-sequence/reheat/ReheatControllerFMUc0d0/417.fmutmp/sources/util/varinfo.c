@@ -62,3 +62,4 @@ void freeVarInfo(VAR_INFO* info)
   free((void*)info->name);
   free((void*)info->comment);
 }
+

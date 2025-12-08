@@ -1,13 +1,19 @@
 
 <h1>ReheatControllerFMU</h1>
-<p> <i>FMU wrapper for G36 VAV Reheat Terminal Unit Controller with all parameters tunable</i> </p>
+<p> <i>FMU wrapper for G36 VAV Reheat Terminal Unit Controller with all parameters tunable</i> </p> 
 <h4> <u> Information </u> </h4><html>
 <p>
 FMU export wrapper for the ASHRAE Guideline 36 VAV Reheat Terminal Unit Controller.
 </p>
 <p>
-This model extends the base Controller and provides default parameter values
-for required parameters. All ~50 parameters are tunable in the exported FMU.
+This model extends the base Controller with all parameters exposed as tunable
+FMU parameters. Each parameter is declared explicitly and passed through to
+the base controller, ensuring they appear as configurable parameters in the FMU.
+</p>
+<p>
+For parameter documentation, see:
+<a href="https://simulationresearch.lbl.gov/modelica/releases/v11.1.0/help/Buildings_Controls_OBC_ASHRAE_G36_TerminalUnits_Reheat.html">
+Buildings.Controls.OBC.ASHRAE.G36.TerminalUnits.Reheat.Controller</a>
 </p>
 </html>
 <h4> <u> Revisions </u> </h4>

@@ -13,7 +13,7 @@
 #include "f2c.h"
 #include "blaswrap.h"
 
-/* Subroutine */ int dtrsm_(char *side, char *uplo, char *transa, char *diag,
+/* Subroutine */ int dtrsm_(char *side, char *uplo, char *transa, char *diag, 
 	integer *m, integer *n, doublereal *alpha, doublereal *a, integer *
 	lda, doublereal *b, integer *ldb)
 {
@@ -190,10 +190,10 @@
 	info = 1;
     } else if (! upper && ! lsame_(uplo, "L")) {
 	info = 2;
-    } else if (! lsame_(transa, "N") && ! lsame_(transa,
+    } else if (! lsame_(transa, "N") && ! lsame_(transa, 
 	     "T") && ! lsame_(transa, "C")) {
 	info = 3;
-    } else if (! lsame_(diag, "U") && ! lsame_(diag,
+    } else if (! lsame_(diag, "U") && ! lsame_(diag, 
 	    "N")) {
 	info = 4;
     } else if (*m < 0) {
@@ -428,7 +428,7 @@
 			    temp = a[j + k * a_dim1];
 			    i__2 = *m;
 			    for (i__ = 1; i__ <= i__2; ++i__) {
-				b[i__ + j * b_dim1] -= temp * b[i__ + k *
+				b[i__ + j * b_dim1] -= temp * b[i__ + k * 
 					b_dim1];
 /* L280: */
 			    }
@@ -462,7 +462,7 @@
 			    temp = a[j + k * a_dim1];
 			    i__3 = *m;
 			    for (i__ = 1; i__ <= i__3; ++i__) {
-				b[i__ + j * b_dim1] -= temp * b[i__ + k *
+				b[i__ + j * b_dim1] -= temp * b[i__ + k * 
 					b_dim1];
 /* L330: */
 			    }

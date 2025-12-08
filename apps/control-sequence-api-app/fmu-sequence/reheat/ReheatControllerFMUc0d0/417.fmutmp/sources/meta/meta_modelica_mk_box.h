@@ -758,3 +758,4 @@ static inline void *mmc_mk_box20_atomic(unsigned int ctor, void *x0, void *x1, v
   data[19] = (void*) x19;
   return MMC_TAGPTR(p);
 }
+

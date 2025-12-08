@@ -21,7 +21,7 @@ static real c_b163 = 0.f;
 static real c_b164 = 1.f;
 static integer c__0 = 0;
 
-integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1,
+integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1, 
 	integer *n2, integer *n3, integer *n4)
 {
     /* System generated locals */
@@ -40,7 +40,7 @@ integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1,
     logical sname;
     extern integer ieeeck_(integer *, real *, real *);
     char subnam[1];
-    extern integer iparmq_(integer *, char *, char *, integer *, integer *,
+    extern integer iparmq_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *);
 
     ftnlen name_len, opts_len;
@@ -207,12 +207,12 @@ L10:
 
 /*        EBCDIC character set */
 
-	if (ic >= 129 && ic <= 137 || ic >= 145 && ic <= 153 || ic >= 162 &&
+	if (ic >= 129 && ic <= 137 || ic >= 145 && ic <= 153 || ic >= 162 && 
 		ic <= 169) {
 	    *(unsigned char *)subnam = (char) (ic + 64);
 	    for (i__ = 2; i__ <= 6; ++i__) {
 		ic = *(unsigned char *)&subnam[i__ - 1];
-		if (ic >= 129 && ic <= 137 || ic >= 145 && ic <= 153 || ic >=
+		if (ic >= 129 && ic <= 137 || ic >= 145 && ic <= 153 || ic >= 
 			162 && ic <= 169) {
 		    *(unsigned char *)&subnam[i__ - 1] = (char) (ic + 64);
 		}
@@ -269,9 +269,9 @@ L50:
 	    } else {
 		nb = 64;
 	    }
-	} else if (s_cmp(c3, "QRF", (ftnlen)1, (ftnlen)3) == 0 || s_cmp(c3,
+	} else if (s_cmp(c3, "QRF", (ftnlen)1, (ftnlen)3) == 0 || s_cmp(c3, 
 		"RQF", (ftnlen)1, (ftnlen)3) == 0 || s_cmp(c3, "LQF", (ftnlen)
-		1, (ftnlen)3) == 0 || s_cmp(c3, "QLF", (ftnlen)1, (ftnlen)3)
+		1, (ftnlen)3) == 0 || s_cmp(c3, "QLF", (ftnlen)1, (ftnlen)3) 
 		== 0) {
 	    if (sname) {
 		nb = 32;
@@ -327,7 +327,7 @@ L50:
 	}
     } else if (sname && s_cmp(c2, "OR", (ftnlen)1, (ftnlen)2) == 0) {
 	if (*(unsigned char *)c3 == 'G') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(
@@ -336,7 +336,7 @@ L50:
 		nb = 32;
 	    }
 	} else if (*(unsigned char *)c3 == 'M') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(
@@ -347,7 +347,7 @@ L50:
 	}
     } else if (cname && s_cmp(c2, "UN", (ftnlen)1, (ftnlen)2) == 0) {
 	if (*(unsigned char *)c3 == 'G') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(
@@ -356,7 +356,7 @@ L50:
 		nb = 32;
 	    }
 	} else if (*(unsigned char *)c3 == 'M') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(
@@ -471,7 +471,7 @@ L60:
 	}
     } else if (sname && s_cmp(c2, "OR", (ftnlen)1, (ftnlen)2) == 0) {
 	if (*(unsigned char *)c3 == 'G') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(
@@ -480,7 +480,7 @@ L60:
 		nbmin = 2;
 	    }
 	} else if (*(unsigned char *)c3 == 'M') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(
@@ -491,7 +491,7 @@ L60:
 	}
     } else if (cname && s_cmp(c2, "UN", (ftnlen)1, (ftnlen)2) == 0) {
 	if (*(unsigned char *)c3 == 'G') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(
@@ -500,7 +500,7 @@ L60:
 		nbmin = 2;
 	    }
 	} else if (*(unsigned char *)c3 == 'M') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(
@@ -551,7 +551,7 @@ L70:
 	}
     } else if (sname && s_cmp(c2, "OR", (ftnlen)1, (ftnlen)2) == 0) {
 	if (*(unsigned char *)c3 == 'G') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(
@@ -562,7 +562,7 @@ L70:
 	}
     } else if (cname && s_cmp(c2, "UN", (ftnlen)1, (ftnlen)2) == 0) {
 	if (*(unsigned char *)c3 == 'G') {
-	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ",
+	    if (s_cmp(c4, "QR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "RQ", 
 		    (ftnlen)1, (ftnlen)2) == 0 || s_cmp(c4, "LQ", (ftnlen)1, (
 		    ftnlen)2) == 0 || s_cmp(c4, "QL", (ftnlen)1, (ftnlen)2) ==
 		     0 || s_cmp(c4, "HR", (ftnlen)1, (ftnlen)2) == 0 || s_cmp(

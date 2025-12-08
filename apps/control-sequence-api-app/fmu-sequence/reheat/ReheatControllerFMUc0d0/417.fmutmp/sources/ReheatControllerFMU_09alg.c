@@ -459,7 +459,7 @@ static void functionAlg_system0(DATA *data, threadData_t *threadData)
     ReheatControllerFMU_eqFunction_1726,
     ReheatControllerFMU_eqFunction_1727
   };
-
+  
   static const int eqIndices[223] = {
     1181,
     1182,
@@ -685,7 +685,7 @@ static void functionAlg_system0(DATA *data, threadData_t *threadData)
     1726,
     1727
   };
-
+  
   for (id = 0; id < 223; id++) {
     eqFunctions[id](data, threadData);
     threadData->lastEquationSolved = eqIndices[id];
@@ -702,7 +702,7 @@ int ReheatControllerFMU_functionAlgebraics(DATA *data, threadData_t *threadData)
   data->simulationInfo->callStatistics.functionAlgebraics++;
 
   ReheatControllerFMU_function_savePreSynchronous(data, threadData);
-
+  
   functionAlg_system0(data, threadData);
 
 #if !defined(OMC_MINIMAL_RUNTIME)

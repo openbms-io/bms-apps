@@ -137,3 +137,4 @@ int pivot( double *A, modelica_integer n_rows, modelica_integer n_cols, modelica
   /* all fine */
   return 0;
 }
+

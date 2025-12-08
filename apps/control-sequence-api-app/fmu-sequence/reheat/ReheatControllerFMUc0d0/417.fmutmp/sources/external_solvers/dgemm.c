@@ -14,12 +14,12 @@
 #include "blaswrap.h"
 
 /* Subroutine */ int dgemm_(char *transa, char *transb, integer *m, integer *
-	n, integer *k, doublereal *alpha, doublereal *a, integer *lda,
-	doublereal *b, integer *ldb, doublereal *beta, doublereal *c__,
+	n, integer *k, doublereal *alpha, doublereal *a, integer *lda, 
+	doublereal *b, integer *ldb, doublereal *beta, doublereal *c__, 
 	integer *ldc)
 {
     /* System generated locals */
-    integer a_dim1, a_offset, b_dim1, b_offset, c_dim1, c_offset, i__1, i__2,
+    integer a_dim1, a_offset, b_dim1, b_offset, c_dim1, c_offset, i__1, i__2, 
 	    i__3;
 
     /* Local variables */
@@ -204,7 +204,7 @@
     if (! nota && ! lsame_(transa, "C") && ! lsame_(
 	    transa, "T")) {
 	info = 1;
-    } else if (! notb && ! lsame_(transb, "C") && !
+    } else if (! notb && ! lsame_(transb, "C") && ! 
 	    lsame_(transb, "T")) {
 	info = 2;
     } else if (*m < 0) {
@@ -286,7 +286,7 @@
 			temp = *alpha * b[l + j * b_dim1];
 			i__3 = *m;
 			for (i__ = 1; i__ <= i__3; ++i__) {
-			    c__[i__ + j * c_dim1] += temp * a[i__ + l *
+			    c__[i__ + j * c_dim1] += temp * a[i__ + l * 
 				    a_dim1];
 /* L70: */
 			}
@@ -346,7 +346,7 @@
 			temp = *alpha * b[j + l * b_dim1];
 			i__3 = *m;
 			for (i__ = 1; i__ <= i__3; ++i__) {
-			    c__[i__ + j * c_dim1] += temp * a[i__ + l *
+			    c__[i__ + j * c_dim1] += temp * a[i__ + l * 
 				    a_dim1];
 /* L150: */
 			}

@@ -15,3 +15,4 @@ void ReheatControllerFMU_callExternalObjectDestructors(DATA *data, threadData_t 
 #if defined(__cplusplus)
 }
 #endif
+

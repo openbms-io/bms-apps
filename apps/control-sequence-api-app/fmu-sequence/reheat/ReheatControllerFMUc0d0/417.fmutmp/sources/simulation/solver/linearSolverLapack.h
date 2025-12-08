@@ -57,3 +57,4 @@ int freeLapackData(void **data);
 int solveLapack(DATA *data, threadData_t *threadData, int sysNumber, double* aux_x);
 
 #endif
+

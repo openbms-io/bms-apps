@@ -248,3 +248,5 @@ void generic_array_set(base_array_t* dst, void* val, copy_func cp_func, size_t s
   cp_func(val,trgt);
   va_end(ap);
 }
+
+

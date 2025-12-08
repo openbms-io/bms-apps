@@ -17,7 +17,7 @@ int ReheatControllerFMU_functionInitialEquations(DATA *data, threadData_t *threa
   ReheatControllerFMU_functionInitialEquations_0(data, threadData);
   ReheatControllerFMU_functionInitialEquations_1(data, threadData);
   data->simulationInfo->discreteCall = 0;
-
+  
   TRACE_POP
   return 0;
 }
@@ -2418,7 +2418,7 @@ int ReheatControllerFMU_functionInitialEquations_lambda0(DATA *data, threadData_
 
   ReheatControllerFMU_eqFunction_587(data, threadData);
   data->simulationInfo->discreteCall = 0;
-
+  
   TRACE_POP
   return 0;
 }
@@ -2428,7 +2428,7 @@ int ReheatControllerFMU_functionRemovedInitialEquations(DATA *data, threadData_t
   const int *equationIndexes = NULL;
   double res = 0.0;
 
-
+  
   TRACE_POP
   return 0;
 }
@@ -2437,3 +2437,4 @@ int ReheatControllerFMU_functionRemovedInitialEquations(DATA *data, threadData_t
 #if defined(__cplusplus)
 }
 #endif
+

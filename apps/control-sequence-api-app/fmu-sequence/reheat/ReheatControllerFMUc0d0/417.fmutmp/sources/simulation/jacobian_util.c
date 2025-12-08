@@ -332,3 +332,4 @@ unsigned int* getNonlinearPatternRow(NONLINEAR_PATTERN *nlp, int eqn_idx){
 
   return row;
 }
+

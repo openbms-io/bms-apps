@@ -30,7 +30,7 @@ modelica_real omc_Buildings_Utilities_Math_Functions_round(threadData_t *threadD
   if(tmp1 < 0.0 && tmp2 != 0.0)
   {
     tmp4 = modf(tmp2, &tmp5);
-
+    
     if(tmp4 > 0.5)
     {
       tmp4 -= 1.0;
@@ -41,7 +41,7 @@ modelica_real omc_Buildings_Utilities_Math_Functions_round(threadData_t *threadD
       tmp4 += 1.0;
       tmp5 -= 1.0;
     }
-
+    
     if(fabs(tmp4) < 1e-10)
       tmp3 = pow(tmp1, tmp5);
     else

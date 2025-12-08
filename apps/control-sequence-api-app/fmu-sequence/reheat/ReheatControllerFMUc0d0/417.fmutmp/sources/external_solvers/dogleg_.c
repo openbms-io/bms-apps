@@ -10,8 +10,8 @@
 /* Table of constant values */
 
 __minpack_attr__
-void __minpack_func__(dogleg)(const int *n, const real *r__, const int *lr,
-	const real *diag, const real *qtb, const real *delta, real *x,
+void __minpack_func__(dogleg)(const int *n, const real *r__, const int *lr, 
+	const real *diag, const real *qtb, const real *delta, real *x, 
 	real *wa1, real *wa2)
 {
     /* System generated locals */
@@ -225,7 +225,7 @@ L40:
     d__3 = *delta / qnorm;
 /* Computing 2nd power */
     d__4 = sgnorm / *delta;
-    temp = temp - *delta / qnorm * (d__1 * d__1) + sqrt(d__2 * d__2 + (1 -
+    temp = temp - *delta / qnorm * (d__1 * d__1) + sqrt(d__2 * d__2 + (1 - 
 	    d__3 * d__3) * (1 - d__4 * d__4));
 /* Computing 2nd power */
     d__1 = sgnorm / *delta;
@@ -247,3 +247,4 @@ L120:
 /*     last card of subroutine dogleg. */
 
 } /* dogleg_ */
+

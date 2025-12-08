@@ -4,6 +4,7 @@
 # compile C with /usr/bin/clang
 C_DEFINES = -DCMINPACK_NO_DLL -DFMI2_OVERRIDE_FUNCTION_PREFIX -DOMC_FMI_RUNTIME=1 -DOMC_MINIMAL_RUNTIME=1 -DOM_HAVE_PTHREADS -D_417_EXPORTS
 
-C_INCLUDES = -I/Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/g36-api-app/fmu-sequence/reheat/ReheatControllerFMUc0d0/417.fmutmp/sources -I/Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/g36-api-app/fmu-sequence/reheat/ReheatControllerFMUc0d0/417.fmutmp/sources/fmi -I/Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/g36-api-app/fmu-sequence/reheat/ReheatControllerFMUc0d0/417.fmutmp/sources/sundials
+C_INCLUDES = -I/Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/control-sequence-api-app/fmu-sequence/ReheatControllerFMUc0d0/417.fmutmp/sources -I/Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/control-sequence-api-app/fmu-sequence/ReheatControllerFMUc0d0/417.fmutmp/sources/fmi -I/Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/control-sequence-api-app/fmu-sequence/ReheatControllerFMUc0d0/417.fmutmp/sources/sundials
 
 C_FLAGS = -O3 -DNDEBUG -fPIC
+

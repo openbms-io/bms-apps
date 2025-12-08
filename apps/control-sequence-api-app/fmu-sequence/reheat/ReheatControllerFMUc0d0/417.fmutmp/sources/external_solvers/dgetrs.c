@@ -19,7 +19,7 @@ static integer c__1 = 1;
 static doublereal c_b12 = 1.;
 static integer c_n1 = -1;
 
-/* Subroutine */ int dgetrs_(char *trans, integer *n, integer *nrhs,
+/* Subroutine */ int dgetrs_(char *trans, integer *n, integer *nrhs, 
 	doublereal *a, integer *lda, integer *ipiv, doublereal *b, integer *
 	ldb, integer *info)
 {
@@ -28,10 +28,10 @@ static integer c_n1 = -1;
 
     /* Local variables */
     extern logical lsame_(char *, char *);
-    extern /* Subroutine */ int dtrsm_(char *, char *, char *, char *,
-	    integer *, integer *, doublereal *, doublereal *, integer *,
+    extern /* Subroutine */ int dtrsm_(char *, char *, char *, char *, 
+	    integer *, integer *, doublereal *, doublereal *, integer *, 
 	    doublereal *, integer *), xerbla_(
-	    char *, integer *), dlaswp_(integer *, doublereal *,
+	    char *, integer *), dlaswp_(integer *, doublereal *, 
 	    integer *, integer *, integer *, integer *, integer *);
     logical notran;
 

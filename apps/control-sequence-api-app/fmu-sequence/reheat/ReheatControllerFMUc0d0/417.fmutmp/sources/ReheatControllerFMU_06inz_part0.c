@@ -51,7 +51,7 @@ void ReheatControllerFMU_eqFunction_4(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,4};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[131]] /* damVal.max2.y variable */) = fmax((data->simulationInfo->realParameter[260] /* damVal.cooMax1.k PARAM */),(data->simulationInfo->realParameter[280] /* damVal.heaMax1.k PARAM */));
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[131]] /* damVal.max2.y variable */) = fmax((data->simulationInfo->realParameter[279] /* damVal.cooMax1.k PARAM */),(data->simulationInfo->realParameter[299] /* damVal.heaMax1.k PARAM */));
   TRACE_POP
 }
 
@@ -64,7 +64,7 @@ void ReheatControllerFMU_eqFunction_5(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,5};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[152]] /* setPoi.booToRea1.y variable */) = ((data->simulationInfo->booleanParameter[116] /* setPoi.perOccSta.k PARAM */)?0.0:1.0);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[152]] /* setPoi.booToRea1.y variable */) = ((data->simulationInfo->booleanParameter[121] /* setPoi.perOccSta.k PARAM */)?0.0:1.0);
   TRACE_POP
 }
 
@@ -90,7 +90,7 @@ void ReheatControllerFMU_eqFunction_7(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,7};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[167]] /* setPoi.unPopAreBreAir.y variable */) = ((data->simulationInfo->realParameter[340] /* setPoi.desAreAir.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[152]] /* setPoi.booToRea1.y variable */));
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[167]] /* setPoi.unPopAreBreAir.y variable */) = ((data->simulationInfo->realParameter[376] /* setPoi.desAreAir.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[152]] /* setPoi.booToRea1.y variable */));
   TRACE_POP
 }
 
@@ -103,7 +103,7 @@ void ReheatControllerFMU_eqFunction_8(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,8};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[159]] /* setPoi.occMinAirSet.b variable */) = -0.5 + (data->simulationInfo->realParameter[355] /* setPoi.zonCooMaxFlo.k PARAM */);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[159]] /* setPoi.occMinAirSet.b variable */) = -0.5 + (data->simulationInfo->realParameter[391] /* setPoi.zonCooMaxFlo.k PARAM */);
   TRACE_POP
 }
 
@@ -116,7 +116,7 @@ void ReheatControllerFMU_eqFunction_9(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,9};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[158]] /* setPoi.occMinAirSet.a variable */) = (data->simulationInfo->realParameter[355] /* setPoi.zonCooMaxFlo.k PARAM */) - (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[159]] /* setPoi.occMinAirSet.b variable */);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[158]] /* setPoi.occMinAirSet.a variable */) = (data->simulationInfo->realParameter[391] /* setPoi.zonCooMaxFlo.k PARAM */) - (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[159]] /* setPoi.occMinAirSet.b variable */);
   TRACE_POP
 }
 
@@ -130,7 +130,7 @@ void ReheatControllerFMU_eqFunction_10(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,10};
   modelica_boolean tmp0;
-  tmp0 = Greater((data->simulationInfo->realParameter[50] /* ala.conInt3.k PARAM */),(data->simulationInfo->realParameter[79] /* ala.greThr2.greNoHys.t PARAM */));
+  tmp0 = Greater((data->simulationInfo->realParameter[65] /* ala.conInt3.k PARAM */),(data->simulationInfo->realParameter[94] /* ala.greThr2.greNoHys.t PARAM */));
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[100]] /* ala.greThr2.y DISCRETE */) = tmp0;
   TRACE_POP
 }
@@ -157,7 +157,7 @@ void ReheatControllerFMU_eqFunction_12(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,12};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[44]] /* ala.gai2.y variable */) = (0.1) * ((data->simulationInfo->realParameter[52] /* ala.cooMaxFlo.k PARAM */));
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[44]] /* ala.gai2.y variable */) = (0.1) * ((data->simulationInfo->realParameter[67] /* ala.cooMaxFlo.k PARAM */));
   TRACE_POP
 }
 
@@ -171,7 +171,7 @@ void ReheatControllerFMU_eqFunction_13(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,13};
   modelica_boolean tmp1;
-  tmp1 = Greater((data->simulationInfo->realParameter[48] /* ala.conInt1.k PARAM */),(data->simulationInfo->realParameter[74] /* ala.greThr1.greNoHys.t PARAM */));
+  tmp1 = Greater((data->simulationInfo->realParameter[63] /* ala.conInt1.k PARAM */),(data->simulationInfo->realParameter[89] /* ala.greThr1.greNoHys.t PARAM */));
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[99]] /* ala.greThr1.y DISCRETE */) = tmp1;
   TRACE_POP
 }
@@ -246,7 +246,7 @@ void ReheatControllerFMU_eqFunction_39(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,39};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[48]] /* conLoo.conCoo.addPD.y variable */) = ((data->simulationInfo->realParameter[122] /* conLoo.conCoo.P.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[47]] /* conLoo.conCoo.P.u variable */));
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[48]] /* conLoo.conCoo.addPD.y variable */) = ((data->simulationInfo->realParameter[138] /* conLoo.conCoo.P.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[47]] /* conLoo.conCoo.P.u variable */));
   TRACE_POP
 }
 extern void ReheatControllerFMU_eqFunction_1237(DATA *data, threadData_t *threadData);
@@ -269,7 +269,7 @@ void ReheatControllerFMU_eqFunction_45(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,45};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[61]] /* conLoo.conHea.addPD.y variable */) = ((data->simulationInfo->realParameter[146] /* conLoo.conHea.P.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[60]] /* conLoo.conHea.P.u variable */));
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[61]] /* conLoo.conHea.addPD.y variable */) = ((data->simulationInfo->realParameter[162] /* conLoo.conHea.P.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[60]] /* conLoo.conHea.P.u variable */));
   TRACE_POP
 }
 extern void ReheatControllerFMU_eqFunction_1253(DATA *data, threadData_t *threadData);
@@ -359,7 +359,7 @@ void ReheatControllerFMU_eqFunction_68(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,68};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[165]] /* setPoi.popBreOutAir.y variable */) = ((data->simulationInfo->realParameter[342] /* setPoi.desPopAir.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[164]] /* setPoi.popBreOutAir.xLim variable */));
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[165]] /* setPoi.popBreOutAir.y variable */) = ((data->simulationInfo->realParameter[378] /* setPoi.desPopAir.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[164]] /* setPoi.popBreOutAir.xLim variable */));
   TRACE_POP
 }
 extern void ReheatControllerFMU_eqFunction_1304(DATA *data, threadData_t *threadData);
@@ -461,7 +461,7 @@ void ReheatControllerFMU_eqFunction_113(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,113};
   modelica_boolean tmp2;
-  tmp2 = Greater((data->simulationInfo->realParameter[456] /* timSup.truDel.delayTime PARAM */),0.0);
+  tmp2 = Greater((data->simulationInfo->realParameter[498] /* timSup.truDel.delayTime PARAM */),0.0);
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[218]] /* timSup.truDel.y DISCRETE */) = ((!tmp2)?(data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[217]] /* timSup.truDel.u DISCRETE */):0 /* false */);
   TRACE_POP
 }
@@ -504,7 +504,7 @@ void ReheatControllerFMU_eqFunction_117(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,117};
   modelica_boolean tmp3;
-  tmp3 = Greater((data->simulationInfo->realParameter[56] /* ala.fanIni.delayTime PARAM */),0.0);
+  tmp3 = Greater((data->simulationInfo->realParameter[71] /* ala.fanIni.delayTime PARAM */),0.0);
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[94]] /* ala.fanIni.y DISCRETE */) = ((!((data->simulationInfo->booleanParameter[6] /* ala.fanIni.delayOnInit PARAM */) && tmp3))?(data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[93]] /* ala.fanIni.u DISCRETE */):0 /* false */);
   TRACE_POP
 }
@@ -714,8 +714,8 @@ void ReheatControllerFMU_eqFunction_134(DATA *data, threadData_t *threadData)
   const int equationIndexes[2] = {1,134};
   modelica_boolean tmp8;
   modelica_boolean tmp9;
-  tmp8 = Less((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */),(data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */));
-  tmp9 = Less((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */),(data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */) + 0.25);
+  tmp8 = Less((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */),(data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */));
+  tmp9 = Less((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */),(data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */) + 0.25);
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[152]] /* damVal.lowMin.lesHys.y DISCRETE */) = (((!(data->simulationInfo->booleanVarsPre[152] /* damVal.lowMin.lesHys.y DISCRETE */)) && tmp8) || ((data->simulationInfo->booleanVarsPre[152] /* damVal.lowMin.lesHys.y DISCRETE */) && tmp9));
   TRACE_POP
 }
@@ -774,7 +774,7 @@ void ReheatControllerFMU_eqFunction_139(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,139};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[3]] /* damVal.conVal.I.y STATE(1) */) = (data->simulationInfo->realParameter[233] /* damVal.conVal.I.y_start PARAM */);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[3]] /* damVal.conVal.I.y STATE(1) */) = (data->simulationInfo->realParameter[252] /* damVal.conVal.I.y_start PARAM */);
   TRACE_POP
 }
 
@@ -817,7 +817,7 @@ void ReheatControllerFMU_eqFunction_142(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,142};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[2]] /* damVal.conDam.I.y STATE(1) */) = (data->simulationInfo->realParameter[205] /* damVal.conDam.I.y_start PARAM */);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[2]] /* damVal.conDam.I.y STATE(1) */) = (data->simulationInfo->realParameter[224] /* damVal.conDam.I.y_start PARAM */);
   TRACE_POP
 }
 
@@ -830,7 +830,7 @@ void ReheatControllerFMU_eqFunction_143(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,143};
-  (data->simulationInfo->booleanVarsPre[168] /* setPoi.cooSup.greHys.y DISCRETE */) = (data->simulationInfo->booleanParameter[103] /* setPoi.cooSup.greHys.pre_y_start PARAM */);
+  (data->simulationInfo->booleanVarsPre[168] /* setPoi.cooSup.greHys.y DISCRETE */) = (data->simulationInfo->booleanParameter[108] /* setPoi.cooSup.greHys.pre_y_start PARAM */);
   TRACE_POP
 }
 
@@ -864,7 +864,7 @@ void ReheatControllerFMU_eqFunction_147(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,147};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[219]] /* timSup.triSam1.y DISCRETE */) = (data->simulationInfo->realParameter[455] /* timSup.triSam1.y_start PARAM */);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[219]] /* timSup.triSam1.y DISCRETE */) = (data->simulationInfo->realParameter[497] /* timSup.triSam1.y_start PARAM */);
   TRACE_POP
 }
 
@@ -890,7 +890,7 @@ void ReheatControllerFMU_eqFunction_149(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,149};
-  (data->simulationInfo->booleanVarsPre[212] /* timSup.pre1.u DISCRETE */) = (data->simulationInfo->booleanParameter[167] /* timSup.pre1.pre_u_start PARAM */);
+  (data->simulationInfo->booleanVarsPre[212] /* timSup.pre1.u DISCRETE */) = (data->simulationInfo->booleanParameter[172] /* timSup.pre1.pre_u_start PARAM */);
   TRACE_POP
 }
 
@@ -929,7 +929,7 @@ void ReheatControllerFMU_eqFunction_152(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,152};
-  (data->simulationInfo->booleanVarsPre[209] /* timSup.greThr.greHys.y DISCRETE */) = (data->simulationInfo->booleanParameter[162] /* timSup.greThr.greHys.pre_y_start PARAM */);
+  (data->simulationInfo->booleanVarsPre[209] /* timSup.greThr.greHys.y DISCRETE */) = (data->simulationInfo->booleanParameter[167] /* timSup.greThr.greHys.pre_y_start PARAM */);
   TRACE_POP
 }
 
@@ -968,7 +968,7 @@ void ReheatControllerFMU_eqFunction_155(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,155};
-  (data->simulationInfo->booleanVarsPre[207] /* timSup.edg.u DISCRETE */) = (data->simulationInfo->booleanParameter[161] /* timSup.edg.pre_u_start PARAM */);
+  (data->simulationInfo->booleanVarsPre[207] /* timSup.edg.u DISCRETE */) = (data->simulationInfo->booleanParameter[166] /* timSup.edg.pre_u_start PARAM */);
   TRACE_POP
 }
 
@@ -981,7 +981,7 @@ void ReheatControllerFMU_eqFunction_156(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,156};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[218]] /* timSup.triSam.y DISCRETE */) = (data->simulationInfo->realParameter[454] /* timSup.triSam.y_start PARAM */);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[218]] /* timSup.triSam.y DISCRETE */) = (data->simulationInfo->realParameter[496] /* timSup.triSam.y_start PARAM */);
   TRACE_POP
 }
 
@@ -1015,7 +1015,7 @@ void ReheatControllerFMU_eqFunction_162(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,162};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[222]] /* timSup.uniDel.y DISCRETE */) = (data->simulationInfo->realParameter[460] /* timSup.uniDel.y_start PARAM */);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[222]] /* timSup.uniDel.y DISCRETE */) = (data->simulationInfo->realParameter[502] /* timSup.uniDel.y_start PARAM */);
   TRACE_POP
 }
 
@@ -1082,7 +1082,7 @@ void ReheatControllerFMU_eqFunction_171(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,171};
   modelica_boolean tmp18;
-  tmp18 = GreaterEq(data->localData[0]->timeValue,(data->simulationInfo->realParameter[453] /* timSup.tim.t PARAM */) + (data->simulationInfo->realVarsPre[217] /* timSup.tim.entryTime DISCRETE */));
+  tmp18 = GreaterEq(data->localData[0]->timeValue,(data->simulationInfo->realParameter[495] /* timSup.tim.t PARAM */) + (data->simulationInfo->realVarsPre[217] /* timSup.tim.entryTime DISCRETE */));
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[3]] /* $whenCondition12 DISCRETE */) = ((data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[210]] /* timSup.lat.y DISCRETE */) && tmp18);
   TRACE_POP
 }
@@ -1301,7 +1301,7 @@ void ReheatControllerFMU_eqFunction_193(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,193};
   modelica_boolean tmp23;
-  tmp23 = Greater((data->simulationInfo->realParameter[100] /* ala.truDel2.delayTime PARAM */),0.0);
+  tmp23 = Greater((data->simulationInfo->realParameter[115] /* ala.truDel2.delayTime PARAM */),0.0);
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[116]] /* ala.truDel2.y DISCRETE */) = ((!((data->simulationInfo->booleanParameter[34] /* ala.truDel2.delayOnInit PARAM */) && tmp23))?(data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[115]] /* ala.truDel2.u DISCRETE */):0 /* false */);
   TRACE_POP
 }
@@ -1446,7 +1446,7 @@ void ReheatControllerFMU_eqFunction_206(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,206};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[1]] /* conLoo.conHea.I.y STATE(1) */) = (data->simulationInfo->realParameter[143] /* conLoo.conHea.I.y_start PARAM */);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[1]] /* conLoo.conHea.I.y STATE(1) */) = (data->simulationInfo->realParameter[159] /* conLoo.conHea.I.y_start PARAM */);
   TRACE_POP
 }
 extern void ReheatControllerFMU_eqFunction_1245(DATA *data, threadData_t *threadData);
@@ -1465,16 +1465,16 @@ void ReheatControllerFMU_eqFunction_208(DATA *data, threadData_t *threadData)
   modelica_boolean tmp29;
   modelica_boolean tmp30;
   modelica_real tmp31;
-  tmp28 = Greater((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[62]] /* conLoo.conHea.addPID.y variable */),(data->simulationInfo->realParameter[152] /* conLoo.conHea.lim.uMax PARAM */));
+  tmp28 = Greater((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[62]] /* conLoo.conHea.addPID.y variable */),(data->simulationInfo->realParameter[168] /* conLoo.conHea.lim.uMax PARAM */));
   tmp30 = (modelica_boolean)tmp28;
   if(tmp30)
   {
-    tmp31 = (data->simulationInfo->realParameter[152] /* conLoo.conHea.lim.uMax PARAM */);
+    tmp31 = (data->simulationInfo->realParameter[168] /* conLoo.conHea.lim.uMax PARAM */);
   }
   else
   {
-    tmp29 = Less((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[62]] /* conLoo.conHea.addPID.y variable */),(data->simulationInfo->realParameter[153] /* conLoo.conHea.lim.uMin PARAM */));
-    tmp31 = (tmp29?(data->simulationInfo->realParameter[153] /* conLoo.conHea.lim.uMin PARAM */):(data->localData[0]->realVars[data->simulationInfo->realVarsIndex[62]] /* conLoo.conHea.addPID.y variable */));
+    tmp29 = Less((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[62]] /* conLoo.conHea.addPID.y variable */),(data->simulationInfo->realParameter[169] /* conLoo.conHea.lim.uMin PARAM */));
+    tmp31 = (tmp29?(data->simulationInfo->realParameter[169] /* conLoo.conHea.lim.uMin PARAM */):(data->localData[0]->realVars[data->simulationInfo->realVarsIndex[62]] /* conLoo.conHea.addPID.y variable */));
   }
   (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[70]] /* conLoo.conHea.y variable */) = homotopy(tmp31, (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[62]] /* conLoo.conHea.addPID.y variable */));
   TRACE_POP
@@ -1535,7 +1535,7 @@ void ReheatControllerFMU_eqFunction_213(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,213};
   modelica_boolean tmp34;
-  tmp34 = Greater((data->simulationInfo->realParameter[168] /* conLoo.disHea.delayTime PARAM */),0.0);
+  tmp34 = Greater((data->simulationInfo->realParameter[184] /* conLoo.disHea.delayTime PARAM */),0.0);
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[131]] /* conLoo.disHea.y DISCRETE */) = ((!((data->simulationInfo->booleanParameter[53] /* conLoo.disHea.delayOnInit PARAM */) && tmp34))?(data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[130]] /* conLoo.disHea.u DISCRETE */):0 /* false */);
   TRACE_POP
 }
@@ -1718,7 +1718,7 @@ void ReheatControllerFMU_eqFunction_236(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,236};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[107]] /* damVal.conVal.addPD.y variable */) = ((data->simulationInfo->realParameter[236] /* damVal.conVal.P.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[106]] /* damVal.conVal.P.u variable */));
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[107]] /* damVal.conVal.addPD.y variable */) = ((data->simulationInfo->realParameter[255] /* damVal.conVal.P.k PARAM */)) * ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[106]] /* damVal.conVal.P.u variable */));
   TRACE_POP
 }
 extern void ReheatControllerFMU_eqFunction_1684(DATA *data, threadData_t *threadData);
@@ -1839,7 +1839,7 @@ void ReheatControllerFMU_eqFunction_248(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,248};
   modelica_boolean tmp43;
-  tmp43 = Greater((data->simulationInfo->realParameter[108] /* ala.truDel6.delayTime PARAM */),0.0);
+  tmp43 = Greater((data->simulationInfo->realParameter[123] /* ala.truDel6.delayTime PARAM */),0.0);
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[124]] /* ala.truDel6.y DISCRETE */) = ((!((data->simulationInfo->booleanParameter[38] /* ala.truDel6.delayOnInit PARAM */) && tmp43))?(data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[123]] /* ala.truDel6.u DISCRETE */):0 /* false */);
   TRACE_POP
 }
@@ -1913,7 +1913,7 @@ void ReheatControllerFMU_eqFunction_260(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,260};
   modelica_boolean tmp46;
-  tmp46 = Greater((data->simulationInfo->realParameter[106] /* ala.truDel5.delayTime PARAM */),0.0);
+  tmp46 = Greater((data->simulationInfo->realParameter[121] /* ala.truDel5.delayTime PARAM */),0.0);
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[122]] /* ala.truDel5.y DISCRETE */) = ((!((data->simulationInfo->booleanParameter[37] /* ala.truDel5.delayOnInit PARAM */) && tmp46))?(data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[121]] /* ala.truDel5.u DISCRETE */):0 /* false */);
   TRACE_POP
 }
@@ -1983,7 +1983,7 @@ void ReheatControllerFMU_eqFunction_270(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,270};
   modelica_boolean tmp49;
-  tmp49 = Greater((data->simulationInfo->realParameter[104] /* ala.truDel4.delayTime PARAM */),0.0);
+  tmp49 = Greater((data->simulationInfo->realParameter[119] /* ala.truDel4.delayTime PARAM */),0.0);
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[120]] /* ala.truDel4.y DISCRETE */) = ((!((data->simulationInfo->booleanParameter[36] /* ala.truDel4.delayOnInit PARAM */) && tmp49))?(data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[119]] /* ala.truDel4.u DISCRETE */):0 /* false */);
   TRACE_POP
 }
@@ -2032,7 +2032,7 @@ void ReheatControllerFMU_eqFunction_283(DATA *data, threadData_t *threadData)
 {
   TRACE_PUSH
   const int equationIndexes[2] = {1,283};
-  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[0]] /* conLoo.conCoo.I.y STATE(1) */) = (data->simulationInfo->realParameter[119] /* conLoo.conCoo.I.y_start PARAM */);
+  (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[0]] /* conLoo.conCoo.I.y STATE(1) */) = (data->simulationInfo->realParameter[135] /* conLoo.conCoo.I.y_start PARAM */);
   TRACE_POP
 }
 extern void ReheatControllerFMU_eqFunction_1229(DATA *data, threadData_t *threadData);
@@ -2051,16 +2051,16 @@ void ReheatControllerFMU_eqFunction_285(DATA *data, threadData_t *threadData)
   modelica_boolean tmp51;
   modelica_boolean tmp52;
   modelica_real tmp53;
-  tmp50 = Greater((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[49]] /* conLoo.conCoo.addPID.y variable */),(data->simulationInfo->realParameter[128] /* conLoo.conCoo.lim.uMax PARAM */));
+  tmp50 = Greater((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[49]] /* conLoo.conCoo.addPID.y variable */),(data->simulationInfo->realParameter[144] /* conLoo.conCoo.lim.uMax PARAM */));
   tmp52 = (modelica_boolean)tmp50;
   if(tmp52)
   {
-    tmp53 = (data->simulationInfo->realParameter[128] /* conLoo.conCoo.lim.uMax PARAM */);
+    tmp53 = (data->simulationInfo->realParameter[144] /* conLoo.conCoo.lim.uMax PARAM */);
   }
   else
   {
-    tmp51 = Less((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[49]] /* conLoo.conCoo.addPID.y variable */),(data->simulationInfo->realParameter[129] /* conLoo.conCoo.lim.uMin PARAM */));
-    tmp53 = (tmp51?(data->simulationInfo->realParameter[129] /* conLoo.conCoo.lim.uMin PARAM */):(data->localData[0]->realVars[data->simulationInfo->realVarsIndex[49]] /* conLoo.conCoo.addPID.y variable */));
+    tmp51 = Less((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[49]] /* conLoo.conCoo.addPID.y variable */),(data->simulationInfo->realParameter[145] /* conLoo.conCoo.lim.uMin PARAM */));
+    tmp53 = (tmp51?(data->simulationInfo->realParameter[145] /* conLoo.conCoo.lim.uMin PARAM */):(data->localData[0]->realVars[data->simulationInfo->realVarsIndex[49]] /* conLoo.conCoo.addPID.y variable */));
   }
   (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[57]] /* conLoo.conCoo.y variable */) = homotopy(tmp53, (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[49]] /* conLoo.conCoo.addPID.y variable */));
   TRACE_POP
@@ -2121,7 +2121,7 @@ void ReheatControllerFMU_eqFunction_290(DATA *data, threadData_t *threadData)
   TRACE_PUSH
   const int equationIndexes[2] = {1,290};
   modelica_boolean tmp56;
-  tmp56 = Greater((data->simulationInfo->realParameter[166] /* conLoo.disCoo.delayTime PARAM */),0.0);
+  tmp56 = Greater((data->simulationInfo->realParameter[182] /* conLoo.disCoo.delayTime PARAM */),0.0);
   (data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[128]] /* conLoo.disCoo.y DISCRETE */) = ((!((data->simulationInfo->booleanParameter[52] /* conLoo.disCoo.delayOnInit PARAM */) && tmp56))?(data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[127]] /* conLoo.disCoo.u DISCRETE */):0 /* false */);
   TRACE_POP
 }

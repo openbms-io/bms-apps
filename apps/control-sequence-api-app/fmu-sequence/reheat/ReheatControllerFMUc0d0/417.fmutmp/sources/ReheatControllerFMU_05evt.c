@@ -11,33 +11,33 @@ void ReheatControllerFMU_function_initSample(DATA *data, threadData_t *threadDat
   long i=0;
   /* sample 1 */
   data->modelData->samplesInfo[i].index = 1;
-  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[411] /* sysReq.sampler.t0 PARAM */);
-  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[410] /* sysReq.sampler.samplePeriod PARAM */) /* (max real for single time events) */;
+  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[449] /* sysReq.sampler.t0 PARAM */);
+  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[448] /* sysReq.sampler.samplePeriod PARAM */) /* (max real for single time events) */;
   i++;
   /* sample 2 */
   data->modelData->samplesInfo[i].index = 2;
-  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[413] /* sysReq.sampler1.t0 PARAM */);
-  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[412] /* sysReq.sampler1.samplePeriod PARAM */) /* (max real for single time events) */;
+  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[451] /* sysReq.sampler1.t0 PARAM */);
+  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[450] /* sysReq.sampler1.samplePeriod PARAM */) /* (max real for single time events) */;
   i++;
   /* sample 3 */
   data->modelData->samplesInfo[i].index = 3;
-  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[415] /* sysReq.sampler2.t0 PARAM */);
-  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[414] /* sysReq.sampler2.samplePeriod PARAM */) /* (max real for single time events) */;
+  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[453] /* sysReq.sampler2.t0 PARAM */);
+  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[452] /* sysReq.sampler2.samplePeriod PARAM */) /* (max real for single time events) */;
   i++;
   /* sample 4 */
   data->modelData->samplesInfo[i].index = 4;
-  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[417] /* sysReq.sampler3.t0 PARAM */);
-  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[416] /* sysReq.sampler3.samplePeriod PARAM */) /* (max real for single time events) */;
+  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[455] /* sysReq.sampler3.t0 PARAM */);
+  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[454] /* sysReq.sampler3.samplePeriod PARAM */) /* (max real for single time events) */;
   i++;
   /* sample 5 */
   data->modelData->samplesInfo[i].index = 5;
-  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[450] /* timSup.samSet.t0 PARAM */);
-  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[449] /* timSup.samSet.samplePeriod PARAM */) /* (max real for single time events) */;
+  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[492] /* timSup.samSet.t0 PARAM */);
+  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[491] /* timSup.samSet.samplePeriod PARAM */) /* (max real for single time events) */;
   i++;
   /* sample 6 */
   data->modelData->samplesInfo[i].index = 6;
-  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[459] /* timSup.uniDel.t0 PARAM */);
-  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[458] /* timSup.uniDel.samplePeriod PARAM */) /* (max real for single time events) */;
+  data->modelData->samplesInfo[i].start = (data->simulationInfo->realParameter[501] /* timSup.uniDel.t0 PARAM */);
+  data->modelData->samplesInfo[i].interval = (data->simulationInfo->realParameter[500] /* timSup.uniDel.samplePeriod PARAM */) /* (max real for single time events) */;
   i++;
 }
 
@@ -794,7 +794,7 @@ int ReheatControllerFMU_function_ZeroCrossingsEquations(DATA *data, threadData_t
   ReheatControllerFMU_eqFunction_1685(data, threadData);
 
   ReheatControllerFMU_eqFunction_1686(data, threadData);
-
+  
   TRACE_POP
   return 0;
 }
@@ -1043,7 +1043,7 @@ int ReheatControllerFMU_function_ZeroCrossings(DATA *data, threadData_t *threadD
   modelica_real tmp236;
   modelica_integer current_index = 0;
   modelica_integer start_index;
-
+  
 #if !defined(OMC_MINIMAL_RUNTIME)
   if (measure_time_flag) rt_tick(SIM_TIMER_ZC);
 #endif
@@ -1218,11 +1218,11 @@ int ReheatControllerFMU_function_ZeroCrossings(DATA *data, threadData_t *threadD
 
   start_index = current_index;
   tmp64 = 1.0;
-  tmp65 = fabs((data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */));
-  tmp63 = LessZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */), (data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */), tmp64, tmp65, data->simulationInfo->storedRelations[27]);
+  tmp65 = fabs((data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */));
+  tmp63 = LessZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */), (data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */), tmp64, tmp65, data->simulationInfo->storedRelations[27]);
   tmp67 = 1.0;
-  tmp68 = fabs((data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */)) + 0.25;
-  tmp66 = LessZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */), (data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */) + 0.25, tmp67, tmp68, data->simulationInfo->storedRelations[28]);
+  tmp68 = fabs((data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */)) + 0.25;
+  tmp66 = LessZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */), (data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */) + 0.25, tmp67, tmp68, data->simulationInfo->storedRelations[28]);
   gout[start_index] = ((((!(data->simulationInfo->booleanVarsPre[152] /* damVal.lowMin.lesHys.y DISCRETE */)) && tmp63) || ((data->simulationInfo->booleanVarsPre[152] /* damVal.lowMin.lesHys.y DISCRETE */) && tmp66))) ? 1 : -1;
   current_index++;
 
@@ -1280,8 +1280,8 @@ int ReheatControllerFMU_function_ZeroCrossings(DATA *data, threadData_t *threadD
 
   start_index = current_index;
   tmp94 = 1.0;
-  tmp95 = fabs((data->simulationInfo->realParameter[453] /* timSup.tim.t PARAM */)) + 1.0;
-  tmp93 = GreaterEqZC(data->localData[0]->timeValue, (data->simulationInfo->realParameter[453] /* timSup.tim.t PARAM */) + (data->simulationInfo->realVarsPre[217] /* timSup.tim.entryTime DISCRETE */), tmp94, tmp95, data->simulationInfo->storedRelations[38]);
+  tmp95 = fabs((data->simulationInfo->realParameter[495] /* timSup.tim.t PARAM */)) + 1.0;
+  tmp93 = GreaterEqZC(data->localData[0]->timeValue, (data->simulationInfo->realParameter[495] /* timSup.tim.t PARAM */) + (data->simulationInfo->realVarsPre[217] /* timSup.tim.entryTime DISCRETE */), tmp94, tmp95, data->simulationInfo->storedRelations[38]);
   gout[start_index] = (((data->localData[0]->booleanVars[data->simulationInfo->booleanVarsIndex[210]] /* timSup.lat.y DISCRETE */) && tmp93)) ? 1 : -1;
   current_index++;
 
@@ -1432,21 +1432,21 @@ int ReheatControllerFMU_function_ZeroCrossings(DATA *data, threadData_t *threadD
 
   start_index = current_index;
   tmp178 = 1.0;
-  tmp179 = fabs((data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */));
-  tmp177 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */), (data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */), tmp178, tmp179, data->simulationInfo->storedRelations[67]);
+  tmp179 = fabs((data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */));
+  tmp177 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */), (data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */), tmp178, tmp179, data->simulationInfo->storedRelations[67]);
   tmp181 = 1.0;
-  tmp182 = fabs((data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */)) + 0.25;
-  tmp180 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */), (data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */) - 0.25, tmp181, tmp182, data->simulationInfo->storedRelations[68]);
+  tmp182 = fabs((data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */)) + 0.25;
+  tmp180 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */), (data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */) - 0.25, tmp181, tmp182, data->simulationInfo->storedRelations[68]);
   gout[start_index] = ((((!(data->simulationInfo->booleanVarsPre[180] /* sysReq.greThr2.greHys.y DISCRETE */)) && tmp177) || ((data->simulationInfo->booleanVarsPre[180] /* sysReq.greThr2.greHys.y DISCRETE */) && tmp180))) ? 1 : -1;
   current_index++;
 
   start_index = current_index;
   tmp184 = 1.0;
-  tmp185 = fabs((data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */));
-  tmp183 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */), (data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */), tmp184, tmp185, data->simulationInfo->storedRelations[69]);
+  tmp185 = fabs((data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */));
+  tmp183 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */), (data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */), tmp184, tmp185, data->simulationInfo->storedRelations[69]);
   tmp187 = 1.0;
-  tmp188 = fabs((data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */)) + 0.25;
-  tmp186 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */), (data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */) - 0.25, tmp187, tmp188, data->simulationInfo->storedRelations[70]);
+  tmp188 = fabs((data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */)) + 0.25;
+  tmp186 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */), (data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */) - 0.25, tmp187, tmp188, data->simulationInfo->storedRelations[70]);
   gout[start_index] = ((((!(data->simulationInfo->booleanVarsPre[179] /* sysReq.greThr1.greHys.y DISCRETE */)) && tmp183) || ((data->simulationInfo->booleanVarsPre[179] /* sysReq.greThr1.greHys.y DISCRETE */) && tmp186))) ? 1 : -1;
   current_index++;
 
@@ -1891,7 +1891,7 @@ int ReheatControllerFMU_function_updateRelations(DATA *data, threadData_t *threa
   modelica_real tmp470;
   modelica_integer current_index = 0;
   modelica_integer start_index;
-
+  
   if(evalforZeroCross) {
     start_index = current_index;
     tmp238 = 1.0;
@@ -2066,15 +2066,15 @@ int ReheatControllerFMU_function_updateRelations(DATA *data, threadData_t *threa
 
     start_index = current_index;
     tmp301 = 1.0;
-    tmp302 = fabs((data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */));
-    tmp300 = LessZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */), (data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */), tmp301, tmp302, data->simulationInfo->storedRelations[27]);
+    tmp302 = fabs((data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */));
+    tmp300 = LessZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */), (data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */), tmp301, tmp302, data->simulationInfo->storedRelations[27]);
     data->simulationInfo->relations[start_index] = tmp300;
     current_index++;
 
     start_index = current_index;
     tmp304 = 1.0;
-    tmp305 = fabs((data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */)) + 0.25;
-    tmp303 = LessZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */), (data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */) + 0.25, tmp304, tmp305, data->simulationInfo->storedRelations[28]);
+    tmp305 = fabs((data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */)) + 0.25;
+    tmp303 = LessZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */), (data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */) + 0.25, tmp304, tmp305, data->simulationInfo->storedRelations[28]);
     data->simulationInfo->relations[start_index] = tmp303;
     current_index++;
 
@@ -2140,8 +2140,8 @@ int ReheatControllerFMU_function_updateRelations(DATA *data, threadData_t *threa
 
     start_index = current_index;
     tmp331 = 1.0;
-    tmp332 = fabs((data->simulationInfo->realParameter[453] /* timSup.tim.t PARAM */)) + 1.0;
-    tmp330 = GreaterEqZC(data->localData[0]->timeValue, (data->simulationInfo->realParameter[453] /* timSup.tim.t PARAM */) + (data->simulationInfo->realVarsPre[217] /* timSup.tim.entryTime DISCRETE */), tmp331, tmp332, data->simulationInfo->storedRelations[38]);
+    tmp332 = fabs((data->simulationInfo->realParameter[495] /* timSup.tim.t PARAM */)) + 1.0;
+    tmp330 = GreaterEqZC(data->localData[0]->timeValue, (data->simulationInfo->realParameter[495] /* timSup.tim.t PARAM */) + (data->simulationInfo->realVarsPre[217] /* timSup.tim.entryTime DISCRETE */), tmp331, tmp332, data->simulationInfo->storedRelations[38]);
     data->simulationInfo->relations[start_index] = tmp330;
     current_index++;
 
@@ -2337,29 +2337,29 @@ int ReheatControllerFMU_function_updateRelations(DATA *data, threadData_t *threa
 
     start_index = current_index;
     tmp412 = 1.0;
-    tmp413 = fabs((data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */));
-    tmp411 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */), (data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */), tmp412, tmp413, data->simulationInfo->storedRelations[67]);
+    tmp413 = fabs((data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */));
+    tmp411 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */), (data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */), tmp412, tmp413, data->simulationInfo->storedRelations[67]);
     data->simulationInfo->relations[start_index] = tmp411;
     current_index++;
 
     start_index = current_index;
     tmp415 = 1.0;
-    tmp416 = fabs((data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */)) + 0.25;
-    tmp414 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */), (data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */) - 0.25, tmp415, tmp416, data->simulationInfo->storedRelations[68]);
+    tmp416 = fabs((data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */)) + 0.25;
+    tmp414 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */), (data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */) - 0.25, tmp415, tmp416, data->simulationInfo->storedRelations[68]);
     data->simulationInfo->relations[start_index] = tmp414;
     current_index++;
 
     start_index = current_index;
     tmp418 = 1.0;
-    tmp419 = fabs((data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */));
-    tmp417 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */), (data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */), tmp418, tmp419, data->simulationInfo->storedRelations[69]);
+    tmp419 = fabs((data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */));
+    tmp417 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */), (data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */), tmp418, tmp419, data->simulationInfo->storedRelations[69]);
     data->simulationInfo->relations[start_index] = tmp417;
     current_index++;
 
     start_index = current_index;
     tmp421 = 1.0;
-    tmp422 = fabs((data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */)) + 0.25;
-    tmp420 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */), (data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */) - 0.25, tmp421, tmp422, data->simulationInfo->storedRelations[70]);
+    tmp422 = fabs((data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */)) + 0.25;
+    tmp420 = GreaterZC((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */), (data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */) - 0.25, tmp421, tmp422, data->simulationInfo->storedRelations[70]);
     data->simulationInfo->relations[start_index] = tmp420;
     current_index++;
 
@@ -2600,11 +2600,11 @@ int ReheatControllerFMU_function_updateRelations(DATA *data, threadData_t *threa
     current_index++;
 
     start_index = current_index;
-    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */) < (data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */));
+    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */) < (data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */));
     current_index++;
 
     start_index = current_index;
-    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */) < (data->simulationInfo->realParameter[290] /* damVal.lowMin.lesHys.t PARAM */) + 0.25);
+    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[14]] /* TDis variable */) < (data->simulationInfo->realParameter[309] /* damVal.lowMin.lesHys.t PARAM */) + 0.25);
     current_index++;
 
     start_index = current_index;
@@ -2644,7 +2644,7 @@ int ReheatControllerFMU_function_updateRelations(DATA *data, threadData_t *threa
     current_index++;
 
     start_index = current_index;
-    data->simulationInfo->relations[start_index] = (data->localData[0]->timeValue >= (data->simulationInfo->realParameter[453] /* timSup.tim.t PARAM */) + (data->simulationInfo->realVarsPre[217] /* timSup.tim.entryTime DISCRETE */));
+    data->simulationInfo->relations[start_index] = (data->localData[0]->timeValue >= (data->simulationInfo->realParameter[495] /* timSup.tim.t PARAM */) + (data->simulationInfo->realVarsPre[217] /* timSup.tim.entryTime DISCRETE */));
     current_index++;
 
     start_index = current_index;
@@ -2760,19 +2760,19 @@ int ReheatControllerFMU_function_updateRelations(DATA *data, threadData_t *threa
     current_index++;
 
     start_index = current_index;
-    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */) > (data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */));
+    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */) > (data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */));
     current_index++;
 
     start_index = current_index;
-    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */) > (data->simulationInfo->realParameter[385] /* sysReq.greThr2.greHys.t PARAM */) - 0.25);
+    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[180]] /* sysReq.sub3.y variable */) > (data->simulationInfo->realParameter[423] /* sysReq.greThr2.greHys.t PARAM */) - 0.25);
     current_index++;
 
     start_index = current_index;
-    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */) > (data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */));
+    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */) > (data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */));
     current_index++;
 
     start_index = current_index;
-    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */) > (data->simulationInfo->realParameter[381] /* sysReq.greThr1.greHys.t PARAM */) - 0.25);
+    data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[179]] /* sysReq.sub2.y variable */) > (data->simulationInfo->realParameter[419] /* sysReq.greThr1.greHys.t PARAM */) - 0.25);
     current_index++;
 
     start_index = current_index;
@@ -2855,7 +2855,7 @@ int ReheatControllerFMU_function_updateRelations(DATA *data, threadData_t *threa
     data->simulationInfo->relations[start_index] = ((data->localData[0]->realVars[data->simulationInfo->realVarsIndex[177]] /* sysReq.gai2.y variable */) > (data->localData[0]->realVars[data->simulationInfo->realVarsIndex[209]] /* sysReq.sampler2.y DISCRETE */) - 0.005);
     current_index++;
   }
-
+  
   TRACE_POP
   return 0;
 }
@@ -2863,3 +2863,4 @@ int ReheatControllerFMU_function_updateRelations(DATA *data, threadData_t *threa
 #if defined(__cplusplus)
 }
 #endif
+

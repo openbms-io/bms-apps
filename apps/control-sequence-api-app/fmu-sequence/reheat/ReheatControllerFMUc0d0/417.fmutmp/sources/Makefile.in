@@ -16,7 +16,7 @@ FMIPLATFORM=@FMIPLATFORM@
 CPPFLAGS=@CPPFLAGS@
 override CPPFLAGS += -DFMI2_OVERRIDE_FUNCTION_PREFIX
 
-override CPPFLAGS +=
+override CPPFLAGS += 
 
 CFILES = ReheatControllerFMU.c \
          ReheatControllerFMU_functions.c \
@@ -66,7 +66,7 @@ ReheatControllerFMU_FMU: nozip
 nozip: ReheatControllerFMU_functions.h ReheatControllerFMU_literals.h $(OFILES) $(RUNTIMEFILES) $(FMISUNDIALSFILES)
 	mkdir -p ../binaries/$(FMIPLATFORM)
 ifeq (@LIBTYPE_DYNAMIC@,1)
-	$(LD) -o ReheatControllerFMU$(DLLEXT) $(OFILES) $(RUNTIMEFILES) $(FMISUNDIALSFILES) -L"/Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/g36-api-app/fmu-sequence/modelica"   @BDYNAMIC@ $(LDFLAGS)
+	$(LD) -o ReheatControllerFMU$(DLLEXT) $(OFILES) $(RUNTIMEFILES) $(FMISUNDIALSFILES) -L"/Users/amol/Documents/ai-projects/bms-supervisor-controller/apps/control-sequence-api-app/fmu-sequence/modelica"   @BDYNAMIC@ $(LDFLAGS)
 	cp ReheatControllerFMU$(DLLEXT) ReheatControllerFMU_FMU.libs ../binaries/$(FMIPLATFORM)/
 endif
 	head -n20 Makefile > ../resources/$(FMIPLATFORM).summary

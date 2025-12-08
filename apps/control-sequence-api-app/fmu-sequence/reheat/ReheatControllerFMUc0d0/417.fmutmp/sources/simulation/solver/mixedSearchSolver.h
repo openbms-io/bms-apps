@@ -42,3 +42,4 @@ int freeMixedSearchData(void **data);
 int solveMixedSearch(DATA *data, int sysNumber);
 
 #endif
+

@@ -10,7 +10,7 @@ void ReheatControllerFMU_function_initSynchronous(DATA *data, threadData_t *thre
   TRACE_PUSH
   assertStreamPrint(threadData, data->modelData->nBaseClocks==0, "Number of base clocks doesn't match number of clocks that are initialized! Code generation error!");
   data->simulationInfo->baseClocks = calloc(0, sizeof(BASECLOCK_DATA));
-
+  
   TRACE_POP
 }
 
@@ -51,10 +51,11 @@ void ReheatControllerFMU_function_savePreSynchronous(DATA *data, threadData_t *t
 {
   TRACE_PUSH
 
-
+  
   TRACE_POP
 }
 
 #if defined(__cplusplus)
 }
 #endif
+

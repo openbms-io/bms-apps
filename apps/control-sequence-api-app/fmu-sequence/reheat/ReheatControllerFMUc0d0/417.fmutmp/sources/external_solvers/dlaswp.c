@@ -13,7 +13,7 @@
 #include "f2c.h"
 #include "blaswrap.h"
 
-/* Subroutine */ int dlaswp_(integer *n, doublereal *a, integer *lda, integer
+/* Subroutine */ int dlaswp_(integer *n, doublereal *a, integer *lda, integer 
 	*k1, integer *k2, integer *ipiv, integer *incx)
 {
     /* System generated locals */
@@ -112,7 +112,7 @@
 	    ix = ix0;
 	    i__2 = i2;
 	    i__3 = inc;
-	    for (i__ = i1; i__3 < 0 ? i__ >= i__2 : i__ <= i__2; i__ += i__3)
+	    for (i__ = i1; i__3 < 0 ? i__ >= i__2 : i__ <= i__2; i__ += i__3) 
 		    {
 		ip = ipiv[ix];
 		if (ip != i__) {
