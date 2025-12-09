@@ -52,8 +52,11 @@ if app_root not in sys.path:
 
 from src.adapters.database_adapter import Base, get_database_url
 
-# Import models here so Alembic can detect schema changes
-# Example: from src.models.g36_instance import G36InstanceModel
+# Import models so Alembic can detect schema changes for autogenerate
+from src.models.control_sequence_instance_model import ControlSequenceInstanceModel
+
+# Reference to prevent "unused import" linter warning
+_ = ControlSequenceInstanceModel
 
 config = context.config
 
