@@ -5,12 +5,10 @@ from enum import StrEnum
 
 from src.adapters.exceptions import FmuExecutionError
 from src.adapters.fmu_data.base import FmuDataType, FmuVariable, OutputSpec
-from src.dto.reheat_dto import (
-    ReheatCalculatedParameters,
-    ReheatInputs,
-    ReheatOutputs,
-    ReheatParameters,
-)
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.calculated_parameters import ReheatCalculatedParameters
+from src.models.reheat.outputs import ReheatOutputs
+from src.models.reheat.parameters import ReheatParameters
 
 
 class ReheatInputVar(StrEnum):

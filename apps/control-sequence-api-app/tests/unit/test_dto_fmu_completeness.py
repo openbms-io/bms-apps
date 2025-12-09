@@ -17,12 +17,10 @@ from src.adapters.fmu_data.reheat_fmu_data import (
     ReheatOutputVar,
     ReheatParameterVar,
 )
-from src.dto.reheat_dto import (
-    ReheatCalculatedParameters,
-    ReheatInputs,
-    ReheatOutputs,
-    ReheatParameters,
-)
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.calculated_parameters import ReheatCalculatedParameters
+from src.models.reheat.outputs import ReheatOutputs
+from src.models.reheat.parameters import ReheatParameters
 
 
 def get_fmu_var_metadata(model: type[BaseModel]) -> dict[str, str]:

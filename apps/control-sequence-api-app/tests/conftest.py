@@ -1,17 +1,38 @@
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
 
+from src.adapters.database_adapter import initialize_database, reset_database_state
 from src.adapters.fmu_adapter import FmuAdapter
 from src.adapters.fmu_loader import FmuLoader
-from src.dto.reheat_dto import OperationMode, ReheatInputs, ReheatParameters
+from src.models.reheat.enums import OperationMode
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.parameters import ReheatParameters
 from src.main import app
 
 
 @pytest.fixture
 def client() -> TestClient:
     return TestClient(app)
+
+
+@pytest_asyncio.fixture
+async def test_db(tmp_path: Path, monkeypatch):
+    """Create a temporary test database for integration tests."""
+    from src.adapters.database_adapter import close_database
+    from src.config.settings import get_settings
+
+    db_path = tmp_path / "test_control_sequence.db"
+    reset_database_state()
+    get_settings.cache_clear()
+    monkeypatch.setenv("DATABASE_PATH", str(db_path))
+    await initialize_database()
+    yield db_path
+    await close_database()
+    reset_database_state()
+    get_settings.cache_clear()
 
 
 @pytest.fixture

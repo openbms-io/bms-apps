@@ -4,18 +4,20 @@ import pytest
 from pydantic import ValidationError
 
 from src.dto.reheat_dto import (
+    CreateInstanceRequest,
+    ReheatInputsRequest,
+    StepRequest,
+)
+from src.models.reheat.enums import OperationMode
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.outputs import ReheatOutputs
+from src.models.reheat.parameters import ReheatParameters
+from src.utils.unit_conversion import (
     CELSIUS_TO_KELVIN_OFFSET,
     CFM_TO_M3_PER_S,
     L_PER_S_TO_M3_PER_S,
     M3_PER_H_TO_M3_PER_S,
     AirflowUnit,
-    CreateInstanceRequest,
-    OperationMode,
-    ReheatInputs,
-    ReheatInputsRequest,
-    ReheatOutputs,
-    ReheatParameters,
-    StepRequest,
     TemperatureUnit,
     airflow_in_m3_per_s,
     temp_in_kelvin,
@@ -280,7 +282,7 @@ class TestReheatInputsFromRequest:
             fanStatus=True,
             operationMode=OperationMode.STANDBY,
         )
-        inputs = ReheatInputs.from_request(request)
+        inputs = request.to_domain()
         assert inputs.zoneTemperature == 22.0 + CELSIUS_TO_KELVIN_OFFSET
         assert inputs.coolingSetpoint == 24.0 + CELSIUS_TO_KELVIN_OFFSET
         assert inputs.primaryAirflow == 0.3
@@ -300,7 +302,7 @@ class TestReheatInputsFromRequest:
             fanStatus=True,
             operationMode=OperationMode.STANDBY,
         )
-        inputs = ReheatInputs.from_request(request)
+        inputs = request.to_domain()
         assert inputs.zoneTemperature == pytest.approx(295.15, rel=1e-2)
 
     def test_kelvin_passthrough(self) -> None:
@@ -316,7 +318,7 @@ class TestReheatInputsFromRequest:
             fanStatus=True,
             operationMode=OperationMode.STANDBY,
         )
-        inputs = ReheatInputs.from_request(request)
+        inputs = request.to_domain()
         assert inputs.zoneTemperature == 295.15
 
     def test_rejects_out_of_range_after_conversion(self) -> None:
@@ -333,7 +335,7 @@ class TestReheatInputsFromRequest:
             operationMode=OperationMode.STANDBY,
         )
         with pytest.raises(ValidationError) as exc_info:
-            ReheatInputs.from_request(request)
+            request.to_domain()
         assert "zoneTemperature" in str(exc_info.value)
 
     def test_cfm_to_m3_per_s_conversion(self) -> None:
@@ -350,7 +352,7 @@ class TestReheatInputsFromRequest:
             fanStatus=True,
             operationMode=OperationMode.STANDBY,
         )
-        inputs = ReheatInputs.from_request(request)
+        inputs = request.to_domain()
         assert inputs.primaryAirflow == pytest.approx(0.471947, rel=1e-4)
 
     def test_l_per_s_to_m3_per_s_conversion(self) -> None:
@@ -367,7 +369,7 @@ class TestReheatInputsFromRequest:
             fanStatus=True,
             operationMode=OperationMode.STANDBY,
         )
-        inputs = ReheatInputs.from_request(request)
+        inputs = request.to_domain()
         assert inputs.primaryAirflow == 0.5
 
     def test_m3_per_s_passthrough(self) -> None:
@@ -384,7 +386,7 @@ class TestReheatInputsFromRequest:
             fanStatus=True,
             operationMode=OperationMode.STANDBY,
         )
-        inputs = ReheatInputs.from_request(request)
+        inputs = request.to_domain()
         assert inputs.primaryAirflow == 0.3
 
 

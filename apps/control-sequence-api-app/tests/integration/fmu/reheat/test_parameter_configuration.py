@@ -686,7 +686,7 @@ class TestControllerTypeParameters:
     async def test_controller_type_damper_p_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        from src.dto.reheat_dto import ControllerType
+        from src.models.reheat.enums import ControllerType
         params = ReheatParameters(controllerTypeDamper=ControllerType.P)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
@@ -699,7 +699,7 @@ class TestControllerTypeParameters:
     async def test_controller_type_damper_pi_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        from src.dto.reheat_dto import ControllerType
+        from src.models.reheat.enums import ControllerType
         params = ReheatParameters(controllerTypeDamper=ControllerType.PI)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
@@ -712,7 +712,7 @@ class TestControllerTypeParameters:
     async def test_controller_type_damper_pid_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        from src.dto.reheat_dto import ControllerType
+        from src.models.reheat.enums import ControllerType
         params = ReheatParameters(controllerTypeDamper=ControllerType.PID)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
@@ -725,7 +725,7 @@ class TestControllerTypeParameters:
     async def test_controller_type_valve_p_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        from src.dto.reheat_dto import ControllerType
+        from src.models.reheat.enums import ControllerType
         params = ReheatParameters(controllerTypeValve=ControllerType.P)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
@@ -738,7 +738,7 @@ class TestControllerTypeParameters:
     async def test_controller_type_valve_pi_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        from src.dto.reheat_dto import ControllerType
+        from src.models.reheat.enums import ControllerType
         params = ReheatParameters(controllerTypeValve=ControllerType.PI)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
@@ -751,7 +751,7 @@ class TestControllerTypeParameters:
     async def test_controller_type_valve_pid_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        from src.dto.reheat_dto import ControllerType
+        from src.models.reheat.enums import ControllerType
         params = ReheatParameters(controllerTypeValve=ControllerType.PID)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
@@ -767,7 +767,7 @@ class TestVentilationStandardParameters:
     async def test_ventilation_standard_ashrae_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        from src.dto.reheat_dto import VentilationStandard
+        from src.models.reheat.enums import VentilationStandard
         params = ReheatParameters(ventilationStandard=VentilationStandard.ASHRAE62_1)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
@@ -780,7 +780,7 @@ class TestVentilationStandardParameters:
     async def test_ventilation_standard_title24_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        from src.dto.reheat_dto import VentilationStandard
+        from src.models.reheat.enums import VentilationStandard
         params = ReheatParameters(ventilationStandard=VentilationStandard.CALIFORNIA_TITLE_24)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)

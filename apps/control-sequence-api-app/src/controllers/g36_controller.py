@@ -14,7 +14,6 @@ from src.dto.reheat_dto import (
     CreateInstanceRequest,
     CreateInstanceResponse,
     DeleteInstanceResponse,
-    ReheatInputs,
     StepRequest,
     StepResponse,
 )
@@ -35,7 +34,7 @@ class G36ReheatController:
     ) -> CreateInstanceResponse:
         """Create or recreate an FMU instance."""
         try:
-            inputs = ReheatInputs.from_request(request.inputs)
+            inputs = request.inputs.to_domain()
             fmu_data = ReheatFMUData(inputs=inputs, parameters=request.parameters)
 
             result = await self._adapter.upsert_fmu_instance(
@@ -61,7 +60,7 @@ class G36ReheatController:
     ) -> StepResponse:
         """Execute a simulation step on an FMU instance."""
         try:
-            inputs = ReheatInputs.from_request(request.inputs)
+            inputs = request.inputs.to_domain()
             fmu_data = ReheatFMUData(inputs=inputs)
             outputs = await self._adapter.step(instance_id, fmu_data, request.stepSize)
             return StepResponse(

@@ -4,12 +4,12 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, Index, String, func
+from sqlalchemy import Boolean, Column, DateTime, Index, String, func
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.orm import Mapped, mapped_column, validates
 
 from src.adapters.database_adapter import Base
-from src.dto.reheat_dto import ReheatParameters
+from src.models.reheat.parameters import ReheatParameters
 
 
 class SequenceType(StrEnum):
@@ -19,6 +19,9 @@ class SequenceType(StrEnum):
     G36_VAV_COOLING_ONLY = "g36_vav_cooling_only"
     G36_AHU = "g36_ahu"
     CUSTOM = "custom"
+
+
+_is_active_column = Column("is_active", Boolean)
 
 
 class ControlSequenceInstanceModel(Base):
@@ -37,7 +40,7 @@ class ControlSequenceInstanceModel(Base):
             "ix_unique_active_instance",
             "instance_id",
             unique=True,
-            sqlite_where="is_active = 1",
+            sqlite_where=_is_active_column == 1,
         ),
     )
 
