@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     debug: bool = True
     root_path: str = ""
 
+    database_path: str = Field(
+        default="apps/control-sequence-api-app/data/control-sequence.db",
+        description="Path to SQLite database file for instance storage",
+    )
+
     fmu_path_reheat: str = Field(
         default="apps/control-sequence-api-app/fmu-sequence/builds/ReheatControllerFMU.fmu",
         description="Path to Reheat Terminal FMU file",

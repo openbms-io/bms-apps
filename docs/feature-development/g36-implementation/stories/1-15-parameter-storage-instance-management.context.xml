@@ -1,0 +1,234 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.15</storyId>
+    <title>Parameter Storage & Instance Management</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-08</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.15-parameter-storage-instance-management.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>persistent storage for G36 instance parameters</iWant>
+    <soThat>configuration survives server restarts and new instances get sensible defaults</soThat>
+    <tasks>
+      <task id="1" goal="Create Database Adapter">
+        <subtask>Create src/adapters/database_adapter.py</subtask>
+        <subtask>Use SQLAlchemy async with aiosqlite</subtask>
+        <subtask>Implement create_async_engine with WAL mode</subtask>
+        <subtask>Implement get_session() async context manager</subtask>
+        <subtask>Implement initialize_database() for table creation</subtask>
+      </task>
+      <task id="2" goal="Create Domain Models">
+        <subtask>Create src/models/reheat_models.py</subtask>
+        <subtask>Move ReheatParameters from dto/ with unit fields</subtask>
+        <subtask>Move ReheatInputs from dto/ with unit fields</subtask>
+        <subtask>Add TemperatureUnit, AirflowUnit enums</subtask>
+      </task>
+      <task id="3" goal="Create Instance Table Model">
+        <subtask>Create src/models/g36_instance_model.py</subtask>
+        <subtask>Define G36InstanceTable SQLAlchemy model</subtask>
+        <subtask>Implement CRUD methods</subtask>
+      </task>
+      <task id="4" goal="Update ReheatFMUData with Unit Conversion">
+        <subtask>Add unit conversion to reheat_fmu_data.py</subtask>
+        <subtask>Create temp_in_kelvin() and airflow_in_m3_per_s() helpers</subtask>
+      </task>
+      <task id="5" goal="Update DTOs for API Layer">
+        <subtask>Update dto/reheat_dto.py to import from models/</subtask>
+        <subtask>Create CreateInstanceRequest, UpdateParametersRequest DTOs</subtask>
+      </task>
+      <task id="6" goal="Update G36 Router Endpoints">
+        <subtask>Modify POST /reheat/instances to create with defaults</subtask>
+        <subtask>Add GET /reheat/instances/{instance_id}</subtask>
+        <subtask>Modify PUT /reheat/instances/{instance_id} for params only</subtask>
+      </task>
+      <task id="7" goal="Update main.py for Database Init">
+        <subtask>Add startup event to initialize database</subtask>
+        <subtask>Ensure WAL mode enabled</subtask>
+      </task>
+      <task id="8-11" goal="Unit and Integration Tests">
+        <subtask>Tests for database adapter, instance model, unit conversion</subtask>
+        <subtask>Integration tests for all new endpoints</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">SQLite database stores instance parameters with instance_id as primary key</criterion>
+    <criterion id="AC2">POST /reheat/instances creates instance with default parameters</criterion>
+    <criterion id="AC3">GET /reheat/instances/{id} returns stored parameters</criterion>
+    <criterion id="AC4">PUT /reheat/instances/{id} updates parameters only</criterion>
+    <criterion id="AC5">Unit conversion moved to ReheatFMUData (store user units, convert at FMU boundary)</criterion>
+    <criterion id="AC6">ReheatParameters and ReheatInputs moved from dto/ to models/</criterion>
+    <criterion id="AC7">Unit tests for database adapter and instance model</criterion>
+    <criterion id="AC8">Integration tests for new endpoints</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/ADR-001-parameter-storage-strategy.md</path>
+        <title>ADR-001: G36 Parameter Storage Strategy</title>
+        <section>Full Document</section>
+        <snippet>Defines storage strategy: Store user units in SQLite, convert to SI at FMU boundary. Three-layer architecture: API (dto/) → Domain (models/) → FMU (adapters/fmu_data/).</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Tech Spec</title>
+        <section>Section 4.1 Endpoints</section>
+        <snippet>Defines API endpoints for G36 reheat control sequences including instance management and step execution.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/epics.md</path>
+        <title>G36 Visual Programming Blocks - Epic Breakdown</title>
+        <section>Story 1.15</section>
+        <snippet>Parameter Storage and Instance Management story with acceptance criteria for SQLite persistence, API endpoints, and unit conversion.</snippet>
+      </doc>
+      <doc>
+        <path>apps/bms-iot-app/src/network/sqlmodel_client.py</path>
+        <title>SQLAlchemy Async Database Client Pattern</title>
+        <section>Full File</section>
+        <snippet>Reference implementation for SQLAlchemy async with aiosqlite, WAL mode, and session management patterns to follow.</snippet>
+      </doc>
+      <doc>
+        <path>apps/bms-iot-app/tests/conftest.py</path>
+        <title>Test Fixtures Pattern</title>
+        <section>Database Fixtures</section>
+        <snippet>Reference for pytest-asyncio database fixtures: setup_database (session-scoped, autouse) and cleanup_database (per-test isolation).</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+        <kind>dto</kind>
+        <symbol>ReheatParameters, ReheatInputs, ReheatInputsRequest</symbol>
+        <lines>80-688</lines>
+        <reason>Contains models to be moved to models/reheat_models.py. Already has TemperatureUnit, AirflowUnit enums and conversion functions.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/adapters/fmu_data/reheat_fmu_data.py</path>
+        <kind>adapter</kind>
+        <symbol>ReheatFMUData</symbol>
+        <lines>165-374</lines>
+        <reason>FMU data container that will receive unit conversion logic in configuration_variables and input_variables properties.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/routers/g36_router.py</path>
+        <kind>router</kind>
+        <symbol>router, upsert_instance, step, delete_instance</symbol>
+        <lines>1-52</lines>
+        <reason>Current router to be modified: add GET endpoint, split POST into create-only, add PUT for params-only updates.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/controllers/g36_controller.py</path>
+        <kind>controller</kind>
+        <symbol>G36ReheatController</symbol>
+        <lines>all</lines>
+        <reason>Controller to be updated for new endpoint logic - create with defaults, get stored params, update params.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/main.py</path>
+        <kind>entrypoint</kind>
+        <symbol>app, lifespan</symbol>
+        <lines>19-46</lines>
+        <reason>Lifespan handler to be updated to initialize database on startup.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/tests/conftest.py</path>
+        <kind>test-config</kind>
+        <symbol>client, fmu_adapter, base_inputs, base_parameters</symbol>
+        <lines>1-62</lines>
+        <reason>Test configuration to be extended with database fixtures following bms-iot-app pattern.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="fastapi" version=">=0.104.0" />
+        <package name="uvicorn" version=">=0.24.0" />
+        <package name="pydantic" version=">=2.5.0" />
+        <package name="pydantic-settings" version=">=2.0.0" />
+        <package name="loguru" version=">=0.7.0" />
+        <package name="fmpy" version=">=0.3.0" />
+        <package name="sqlalchemy" version=">=2.0.0" note="TO ADD" />
+        <package name="aiosqlite" version=">=0.19.0" note="TO ADD" />
+      </python>
+      <test>
+        <package name="pytest" version=">=7.4.0" />
+        <package name="pytest-asyncio" version=">=0.21.0" />
+        <package name="httpx" version=">=0.25.0" />
+        <package name="pytest-cov" version=">=4.1.0" />
+      </test>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Three-layer separation: dto/ (API), models/ (domain), adapters/ (infrastructure)</constraint>
+    <constraint type="pattern">SQLAlchemy async with aiosqlite, WAL mode for concurrency</constraint>
+    <constraint type="pattern">FastAPI Depends for dependency injection</constraint>
+    <constraint type="pattern">Pydantic models for request/response validation</constraint>
+    <constraint type="data">Store user-selected units in DB, convert to SI at FMU boundary only</constraint>
+    <constraint type="api">POST creates with defaults, PUT updates params only, GET retrieves stored</constraint>
+    <constraint type="testing">TDD approach - write tests first, follow bms-iot-app fixture patterns</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>POST /api/v1/g36/reheat/instances</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/v1/g36/reheat/instances { instance_id: str } → { instance_id, parameters: ReheatParameters }</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_router.py</path>
+    </interface>
+    <interface>
+      <name>GET /api/v1/g36/reheat/instances/{instance_id}</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/v1/g36/reheat/instances/{instance_id} → { instance_id, parameters: ReheatParameters }</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_router.py (TO ADD)</path>
+    </interface>
+    <interface>
+      <name>PUT /api/v1/g36/reheat/instances/{instance_id}</name>
+      <kind>REST endpoint</kind>
+      <signature>PUT /api/v1/g36/reheat/instances/{instance_id} { parameters: ReheatParameters } → { instance_id, parameters }</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_router.py (TO ADD)</path>
+    </interface>
+    <interface>
+      <name>DatabaseAdapter</name>
+      <kind>class interface</kind>
+      <signature>get_session() -> AsyncContextManager[AsyncSession]; initialize_database() -> None</signature>
+      <path>apps/control-sequence-api-app/src/adapters/database_adapter.py (TO CREATE)</path>
+    </interface>
+    <interface>
+      <name>G36InstanceModel</name>
+      <kind>class interface</kind>
+      <signature>create(instance_id, params) -> G36Instance; get(instance_id) -> G36Instance; update(instance_id, params) -> G36Instance; delete(instance_id) -> bool</signature>
+      <path>apps/control-sequence-api-app/src/models/g36_instance_model.py (TO CREATE)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      pytest with pytest-asyncio for async tests. TDD approach - write failing tests first.
+      Unit tests mock external dependencies (database, FMU). Integration tests use real app with TestClient.
+      Test isolation via cleanup_database fixture. Session-scoped setup_database for table creation.
+    </standards>
+    <locations>
+      <location>apps/control-sequence-api-app/tests/unit/test_adapters/</location>
+      <location>apps/control-sequence-api-app/tests/unit/test_models/</location>
+      <location>apps/control-sequence-api-app/tests/integration/</location>
+    </locations>
+    <ideas>
+      <idea ac="AC1">Test database file created at correct path; Test WAL mode enabled; Test table schema correct</idea>
+      <idea ac="AC2">Test POST creates instance with default ReheatParameters; Test POST returns 201; Test POST idempotent</idea>
+      <idea ac="AC3">Test GET returns stored parameters; Test GET 404 for non-existent instance</idea>
+      <idea ac="AC4">Test PUT updates parameters only; Test PUT preserves instance_id; Test PUT 404 for non-existent</idea>
+      <idea ac="AC5">Test ReheatFMUData converts Celsius to Kelvin; Test CFM to m³/s conversion; Test stored values unchanged</idea>
+      <idea ac="AC6">Test ReheatParameters importable from models/; Test ReheatInputs importable from models/</idea>
+      <idea ac="AC7">Test DatabaseAdapter.get_session(); Test G36InstanceModel CRUD operations</idea>
+      <idea ac="AC8">Test round-trip: POST → GET → PUT → GET; Test concurrent instance operations</idea>
+    </ideas>
+  </tests>
+</story-context>

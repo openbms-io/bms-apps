@@ -325,7 +325,30 @@ So that the API structure supports future validation without blocking Epic 1.
 
 ---
 
-### Story 1.15: API Documentation
+### Story 1.15: Parameter Storage & Instance Management
+
+As a developer,
+I want persistent storage for G36 instance parameters,
+So that configuration survives server restarts and new instances get sensible defaults.
+
+**Acceptance Criteria:**
+
+1. SQLite database stores instance parameters with `instance_id` as primary key
+2. POST /reheat/instances creates instance with default parameters
+3. GET /reheat/instances/{id} returns stored parameters
+4. PUT /reheat/instances/{id} updates parameters only
+5. Unit conversion moved to ReheatFMUData (store user units, convert at FMU boundary)
+6. ReheatParameters and ReheatInputs moved from dto/ to models/
+7. Unit tests for database adapter and instance model
+8. Integration tests for new endpoints
+
+**Prerequisites:** Story 1.14
+
+**Reference:** [ADR-001: Parameter Storage Strategy](./specs/ADR-001-parameter-storage-strategy.md)
+
+---
+
+### Story 1.16: API Documentation
 
 As a developer,
 I want clear API documentation in Swagger UI,
@@ -338,13 +361,13 @@ So that consumers understand how to use each endpoint.
 3. Examples provided for each endpoint
 4. Error responses documented
 
-**Prerequisites:** Story 1.12
+**Prerequisites:** Story 1.15
 
 **Reference:** [Tech Spec Section 5.3](./specs/control-sequence-api-tech-spec.md#53-api-documentation)
 
 ---
 
-### Story 1.16: Designer OpenAPI Client Generation
+### Story 1.17: Designer OpenAPI Client Generation
 
 As a developer,
 I want TypeScript types and client generated from the API,
@@ -357,13 +380,13 @@ So that Designer can consume the API with type safety.
 3. Generated types in src/domains/g36/api/generated/
 4. Types match Pydantic DTOs
 
-**Prerequisites:** Story 1.12
+**Prerequisites:** Story 1.15
 
 **Reference:** [Tech Spec Section 5.1](./specs/control-sequence-api-tech-spec.md#51-openapi-schema-generation)
 
 ---
 
-### Story 1.17: Unit & Integration Tests
+### Story 1.18: Unit & Integration Tests
 
 As a developer,
 I want comprehensive tests for the Control Sequence API,
@@ -377,7 +400,7 @@ So that we have confidence in the implementation.
 4. Integration tests for all endpoints (TestClient)
 5. Tests run in CI
 
-**Prerequisites:** Story 1.12
+**Prerequisites:** Story 1.15
 
 ---
 

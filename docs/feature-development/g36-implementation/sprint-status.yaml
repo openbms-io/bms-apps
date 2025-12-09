@@ -52,10 +52,11 @@ development_status:
   1-11-g36-controller: done
   1-12-g36-router-endpoints: done
   1-13-health-router: done
-  1-14-shacl-validation-stub: review
-  1-15-api-documentation: backlog
-  1-16-designer-openapi-client: backlog
-  1-17-unit-integration-tests: backlog
+  1-14-shacl-validation-stub: done
+  1-15-parameter-storage-instance-management: in-progress
+  1-16-api-documentation: backlog
+  1-17-designer-openapi-client: backlog
+  1-18-unit-integration-tests: backlog
 
   # Phase 1B: Designer Integration
   1b-1-g36-reheat-node-type-io-schema: backlog
