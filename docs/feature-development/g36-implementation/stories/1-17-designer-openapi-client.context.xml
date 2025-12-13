@@ -1,0 +1,234 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>17</storyId>
+    <title>Designer OpenAPI Client Generation</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-12</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.17-designer-openapi-client.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Designer developer</asA>
+    <iWant>TypeScript types and API client generated from the Control Sequence API OpenAPI spec</iWant>
+    <soThat>the Designer can consume the API with full type safety and auto-completion</soThat>
+    <tasks>
+      <task id="1" ac="3">Create control-sequence domain folder structure
+        - Create apps/designer/src/domains/control-sequence/ directory
+        - Create subdirectories: api/, api/types/, api/queries/, api/mutations/
+        - Create types.ts for domain-specific types
+        - Create index.ts as domain public API (follow building-semantics pattern)</task>
+      <task id="2" ac="1,2,5">Configure openapi-ts generation script
+        - Add generate:control-sequence-client script to apps/designer/package.json
+        - Configure to read from http://localhost:8001/openapi.json
+        - Configure output directory as ./src/domains/control-sequence/api/generated
+        - Set client to @hey-api/client-fetch
+        - Add sed command to replace baseUrl with /control-sequence (nginx proxy route)</task>
+      <task id="3" ac="2,3,4">Generate TypeScript client
+        - Ensure Control Sequence API is running locally on port 8001
+        - Run pnpm generate:control-sequence-client from designer directory
+        - Verify generated folder structure matches building-semantics pattern</task>
+      <task id="4" ac="3,5">Create API config and exports
+        - Create api/config.ts with client configuration
+        - Create api/index.ts to export queries/mutations
+        - Create api/types/index.ts for custom type extensions
+        - Set baseUrl from environment variable or default to /control-sequence</task>
+      <task id="5" ac="4">Create domain index.ts with public exports
+        - Export generated types from api/generated/types.gen
+        - Export client configuration
+        - Follow building-semantics/index.ts pattern for module organization</task>
+      <task id="6" ac="4">Verify type alignment with Pydantic DTOs
+        - Verify ReheatParameters type matches Python DTO fields
+        - Verify ReheatInputsRequest type matches Python DTO fields
+        - Verify ReheatOutputs type matches Python DTO fields
+        - Verify StepRequest and StepResponse types match Python DTOs
+        - Verify ErrorResponse type matches Python DTO</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Add generate:control-sequence-client script to Designer package.json</criterion>
+    <criterion id="2">Uses openapi-ts to generate from Control Sequence API's /openapi.json</criterion>
+    <criterion id="3">Generated types placed in src/domains/control-sequence/api/generated/</criterion>
+    <criterion id="4">Generated TypeScript types match Pydantic DTOs in Control Sequence API</criterion>
+    <criterion id="5">Client configured with correct baseUrl for nginx proxy route (/control-sequence)</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Technical Specification</title>
+        <section>5.1 OpenAPI Schema Generation, 5.2 Designer Integration</section>
+        <snippet>Pattern same as building-semantics-api-app: Define Pydantic DTOs → FastAPI generates OpenAPI → Run openapi-ts → Designer imports generated types. Designer package.json script: "generate:g36-client": "openapi-ts --input http://localhost:8001/openapi.json --output ./src/domains/g36/api/generated --client @hey-api/client-fetch"</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.16-api-documentation.md</path>
+        <title>Story 1.16: API Documentation</title>
+        <section>Dev Agent Record</section>
+        <snippet>All endpoints have docstrings, field descriptions, and examples. 421 tests passing. DTOs already have comprehensive Field(description=..., json_schema_extra=...) which will generate good TypeScript JSDoc.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Development Guidelines</title>
+        <section>Technology Stack - Frontend (Designer)</section>
+        <snippet>Next.js 15.5 with Turbopack, TypeScript with strict type checking, @xyflow/react for visual programming, Zustand for state management, Jest + React Testing Library for testing.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <file>
+        <path>apps/designer/package.json</path>
+        <kind>config</kind>
+        <symbol>scripts.generate:api-client</symbol>
+        <lines>16</lines>
+        <reason>Existing script pattern for openapi-ts generation. Use same pattern for control-sequence-client with localhost:8001 and /control-sequence baseUrl.</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/building-semantics/index.ts</path>
+        <kind>module</kind>
+        <symbol>domain public API exports</symbol>
+        <reason>Pattern for domain index.ts structure - exports types from generated, components, and services. Follow this pattern for control-sequence domain.</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/building-semantics/api/config.ts</path>
+        <kind>config</kind>
+        <symbol>client.setConfig, API_BASE_URL</symbol>
+        <reason>Pattern for API client configuration. Create similar config.ts for control-sequence with NEXT_PUBLIC_CONTROL_SEQUENCE_API_URL env var.</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/building-semantics/api/index.ts</path>
+        <kind>module</kind>
+        <symbol>query/mutation exports</symbol>
+        <reason>Pattern for API module exports. Create similar for control-sequence (initially empty, add queries/mutations in Phase 1B).</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/building-semantics/api/generated/types.gen.ts</path>
+        <kind>generated</kind>
+        <symbol>auto-generated TypeScript types</symbol>
+        <reason>Reference for expected generated file structure. Control-sequence will generate similar types for ReheatParameters, ReheatInputsRequest, ReheatOutputs, StepRequest, StepResponse.</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/building-semantics/api/generated/client.gen.ts</path>
+        <kind>generated</kind>
+        <symbol>client, createClient, createConfig</symbol>
+        <reason>Generated client pattern. Note: sed command in package.json replaces baseUrl to use nginx proxy path.</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/building-semantics/types.ts</path>
+        <kind>types</kind>
+        <symbol>BuildingSemanticsBacnetConfig</symbol>
+        <reason>Pattern for domain-specific types not from generated. Control-sequence may need similar for custom type extensions.</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+        <kind>dto</kind>
+        <symbol>ReheatInputsRequest, StepRequest, StepResponse</symbol>
+        <reason>Source Pydantic DTOs that will generate TypeScript types. Contains Field descriptions and json_schema_extra examples.</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/dto/base_dto.py</path>
+        <kind>dto</kind>
+        <symbol>CreateInstanceResponse, GetInstanceResponse, UpdateParametersRequest, UpdateInstanceResponse, DeleteInstanceResponse</symbol>
+        <reason>Generic base DTOs used by router. Will generate generic TypeScript types.</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/models/reheat/parameters.py</path>
+        <kind>model</kind>
+        <symbol>ReheatParameters</symbol>
+        <reason>G36 configurable parameters DTO with 50+ fields. Will generate comprehensive TypeScript interface.</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/models/reheat/outputs.py</path>
+        <kind>model</kind>
+        <symbol>ReheatOutputs</symbol>
+        <reason>FMU output values DTO. Will generate TypeScript interface for step response.</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/dto/common_dto.py</path>
+        <kind>dto</kind>
+        <symbol>ErrorResponse</symbol>
+        <reason>Error response DTO used in route decorators. Will generate TypeScript ErrorResponse type.</reason>
+      </file>
+    </code>
+
+    <dependencies>
+      <node>
+        <package>@hey-api/openapi-ts</package>
+        <version>^0.87.1</version>
+        <purpose>OpenAPI to TypeScript code generation</purpose>
+      </node>
+      <node>
+        <package>next</package>
+        <version>15.5.2</version>
+        <purpose>React framework</purpose>
+      </node>
+      <node>
+        <package>typescript</package>
+        <version>^5</version>
+        <purpose>TypeScript compiler</purpose>
+      </node>
+      <node>
+        <package>@tanstack/react-query</package>
+        <version>^5.86.0</version>
+        <purpose>Data fetching (for future queries/mutations)</purpose>
+      </node>
+      <python>
+        <package>fastapi</package>
+        <purpose>Auto-generates OpenAPI spec at /openapi.json</purpose>
+      </python>
+      <python>
+        <package>pydantic</package>
+        <purpose>DTO definitions with Field metadata that becomes TypeScript types</purpose>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint source="tech-spec">Follow same pattern as building-semantics-api-app for OpenAPI generation</constraint>
+    <constraint source="tech-spec">Generated types should be used directly as node data model - NO manual redefinition</constraint>
+    <constraint source="nginx">Control Sequence API exposed at /control-sequence via nginx proxy (configured in Story 1.7)</constraint>
+    <constraint source="coding-standards">No comments unless explaining WHY. Method/variable names should be self-documenting.</constraint>
+    <constraint source="coding-standards">Follow building-semantics domain folder structure exactly</constraint>
+    <constraint source="architecture">Domain index.ts is the ONLY file external modules should import from</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Control Sequence API OpenAPI endpoint</name>
+      <kind>REST endpoint</kind>
+      <signature>GET http://localhost:8001/openapi.json</signature>
+      <path>apps/control-sequence-api-app/src/main.py (FastAPI auto-generates)</path>
+    </interface>
+    <interface>
+      <name>openapi-ts CLI</name>
+      <kind>CLI tool</kind>
+      <signature>openapi-ts --input {url} --output {dir} --client @hey-api/client-fetch</signature>
+      <path>node_modules/@hey-api/openapi-ts</path>
+    </interface>
+    <interface>
+      <name>Generated client setConfig</name>
+      <kind>function</kind>
+      <signature>client.setConfig({ baseUrl: string })</signature>
+      <path>src/domains/control-sequence/api/generated/client.gen.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Designer uses Jest with React Testing Library. Unit tests colocated with source files as .spec.ts. Integration tests in tests/ folder. Mock external dependencies. Follow TDD: write test first, then implement.</standards>
+    <locations>
+      <location>apps/designer/src/**/*.spec.ts</location>
+      <location>apps/designer/tests/</location>
+    </locations>
+    <ideas>
+      <idea ac="1,2">Test that package.json script exists and has correct parameters (input URL, output path, client)</idea>
+      <idea ac="3">Test that generated folder contains expected files: types.gen.ts, sdk.gen.ts, client.gen.ts</idea>
+      <idea ac="4">Test that generated ReheatParameters interface has expected fields (minAirflow, maxCoolingAirflow, etc.)</idea>
+      <idea ac="4">Test that generated ReheatInputsRequest interface has expected fields (zoneTemperature, coolingSetpoint, etc.)</idea>
+      <idea ac="4">Test that generated ReheatOutputs interface has expected fields (damperPosition, valvePosition, airflowSetpoint)</idea>
+      <idea ac="5">Test that config.ts sets baseUrl correctly using environment variable fallback</idea>
+      <idea ac="5">Test that client.gen.ts baseUrl is /control-sequence (nginx proxy path)</idea>
+    </ideas>
+  </tests>
+</story-context>
