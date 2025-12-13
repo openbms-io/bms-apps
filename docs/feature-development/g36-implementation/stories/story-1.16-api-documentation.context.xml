@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context version="1.0" story="1.16-api-documentation">
+  <metadata>
+    <generated>2025-12-12</generated>
+    <story-file>story-1.16-api-documentation.md</story-file>
+  </metadata>
+
+  <executive-summary>
+    Story 1.16 adds comprehensive OpenAPI documentation to the Control Sequence API.
+    The codebase already has substantial documentation - DTOs have Field descriptions
+    and examples. The main gaps are error response documentation in route decorators
+    and enhanced endpoint docstrings.
+  </executive-summary>
+
+  <acceptance-criteria>
+    <criterion id="1">All endpoints have docstrings visible in /docs</criterion>
+    <criterion id="2">Request/Response schemas include field descriptions</criterion>
+    <criterion id="3">Examples provided for each endpoint</criterion>
+    <criterion id="4">Error responses documented</criterion>
+  </acceptance-criteria>
+
+  <current-state-analysis>
+    <summary>
+      The API already has significant documentation in place. Field descriptions
+      and examples exist in DTOs. Main gaps are error response documentation
+      (responses={} in route decorators) and some enhanced endpoint docstrings.
+    </summary>
+
+    <existing-documentation>
+      <item status="complete">Field descriptions in ReheatParameters (50+ fields)</item>
+      <item status="complete">Field descriptions in ReheatInputs, ReheatOutputs</item>
+      <item status="complete">Field descriptions and examples in base_dto.py</item>
+      <item status="complete">Field descriptions and examples in reheat_dto.py</item>
+      <item status="complete">Field descriptions in health_dto.py, validation_dto.py</item>
+      <item status="complete">Basic docstrings on all router endpoints</item>
+      <item status="missing">Error response documentation (responses={} parameter)</item>
+      <item status="partial">Enhanced endpoint docstrings with when-to-use guidance</item>
+    </existing-documentation>
+
+    <gap-analysis>
+      <gap priority="high">
+        Add responses={} parameter to route decorators documenting 400, 404, 422, 500 codes
+      </gap>
+      <gap priority="medium">
+        Enhance endpoint docstrings with fuller descriptions per tech spec standards
+      </gap>
+      <gap priority="low">
+        Minor polish - ensure all examples appear correctly in Swagger UI
+      </gap>
+    </gap-analysis>
+  </current-state-analysis>
+
+  <code-artifacts>
+    <artifact type="router" path="apps/control-sequence-api-app/src/routers/g36_vav_reheat_router.py">
+      <description>Main G36 VAV Reheat endpoints - needs error responses added</description>
+      <current-endpoints>
+        <endpoint method="POST" path="/instances">Create instance - has basic docstring</endpoint>
+        <endpoint method="GET" path="/instances/{id}">Get instance - has basic docstring</endpoint>
+        <endpoint method="PUT" path="/instances/{id}">Update instance - has basic docstring</endpoint>
+        <endpoint method="POST" path="/instances/{id}/step">Execute step - has basic docstring</endpoint>
+        <endpoint method="DELETE" path="/instances/{id}">Delete instance - has basic docstring</endpoint>
+      </current-endpoints>
+      <changes-needed>
+        Add responses={} parameter with 404, 422, 500 error codes to each endpoint
+      </changes-needed>
+    </artifact>
+
+    <artifact type="router" path="apps/control-sequence-api-app/src/routers/health_router.py">
+      <description>Health check endpoint - has good docstring</description>
+      <status>Documentation adequate - may add responses={} for completeness</status>
+    </artifact>
+
+    <artifact type="router" path="apps/control-sequence-api-app/src/routers/validation_router.py">
+      <description>SHACL validation stub - has detailed docstring already</description>
+      <status>Documentation complete - no changes needed</status>
+    </artifact>
+
+    <artifact type="dto" path="apps/control-sequence-api-app/src/dto/base_dto.py">
+      <description>Generic response DTOs with Field descriptions and examples</description>
+      <status>Documentation complete</status>
+    </artifact>
+
+    <artifact type="dto" path="apps/control-sequence-api-app/src/dto/reheat_dto.py">
+      <description>Reheat-specific DTOs with Field descriptions and examples</description>
+      <status>Documentation complete</status>
+    </artifact>
+
+    <artifact type="dto" path="apps/control-sequence-api-app/src/dto/common_dto.py">
+      <description>Contains ErrorResponse model for error documentation</description>
+      <important>ErrorResponse already exists - use it in responses={} parameter</important>
+    </artifact>
+
+    <artifact type="model" path="apps/control-sequence-api-app/src/models/reheat/parameters.py">
+      <description>ReheatParameters with 50+ fields, all documented with descriptions, examples, units, FMU var mappings</description>
+      <status>Documentation complete - comprehensive Field definitions</status>
+    </artifact>
+
+    <artifact type="model" path="apps/control-sequence-api-app/src/models/reheat/inputs.py">
+      <description>ReheatInputs with Field descriptions and FMU var mappings</description>
+      <status>Documentation complete</status>
+    </artifact>
+
+    <artifact type="model" path="apps/control-sequence-api-app/src/models/reheat/outputs.py">
+      <description>ReheatOutputs with Field descriptions, examples, and FMU var mappings</description>
+      <status>Documentation complete</status>
+    </artifact>
+  </code-artifacts>
+
+  <tech-spec-requirements>
+    <source>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</source>
+
+    <section id="5.3" title="API Documentation">
+      <requirement>FastAPI auto-generates OpenAPI/Swagger docs at /docs</requirement>
+      <requirement>All endpoints must have clear docstrings visible in Swagger UI</requirement>
+      <requirement>Request/Response schemas must include field descriptions and examples</requirement>
+      <requirement>Input validation constraints (ranges, types) visible in schema documentation</requirement>
+    </section>
+
+    <documentation-standards>
+      <standard element="Endpoint">Description of what it does, when to use it</standard>
+      <standard element="Request fields">Type, description, valid range, example value</standard>
+      <standard element="Response fields">Type, description, example value</standard>
+      <standard element="Error responses">When each error occurs, how to resolve</standard>
+    </documentation-standards>
+
+    <error-codes source="section-4.3">
+      <error code="400" condition="Invalid input (validation failed)">
+        Example: {"error": "validation_error", "detail": "TZon must be between 250-350K"}
+      </error>
+      <error code="404" condition="Instance not found (for step/update/get/delete)">
+        Example: {"error": "not_found", "detail": "Instance abc-123 not found"}
+      </error>
+      <error code="422" condition="Request body schema validation failed">
+        Pydantic validation error - automatic from FastAPI
+      </error>
+      <error code="500" condition="FMU execution error">
+        Example: {"error": "fmu_error", "detail": "..."}
+      </error>
+    </error-codes>
+  </tech-spec-requirements>
+
+  <implementation-patterns>
+    <pattern name="Error Response Documentation">
+      <description>Add responses parameter to route decorator</description>
+      <code-example language="python"><![CDATA[
+from src.dto.common_dto import ErrorResponse
+
+@router.post(
+    "/instances",
+    response_model=CreateInstanceResponse[ReheatParameters],
+    responses={
+        200: {"description": "Instance created with default parameters"},
+        500: {"description": "Internal server error", "model": ErrorResponse},
+    },
+)
+async def create_instance():
+    """Create a new VAV Reheat control sequence instance.
+
+    Creates an FMU instance with default G36 parameters. The FMU is lazily
+    instantiated on the first step() call. Returns auto-generated instance_id.
+    """
+]]></code-example>
+    </pattern>
+
+    <pattern name="Instance Endpoints Error Responses">
+      <code-example language="python"><![CDATA[
+@router.get(
+    "/instances/{instance_id}",
+    response_model=GetInstanceResponse[ReheatParameters],
+    responses={
+        200: {"description": "Instance parameters retrieved"},
+        404: {"description": "Instance not found", "model": ErrorResponse},
+    },
+)
+
+@router.put(
+    "/instances/{instance_id}",
+    response_model=UpdateInstanceResponse[ReheatParameters],
+    responses={
+        200: {"description": "Instance parameters updated"},
+        404: {"description": "Instance not found", "model": ErrorResponse},
+        422: {"description": "Validation error in request body"},
+    },
+)
+
+@router.post(
+    "/instances/{instance_id}/step",
+    response_model=StepResponse,
+    responses={
+        200: {"description": "Step executed successfully"},
+        404: {"description": "Instance not found", "model": ErrorResponse},
+        422: {"description": "Validation error in inputs"},
+        500: {"description": "FMU execution error", "model": ErrorResponse},
+    },
+)
+
+@router.delete(
+    "/instances/{instance_id}",
+    response_model=DeleteInstanceResponse,
+    responses={
+        200: {"description": "Instance deleted (or already not found)"},
+    },
+)
+]]></code-example>
+    </pattern>
+  </implementation-patterns>
+
+  <testing-approach>
+    <strategy>
+      Verify documentation via OpenAPI schema inspection in integration tests.
+      Tests already exist in test_health_router.py for OpenAPI verification.
+    </strategy>
+
+    <existing-tests>
+      <test file="tests/integration/test_health_router.py">
+        TestHealthOpenAPIDocumentation - verifies health endpoint in OpenAPI schema
+      </test>
+    </existing-tests>
+
+    <new-tests-needed>
+      <test>Verify g36 endpoints have responses documented in OpenAPI schema</test>
+      <test>Verify error response models appear in OpenAPI schema</test>
+      <test>Manual verification: Start API, navigate to /docs, check all documentation</test>
+    </new-tests-needed>
+  </testing-approach>
+
+  <learnings-from-previous-story>
+    <source>story-1.15-parameter-storage-instance-management.md</source>
+    <learning>Router Pattern: Use FastAPI response_model and responses parameters for documentation</learning>
+    <learning>Generic DTOs: CreateInstanceResponse[T] pattern established - document generic type behavior</learning>
+    <learning>Lazy FMU Creation: Document that FMU is not created until first step() call</learning>
+    <learning>Test Count: 399 tests passing - ensure documentation changes don't break functionality</learning>
+  </learnings-from-previous-story>
+
+  <task-implementation-guidance>
+    <task id="1" title="Add endpoint docstrings to routers">
+      <guidance>
+        Routers already have basic docstrings. Enhance with:
+        - When to use each endpoint (Designer integration context)
+        - Note lazy FMU creation for step endpoint
+        - Note idempotent behavior for delete
+      </guidance>
+      <effort>Low - mostly enhancement of existing docstrings</effort>
+    </task>
+
+    <task id="2" title="Add Field descriptions to DTOs">
+      <guidance>
+        Already complete! All DTOs have Field descriptions.
+        Verify in Swagger UI that they appear correctly.
+      </guidance>
+      <effort>None - already done</effort>
+    </task>
+
+    <task id="3" title="Add examples to schemas">
+      <guidance>
+        Already complete! DTOs use json_schema_extra with examples.
+        Verify in Swagger UI that examples appear in "Try it out" section.
+      </guidance>
+      <effort>None - already done</effort>
+    </task>
+
+    <task id="4" title="Document error responses">
+      <guidance>
+        Main work item. Add responses={} parameter to each route decorator.
+        ErrorResponse model exists in common_dto.py - import and use it.
+        Document when each error occurs in the response description.
+      </guidance>
+      <effort>Medium - primary work for this story</effort>
+    </task>
+
+    <task id="5" title="Verify documentation in Swagger UI">
+      <guidance>
+        Start API: uvicorn src.main:app --reload
+        Navigate to http://localhost:8001/docs
+        Verify all criteria are met.
+      </guidance>
+      <effort>Low - manual verification</effort>
+    </task>
+  </task-implementation-guidance>
+
+  <files-to-modify>
+    <file action="modify">apps/control-sequence-api-app/src/routers/g36_vav_reheat_router.py</file>
+    <file action="verify">apps/control-sequence-api-app/src/routers/health_router.py</file>
+    <file action="verify">apps/control-sequence-api-app/src/routers/validation_router.py</file>
+    <file action="verify">apps/control-sequence-api-app/src/dto/base_dto.py</file>
+    <file action="verify">apps/control-sequence-api-app/src/dto/reheat_dto.py</file>
+    <file action="use">apps/control-sequence-api-app/src/dto/common_dto.py (ErrorResponse)</file>
+  </files-to-modify>
+
+  <estimated-effort>
+    <assessment>Story is simpler than initially expected due to existing documentation</assessment>
+    <primary-work>Add error response documentation to g36_vav_reheat_router.py</primary-work>
+    <secondary-work>Enhance endpoint docstrings with context</secondary-work>
+    <verification>Manual Swagger UI verification</verification>
+  </estimated-effort>
+</story-context>

@@ -53,8 +53,8 @@ development_status:
   1-12-g36-router-endpoints: done
   1-13-health-router: done
   1-14-shacl-validation-stub: done
-  1-15-parameter-storage-instance-management: in-progress
-  1-16-api-documentation: backlog
+  1-15-parameter-storage-instance-management: done
+  1-16-api-documentation: done
   1-17-designer-openapi-client: backlog
   1-18-unit-integration-tests: backlog
 

@@ -12,7 +12,14 @@ STUB_MESSAGE = (
 )
 
 
-@router.post("/validate", response_model=ValidationResponse)
+@router.post(
+    "/validate",
+    response_model=ValidationResponse,
+    responses={
+        200: {"description": "Validation completed (stub always returns valid=True)"},
+        422: {"description": "Validation error in request body"},
+    },
+)
 async def validate_graph(request: ValidationRequest) -> ValidationResponse:
     """Validate a graph structure using SHACL shapes.
 

@@ -15,7 +15,13 @@ def get_fmu_adapter() -> FmuAdapter:
     return FmuAdapter.get_instance()
 
 
-@router.get("/health", response_model=HealthResponse)
+@router.get(
+    "/health",
+    response_model=HealthResponse,
+    responses={
+        200: {"description": "Service is healthy"},
+    },
+)
 async def health_check(
     adapter: FmuAdapter = Depends(get_fmu_adapter),
 ) -> HealthResponse:
@@ -23,6 +29,11 @@ async def health_check(
 
     Returns the current health status of the API along with metrics
     about active FMU instances being managed.
+
+    Use this endpoint for:
+    - Kubernetes/Docker health probes
+    - Monitoring and alerting systems
+    - Service discovery health checks
     """
     return HealthResponse(
         status="healthy",
