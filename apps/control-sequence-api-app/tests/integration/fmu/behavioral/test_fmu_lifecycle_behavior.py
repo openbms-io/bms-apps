@@ -4,7 +4,8 @@ from src.adapters.fmu_adapter import FmuAdapter
 from src.adapters.fmu_data.reheat_fmu_data import ReheatFMUData
 from src.adapters.fmu_instance import FmuInstanceState
 from src.adapters.sequence_type import SequenceType
-from src.dto.reheat_dto import ReheatInputs, ReheatParameters
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.parameters import ReheatParameters
 
 
 class TestInstanceCreation:
@@ -74,7 +75,7 @@ class TestStateTransitions:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert fmu_adapter.get_state(instance_id) == FmuInstanceState.RUNNING
 
@@ -86,7 +87,7 @@ class TestStateTransitions:
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
         for _ in range(5):
-            await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+            await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert fmu_adapter.get_state(instance_id) == FmuInstanceState.RUNNING
 
@@ -110,10 +111,10 @@ class TestStateTransitions:
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
         assert fmu_adapter.get_state(instance_id) == FmuInstanceState.INITIALIZED
 
-        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
         assert fmu_adapter.get_state(instance_id) == FmuInstanceState.RUNNING
 
-        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
         assert fmu_adapter.get_state(instance_id) == FmuInstanceState.RUNNING
 
         await fmu_adapter.delete_fmu_instance(instance_id)
@@ -170,9 +171,9 @@ class TestInstanceIsolation:
         id1 = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
         id2 = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        await fmu_adapter.step(id1, fmu_data, step_size=60.0)
-        await fmu_adapter.step(id1, fmu_data, step_size=60.0)
-        await fmu_adapter.step(id2, fmu_data, step_size=30.0)
+        await fmu_adapter.step(id1, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        await fmu_adapter.step(id1, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        await fmu_adapter.step(id2, fmu_data, step_size=30.0, sequence_type=SequenceType.REHEAT)
 
         assert fmu_adapter.get_current_time(id1) == 120.0
         assert fmu_adapter.get_current_time(id2) == 30.0
@@ -185,7 +186,7 @@ class TestInstanceIsolation:
         id1 = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
         id2 = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        await fmu_adapter.step(id1, fmu_data, step_size=60.0)
+        await fmu_adapter.step(id1, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert fmu_adapter.get_state(id1) == FmuInstanceState.RUNNING
         assert fmu_adapter.get_state(id2) == FmuInstanceState.INITIALIZED
@@ -204,7 +205,7 @@ class TestInstanceIsolation:
         id_cold = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, cold_data)
 
         for _ in range(5):
-            outputs_hot = await fmu_adapter.step(id_hot, hot_data, step_size=60.0)
-            outputs_cold = await fmu_adapter.step(id_cold, cold_data, step_size=60.0)
+            outputs_hot = await fmu_adapter.step(id_hot, hot_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs_cold = await fmu_adapter.step(id_cold, cold_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs_hot["yDam"] != outputs_cold["yDam"]

@@ -4,24 +4,31 @@ from src.adapters.exceptions import FmuInstanceNotFoundError
 from src.adapters.fmu_adapter import FmuAdapter
 from src.adapters.fmu_data.reheat_fmu_data import ReheatFMUData
 from src.adapters.sequence_type import SequenceType
-from src.dto.reheat_dto import ReheatInputs, ReheatParameters
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.parameters import ReheatParameters
 
 
 class TestInvalidInstanceId:
 
     @pytest.mark.asyncio
-    async def test_step_with_nonexistent_id_raises_error(
+    async def test_step_with_nonexistent_id_creates_lazily(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
 
-        with pytest.raises(FmuInstanceNotFoundError):
-            await fmu_adapter.step("nonexistent-id", fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(
+            "nonexistent-id", fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT
+        )
+
+        assert outputs is not None
+        assert fmu_adapter.has_instance("nonexistent-id")
 
     @pytest.mark.asyncio
-    async def test_delete_nonexistent_instance_raises_error(self, fmu_adapter: FmuAdapter):
-        with pytest.raises(FmuInstanceNotFoundError):
-            await fmu_adapter.delete_fmu_instance("nonexistent-id")
+    async def test_delete_nonexistent_instance_idempotent_returns_false(
+        self, fmu_adapter: FmuAdapter
+    ):
+        result = await fmu_adapter.delete_fmu_instance("nonexistent-id")
+        assert result is False
 
     def test_get_current_time_nonexistent_raises_error(self, fmu_adapter: FmuAdapter):
         with pytest.raises(FmuInstanceNotFoundError):
@@ -66,16 +73,21 @@ class TestHasInstanceCheck:
 class TestDeletedInstanceAccess:
 
     @pytest.mark.asyncio
-    async def test_step_after_delete_raises_error(
+    async def test_step_after_delete_recreates_instance(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
         await fmu_adapter.delete_fmu_instance(instance_id)
+        assert not fmu_adapter.has_instance(instance_id)
 
-        with pytest.raises(FmuInstanceNotFoundError):
-            await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(
+            instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT
+        )
+
+        assert outputs is not None
+        assert fmu_adapter.has_instance(instance_id)
 
     @pytest.mark.asyncio
     async def test_get_time_after_delete_raises_error(
@@ -111,7 +123,9 @@ class TestZeroStepSize:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=0.0)
+        outputs = await fmu_adapter.step(
+            instance_id, fmu_data, step_size=0.0, sequence_type=SequenceType.REHEAT
+        )
 
         assert outputs is not None
         assert fmu_adapter.get_current_time(instance_id) == 0.0
@@ -133,16 +147,17 @@ class TestEmptyAdapterOperations:
 class TestDoubleDelete:
 
     @pytest.mark.asyncio
-    async def test_delete_same_instance_twice_raises_error(
+    async def test_delete_same_instance_twice_idempotent(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        await fmu_adapter.delete_fmu_instance(instance_id)
+        first_delete = await fmu_adapter.delete_fmu_instance(instance_id)
+        assert first_delete is True
 
-        with pytest.raises(FmuInstanceNotFoundError):
-            await fmu_adapter.delete_fmu_instance(instance_id)
+        second_delete = await fmu_adapter.delete_fmu_instance(instance_id)
+        assert second_delete is False
 
 
 class TestConcurrentInstanceOperations:
@@ -163,8 +178,8 @@ class TestConcurrentInstanceOperations:
         assert not fmu_adapter.has_instance(id2)
         assert fmu_adapter.has_instance(id3)
 
-        await fmu_adapter.step(id1, fmu_data, step_size=60.0)
-        await fmu_adapter.step(id3, fmu_data, step_size=30.0)
+        await fmu_adapter.step(id1, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        await fmu_adapter.step(id3, fmu_data, step_size=30.0, sequence_type=SequenceType.REHEAT)
 
         assert fmu_adapter.get_current_time(id1) == 60.0
         assert fmu_adapter.get_current_time(id3) == 30.0

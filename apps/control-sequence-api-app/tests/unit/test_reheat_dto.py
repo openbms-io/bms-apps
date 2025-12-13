@@ -4,7 +4,6 @@ import pytest
 from pydantic import ValidationError
 
 from src.dto.reheat_dto import (
-    CreateInstanceRequest,
     ReheatInputsRequest,
     StepRequest,
 )
@@ -458,50 +457,6 @@ class TestReheatOutputs:
         with pytest.raises(ValidationError) as exc_info:
             ReheatOutputs(**valid_outputs_data)
         assert "valvePosition" in str(exc_info.value)
-
-
-class TestCreateInstanceRequest:
-    def test_with_parameters_and_inputs(self) -> None:
-        params = ReheatParameters(maxCoolingAirflow=0.6)
-        inputs = ReheatInputsRequest(
-            zoneTemperature=22.0,
-            coolingSetpoint=24.0,
-            heatingSetpoint=20.0,
-            dischargeAirTemperature=16.0,
-            primaryAirflow=0.3,
-            supplyAirTemperature=13.0,
-            supplyAirTemperatureSetpoint=12.0,
-            fanStatus=True,
-            operationMode=OperationMode.OCCUPIED,
-        )
-        request = CreateInstanceRequest(
-            instance_id="test-1",
-            parameters=params,
-            inputs=inputs,
-        )
-        assert request.instance_id == "test-1"
-        assert request.parameters.maxCoolingAirflow == 0.6
-        assert request.inputs.zoneTemperature == 22.0
-
-    def test_requires_parameters(self) -> None:
-        inputs = ReheatInputsRequest(
-            zoneTemperature=22.0,
-            coolingSetpoint=24.0,
-            heatingSetpoint=20.0,
-            dischargeAirTemperature=16.0,
-            primaryAirflow=0.3,
-            supplyAirTemperature=13.0,
-            supplyAirTemperatureSetpoint=12.0,
-            fanStatus=True,
-            operationMode=OperationMode.OCCUPIED,
-        )
-        with pytest.raises(ValidationError):
-            CreateInstanceRequest(instance_id="test-1", inputs=inputs)
-
-    def test_requires_inputs(self) -> None:
-        params = ReheatParameters()
-        with pytest.raises(ValidationError):
-            CreateInstanceRequest(instance_id="test-1", parameters=params)
 
 
 class TestStepRequest:

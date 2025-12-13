@@ -3,7 +3,9 @@ import pytest
 from src.adapters.fmu_adapter import FmuAdapter
 from src.adapters.fmu_data.reheat_fmu_data import ReheatFMUData, ReheatOutputVar
 from src.adapters.sequence_type import SequenceType
-from src.dto.reheat_dto import OperationMode, ReheatInputs, ReheatParameters
+from src.models.reheat.enums import OperationMode
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.parameters import ReheatParameters
 
 
 class TestZoneTemperatureInput:
@@ -15,7 +17,7 @@ class TestZoneTemperatureInput:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert ReheatOutputVar.DAMPER_POSITION in outputs
         assert ReheatOutputVar.VALVE_POSITION in outputs
@@ -29,7 +31,7 @@ class TestZoneTemperatureInput:
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
         for _ in range(5):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatOutputVar.DAMPER_POSITION] > 0.0
 
@@ -42,7 +44,7 @@ class TestZoneTemperatureInput:
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
         for _ in range(5):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatOutputVar.VALVE_POSITION] > 0.0
 
@@ -61,7 +63,7 @@ class TestSetpointInputs:
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
         for _ in range(5):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatOutputVar.DAMPER_POSITION] > 0.0
 
@@ -77,7 +79,7 @@ class TestSetpointInputs:
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
         for _ in range(5):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatOutputVar.VALVE_POSITION] > 0.0
 
@@ -92,7 +94,7 @@ class TestTemperatureInputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -104,7 +106,7 @@ class TestTemperatureInputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -116,7 +118,7 @@ class TestTemperatureInputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -131,7 +133,7 @@ class TestAirflowInput:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert ReheatOutputVar.AIRFLOW_SETPOINT in outputs
 
@@ -146,7 +148,7 @@ class TestCO2Inputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -158,7 +160,7 @@ class TestCO2Inputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -174,7 +176,7 @@ class TestOperationModeInput:
             fmu_data = ReheatFMUData(inputs=mode_inputs, parameters=base_parameters)
             instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
             assert ReheatOutputVar.DAMPER_POSITION in outputs
 
@@ -191,7 +193,7 @@ class TestBooleanInputs:
         fmu_data = ReheatFMUData(inputs=fan_off_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatOutputVar.DAMPER_POSITION] == pytest.approx(0.0, abs=0.05)
 
@@ -203,7 +205,7 @@ class TestBooleanInputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -215,7 +217,7 @@ class TestBooleanInputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -227,7 +229,7 @@ class TestBooleanInputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -239,7 +241,7 @@ class TestBooleanInputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -257,7 +259,7 @@ class TestBooleanInputs:
         fmu_data = ReheatFMUData(inputs=all_true_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -272,7 +274,7 @@ class TestOverrideInputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None
 
@@ -284,6 +286,6 @@ class TestOverrideInputs:
         fmu_data = ReheatFMUData(inputs=inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs is not None

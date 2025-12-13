@@ -9,21 +9,6 @@ Uses real app instance - no mocking.
 """
 
 import pytest
-from fastapi.testclient import TestClient
-
-from src.adapters.fmu_adapter import FmuAdapter
-from src.adapters.fmu_loader import FmuLoader
-from src.main import app
-
-
-@pytest.fixture
-def integration_client():
-    FmuAdapter.reset_singleton()
-    FmuLoader.clear_cache()
-    with TestClient(app) as client:
-        yield client
-    FmuAdapter.reset_singleton()
-    FmuLoader.clear_cache()
 
 
 class TestValidateEndpoint:

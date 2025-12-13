@@ -3,7 +3,8 @@ import pytest
 from src.adapters.fmu_adapter import FmuAdapter
 from src.adapters.fmu_data.reheat_fmu_data import ReheatCalcParamVar, ReheatFMUData
 from src.adapters.sequence_type import SequenceType
-from src.dto.reheat_dto import ReheatInputs, ReheatParameters
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.parameters import ReheatParameters
 
 
 class TestAllCalculatedParametersPresent:
@@ -15,7 +16,7 @@ class TestAllCalculatedParametersPresent:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         expected_calc_params = [
             ReheatCalcParamVar.MIN_AIRFLOW,
@@ -46,7 +47,7 @@ class TestMinAirflowCalculatedParameter:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatCalcParamVar.MIN_AIRFLOW], float)
 
@@ -57,7 +58,7 @@ class TestMinAirflowCalculatedParameter:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatCalcParamVar.MIN_AIRFLOW] >= 0.0
 
@@ -71,7 +72,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatCalcParamVar.TEMP_HYSTERESIS], float)
 
@@ -82,7 +83,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatCalcParamVar.TEMP_HYSTERESIS] >= 0.0
 
@@ -93,7 +94,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatCalcParamVar.DAMPER_POSITION_HYSTERESIS], float)
 
@@ -104,7 +105,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         value = outputs[ReheatCalcParamVar.DAMPER_POSITION_HYSTERESIS]
         assert 0.0 <= value <= 1.0
@@ -116,7 +117,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatCalcParamVar.FLOW_HYSTERESIS], float)
 
@@ -127,7 +128,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatCalcParamVar.FLOW_HYSTERESIS] >= 0.0
 
@@ -138,7 +139,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatCalcParamVar.LOOP_HYSTERESIS], float)
 
@@ -149,7 +150,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatCalcParamVar.LOOP_HYSTERESIS] >= 0.0
 
@@ -160,7 +161,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatCalcParamVar.VALVE_POSITION_HYSTERESIS], float)
 
@@ -171,7 +172,7 @@ class TestHysteresisCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         value = outputs[ReheatCalcParamVar.VALVE_POSITION_HYSTERESIS]
         assert 0.0 <= value <= 1.0
@@ -186,7 +187,7 @@ class TestBooleanCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         value = outputs[ReheatCalcParamVar.HAS_CO2_SENSOR]
         assert value in (True, False, 0, 1)
@@ -198,7 +199,7 @@ class TestBooleanCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         value = outputs[ReheatCalcParamVar.HAS_HOT_WATER_COIL]
         assert value in (True, False, 0, 1)
@@ -210,7 +211,7 @@ class TestBooleanCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         value = outputs[ReheatCalcParamVar.HAS_OCCUPANCY_SENSOR]
         assert value in (True, False, 0, 1)
@@ -222,7 +223,7 @@ class TestBooleanCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         value = outputs[ReheatCalcParamVar.HAS_WINDOW_SENSOR]
         assert value in (True, False, 0, 1)
@@ -237,7 +238,7 @@ class TestEnumCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatCalcParamVar.CONTROLLER_TYPE_DAMPER], int)
 
@@ -248,7 +249,7 @@ class TestEnumCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         value = outputs[ReheatCalcParamVar.CONTROLLER_TYPE_DAMPER]
         assert 1 <= value <= 4
@@ -260,7 +261,7 @@ class TestEnumCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatCalcParamVar.CONTROLLER_TYPE_VALVE], int)
 
@@ -271,7 +272,7 @@ class TestEnumCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         value = outputs[ReheatCalcParamVar.CONTROLLER_TYPE_VALVE]
         assert 1 <= value <= 4
@@ -283,7 +284,7 @@ class TestEnumCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatCalcParamVar.VENTILATION_STANDARD], int)
 
@@ -294,7 +295,7 @@ class TestEnumCalculatedParameters:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         value = outputs[ReheatCalcParamVar.VENTILATION_STANDARD]
         assert 1 <= value <= 2

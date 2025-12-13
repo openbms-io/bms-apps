@@ -3,7 +3,8 @@ import pytest
 from src.adapters.fmu_adapter import FmuAdapter
 from src.adapters.fmu_data.reheat_fmu_data import ReheatFMUData, ReheatOutputVar
 from src.adapters.sequence_type import SequenceType
-from src.dto.reheat_dto import ReheatInputs, ReheatParameters
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.parameters import ReheatParameters
 
 
 class TestAllOutputsPresent:
@@ -15,7 +16,7 @@ class TestAllOutputsPresent:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         expected_outputs = [
             ReheatOutputVar.DAMPER_POSITION,
@@ -48,7 +49,7 @@ class TestDamperPositionOutput:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.DAMPER_POSITION], float)
 
@@ -59,7 +60,7 @@ class TestDamperPositionOutput:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         damper = outputs[ReheatOutputVar.DAMPER_POSITION]
         assert 0.0 <= damper <= 1.0
@@ -74,7 +75,7 @@ class TestValvePositionOutput:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.VALVE_POSITION], float)
 
@@ -85,7 +86,7 @@ class TestValvePositionOutput:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         valve = outputs[ReheatOutputVar.VALVE_POSITION]
         assert 0.0 <= valve <= 1.0
@@ -100,7 +101,7 @@ class TestAirflowOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatOutputVar.AIRFLOW_SETPOINT] >= 0.0
 
@@ -111,7 +112,7 @@ class TestAirflowOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatOutputVar.MIN_OA_AIRFLOW] >= 0.0
 
@@ -122,7 +123,7 @@ class TestAirflowOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatOutputVar.ADJ_AREA_BREATHING_ZONE_FLOW] >= 0.0
 
@@ -133,7 +134,7 @@ class TestAirflowOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert outputs[ReheatOutputVar.ADJ_POP_BREATHING_ZONE_FLOW] >= 0.0
 
@@ -147,7 +148,7 @@ class TestAlarmOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.FLOW_SENSOR_ALARM], int)
 
@@ -158,7 +159,7 @@ class TestAlarmOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.LEAKING_DAMPER_ALARM], int)
 
@@ -169,7 +170,7 @@ class TestAlarmOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.LEAKING_VALVE_ALARM], int)
 
@@ -180,7 +181,7 @@ class TestAlarmOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.LOW_FLOW_ALARM], int)
 
@@ -191,7 +192,7 @@ class TestAlarmOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.LOW_TEMP_ALARM], int)
 
@@ -202,7 +203,7 @@ class TestAlarmOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         alarm_outputs = [
             ReheatOutputVar.FLOW_SENSOR_ALARM,
@@ -226,7 +227,7 @@ class TestRequestOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.HEATING_VALVE_REQUEST], int)
 
@@ -237,7 +238,7 @@ class TestRequestOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.HOT_WATER_PLANT_REQUEST], int)
 
@@ -248,7 +249,7 @@ class TestRequestOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.ZONE_PRESSURE_REQUEST], int)
 
@@ -259,7 +260,7 @@ class TestRequestOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         assert isinstance(outputs[ReheatOutputVar.ZONE_TEMP_REQUEST], int)
 
@@ -270,7 +271,7 @@ class TestRequestOutputs:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
         instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
 
         request_outputs = [
             ReheatOutputVar.HEATING_VALVE_REQUEST,

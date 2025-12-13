@@ -10,42 +10,14 @@ Uses real FmuAdapter singleton - no mocking.
 """
 
 import time
-from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
-
-from src.adapters.fmu_adapter import FmuAdapter
-from src.adapters.fmu_loader import FmuLoader
-from src.main import app
 
 
 @pytest.fixture
-def integration_client():
-    FmuAdapter.reset_singleton()
-    FmuLoader.clear_cache()
-    with TestClient(app) as client:
-        yield client
-    FmuAdapter.reset_singleton()
-    FmuLoader.clear_cache()
-
-
-@pytest.fixture
-def fmu_available() -> bool:
-    app_root = Path(__file__).parent.parent.parent
-    fmu_path = app_root / "fmu-sequence" / "reheat" / "ReheatControllerFMU.fmu"
-    return fmu_path.exists()
-
-
-@pytest.fixture
-def valid_create_request():
+def valid_step_request():
     return {
-        "instance_id": "health-test-instance",
-        "parameters": {
-            "maxCoolingAirflow": 1.5,
-            "maxHeatingAirflow": 1.2,
-            "minHeatingAirflow": 0.5,
-        },
+        "stepSize": 60.0,
         "inputs": {
             "temperatureUnit": "C",
             "airflowUnit": "m3/s",
@@ -98,7 +70,7 @@ class TestHealthActiveInstancesIntegration:
         assert data["active_instances"] == 0
 
     def test_health_reflects_created_instances(
-        self, integration_client, fmu_available, valid_create_request
+        self, integration_client, fmu_available, valid_step_request
     ):
         if not fmu_available:
             pytest.skip("Reheat FMU not available")
@@ -106,44 +78,50 @@ class TestHealthActiveInstancesIntegration:
         response = integration_client.get("/api/v1/health")
         assert response.json()["active_instances"] == 0
 
+        create_response = integration_client.post("/api/v1/g36/vav-reheat/instances")
+        instance_id = create_response.json()["instance_id"]
+
         integration_client.post(
-            "/api/v1/g36/reheat/instances",
-            json=valid_create_request,
+            f"/api/v1/g36/vav-reheat/instances/{instance_id}/step",
+            json=valid_step_request,
         )
 
         response = integration_client.get("/api/v1/health")
         assert response.json()["active_instances"] == 1
 
     def test_health_reflects_deleted_instances(
-        self, integration_client, fmu_available, valid_create_request
+        self, integration_client, fmu_available, valid_step_request
     ):
         if not fmu_available:
             pytest.skip("Reheat FMU not available")
 
+        create_response = integration_client.post("/api/v1/g36/vav-reheat/instances")
+        instance_id = create_response.json()["instance_id"]
+
         integration_client.post(
-            "/api/v1/g36/reheat/instances",
-            json=valid_create_request,
+            f"/api/v1/g36/vav-reheat/instances/{instance_id}/step",
+            json=valid_step_request,
         )
         response = integration_client.get("/api/v1/health")
         assert response.json()["active_instances"] == 1
 
-        integration_client.delete("/api/v1/g36/instances/health-test-instance")
+        integration_client.delete(f"/api/v1/g36/vav-reheat/instances/{instance_id}")
 
         response = integration_client.get("/api/v1/health")
         assert response.json()["active_instances"] == 0
 
     def test_health_reflects_multiple_instances(
-        self, integration_client, fmu_available, valid_create_request
+        self, integration_client, fmu_available, valid_step_request
     ):
         if not fmu_available:
             pytest.skip("Reheat FMU not available")
 
-        for i in range(3):
-            request = valid_create_request.copy()
-            request["instance_id"] = f"health-test-{i}"
+        for _ in range(3):
+            create_response = integration_client.post("/api/v1/g36/vav-reheat/instances")
+            instance_id = create_response.json()["instance_id"]
             integration_client.post(
-                "/api/v1/g36/reheat/instances",
-                json=request,
+                f"/api/v1/g36/vav-reheat/instances/{instance_id}/step",
+                json=valid_step_request,
             )
 
         response = integration_client.get("/api/v1/health")

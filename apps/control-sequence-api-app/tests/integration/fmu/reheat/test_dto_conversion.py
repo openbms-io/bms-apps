@@ -7,7 +7,8 @@ from src.adapters.fmu_data.reheat_fmu_data import (
     ReheatOutputVar,
     ReheatParameterVar,
 )
-from src.dto.reheat_dto import ReheatInputs, ReheatParameters
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.parameters import ReheatParameters
 
 
 class TestInputVariablesProperty:

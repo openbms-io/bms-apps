@@ -17,8 +17,9 @@ from src.adapters.fmu_data.reheat_fmu_data import (
     ReheatOutputVar,
     ReheatParameterVar,
 )
-from src.models.reheat.inputs import ReheatInputs
 from src.models.reheat.calculated_parameters import ReheatCalculatedParameters
+from src.models.reheat.enums import OperationMode
+from src.models.reheat.inputs import ReheatInputs
 from src.models.reheat.outputs import ReheatOutputs
 from src.models.reheat.parameters import ReheatParameters
 
@@ -195,8 +196,6 @@ class TestReheatCalculatedParametersFmuMapping:
 class TestFmuDataMappingConsistency:
 
     def test_input_variables_use_enum_values(self):
-        from src.dto.reheat_dto import OperationMode, ReheatInputs
-
         inputs = ReheatInputs(
             zoneTemperature=295.15,
             coolingSetpoint=297.15,
@@ -219,8 +218,6 @@ class TestFmuDataMappingConsistency:
         )
 
     def test_configuration_variables_use_enum_values(self):
-        from src.dto.reheat_dto import OperationMode, ReheatInputs, ReheatParameters
-
         inputs = ReheatInputs(
             zoneTemperature=295.15,
             coolingSetpoint=297.15,

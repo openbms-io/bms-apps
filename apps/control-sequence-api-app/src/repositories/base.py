@@ -67,8 +67,13 @@ class ControlSequenceInstanceRepository(Generic[TParams]):
             )
             return [self._to_data(r) for r in result.scalars().all()]
 
+    async def create(self, parameters: TParams) -> ControlSequenceInstanceData[TParams]:
+        """Create new instance with auto-generated ID. Returns created instance."""
+        instance_id = str(uuid4())
+        return await self.save(instance_id, parameters)
+
     async def save(self, instance_id: str, parameters: TParams) -> ControlSequenceInstanceData[TParams]:
-        """Save instance. Deactivates existing, creates new record. Returns saved instance."""
+        """Save/update instance. Deactivates existing, creates new record. Returns saved instance."""
         async with get_session() as session:
             existing = await session.execute(
                 select(ControlSequenceInstanceModel).where(

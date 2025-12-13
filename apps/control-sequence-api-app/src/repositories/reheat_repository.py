@@ -24,8 +24,12 @@ class ReheatRepository:
         """List all active instances."""
         return await self._repo.list_active()
 
+    async def create(self, parameters: ReheatParameters) -> ReheatInstanceData:
+        """Create new instance with auto-generated ID. Returns created instance."""
+        return await self._repo.create(parameters)
+
     async def save(self, instance_id: str, parameters: ReheatParameters) -> ReheatInstanceData:
-        """Save instance. Deactivates existing, creates new record. Returns saved instance."""
+        """Save/update instance. Deactivates existing, creates new record. Returns saved instance."""
         return await self._repo.save(instance_id, parameters)
 
     async def delete(self, instance_id: str) -> bool:

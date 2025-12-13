@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,19 @@ from src.main import app
 @pytest.fixture
 def client() -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture
+def integration_client():
+    FmuAdapter.reset_singleton()
+    FmuLoader.clear_cache()
+    asyncio.run(initialize_database())
+    reset_database_state()
+    with TestClient(app) as client:
+        yield client
+    FmuAdapter.reset_singleton()
+    FmuLoader.clear_cache()
+    reset_database_state()
 
 
 @pytest_asyncio.fixture

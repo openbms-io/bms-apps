@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from src.models.reheat.enums import OperationMode, OverrideMode
 from src.models.reheat.inputs import ReheatInputs
 from src.models.reheat.outputs import ReheatOutputs
-from src.models.reheat.parameters import ReheatParameters
 from src.utils.unit_conversion import (
     AirflowUnit,
     TemperatureUnit,
@@ -145,43 +144,6 @@ class ReheatInputsRequest(BaseModel):
         )
 
 
-class CreateInstanceRequest(BaseModel):
-    """Request to create a new FMU control sequence instance."""
-
-    instance_id: str = Field(
-        ...,
-        description="Unique identifier for the FMU instance",
-        json_schema_extra={"example": "reheat-zone-1"},
-    )
-    parameters: ReheatParameters = Field(
-        ...,
-        description="Parameters for the FMU instance. Call GET /reheat/defaults for default values.",
-    )
-    inputs: ReheatInputsRequest = Field(
-        ...,
-        description="Initial input values for the FMU instance.",
-    )
-
-
-class CreateInstanceResponse(BaseModel):
-    """Response after creating an FMU instance."""
-
-    instance_id: str = Field(
-        ...,
-        description="The created instance identifier",
-        json_schema_extra={"example": "reheat-zone-1"},
-    )
-    created: bool = Field(
-        ...,
-        description="True if new instance created, False if existing instance was recreated",
-        json_schema_extra={"example": True},
-    )
-    parameters: ReheatParameters = Field(
-        ...,
-        description="The parameters applied to this instance (user-provided or defaults)",
-    )
-
-
 class StepRequest(BaseModel):
     """Request to execute a simulation step on an FMU instance."""
 
@@ -208,19 +170,4 @@ class StepResponse(BaseModel):
     outputs: ReheatOutputs = Field(
         ...,
         description="Output values from the step execution",
-    )
-
-
-class DeleteInstanceResponse(BaseModel):
-    """Response after deleting an FMU instance."""
-
-    instance_id: str = Field(
-        ...,
-        description="The deleted instance identifier",
-        json_schema_extra={"example": "reheat-zone-1"},
-    )
-    deleted: bool = Field(
-        ...,
-        description="Whether the instance was successfully deleted",
-        json_schema_extra={"example": True},
     )

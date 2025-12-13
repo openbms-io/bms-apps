@@ -23,11 +23,9 @@ from src.adapters.exceptions import (
 from src.adapters.fmu_adapter import FmuAdapter
 from src.adapters.fmu_data.reheat_fmu_data import ReheatFMUData
 from src.adapters.sequence_type import SequenceType
-from src.dto.reheat_dto import (
-    OperationMode,
-    ReheatInputs,
-    ReheatParameters,
-)
+from src.dto.reheat_dto import OperationMode
+from src.models.reheat.inputs import ReheatInputs
+from src.models.reheat.parameters import ReheatParameters
 
 
 @pytest.fixture
@@ -338,30 +336,31 @@ class TestStep:
         mock_fmpy["fmu"].getInteger = MagicMock(return_value=[0])
         mock_fmpy["fmu"].getBoolean = MagicMock(return_value=[False])
         instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        outputs = await adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
         assert "yDam" in outputs
         assert "yVal" in outputs
         assert "VSet_flow" in outputs
         assert "VMin_flow" in outputs
 
     @pytest.mark.asyncio
-    async def test_step_not_found_raises_error(self, adapter, fmu_data):
-        with pytest.raises(FmuInstanceNotFoundError) as exc:
-            await adapter.step("nonexistent", fmu_data, step_size=60.0)
-        assert "nonexistent" in str(exc.value)
+    async def test_step_with_nonexistent_id_creates_lazily(self, adapter, fmu_data, mock_fmpy):
+        mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
+        outputs = await adapter.step("new-instance", fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        assert outputs is not None
+        assert adapter.has_instance("new-instance")
 
     @pytest.mark.asyncio
     async def test_step_updates_current_time(self, adapter, fmu_data, mock_fmpy):
         mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
         instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        await adapter.step(instance_id, fmu_data, step_size=60.0)
+        await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
         assert adapter.get_current_time(instance_id) == 60.0
 
     @pytest.mark.asyncio
     async def test_step_calls_do_step(self, adapter, fmu_data, mock_fmpy):
         mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
         instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        await adapter.step(instance_id, fmu_data, step_size=60.0)
+        await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
         mock_fmpy["fmu"].doStep.assert_called_with(
             currentCommunicationPoint=0.0, communicationStepSize=60.0
         )
@@ -378,14 +377,15 @@ class TestDeleteInstance:
     @pytest.mark.asyncio
     async def test_delete_fmu_instance_terminates_fmu(self, adapter, fmu_data, mock_fmpy):
         instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        await adapter.delete_fmu_instance(instance_id)
+        result = await adapter.delete_fmu_instance(instance_id)
+        assert result is True
         mock_fmpy["fmu"].terminate.assert_called()
         mock_fmpy["fmu"].freeInstance.assert_called()
 
     @pytest.mark.asyncio
-    async def test_delete_fmu_instance_not_found_raises_error(self, adapter):
-        with pytest.raises(FmuInstanceNotFoundError):
-            await adapter.delete_fmu_instance("nonexistent")
+    async def test_delete_fmu_instance_idempotent_returns_false_for_nonexistent(self, adapter):
+        result = await adapter.delete_fmu_instance("nonexistent")
+        assert result is False
 
 
 class TestPerInstanceLock:
@@ -410,8 +410,8 @@ class TestPerInstanceLock:
         mock_fmpy["fmu"].doStep = MagicMock(side_effect=lambda *a, **k: None)
 
         await asyncio.gather(
-            adapter.step(instance_id, fmu_data, step_size=60.0),
-            adapter.step(instance_id, fmu_data, step_size=60.0),
+            adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT),
+            adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT),
         )
 
         assert mock_fmpy["fmu"].doStep.call_count == 2
@@ -436,7 +436,7 @@ class TestInputValidation:
     async def test_step_with_valid_inputs_succeeds(self, adapter, fmu_data, mock_fmpy):
         mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
         instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        outputs = await adapter.step(instance_id, fmu_data, step_size=60.0)
+        outputs = await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
         assert outputs is not None
 
 

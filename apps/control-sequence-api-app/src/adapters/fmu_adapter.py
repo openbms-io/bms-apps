@@ -109,15 +109,24 @@ class FmuAdapter:
         self,
         instance_id: str,
         fmu_data: FMUDataProtocol,
-        step_size: float = 1.0,
+        step_size: float,
+        sequence_type: SequenceType,
     ) -> dict[str, float | bool | int]:
-        lifecycle = self._get_lifecycle(instance_id)
+        """Execute simulation step, creating FMU instance lazily if needed."""
+        if instance_id not in self._lifecycle_managers:
+            self._create_fmu_instance(sequence_type, fmu_data, instance_id)
+
+        lifecycle = self._lifecycle_managers[instance_id]
         return await lifecycle.step(fmu_data, step_size)
 
-    async def delete_fmu_instance(self, instance_id: str) -> None:
-        lifecycle = self._get_lifecycle(instance_id)
+    async def delete_fmu_instance(self, instance_id: str) -> bool:
+        """Delete FMU instance (idempotent). Returns True if instance existed."""
+        if instance_id not in self._lifecycle_managers:
+            return False
+        lifecycle = self._lifecycle_managers[instance_id]
         await lifecycle.terminate()
         del self._lifecycle_managers[instance_id]
+        return True
 
     def has_instance(self, instance_id: str) -> bool:
         return instance_id in self._lifecycle_managers
