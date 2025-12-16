@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateInstanceApiV1G36VavReheatInstancesPostData, CreateInstanceApiV1G36VavReheatInstancesPostErrors, CreateInstanceApiV1G36VavReheatInstancesPostResponses, DeleteInstanceApiV1G36VavReheatInstancesInstanceIdDeleteData, DeleteInstanceApiV1G36VavReheatInstancesInstanceIdDeleteErrors, DeleteInstanceApiV1G36VavReheatInstancesInstanceIdDeleteResponses, GetInstanceApiV1G36VavReheatInstancesInstanceIdGetData, GetInstanceApiV1G36VavReheatInstancesInstanceIdGetErrors, GetInstanceApiV1G36VavReheatInstancesInstanceIdGetResponses, HealthCheckApiV1HealthGetData, HealthCheckApiV1HealthGetResponses, StepApiV1G36VavReheatInstancesInstanceIdStepPostData, StepApiV1G36VavReheatInstancesInstanceIdStepPostErrors, StepApiV1G36VavReheatInstancesInstanceIdStepPostResponses, UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutData, UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutErrors, UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutResponses, ValidateGraphApiV1G36ValidatePostData, ValidateGraphApiV1G36ValidatePostErrors, ValidateGraphApiV1G36ValidatePostResponses } from './types.gen';
+import type { ConvertParametersApiV1ParametersConvertPostData, ConvertParametersApiV1ParametersConvertPostErrors, ConvertParametersApiV1ParametersConvertPostResponses, CreateInstanceApiV1G36VavReheatInstancesPostData, CreateInstanceApiV1G36VavReheatInstancesPostErrors, CreateInstanceApiV1G36VavReheatInstancesPostResponses, DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteData, DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteErrors, DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteResponses, DeleteInstanceApiV1G36VavReheatInstancesInstanceIdDeleteData, DeleteInstanceApiV1G36VavReheatInstancesInstanceIdDeleteErrors, DeleteInstanceApiV1G36VavReheatInstancesInstanceIdDeleteResponses, GetDefaultsApiV1ParametersDefaultsGetData, GetDefaultsApiV1ParametersDefaultsGetErrors, GetDefaultsApiV1ParametersDefaultsGetResponses, GetInstanceApiV1G36VavReheatInstancesInstanceIdGetData, GetInstanceApiV1G36VavReheatInstancesInstanceIdGetErrors, GetInstanceApiV1G36VavReheatInstancesInstanceIdGetResponses, HealthCheckApiV1HealthGetData, HealthCheckApiV1HealthGetResponses, StepApiV1G36VavReheatInstancesInstanceIdStepPostData, StepApiV1G36VavReheatInstancesInstanceIdStepPostErrors, StepApiV1G36VavReheatInstancesInstanceIdStepPostResponses, UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutData, UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutErrors, UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutResponses, ValidateGraphApiV1G36ValidatePostData, ValidateGraphApiV1G36ValidatePostErrors, ValidateGraphApiV1G36ValidatePostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -24,30 +24,35 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * Create a new VAV Reheat control sequence instance.
  *
  * Creates an FMU instance with default G36 parameters. The FMU is lazily
- * instantiated on the first step() call. Returns auto-generated instance_id.
+ * instantiated on the first step() call.
+ *
+ * Idempotent: if instance_id already exists, returns the existing instance.
  *
  * Use this endpoint when:
  * - Dragging a G36 Reheat block onto the Designer canvas
  * - Reloading a saved project (idempotent creation)
  */
-export const createInstanceApiV1G36VavReheatInstancesPost = <ThrowOnError extends boolean = false>(options?: Options<CreateInstanceApiV1G36VavReheatInstancesPostData, ThrowOnError>) => {
-    return (options?.client ?? client).post<CreateInstanceApiV1G36VavReheatInstancesPostResponses, CreateInstanceApiV1G36VavReheatInstancesPostErrors, ThrowOnError>({
+export const createInstanceApiV1G36VavReheatInstancesPost = <ThrowOnError extends boolean = false>(options: Options<CreateInstanceApiV1G36VavReheatInstancesPostData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateInstanceApiV1G36VavReheatInstancesPostResponses, CreateInstanceApiV1G36VavReheatInstancesPostErrors, ThrowOnError>({
         url: '/api/v1/g36/vav-reheat/instances',
-        ...options
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
     });
 };
 
 /**
  * Delete Instance
  *
- * Delete a VAV Reheat control sequence instance.
+ * Delete a VAV Reheat control sequence instance completely.
  *
- * Removes the FMU instance and frees associated resources.
+ * Removes both the FMU runtime instance and the persisted DB parameters.
  * This operation is idempotent - returns success even if instance doesn't exist.
  *
  * Use this endpoint when:
- * - User deletes a G36 Reheat block from the Designer canvas
- * - Cleaning up instances during project close
+ * - User explicitly deletes a G36 Reheat block from the Designer canvas
  */
 export const deleteInstanceApiV1G36VavReheatInstancesInstanceIdDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteInstanceApiV1G36VavReheatInstancesInstanceIdDeleteData, ThrowOnError>) => {
     return (options.client ?? client).delete<DeleteInstanceApiV1G36VavReheatInstancesInstanceIdDeleteResponses, DeleteInstanceApiV1G36VavReheatInstancesInstanceIdDeleteErrors, ThrowOnError>({
@@ -122,6 +127,25 @@ export const stepApiV1G36VavReheatInstancesInstanceIdStepPost = <ThrowOnError ex
 };
 
 /**
+ * Delete Fmu
+ *
+ * Delete only the FMU runtime instance, preserving DB parameters.
+ *
+ * Frees FMU memory while keeping persisted parameters intact.
+ * This operation is idempotent - returns success even if FMU doesn't exist.
+ *
+ * Use this endpoint when:
+ * - Switching projects (cleanup without losing saved parameters)
+ * - Freeing memory for idle instances
+ */
+export const deleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteResponses, DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteErrors, ThrowOnError>({
+        url: '/api/v1/g36/vav-reheat/instances/{instance_id}/fmu',
+        ...options
+    });
+};
+
+/**
  * Health Check
  *
  * Check API health status and active FMU instance count.
@@ -137,6 +161,47 @@ export const stepApiV1G36VavReheatInstancesInstanceIdStepPost = <ThrowOnError ex
 export const healthCheckApiV1HealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckApiV1HealthGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<HealthCheckApiV1HealthGetResponses, unknown, ThrowOnError>({
         url: '/api/v1/health',
+        ...options
+    });
+};
+
+/**
+ * Convert Parameters
+ *
+ * Convert parameters to target units.
+ *
+ * Stateless utility for converting parameter values between unit systems.
+ * Does not persist changes - use update_instance to save.
+ *
+ * Use this endpoint when:
+ * - User changes unit preference in the configuration panel
+ * - Converting parameters for display in different units
+ */
+export const convertParametersApiV1ParametersConvertPost = <ThrowOnError extends boolean = false>(options: Options<ConvertParametersApiV1ParametersConvertPostData, ThrowOnError>) => {
+    return (options.client ?? client).post<ConvertParametersApiV1ParametersConvertPostResponses, ConvertParametersApiV1ParametersConvertPostErrors, ThrowOnError>({
+        url: '/api/v1/parameters/convert',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get Defaults
+ *
+ * Get default parameters for a sequence type.
+ *
+ * Returns fresh default parameters in SI units (Kelvin, m³/s).
+ *
+ * Use this endpoint when:
+ * - User clicks "Reset to Defaults" button
+ * - Initializing a new instance with default values
+ */
+export const getDefaultsApiV1ParametersDefaultsGet = <ThrowOnError extends boolean = false>(options: Options<GetDefaultsApiV1ParametersDefaultsGetData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetDefaultsApiV1ParametersDefaultsGetResponses, GetDefaultsApiV1ParametersDefaultsGetErrors, ThrowOnError>({
+        url: '/api/v1/parameters/defaults',
         ...options
     });
 };

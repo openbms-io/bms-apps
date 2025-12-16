@@ -1,0 +1,276 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1b</epicId>
+    <storyId>2</storyId>
+    <title>G36 VAV Reheat Block UI Component</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-15</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1b.2-g36-reheat-block-ui-component.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>building controls engineer</asA>
+    <iWant>to see the G36 VAV Reheat block on the canvas with I/O connectors</iWant>
+    <soThat>I can wire it to BACnet points</soThat>
+    <tasks>
+      <task id="1" ac="#4">
+        Create Control Sequences sidebar section
+        <subtask>Create control-sequences-section.tsx following logic-nodes-section.tsx pattern</subtask>
+        <subtask>Add G36 VAV Reheat as draggable item with distinct icon</subtask>
+        <subtask>Configure drag data: type: 'control-sequence-node', nodeType: 'g36-vav-reheat'</subtask>
+        <subtask>Add section to supervisors tab or create new tab in sidebar</subtask>
+      </task>
+      <task id="2" ac="#5,#6">
+        Add addControlSequenceNode to flow store
+        <subtask>Add addControlSequenceNode action to flow-slice.ts</subtask>
+        <subtask>Generate UUID client-side for instance_id</subtask>
+        <subtask>Call POST /api/v1/g36/vav-reheat/instances with instance_id</subtask>
+        <subtask>On success: create React Flow node with instanceId in metadata</subtask>
+        <subtask>On failure: show error toast, don't add node</subtask>
+      </task>
+      <task id="3" ac="#5">
+        Update drag-and-drop handler
+        <subtask>Add control-sequence-node case to use-node-creation.ts</subtask>
+        <subtask>Call new addControlSequenceNode action</subtask>
+      </task>
+      <task id="4" ac="#7">
+        Add node deletion API call
+        <subtask>Hook into node deletion in flow store</subtask>
+        <subtask>For control-sequence nodes, call DELETE /api/v1/g36/vav-reheat/instances/{instance_id}</subtask>
+        <subtask>Fire-and-forget: don't block deletion on API response</subtask>
+      </task>
+      <task id="5" ac="#5,#7">
+        Add API client functions to control-sequence domain
+        <subtask>Create api/client.ts with createInstance and deleteInstance functions</subtask>
+        <subtask>Use generated client from api/generated/sdk.gen.ts</subtask>
+        <subtask>Export from domain index</subtask>
+      </task>
+      <task id="6" ac="#8">
+        Write component tests
+        <subtask>Test G36VavReheatNode renders with correct structure</subtask>
+        <subtask>Test input handles render with labels</subtask>
+        <subtask>Test output handles render with labels</subtask>
+        <subtask>Test add/remove handle interactions</subtask>
+        <subtask>Test ControlSequencesSection renders in sidebar</subtask>
+        <subtask>Test drag data format is correct</subtask>
+      </task>
+      <task id="7" ac="#5,#7">
+        Write integration tests for API lifecycle
+        <subtask>Test addControlSequenceNode calls API and creates node on success</subtask>
+        <subtask>Test addControlSequenceNode handles API error gracefully</subtask>
+        <subtask>Test node deletion calls DELETE API</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">G36 VAV Reheat block renders on canvas with distinct visual style</criterion>
+    <criterion id="2">Input connectors visible and labeled (zoneTemperature, coolingSetpoint, etc.)</criterion>
+    <criterion id="3">Output connectors visible and labeled (damperPosition, valvePosition, airflowSetpoint)</criterion>
+    <criterion id="4">Block appears in palette under "Control Sequences" category</criterion>
+    <criterion id="5">Drag-drop creates API instance via POST /api/v1/g36/vav-reheat/instances</criterion>
+    <criterion id="6">Node stores returned instance_id in node data</criterion>
+    <criterion id="7">Delete node calls DELETE /api/v1/g36/vav-reheat/instances/{instance_id}</criterion>
+    <criterion id="8">Component tests pass</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API - Technical Specification</title>
+        <section>5.2 Designer Integration</section>
+        <snippet>Flow 1 describes drag-drop creating API instance and storing instance_id. Flow 2 describes saved node reload. Designer stores only instance_id in node data.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/epics.md</path>
+        <title>G36 Visual Programming Blocks - Epic Breakdown</title>
+        <section>Story 1B.2: G36 VAV Reheat Block UI Component</section>
+        <snippet>Acceptance criteria and task breakdown for implementing the UI component that renders on canvas with I/O connectors.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1b.1-g36-vav-reheat-node-type-schema.md</path>
+        <title>Story 1B.1: G36 VAV Reheat Node Type and Schema</title>
+        <section>Dev Agent Record</section>
+        <snippet>UI Component already created at src/components/nodes/g36-vav-reheat-node.tsx. Uses createControlSequenceNodeUI() factory. Node registered in nodeTypes registry.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/designer/src/components/nodes/g36-vav-reheat-node.tsx</path>
+        <kind>component</kind>
+        <symbol>G36VavReheatNode</symbol>
+        <lines>1-19</lines>
+        <reason>Existing UI component created in previous story. Uses createControlSequenceNodeUI factory with REHEAT_ALL_INPUTS, REHEAT_ALL_OUTPUTS, REHEAT_REQUIRED_INPUTS configurations.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/components/nodes/control-sequence-node-ui.tsx</path>
+        <kind>factory</kind>
+        <symbol>createControlSequenceNodeUI</symbol>
+        <lines>44-251</lines>
+        <reason>Factory function that creates control sequence node UI components. Handles input/output handle rendering, add/remove interactions, and card layout.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/components/sidebar/logic-nodes-section.tsx</path>
+        <kind>component</kind>
+        <symbol>LogicNodesSection</symbol>
+        <lines>1-176</lines>
+        <reason>Reference pattern for creating control-sequences-section.tsx. Shows DraggableItem component and handleDragStart pattern with type, nodeType, label, metadata, draggedFrom.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/store/slices/flow-slice.ts</path>
+        <kind>store</kind>
+        <symbol>addControlSequenceNode</symbol>
+        <lines>402-419</lines>
+        <reason>Existing action for adding control sequence nodes. Currently creates node locally without API call. Needs modification to call API first.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/store/slices/flow-slice.ts</path>
+        <kind>store</kind>
+        <symbol>removeNode</symbol>
+        <lines>421-428</lines>
+        <reason>Existing node removal action. Needs hook to call DELETE API for control-sequence nodes before removal.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/containers/canvas/use-node-creation.ts</path>
+        <kind>hook</kind>
+        <symbol>useNodeCreation</symbol>
+        <lines>1-74</lines>
+        <reason>Drag-and-drop handler hook. Needs new case for control-sequence-node type to call addControlSequenceNode.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/control-sequence/index.ts</path>
+        <kind>module</kind>
+        <symbol>control-sequence domain exports</symbol>
+        <lines>1-53</lines>
+        <reason>Domain public API. Already exports types and handle configs. Needs to export API client functions.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/control-sequence/api/generated/sdk.gen.ts</path>
+        <kind>client</kind>
+        <symbol>createInstanceApiV1G36VavReheatInstancesPost, deleteInstanceApiV1G36VavReheatInstancesInstanceIdDelete</symbol>
+        <lines>35-63</lines>
+        <reason>Generated API client functions for create and delete instance. Use these in new api/client.ts wrapper.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/control-sequence/api/generated/client.gen.ts</path>
+        <kind>client</kind>
+        <symbol>client</symbol>
+        <lines>1-19</lines>
+        <reason>Generated client configured with baseUrl '/control-sequence'. Used by SDK functions.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/control-sequence/api/generated/types.gen.ts</path>
+        <kind>types</kind>
+        <symbol>CreateInstanceRequest, CreateInstanceResponseReheatParameters, DeleteInstanceResponse</symbol>
+        <lines>26-69</lines>
+        <reason>Generated TypeScript types for API requests/responses. instance_id is string.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/lib/data-nodes/factory.ts</path>
+        <kind>factory</kind>
+        <symbol>createG36VavReheatNode</symbol>
+        <lines>259-271</lines>
+        <reason>Factory method for creating G36VavReheatNode data nodes. Takes instanceId, label, handles, id.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/lib/data-nodes/g36-vav-reheat-node.ts</path>
+        <kind>model</kind>
+        <symbol>G36VavReheatNode</symbol>
+        <lines>1-42</lines>
+        <reason>Data node class for G36 VAV Reheat. Has static create() method. Sets type and sequenceType.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>uuid</package>
+        <version>^12.0.0</version>
+        <note>Used for generating instance_id on client-side. Use v4() or crypto.randomUUID().</note>
+      </node>
+      <node>
+        <package>@xyflow/react</package>
+        <version>^12.8.4</version>
+        <note>React Flow for visual programming canvas, nodes, edges, handles.</note>
+      </node>
+      <node>
+        <package>zustand</package>
+        <version>^5.0.8</version>
+        <note>State management for flow store.</note>
+      </node>
+      <node>
+        <package>@hey-api/openapi-ts</package>
+        <version>^0.87.1</version>
+        <note>DevDependency for generating TypeScript client from OpenAPI spec.</note>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.468.0</version>
+        <note>Icon library. Use for control sequence section icon.</note>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>TDD: Write tests first, then implement</constraint>
+    <constraint>Follow existing sidebar section pattern from logic-nodes-section.tsx</constraint>
+    <constraint>Follow existing flow store action pattern from addLogicNode</constraint>
+    <constraint>API is source of truth for parameters - Designer only stores instance_id</constraint>
+    <constraint>Use generated API client functions, don't make raw fetch calls</constraint>
+    <constraint>Fire-and-forget for DELETE - don't block UI on API response</constraint>
+    <constraint>instance_id must be globally unique UUID - use crypto.randomUUID()</constraint>
+    <constraint>Don't add comments unless explaining WHY something was done</constraint>
+    <constraint>Use shadcn/ui components (Button, Card, Badge, etc.)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>POST /api/v1/g36/vav-reheat/instances</name>
+      <kind>REST endpoint</kind>
+      <signature>POST { instance_id: string } -> { instance_id: string, parameters: ReheatParameters }</signature>
+      <path>apps/designer/src/domains/control-sequence/api/generated/sdk.gen.ts:35-44</path>
+    </interface>
+    <interface>
+      <name>DELETE /api/v1/g36/vav-reheat/instances/{instance_id}</name>
+      <kind>REST endpoint</kind>
+      <signature>DELETE -> { instance_id: string, deleted: boolean }</signature>
+      <path>apps/designer/src/domains/control-sequence/api/generated/sdk.gen.ts:58-63</path>
+    </interface>
+    <interface>
+      <name>DraggedControlSequenceNode</name>
+      <kind>TypeScript interface</kind>
+      <signature>{ type: 'control-sequence-node', nodeType: 'g36-vav-reheat', label: string, metadata?: Record<string, unknown>, draggedFrom: 'control-sequences-section' }</signature>
+      <path>apps/designer/src/store/slices/flow-slice.ts (to be added)</path>
+    </interface>
+    <interface>
+      <name>addControlSequenceNode</name>
+      <kind>Store action</kind>
+      <signature>(nodeType: NodeTypeString, label: string, position: XYPosition, metadata?: Record<string, unknown>) => Promise<void></signature>
+      <path>apps/designer/src/store/slices/flow-slice.ts:402-419</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use Jest + React Testing Library for component tests. Mock API calls using jest.mock() for the generated SDK functions. Test user interactions (drag, drop, delete). Verify React Flow node structure. Follow TDD - write failing tests first.</standards>
+    <locations>
+      <location>apps/designer/src/components/nodes/__tests__/</location>
+      <location>apps/designer/src/components/sidebar/__tests__/</location>
+      <location>apps/designer/src/store/__tests__/</location>
+      <location>apps/designer/src/domains/control-sequence/__tests__/</location>
+    </locations>
+    <ideas>
+      <idea ac="1,2,3">Test G36VavReheatNode renders with Card, Badge "G36", input handles (zoneTemperature, coolingSetpoint, etc.), output handles (damperPosition, valvePosition, airflowSetpoint)</idea>
+      <idea ac="2">Test input handles have correct labels via camelToLabel conversion</idea>
+      <idea ac="3">Test output handles have correct labels</idea>
+      <idea ac="4">Test ControlSequencesSection renders with G36 VAV Reheat draggable item</idea>
+      <idea ac="4">Test handleDragStart sets correct drag data format with type: 'control-sequence-node'</idea>
+      <idea ac="5">Test addControlSequenceNode calls createInstanceApiV1G36VavReheatInstancesPost with instance_id</idea>
+      <idea ac="5">Test addControlSequenceNode shows error toast on API failure</idea>
+      <idea ac="5">Test addControlSequenceNode does NOT add node to canvas on API failure</idea>
+      <idea ac="6">Test node data includes instanceId in metadata after successful create</idea>
+      <idea ac="7">Test removeNode calls deleteInstanceApiV1G36VavReheatInstancesInstanceIdDelete for g36-vav-reheat nodes</idea>
+      <idea ac="7">Test removeNode does not block on DELETE API response (fire-and-forget)</idea>
+      <idea ac="8">All component and integration tests pass</idea>
+    </ideas>
+  </tests>
+</story-context>

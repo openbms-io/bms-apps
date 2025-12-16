@@ -193,3 +193,40 @@ class TestReheatRepositoryValidation:
         assert result.parameters.ventilationStandard == VentilationStandard.ASHRAE62_1
         assert result.parameters.hasWindowSensor is True
         assert result.parameters.hasOccupancySensor is True
+
+
+class TestReheatRepositoryGetOrCreate:
+
+    @pytest.mark.asyncio
+    async def test_get_or_create_creates_when_not_exists(self, reheat_repo: ReheatRepository):
+        params = ReheatParameters(minAirflow=0.15)
+
+        result, created = await reheat_repo.get_or_create("new-zone", params)
+
+        assert created is True
+        assert result.instance_id == "new-zone"
+        assert result.parameters.minAirflow == 0.15
+
+    @pytest.mark.asyncio
+    async def test_get_or_create_returns_existing_when_exists(self, reheat_repo: ReheatRepository):
+        original_params = ReheatParameters(minAirflow=0.25)
+        await reheat_repo.save("existing-zone", original_params)
+
+        new_params = ReheatParameters(minAirflow=0.99)
+        result, created = await reheat_repo.get_or_create("existing-zone", new_params)
+
+        assert created is False
+        assert result.instance_id == "existing-zone"
+        assert result.parameters.minAirflow == 0.25
+
+    @pytest.mark.asyncio
+    async def test_get_or_create_idempotent_multiple_calls(self, reheat_repo: ReheatRepository):
+        params = ReheatParameters(minAirflow=0.35)
+
+        result1, created1 = await reheat_repo.get_or_create("idempotent-zone", params)
+        result2, created2 = await reheat_repo.get_or_create("idempotent-zone", params)
+
+        assert created1 is True
+        assert created2 is False
+        assert result1.id == result2.id
+        assert result1.instance_id == result2.instance_id

@@ -17,7 +17,7 @@ class TestInvalidInstanceId:
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
 
         outputs = await fmu_adapter.step(
-            "nonexistent-id", fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT
+            "nonexistent-id", fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT
         )
 
         assert outputs is not None
@@ -63,7 +63,7 @@ class TestHasInstanceCheck:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         result = fmu_adapter.has_instance(instance_id)
 
@@ -77,13 +77,13 @@ class TestDeletedInstanceAccess:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         await fmu_adapter.delete_fmu_instance(instance_id)
         assert not fmu_adapter.has_instance(instance_id)
 
         outputs = await fmu_adapter.step(
-            instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT
+            instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT
         )
 
         assert outputs is not None
@@ -94,7 +94,7 @@ class TestDeletedInstanceAccess:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         await fmu_adapter.delete_fmu_instance(instance_id)
 
@@ -106,7 +106,7 @@ class TestDeletedInstanceAccess:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         await fmu_adapter.delete_fmu_instance(instance_id)
 
@@ -121,10 +121,10 @@ class TestZeroStepSize:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         outputs = await fmu_adapter.step(
-            instance_id, fmu_data, step_size=0.0, sequence_type=SequenceType.REHEAT
+            instance_id, fmu_data, step_size=0.0, sequence_type=SequenceType.VAV_REHEAT
         )
 
         assert outputs is not None
@@ -151,7 +151,7 @@ class TestDoubleDelete:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         first_delete = await fmu_adapter.delete_fmu_instance(instance_id)
         assert first_delete is True
@@ -168,9 +168,9 @@ class TestConcurrentInstanceOperations:
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
 
-        id1 = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        id2 = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        id3 = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        id1 = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
+        id2 = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
+        id3 = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         await fmu_adapter.delete_fmu_instance(id2)
 
@@ -178,8 +178,8 @@ class TestConcurrentInstanceOperations:
         assert not fmu_adapter.has_instance(id2)
         assert fmu_adapter.has_instance(id3)
 
-        await fmu_adapter.step(id1, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
-        await fmu_adapter.step(id3, fmu_data, step_size=30.0, sequence_type=SequenceType.REHEAT)
+        await fmu_adapter.step(id1, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
+        await fmu_adapter.step(id3, fmu_data, step_size=30.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(id1) == 60.0
         assert fmu_adapter.get_current_time(id3) == 30.0

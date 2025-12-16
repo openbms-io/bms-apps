@@ -1,0 +1,249 @@
+<story-context id="1b-3-dto-layer-refactoring" v="1.0">
+  <metadata>
+    <epicId>1B</epicId>
+    <storyId>3</storyId>
+    <title>DTO Layer Refactoring &amp; Unit Configuration</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-12-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1b.3-dto-layer-refactoring.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>consistent DTO naming and proper API/domain layer separation</iWant>
+    <soThat>the API has clean boundaries and unit preferences are stored per-instance</soThat>
+    <tasks>
+      <task id="1" ac="3,5,6">Add unit preferences to ReheatParametersDTO
+        <subtask>Create ReheatParametersDTO in src/dto/reheat_dto.py</subtask>
+        <subtask>Add temperatureUnit: TemperatureUnit field (default: Celsius)</subtask>
+        <subtask>Add airflowUnit: AirflowUnit field (default: m³/s)</subtask>
+        <subtask>Add to_domain() method converting to SI units</subtask>
+        <subtask>Add from_domain() class method for responses</subtask>
+        <subtask>Update ControlSequenceInstanceModel to include unit fields in parameters_json</subtask>
+      </task>
+      <task id="2" ac="1,7">Rename ReheatInputsRequest → ReheatInputsDTO
+        <subtask>Rename class ReheatInputsRequest → ReheatInputsDTO</subtask>
+        <subtask>Remove temperatureUnit and airflowUnit fields from inputs</subtask>
+        <subtask>Update to_domain() signature to accept temp_unit: TemperatureUnit, airflow_unit: AirflowUnit</subtask>
+        <subtask>Update all imports and references in routers/controllers</subtask>
+        <subtask>Update StepRequest.inputs type annotation</subtask>
+      </task>
+      <task id="3" ac="2,9">Create ReheatOutputsDTO
+        <subtask>Create ReheatOutputsDTO class in src/dto/reheat_dto.py</subtask>
+        <subtask>Add from_domain(outputs: ReheatOutputs, airflow_unit: AirflowUnit) class method</subtask>
+        <subtask>Convert airflowSetpoint from m³/s to user's configured unit</subtask>
+        <subtask>Keep damper/valve positions as-is (0-1 normalized, unitless)</subtask>
+        <subtask>Update StepResponse.outputs to use ReheatOutputsDTO</subtask>
+      </task>
+      <task id="4" ac="7,8,9">Update controller to use stored unit preferences
+        <subtask>Modify step_instance() in vav_reheat_controller.py</subtask>
+        <subtask>Fetch stored parameters (including units) from repository</subtask>
+        <subtask>Pass temp_unit, airflow_unit to ReheatInputsDTO.to_domain()</subtask>
+        <subtask>Pass airflow_unit to ReheatOutputsDTO.from_domain()</subtask>
+      </task>
+      <task id="5" ac="6">Update repository and model layer
+        <subtask>Ensure ReheatParameters domain model doesn't include unit preferences (pure SI)</subtask>
+        <subtask>Store unit preferences alongside parameters in DB via ReheatParametersDTO</subtask>
+        <subtask>Update repository to handle unit fields in parameters_json</subtask>
+      </task>
+      <task id="6" ac="10">Regenerate OpenAPI client types
+        <subtask>Run pnpm generate:control-sequence-client</subtask>
+        <subtask>Verify generated types reflect new DTO structure</subtask>
+        <subtask>Check ReheatInputsDTO, ReheatOutputsDTO, ReheatParametersDTO generated correctly</subtask>
+      </task>
+      <task id="7" ac="11">Update Designer types and API calls
+        <subtask>Update src/domains/control-sequence/api/generated/ imports</subtask>
+        <subtask>Update any direct references to old type names</subtask>
+        <subtask>Verify step execution flow still works with new types</subtask>
+      </task>
+      <task id="8" ac="12">Write unit tests for DTO conversions
+        <subtask>Test ReheatInputsDTO.to_domain() with various unit combinations</subtask>
+        <subtask>Test ReheatOutputsDTO.from_domain() with airflow unit conversion</subtask>
+        <subtask>Test ReheatParametersDTO.to_domain() and from_domain()</subtask>
+        <subtask>Test temperature conversion: K ↔ C ↔ F</subtask>
+        <subtask>Test airflow conversion: m³/s ↔ cfm ↔ L/s ↔ m³/h</subtask>
+      </task>
+      <task id="9" ac="8,9">Write integration tests for step with stored units
+        <subtask>Test step request uses units from stored parameters</subtask>
+        <subtask>Test step response converts outputs to stored unit preferences</subtask>
+        <subtask>Test changing unit preferences affects subsequent step responses</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Rename ReheatInputsRequest → ReheatInputsDTO for consistency</criterion>
+    <criterion id="2">Create ReheatOutputsDTO in dto/ layer (wraps domain model, converts to user units)</criterion>
+    <criterion id="3">Create ReheatParametersDTO in dto/ layer (includes temperatureUnit and airflowUnit preferences)</criterion>
+    <criterion id="4">Keep domain models unchanged: ReheatInputs, ReheatOutputs, ReheatParameters (always SI units)</criterion>
+    <criterion id="5">Move temperatureUnit and airflowUnit from inputs to ReheatParametersDTO</criterion>
+    <criterion id="6">Store unit preferences in parameters (DB) per instance</criterion>
+    <criterion id="7">Update ReheatInputsDTO.to_domain() to accept unit config from stored parameters</criterion>
+    <criterion id="8">Step request uses unit from stored parameters (not per-request)</criterion>
+    <criterion id="9">Step response converts outputs to user's configured units via ReheatOutputsDTO</criterion>
+    <criterion id="10">Regenerate OpenAPI client types</criterion>
+    <criterion id="11">Update Designer to use new types</criterion>
+    <criterion id="12">Unit tests for DTO conversion (both directions)</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/epics.md</path>
+        <title>G36 Implementation Epics</title>
+        <section>Story 1B.3: DTO Layer Refactoring &amp; Unit Configuration</section>
+        <snippet>Defines 12 acceptance criteria for DTO layer separation and unit configuration storage per-instance.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Tech Spec</title>
+        <section>Section 5.1 - OpenAPI Schema Generation</section>
+        <snippet>Pydantic DTOs in API, TypeScript types auto-generated via openapi-ts. Designer imports generated types directly as node data model.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Python Standards</section>
+        <snippet>Pydantic for data validation, type hints required, follow existing patterns in codebase.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <file>
+        <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+        <kind>dto</kind>
+        <symbol>ReheatInputsRequest, StepRequest, StepResponse</symbol>
+        <lines>1-212</lines>
+        <reason>Primary file to modify - rename ReheatInputsRequest, create ReheatOutputsDTO, update StepResponse</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/utils/unit_conversion.py</path>
+        <kind>utility</kind>
+        <symbol>TemperatureUnit, AirflowUnit, temp_in_kelvin, airflow_in_m3_per_s, kelvin_to_unit</symbol>
+        <lines>1-62</lines>
+        <reason>Existing unit conversion utilities - need reverse conversion m3_per_s_to_airflow for outputs</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/controllers/vav_reheat_controller.py</path>
+        <kind>controller</kind>
+        <symbol>VavReheatController.step</symbol>
+        <lines>88-114</lines>
+        <reason>Must update to fetch stored unit preferences and pass to DTO conversion methods</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/routers/g36_vav_reheat_router.py</path>
+        <kind>router</kind>
+        <symbol>step endpoint</symbol>
+        <lines>107-132</lines>
+        <reason>Update type annotations after DTO rename</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/repositories/reheat_repository.py</path>
+        <kind>repository</kind>
+        <symbol>ReheatRepository</symbol>
+        <lines>1-44</lines>
+        <reason>May need updates to handle unit preferences in parameters_json</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/models/reheat/outputs.py</path>
+        <kind>model</kind>
+        <symbol>ReheatOutputs</symbol>
+        <lines>1-106</lines>
+        <reason>Domain model - keep unchanged, airflow fields in m³/s</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/models/reheat/parameters.py</path>
+        <kind>model</kind>
+        <symbol>ReheatParameters</symbol>
+        <lines>1-371</lines>
+        <reason>Domain model - keep unchanged, pure SI units</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/tests/unit/test_reheat_dto.py</path>
+        <kind>test</kind>
+        <symbol>TestReheatInputsRequest, TestReheatInputsFromRequest</symbol>
+        <lines>1-527</lines>
+        <reason>Existing DTO tests - update for renamed class, add new tests for ReheatOutputsDTO, ReheatParametersDTO</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/control-sequence/api/generated/types.gen.ts</path>
+        <kind>generated</kind>
+        <symbol>ReheatInputsRequest</symbol>
+        <reason>Auto-generated types - will be regenerated after API changes</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/control-sequence/api/client.ts</path>
+        <kind>client</kind>
+        <symbol>stepInstance</symbol>
+        <reason>May need import updates after type regeneration</reason>
+      </file>
+    </code>
+    <dependencies>
+      <python>
+        <package name="pydantic" version="^2.0">Data validation and serialization</package>
+        <package name="fastapi" version="^0.109">Web framework with automatic OpenAPI generation</package>
+        <package name="sqlalchemy" version="^2.0">Database ORM for parameter storage</package>
+      </python>
+      <typescript>
+        <package name="@hey-api/openapi-ts">OpenAPI client generator</package>
+        <package name="@hey-api/client-fetch">Fetch-based API client</package>
+      </typescript>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Domain models (ReheatInputs, ReheatOutputs, ReheatParameters) must remain in SI units (K, m³/s) - only DTOs handle user-facing unit conversion</constraint>
+    <constraint type="api">API contract changes - regenerate OpenAPI client after DTO modifications</constraint>
+    <constraint type="database">Unit preferences stored in parameters_json alongside other parameters</constraint>
+    <constraint type="backward-compat">Existing step requests should still work with default units (Celsius, m³/s) if parameters not yet updated</constraint>
+    <constraint type="testing">Maintain existing test coverage - 527 lines of DTO tests must be updated</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>ReheatInputsDTO.to_domain()</name>
+      <kind>method signature</kind>
+      <signature>def to_domain(self, temp_unit: TemperatureUnit, airflow_unit: AirflowUnit) -&gt; ReheatInputs</signature>
+      <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+    </interface>
+    <interface>
+      <name>ReheatOutputsDTO.from_domain()</name>
+      <kind>class method</kind>
+      <signature>@classmethod def from_domain(cls, outputs: ReheatOutputs, airflow_unit: AirflowUnit) -&gt; ReheatOutputsDTO</signature>
+      <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+    </interface>
+    <interface>
+      <name>ReheatParametersDTO</name>
+      <kind>Pydantic model</kind>
+      <signature>class ReheatParametersDTO(BaseModel): temperatureUnit: TemperatureUnit; airflowUnit: AirflowUnit; [other params...]</signature>
+      <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+    </interface>
+    <interface>
+      <name>POST /instances/{id}/step</name>
+      <kind>REST endpoint</kind>
+      <signature>Request: StepRequest(stepSize, inputs: ReheatInputsDTO) -&gt; Response: StepResponse(instance_id, outputs: ReheatOutputsDTO)</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_vav_reheat_router.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Python tests use pytest with fixtures. DTOs tested for validation, conversion accuracy, and edge cases.
+      Tests should cover: temperature conversion (K/C/F), airflow conversion (m³/s/cfm/L/s/m³/h),
+      boundary values, invalid inputs, and round-trip conversions.
+    </standards>
+    <locations>
+      <location>apps/control-sequence-api-app/tests/unit/test_reheat_dto.py</location>
+      <location>apps/control-sequence-api-app/tests/integration/test_vav_reheat_router.py</location>
+    </locations>
+    <ideas>
+      <idea ac="1,2">Test ReheatInputsDTO rename doesn't break existing functionality</idea>
+      <idea ac="3,5">Test ReheatParametersDTO stores and retrieves unit preferences correctly</idea>
+      <idea ac="7">Test ReheatInputsDTO.to_domain() accepts external unit parameters</idea>
+      <idea ac="8">Test step request uses units from stored parameters, not from request</idea>
+      <idea ac="9">Test ReheatOutputsDTO.from_domain() converts airflow outputs correctly</idea>
+      <idea ac="12">Test round-trip: user units → domain SI → user units preserves values</idea>
+      <idea ac="12">Test all unit combinations: C+cfm, F+L/s, K+m³/h, etc.</idea>
+    </ideas>
+  </tests>
+</story-context>

@@ -408,28 +408,28 @@ Returns defaults, ranges, units for dynamic form rendering. Types come from gene
 
 #### Flow 1: New Node (Drag G36 Reheat onto canvas)
 
-| Step | Designer Action                                | API Call                                               |
-| ---- | ---------------------------------------------- | ------------------------------------------------------ |
-| 1    | User drags G36 Reheat from palette             | `GET /api/v1/g36/reheat/schema`                        |
-| 2    | Designer gets defaults from schema response    | -                                                      |
-| 3    | Designer generates `instance_id` (UUID)        | -                                                      |
-| 4    | Designer creates node with default parameters  | `POST /api/v1/g36/reheat/instances`                    |
-| 5    | Node appears on canvas with input/output ports | -                                                      |
-| 6    | User opens config panel                        | (schema already cached)                                |
-| 7    | User changes parameters, clicks Save           | `PUT /api/v1/g36/reheat/instances/{instance_id}`       |
-| 8    | User runs flow                                 | `POST /api/v1/g36/reheat/instances/{instance_id}/step` |
-| 9    | User deletes node                              | `DELETE /api/v1/g36/instances/{instance_id}`           |
+| Step | Designer Action                                | API Call                                                   |
+| ---- | ---------------------------------------------- | ---------------------------------------------------------- |
+| 1    | User drags G36 Reheat from palette             | -                                                          |
+| 2    | Designer creates API instance (gets defaults)  | `POST /api/v1/g36/vav-reheat/instances`                    |
+| 3    | API returns `instance_id` + default parameters | -                                                          |
+| 4    | Designer stores `instance_id` in node data     | -                                                          |
+| 5    | Node appears on canvas with input/output ports | -                                                          |
+| 6    | User opens config panel                        | `GET /api/v1/g36/vav-reheat/instances/{instance_id}`       |
+| 7    | User changes parameters, clicks Save           | `PUT /api/v1/g36/vav-reheat/instances/{instance_id}`       |
+| 8    | User runs flow                                 | `POST /api/v1/g36/vav-reheat/instances/{instance_id}/step` |
+| 9    | User deletes node                              | `DELETE /api/v1/g36/vav-reheat/instances/{instance_id}`    |
 
 #### Flow 2: Saved Node (Reload project)
 
-| Step | Designer Action                                              | API Call                                               |
-| ---- | ------------------------------------------------------------ | ------------------------------------------------------ |
-| 1    | User opens saved project                                     | -                                                      |
-| 2    | Designer loads nodes from project file                       | -                                                      |
-| 3    | For each G36 node, Designer has: `instance_id`, `parameters` | -                                                      |
-| 4    | Designer re-creates FMU instance                             | `POST /api/v1/g36/reheat/instances` (idempotent)       |
-| 5    | Node appears on canvas with saved parameters                 | -                                                      |
-| 6    | User runs flow                                               | `POST /api/v1/g36/reheat/instances/{instance_id}/step` |
+| Step | Designer Action                                | API Call                                                   |
+| ---- | ---------------------------------------------- | ---------------------------------------------------------- |
+| 1    | User opens saved project                       | -                                                          |
+| 2    | Designer loads nodes from project file         | -                                                          |
+| 3    | For each G36 node, Designer has: `instance_id` | -                                                          |
+| 4    | Designer fetches parameters from API           | `GET /api/v1/g36/vav-reheat/instances/{instance_id}`       |
+| 5    | Node appears on canvas with fetched parameters | -                                                          |
+| 6    | User runs flow                                 | `POST /api/v1/g36/vav-reheat/instances/{instance_id}/step` |
 
 #### What Designer persists in project file:
 
@@ -438,15 +438,10 @@ Returns defaults, ranges, units for dynamic form rendering. Types come from gene
   "nodes": [
     {
       "id": "node-123",
-      "type": "g36-reheat",
+      "type": "g36-vav-reheat",
       "position": { "x": 100, "y": 200 },
       "data": {
-        "instance_id": "abc-456-def",
-        "parameters": {
-          "VCooMax": 0.6,
-          "VHeaMax": 0.4,
-          "VMin": 0.1
-        }
+        "instance_id": "abc-456-def"
       }
     }
   ]
@@ -456,27 +451,37 @@ Returns defaults, ranges, units for dynamic form rendering. Types come from gene
 #### Key Points:
 
 - **instance_id must be globally unique** - Use UUID. Shared namespace across all sequence types (Reheat, VAV, AHU).
-- **Schema fetched once** on drag-drop (can be cached for session)
-- **Create is idempotent** - safe to call on reload even if API already has instance
-- **Parameters stored in project file** - Designer is source of truth for user config
-- **API is stateful but ephemeral** - FMU state lost on API restart, but parameters preserved in Designer
+- **API is source of truth for parameters** - Designer only stores `instance_id`, fetches parameters from API
+- **Parameters persisted in SQLite** - Survive API restarts (Story 1.15)
+- **Create returns defaults** - POST response includes `instance_id` and default `parameters`
 - **Delete is sequence-agnostic** - Single endpoint works because instance_id is globally unique
 
 **Data Flow:**
 
 ```
 Designer Node → (instance_id, inputs) → Control Sequence API → (outputs) → Designer Node
+                                              ↓
+                                        SQLite (parameters)
 ```
 
 **Designer Responsibilities:**
 
-- Generate/manage `instance_id` (e.g., UUID per node)
-- Persist `instance_id` and `parameters` in project file
-- Call create on drag-drop and project reload
+- Store `instance_id` in node data (only identifier needed)
+- Call `POST /instances` on drag-drop to create instance
+- Call `GET /instances/{id}` to fetch parameters for config panel
+- Call `PUT /instances/{id}` to save parameter changes
+- Call `DELETE /instances/{id}` when node is deleted
 - Provide `step_size` from flow configuration
 - Map BACnet sensor values to G36 inputs
 - Map G36 outputs to BACnet write commands
 - Use generated types from `openapi-ts` as node data model
+
+**API Responsibilities:**
+
+- Generate `instance_id` (UUID) on create
+- Persist parameters in SQLite database
+- Return parameters on GET requests
+- Manage FMU lifecycle (lazy instantiation on first step)
 
 ### 5.3 API Documentation
 

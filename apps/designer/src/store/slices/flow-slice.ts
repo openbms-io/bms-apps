@@ -24,7 +24,13 @@ import { NodeData } from '@/types/node-data-types'
 import type {
   CalculationOperation,
   ComparisonOperation,
+  ControlSequenceHandles,
 } from '@/lib/data-nodes'
+import { BaseControlSequenceNode } from '@/lib/data-nodes/base-control-sequence-node'
+import type {
+  ControlSequenceInputHandle,
+  ControlSequenceOutputHandle,
+} from '@/domains/control-sequence'
 import type { ValueType } from '@/lib/data-nodes/constant-node'
 import { ConstantNode } from '@/lib/data-nodes/constant-node'
 import { SwitchNode } from '@/lib/data-nodes/switch-node'
@@ -75,6 +81,12 @@ export interface DraggedControlFlowNode {
   draggedFrom: 'control-flow-section'
 }
 
+export interface ControlSequenceMetadata {
+  instanceId?: string
+  visibleInputs?: ControlSequenceInputHandle[]
+  visibleOutputs?: ControlSequenceOutputHandle[]
+}
+
 export interface ValidationResult {
   isValid: boolean
   errors: string[]
@@ -119,6 +131,11 @@ export type NodeUpdate =
       inputs: FunctionInput[]
       timeout: number
     }
+  | {
+      type: 'UPDATE_CONTROL_SEQUENCE_HANDLES'
+      nodeId: string
+      handles: ControlSequenceHandles
+    }
 
 export interface FlowSlice {
   // React Flow state with properly typed nodes
@@ -135,6 +152,8 @@ export interface FlowSlice {
   saveStatus: 'saved' | 'saving' | 'error' | 'unsaved'
 
   // Project context
+  orgId?: string
+  siteId?: string
   projectId?: string
 
   // React Flow change handlers
@@ -165,8 +184,14 @@ export interface FlowSlice {
     position: XYPosition,
     metadata?: Record<string, unknown>
   ) => void
-  removeNode: (nodeId: string) => void
-  clearAllNodes: () => void
+  addControlSequenceNode: (
+    nodeType: NodeTypeString,
+    label: string,
+    position: XYPosition,
+    metadata?: ControlSequenceMetadata
+  ) => Promise<void>
+  removeNode: (nodeId: string) => Promise<void>
+  clearAllNodes: () => Promise<void>
   connectNodes: (
     sourceId: string,
     targetId: string,
@@ -192,15 +217,7 @@ export interface FlowSlice {
   executeWithMessages: () => Promise<void>
 
   // Save/load projects
-  saveProject: ({
-    orgId,
-    siteId,
-    projectId,
-  }: {
-    orgId: string
-    siteId: string
-    projectId: string
-  }) => Promise<void>
+  saveProject: () => Promise<void>
   loadWorkflowIntoCanvas: ({
     orgId,
     siteId,
@@ -387,23 +404,39 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
     }
   },
 
-  removeNode: (nodeId) => {
-    get().dataGraph.removeNode(nodeId)
-    // Update React Flow state
+  addControlSequenceNode: async (nodeType, label, position, metadata) => {
+    if (nodeType === 'g36-vav-reheat') {
+      const dataNode = await factory.createG36VavReheatNode({
+        instanceId: metadata?.instanceId,
+        label,
+        visibleInputs: metadata?.visibleInputs,
+        visibleOutputs: metadata?.visibleOutputs,
+      })
+
+      get().dataGraph.addNode(dataNode, position)
+
+      set({
+        nodes: get().dataGraph.getNodesArray(),
+        edges: get().dataGraph.getEdgesArray(),
+      })
+    } else {
+      console.warn('Unknown control sequence node type:', nodeType)
+    }
+  },
+
+  removeNode: async (nodeId) => {
+    await get().dataGraph.removeNode(nodeId)
     set({
       nodes: get().dataGraph.getNodesArray(),
       edges: get().dataGraph.getEdgesArray(),
     })
   },
 
-  clearAllNodes: () => {
+  clearAllNodes: async () => {
     const { dataGraph } = get()
     const allNodes = dataGraph.getNodesArray()
 
-    // Call removeNode for each node to ensure destroy() is called
-    allNodes.forEach((node) => {
-      dataGraph.removeNode(node.id)
-    })
+    await Promise.all(allNodes.map((node) => dataGraph.removeNode(node.id)))
 
     // Update React Flow state
     set({
@@ -568,6 +601,21 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
         break
       }
 
+      case 'UPDATE_CONTROL_SEQUENCE_HANDLES': {
+        const dataNode = dataGraph.getNode(update.nodeId)
+        if (dataNode instanceof BaseControlSequenceNode) {
+          dataNode.setVisibleInputs(update.handles.visibleInputs)
+          dataNode.setVisibleOutputs(update.handles.visibleOutputs)
+
+          dataGraph.updateNodeData(update.nodeId)
+
+          set({
+            nodes: dataGraph.getNodesArray(),
+          })
+        }
+        break
+      }
+
       default:
         console.warn('Unknown update type', update)
         break
@@ -628,19 +676,14 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
   },
 
   // Save/load projects
-  saveProject: async ({
-    orgId,
-    siteId,
-    projectId,
-  }: {
-    orgId: string
-    siteId: string
-    projectId: string
-  }): Promise<void> => {
+  saveProject: async (): Promise<void> => {
+    const { orgId, siteId, projectId, nodes, edges } = get()
+    if (!orgId || !siteId || !projectId) {
+      console.warn('Cannot save: missing project context')
+      return
+    }
     try {
       set({ saveStatus: 'saving' })
-
-      const { nodes, edges } = get()
 
       // Create ReactFlowObject
       const reactFlowObject: ReactFlowObject = {
@@ -696,7 +739,7 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
       if (project.workflowConfig) {
         const versionedConfig = project.workflowConfig
 
-        const { nodes, edges } = deserializeWorkflow({
+        const { nodes, edges } = await deserializeWorkflow({
           versionedConfig,
           mqttBus: getMqttBus(),
           onDataChange: () => set({ nodes: [...get().nodes] }),
@@ -709,6 +752,8 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
 
         console.log('🚀 [FlowStore] Loaded project:', nodes, edges)
         set({
+          orgId,
+          siteId,
           projectId,
           nodes: nodes as Node<NodeData>[],
           edges: edges as Edge<EdgeData>[],
@@ -721,6 +766,8 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
         dataGraph.setEdgesArray([])
 
         set({
+          orgId,
+          siteId,
           projectId,
           nodes: [],
           edges: [],

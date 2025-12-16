@@ -13,26 +13,34 @@ from src.models.reheat.parameters import ReheatParameters
 
 class TestInputVariablesProperty:
 
-    def test_input_variables_returns_17_items(self, base_inputs: ReheatInputs):
-        fmu_data = ReheatFMUData(inputs=base_inputs)
+    def test_input_variables_returns_17_items(
+        self, base_inputs: ReheatInputs, base_parameters: ReheatParameters
+    ):
+        fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
 
         assert len(fmu_data.input_variables) == 17
 
-    def test_input_variables_all_have_names(self, base_inputs: ReheatInputs):
-        fmu_data = ReheatFMUData(inputs=base_inputs)
+    def test_input_variables_all_have_names(
+        self, base_inputs: ReheatInputs, base_parameters: ReheatParameters
+    ):
+        fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
 
         for var in fmu_data.input_variables:
             assert var.name is not None
             assert len(var.name) > 0
 
-    def test_input_variables_all_have_values(self, base_inputs: ReheatInputs):
-        fmu_data = ReheatFMUData(inputs=base_inputs)
+    def test_input_variables_all_have_values(
+        self, base_inputs: ReheatInputs, base_parameters: ReheatParameters
+    ):
+        fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
 
         for var in fmu_data.input_variables:
             assert var.value is not None
 
-    def test_input_variables_contain_expected_names(self, base_inputs: ReheatInputs):
-        fmu_data = ReheatFMUData(inputs=base_inputs)
+    def test_input_variables_contain_expected_names(
+        self, base_inputs: ReheatInputs, base_parameters: ReheatParameters
+    ):
+        fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
 
         names = {var.name for var in fmu_data.input_variables}
 
@@ -69,12 +77,12 @@ class TestConfigurationVariablesProperty:
 
         assert len(fmu_data.configuration_variables) == 55
 
-    def test_configuration_variables_returns_empty_without_params(
-        self, base_inputs: ReheatInputs
+    def test_configuration_variables_returns_default_params_when_default(
+        self, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
-        fmu_data = ReheatFMUData(inputs=base_inputs, parameters=None)
+        fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
 
-        assert len(fmu_data.configuration_variables) == 0
+        assert len(fmu_data.configuration_variables) == 55
 
     def test_configuration_variables_all_have_names(
         self, base_inputs: ReheatInputs, base_parameters: ReheatParameters

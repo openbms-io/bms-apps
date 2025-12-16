@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends
 from src.controllers.vav_reheat_controller import VavReheatController
 from src.dependencies import get_vav_reheat_controller
 from src.dto.base_dto import (
+    CreateInstanceRequest,
     CreateInstanceResponse,
     DeleteInstanceResponse,
     GetInstanceResponse,
@@ -21,7 +22,7 @@ from src.dto.base_dto import (
     UpdateParametersRequest,
 )
 from src.dto.common_dto import ErrorResponse
-from src.dto.reheat_dto import StepRequest, StepResponse
+from src.dto.reheat_dto import ReheatParametersDTO, StepRequest, StepResponse
 from src.models.reheat.parameters import ReheatParameters
 
 router = APIRouter(prefix="/api/v1/g36/vav-reheat", tags=["G36 VAV Reheat"])
@@ -30,29 +31,35 @@ router = APIRouter(prefix="/api/v1/g36/vav-reheat", tags=["G36 VAV Reheat"])
 @router.post(
     "/instances",
     response_model=CreateInstanceResponse[ReheatParameters],
+    response_model_by_alias=True,
     responses={
-        200: {"description": "Instance created with default parameters"},
+        200: {"description": "Instance created with default parameters (or existing returned)"},
+        422: {"description": "Validation error in request body"},
         500: {"description": "Internal server error", "model": ErrorResponse},
     },
 )
 async def create_instance(
+    request: CreateInstanceRequest[ReheatParametersDTO],
     controller: VavReheatController = Depends(get_vav_reheat_controller),
 ) -> CreateInstanceResponse[ReheatParameters]:
     """Create a new VAV Reheat control sequence instance.
 
     Creates an FMU instance with default G36 parameters. The FMU is lazily
-    instantiated on the first step() call. Returns auto-generated instance_id.
+    instantiated on the first step() call.
+
+    Idempotent: if instance_id already exists, returns the existing instance.
 
     Use this endpoint when:
     - Dragging a G36 Reheat block onto the Designer canvas
     - Reloading a saved project (idempotent creation)
     """
-    return await controller.create_instance()
+    return await controller.create_instance(request)
 
 
 @router.get(
     "/instances/{instance_id}",
     response_model=GetInstanceResponse[ReheatParameters],
+    response_model_by_alias=True,
     responses={
         200: {"description": "Instance parameters retrieved successfully"},
         404: {"description": "Instance not found", "model": ErrorResponse},
@@ -76,6 +83,7 @@ async def get_instance(
 @router.put(
     "/instances/{instance_id}",
     response_model=UpdateInstanceResponse[ReheatParameters],
+    response_model_by_alias=True,
     responses={
         200: {"description": "Instance parameters updated successfully"},
         404: {"description": "Instance not found", "model": ErrorResponse},
@@ -84,7 +92,7 @@ async def get_instance(
 )
 async def update_instance(
     instance_id: str,
-    request: UpdateParametersRequest[ReheatParameters],
+    request: UpdateParametersRequest[ReheatParametersDTO],
     controller: VavReheatController = Depends(get_vav_reheat_controller),
 ) -> UpdateInstanceResponse[ReheatParameters]:
     """Update VAV Reheat instance parameters.
@@ -102,6 +110,7 @@ async def update_instance(
 @router.post(
     "/instances/{instance_id}/step",
     response_model=StepResponse,
+    response_model_by_alias=True,
     responses={
         200: {"description": "Step executed successfully"},
         404: {"description": "Instance not found", "model": ErrorResponse},
@@ -130,6 +139,7 @@ async def step(
 @router.delete(
     "/instances/{instance_id}",
     response_model=DeleteInstanceResponse,
+    response_model_by_alias=True,
     responses={
         200: {"description": "Instance deleted (or already not found - idempotent)"},
     },
@@ -138,13 +148,36 @@ async def delete_instance(
     instance_id: str,
     controller: VavReheatController = Depends(get_vav_reheat_controller),
 ) -> DeleteInstanceResponse:
-    """Delete a VAV Reheat control sequence instance.
+    """Delete a VAV Reheat control sequence instance completely.
 
-    Removes the FMU instance and frees associated resources.
+    Removes both the FMU runtime instance and the persisted DB parameters.
     This operation is idempotent - returns success even if instance doesn't exist.
 
     Use this endpoint when:
-    - User deletes a G36 Reheat block from the Designer canvas
-    - Cleaning up instances during project close
+    - User explicitly deletes a G36 Reheat block from the Designer canvas
     """
     return await controller.delete_instance(instance_id)
+
+
+@router.delete(
+    "/instances/{instance_id}/fmu",
+    response_model=DeleteInstanceResponse,
+    response_model_by_alias=True,
+    responses={
+        200: {"description": "FMU runtime cleaned up (or already not found - idempotent)"},
+    },
+)
+async def delete_fmu(
+    instance_id: str,
+    controller: VavReheatController = Depends(get_vav_reheat_controller),
+) -> DeleteInstanceResponse:
+    """Delete only the FMU runtime instance, preserving DB parameters.
+
+    Frees FMU memory while keeping persisted parameters intact.
+    This operation is idempotent - returns success even if FMU doesn't exist.
+
+    Use this endpoint when:
+    - Switching projects (cleanup without losing saved parameters)
+    - Freeing memory for idle instances
+    """
+    return await controller.delete_fmu(instance_id)

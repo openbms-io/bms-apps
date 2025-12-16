@@ -22,6 +22,7 @@ from src.models.reheat.enums import OperationMode
 from src.models.reheat.inputs import ReheatInputs
 from src.models.reheat.outputs import ReheatOutputs
 from src.models.reheat.parameters import ReheatParameters
+from src.utils.unit_conversion import TemperatureUnit
 
 
 def get_fmu_var_metadata(model: type[BaseModel]) -> dict[str, str]:
@@ -73,12 +74,17 @@ class TestReheatInputsFmuMapping:
             )
 
 
+UNIT_PREFERENCE_FIELDS = {"temperatureUnit", "airflowUnit"}
+
+
 class TestReheatParametersFmuMapping:
 
     def test_all_parameters_have_fmu_var_metadata(self):
         fmu_vars = get_fmu_var_metadata(ReheatParameters)
 
         for field_name in ReheatParameters.model_fields:
+            if field_name in UNIT_PREFERENCE_FIELDS:
+                continue
             assert field_name in fmu_vars, (
                 f"ReheatParameters.{field_name} missing fmu_var metadata"
             )
@@ -197,17 +203,18 @@ class TestFmuDataMappingConsistency:
 
     def test_input_variables_use_enum_values(self):
         inputs = ReheatInputs(
-            zoneTemperature=295.15,
-            coolingSetpoint=297.15,
-            heatingSetpoint=293.15,
-            dischargeAirTemperature=286.15,
+            zoneTemperature=22.0,
+            coolingSetpoint=24.0,
+            heatingSetpoint=20.0,
+            dischargeAirTemperature=13.0,
             primaryAirflow=0.3,
-            supplyAirTemperature=286.15,
-            supplyAirTemperatureSetpoint=285.15,
+            supplyAirTemperature=13.0,
+            supplyAirTemperatureSetpoint=12.0,
             fanStatus=True,
             operationMode=OperationMode.OCCUPIED,
         )
-        fmu_data = ReheatFMUData(inputs=inputs)
+        params = ReheatParameters(temperatureUnit=TemperatureUnit.CELSIUS)
+        fmu_data = ReheatFMUData(inputs=inputs, parameters=params)
         input_vars = fmu_data.input_variables
 
         var_names = {var.name for var in input_vars}
@@ -219,17 +226,17 @@ class TestFmuDataMappingConsistency:
 
     def test_configuration_variables_use_enum_values(self):
         inputs = ReheatInputs(
-            zoneTemperature=295.15,
-            coolingSetpoint=297.15,
-            heatingSetpoint=293.15,
-            dischargeAirTemperature=286.15,
+            zoneTemperature=22.0,
+            coolingSetpoint=24.0,
+            heatingSetpoint=20.0,
+            dischargeAirTemperature=13.0,
             primaryAirflow=0.3,
-            supplyAirTemperature=286.15,
-            supplyAirTemperatureSetpoint=285.15,
+            supplyAirTemperature=13.0,
+            supplyAirTemperatureSetpoint=12.0,
             fanStatus=True,
             operationMode=OperationMode.OCCUPIED,
         )
-        params = ReheatParameters()
+        params = ReheatParameters(temperatureUnit=TemperatureUnit.CELSIUS)
         fmu_data = ReheatFMUData(inputs=inputs, parameters=params)
         config_vars = fmu_data.configuration_variables
 

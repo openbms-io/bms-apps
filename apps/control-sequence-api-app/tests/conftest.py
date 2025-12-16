@@ -1,5 +1,6 @@
 import asyncio
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 import pytest_asyncio
@@ -11,7 +12,26 @@ from src.adapters.fmu_loader import FmuLoader
 from src.models.reheat.enums import OperationMode
 from src.models.reheat.inputs import ReheatInputs
 from src.models.reheat.parameters import ReheatParameters
+from src.utils.unit_conversion import TemperatureUnit
 from src.main import app
+
+
+def create_reheat_instance(
+    client: TestClient,
+    instance_id: str | None = None,
+    parameters: dict | None = None,
+) -> dict:
+    """Helper to create a reheat instance with the new API that requires instance_id."""
+    if instance_id is None:
+        instance_id = str(uuid4())
+    body: dict = {"instance_id": instance_id}
+    if parameters is not None:
+        body["parameters"] = parameters
+    response = client.post(
+        "/api/v1/g36/vav-reheat/instances",
+        json=body,
+    )
+    return response.json()
 
 
 @pytest.fixture
@@ -93,4 +113,4 @@ def base_inputs() -> ReheatInputs:
 
 @pytest.fixture
 def base_parameters() -> ReheatParameters:
-    return ReheatParameters()
+    return ReheatParameters(temperatureUnit=TemperatureUnit.KELVIN)

@@ -175,20 +175,20 @@ class TestFieldDescriptions:
         assert "stepSize" in props
         assert "description" in props["stepSize"]
 
-    def test_reheat_inputs_request_has_field_descriptions(self, integration_client):
+    def test_reheat_inputs_dto_has_field_descriptions(self, integration_client):
         response = integration_client.get("/openapi.json")
         openapi = response.json()
 
-        schema = openapi["components"]["schemas"]["ReheatInputsRequest"]
+        schema = openapi["components"]["schemas"]["ReheatInputsDTO"]
         props = schema["properties"]
         assert "zoneTemperature" in props
         assert "description" in props["zoneTemperature"]
 
-    def test_reheat_outputs_has_field_descriptions(self, integration_client):
+    def test_reheat_outputs_dto_has_field_descriptions(self, integration_client):
         response = integration_client.get("/openapi.json")
         openapi = response.json()
 
-        schema = openapi["components"]["schemas"]["ReheatOutputs"]
+        schema = openapi["components"]["schemas"]["ReheatOutputsDTO"]
         props = schema["properties"]
         assert "damperPosition" in props
         assert "description" in props["damperPosition"]
@@ -210,7 +210,7 @@ class TestExamples:
         response = integration_client.get("/openapi.json")
         openapi = response.json()
 
-        schema = openapi["components"]["schemas"]["ReheatInputsRequest"]
+        schema = openapi["components"]["schemas"]["ReheatInputsDTO"]
         props = schema["properties"]
         zone_temp = props["zoneTemperature"]
         has_example = "example" in zone_temp or "examples" in zone_temp
@@ -220,7 +220,7 @@ class TestExamples:
         response = integration_client.get("/openapi.json")
         openapi = response.json()
 
-        schema = openapi["components"]["schemas"]["ReheatOutputs"]
+        schema = openapi["components"]["schemas"]["ReheatOutputsDTO"]
         props = schema["properties"]
         damper = props["damperPosition"]
         has_example = "example" in damper or "examples" in damper

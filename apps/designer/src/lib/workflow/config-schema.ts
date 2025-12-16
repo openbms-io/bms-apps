@@ -11,6 +11,10 @@ import type {
 } from '@/lib/data-nodes/schedule-node'
 import type { SwitchNodeMetadata } from '@/lib/data-nodes/switch-node'
 import type { BacnetProperties } from '@/types/bacnet-properties'
+import {
+  ALL_INPUTS as REHEAT_ALL_INPUTS,
+  ALL_OUTPUTS as REHEAT_ALL_OUTPUTS,
+} from '@/domains/control-sequence/terminal-units/reheat'
 
 // Node/category enums
 export const NodeTypeSchema = z.nativeEnum(NodeType)
@@ -180,6 +184,15 @@ const SwitchNodeMetadataSchema: z.ZodType<SwitchNodeMetadata> = z.object({
   inactiveLabel: z.string(),
 })
 
+const ReheatInputHandleSchema = z.enum(REHEAT_ALL_INPUTS)
+const ReheatOutputHandleSchema = z.enum(REHEAT_ALL_OUTPUTS)
+
+const G36VavReheatMetadataSchema = z.object({
+  instanceId: z.string(),
+  visibleInputs: z.array(ReheatInputHandleSchema),
+  visibleOutputs: z.array(ReheatOutputHandleSchema),
+})
+
 // Serialized node.data schema by node type
 const SerializedNodeInnerSchema = z.discriminatedUnion('type', [
   // Logic
@@ -242,6 +255,15 @@ const SerializedNodeInnerSchema = z.discriminatedUnion('type', [
     category: z.literal(NodeCategory.COMMAND),
     label: z.string(),
     metadata: z.object({ priority: z.number() }),
+  }),
+
+  // Control Sequence nodes
+  z.object({
+    id: z.string(),
+    type: z.literal(NodeType.G36_VAV_REHEAT),
+    category: z.literal(NodeCategory.CONTROL_SEQUENCE),
+    label: z.string(),
+    metadata: G36VavReheatMetadataSchema,
   }),
 
   // BACnet nodes (share same metadata shape)

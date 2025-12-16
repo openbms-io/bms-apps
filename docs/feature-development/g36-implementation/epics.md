@@ -410,44 +410,79 @@ So that we have confidence in the implementation.
 
 _Phase 1B starts after Phase 1A backend is complete._
 
+**Key Architecture Decision:** API is source of truth for parameters. Designer only stores `instance_id` in node data, fetches parameters from API when needed.
+
 ---
 
-### Story 1B.1: G36 Reheat Node Type & I/O Schema
+### Story 1B.1: G36 VAV Reheat Node Type & Schema
 
 As a developer,
-I want to define the G36 Reheat node type and I/O schema in Designer,
-So that the block structure matches the proven FMU interface.
+I want to define the G36 VAV Reheat node type in Designer,
+So that the block structure matches the Control Sequence API interface.
 
 **Acceptance Criteria:**
 
-1. G36ReheatNode type added to schema
-2. I/O connectors match FMU discovery (Story 1.2)
-3. Types (Real/Boolean/Integer) match FMU
-4. Schema tests pass
+1. `g36-vav-reheat` node type added to Designer node registry
+2. Node data schema includes `instance_id: string` (only required field)
+3. Input handles defined from `ReheatInputsRequest` generated type
+4. Output handles defined from `ReheatOutputs` generated type
+5. Zod schema tests pass
 
-**Prerequisites:** Phase 1A complete
+**Prerequisites:** Story 1.17 (OpenAPI client generation)
+
+**Reference:** [Tech Spec Section 5.2](./specs/control-sequence-api-tech-spec.md#52-designer-integration)
 
 ---
 
-### Story 1B.2: G36 Reheat Block UI Component
+### Story 1B.2: G36 VAV Reheat Block UI Component
 
 As a building controls engineer,
-I want to see the G36 Reheat block on the canvas with I/O connectors,
+I want to see the G36 VAV Reheat block on the canvas with I/O connectors,
 So that I can wire it to BACnet points.
 
 **Acceptance Criteria:**
 
-1. G36 Reheat block renders on canvas
-2. I/O connectors visible and labeled
-3. Block appears in palette under "Control Sequences"
-4. Drag-drop works
-5. Component tests pass
+1. G36 VAV Reheat block renders on canvas with distinct visual style
+2. Input connectors visible and labeled (zoneTemperature, coolingSetpoint, etc.)
+3. Output connectors visible and labeled (damperPosition, valvePosition, airflowSetpoint)
+4. Block appears in palette under "Control Sequences" category
+5. Drag-drop creates API instance via `POST /api/v1/g36/vav-reheat/instances`
+6. Node stores returned `instance_id` in node data
+7. Delete node calls `DELETE /api/v1/g36/vav-reheat/instances/{instance_id}`
+8. Component tests pass
 
 **Prerequisites:** Story 1B.1
 
+**Reference:** [Tech Spec Section 5.2 - Flow 1](./specs/control-sequence-api-tech-spec.md#52-designer-integration)
+
 ---
 
-### Story 1B.3: G36 Configuration Panel
+### Story 1B.3: DTO Layer Refactoring & Unit Configuration
+
+As a developer,
+I want consistent DTO naming and proper API/domain layer separation,
+So that the API has clean boundaries and unit preferences are stored per-instance.
+
+**Acceptance Criteria:**
+
+1. Rename `ReheatInputsRequest` → `ReheatInputsDTO` for consistency
+2. Create `ReheatOutputsDTO` in dto/ layer (wraps domain model, converts to user units)
+3. Create `ReheatParametersDTO` in dto/ layer (includes `temperatureUnit` and `airflowUnit` preferences)
+4. Keep domain models unchanged: `ReheatInputs`, `ReheatOutputs`, `ReheatParameters` (always SI units)
+5. Move `temperatureUnit` and `airflowUnit` from inputs to `ReheatParametersDTO`
+6. Store unit preferences in parameters (DB) per instance
+7. Update `ReheatInputsDTO.to_domain()` to accept unit config from stored parameters
+8. Step request uses unit from stored parameters (not per-request)
+9. Step response converts outputs to user's configured units via `ReheatOutputsDTO`
+10. Regenerate OpenAPI client types
+11. Update Designer to use new types
+12. Unit tests for DTO conversion (both directions)
+
+**Prerequisites:** Story 1B.2
+
+---
+
+### Story 1B.4: G36 Configuration Panel
 
 As a building controls engineer,
 I want to configure G36 block parameters,
@@ -455,16 +490,103 @@ So that I can customize the controller for my zone.
 
 **Acceptance Criteria:**
 
-1. Click opens configuration panel
-2. Shows parameters: have_CO2Sen, heaCoi, design airflows
-3. Conditional inputs appear/hide based on config
-4. Uses existing side panel patterns
+1. Click block opens configuration panel
+2. Panel fetches parameters via `GET /api/v1/g36/vav-reheat/instances/{instance_id}`
+3. Parameters grouped into categories: Units, Sensors, Airflows, Controller Gains, Timing, Thresholds
+4. Unit selection dropdown for temperature (K/C/F) and airflow (m³/s, cfm, L/s, m³/h)
+5. Conditional fields show/hide based on sensor config (e.g., CO2 fields hidden if hasCO2Sensor=false)
+6. Save button calls `PUT /api/v1/g36/vav-reheat/instances/{instance_id}`
+7. Uses existing side panel patterns from Designer
+8. Component tests pass
 
-**Prerequisites:** Story 1B.1, Story 1B.2
+**Prerequisites:** Story 1B.3
+
+**Reference:** [Tech Spec Section 5.2 - Flow 1 Steps 6-7](./specs/control-sequence-api-tech-spec.md#52-designer-integration)
 
 ---
 
-## Epic 2: BACnet MQTT Write Integration
+## Epic 2: Handle Type System & Connection Validation
+
+**Goal:** Implement typed handle connections to ensure type-safe wiring between nodes.
+
+**Value:** Prevents invalid connections at wire-time, improving UX and reducing runtime errors.
+
+**Estimated Stories:** 4-6
+
+---
+
+### Story 2.1: Define Handle Value Type System
+
+As a developer,
+I want a type system for handle values beyond primitives,
+So that we can validate connections based on specific types.
+
+**Acceptance Criteria:**
+
+1. Define `HandleValueType` union: `'number' | 'boolean' | 'string' | 'operationMode' | 'temperatureUnit' | 'airflowUnit' | 'overrideMode'`
+2. Derive reheat input handle types from generated `ReheatInputsRequest` TypeScript types
+3. Export type mapping from `domains/control-sequence/terminal-units/reheat`
+4. Unit tests verify type derivation matches API schema
+
+**Prerequisites:** Story 1.17 (OpenAPI client generation)
+
+---
+
+### Story 2.2: DataNode Type Interface
+
+As a developer,
+I want DataNode interface to support type queries,
+So that connection validation can check type compatibility.
+
+**Acceptance Criteria:**
+
+1. Add `getOutputType(handle?: string): HandleValueType` to `DataNode` interface
+2. Add `getInputType(handle: string): HandleValueType` to `DataNode` interface
+3. Update all existing node implementations to return appropriate types
+4. Control sequence nodes return specific types for each handle
+5. Unit tests for type methods on each node type
+
+**Prerequisites:** Story 2.1
+
+---
+
+### Story 2.3: Connection Type Validation
+
+As a building controls engineer,
+I want invalid connections to be rejected,
+So that I cannot wire incompatible types together.
+
+**Acceptance Criteria:**
+
+1. `DataGraph.addConnection` validates source output type matches target input type
+2. Show error notification with clear message on invalid connection
+3. Allow primitive-to-primitive connections (e.g., number→number)
+4. Block primitive-to-enum connections (e.g., string→operationMode)
+5. Integration tests for connection validation
+
+**Prerequisites:** Story 2.2
+
+---
+
+### Story 2.4: Case Node (Enum Mapper)
+
+As a building controls engineer,
+I want a Case node to map values to enum types,
+So that I can connect constants to enum inputs like operationMode.
+
+**Acceptance Criteria:**
+
+1. `CaseNode` type added to Designer
+2. Configurable input type (string/number) and output type (operationMode, etc.)
+3. UI shows case mapping configuration (e.g., "occupied" → OperationModeStr.occupied)
+4. Output type matches configured enum type for connection validation
+5. Component and unit tests pass
+
+**Prerequisites:** Story 2.3
+
+---
+
+## Epic 3: BACnet MQTT Write Integration
 
 **Goal:** Implement BACnet writes via MQTT to enable actuator command outputs (yDam, yVal).
 
@@ -472,11 +594,11 @@ So that I can customize the controller for my zone.
 
 **Estimated Stories:** 5-7
 
-_Stories to be defined after Epic 1 completion._
+_Stories to be defined after Epic 2 completion._
 
 ---
 
-## Epic 3: Two-Level Validation
+## Epic 4: Two-Level Validation
 
 **Goal:** Per-point automatic validation on wire + full SHACL validation via BuildingMOTIF on Run.
 
@@ -484,11 +606,11 @@ _Stories to be defined after Epic 1 completion._
 
 **Estimated Stories:** 6-8
 
-_Stories to be defined after Epic 2 completion._
+_Stories to be defined after Epic 3 completion._
 
 ---
 
-## Epic 4: Graph Execution with Scheduler
+## Epic 5: Graph Execution with Scheduler
 
 **Goal:** Run button triggers validation + graph execution; Scheduler node controls frequency.
 
@@ -496,11 +618,11 @@ _Stories to be defined after Epic 2 completion._
 
 **Estimated Stories:** 5-7
 
-_Stories to be defined after Epic 3 completion._
+_Stories to be defined after Epic 4 completion._
 
 ---
 
-## Epic 5: BOPTEST Integration Testing
+## Epic 6: BOPTEST Integration Testing
 
 **Goal:** End-to-end testing with `multizone_office_simple_air`; validate G36 with simulated building.
 
@@ -508,7 +630,7 @@ _Stories to be defined after Epic 3 completion._
 
 **Estimated Stories:** 4-6
 
-_Stories to be defined after Epic 4 completion._
+_Stories to be defined after Epic 5 completion._
 
 ---
 

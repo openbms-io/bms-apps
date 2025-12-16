@@ -9,20 +9,21 @@ from fmpy import extract, read_model_description
 from fmpy.model_description import ModelDescription
 
 from src.adapters.exceptions import FmuInitializationError
+from src.adapters.sequence_type import SequenceType
 from src.config.settings import get_settings
 
 
 class FmuLoader:
     """Utility for loading and caching FMU files."""
 
-    _cache: ClassVar[dict[str, tuple[ModelDescription, str]]] = {}
+    _cache: ClassVar[dict[SequenceType, tuple[ModelDescription, str]]] = {}
 
     @classmethod
-    def load(cls, sequence_type: str) -> tuple[ModelDescription, str]:
+    def load(cls, sequence_type: SequenceType) -> tuple[ModelDescription, str]:
         """Load FMU model description and extract to temp directory.
 
         Args:
-            sequence_type: Type of sequence (e.g., "reheat", "vav", "ahu")
+            sequence_type: Type of sequence (e.g., SequenceType.VAV_REHEAT)
 
         Returns:
             Tuple of (ModelDescription, unzip_dir)

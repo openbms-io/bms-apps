@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from src.adapters.database_adapter import get_session
 from src.models.control_sequence_instance_model import ControlSequenceInstanceModel
@@ -71,6 +72,26 @@ class ControlSequenceInstanceRepository(Generic[TParams]):
         """Create new instance with auto-generated ID. Returns created instance."""
         instance_id = str(uuid4())
         return await self.save(instance_id, parameters)
+
+    async def get_or_create(
+        self, instance_id: str, parameters: TParams
+    ) -> tuple[ControlSequenceInstanceData[TParams], bool]:
+        """Get existing instance or create new one. Returns (instance, created).
+
+        Handles race conditions where concurrent requests try to create the same instance.
+        """
+        existing = await self.get_active(instance_id)
+        if existing:
+            return existing, False
+
+        try:
+            created = await self.save(instance_id, parameters)
+            return created, True
+        except IntegrityError:
+            existing = await self.get_active(instance_id)
+            if existing:
+                return existing, False
+            raise
 
     async def save(self, instance_id: str, parameters: TParams) -> ControlSequenceInstanceData[TParams]:
         """Save/update instance. Deactivates existing, creates new record. Returns saved instance."""

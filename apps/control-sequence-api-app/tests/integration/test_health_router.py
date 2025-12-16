@@ -13,14 +13,14 @@ import time
 
 import pytest
 
+from tests.conftest import create_reheat_instance
+
 
 @pytest.fixture
 def valid_step_request():
     return {
         "stepSize": 60.0,
         "inputs": {
-            "temperatureUnit": "C",
-            "airflowUnit": "m3/s",
             "zoneTemperature": 22.0,
             "coolingSetpoint": 24.0,
             "heatingSetpoint": 20.0,
@@ -29,7 +29,7 @@ def valid_step_request():
             "supplyAirTemperature": 13.0,
             "supplyAirTemperatureSetpoint": 12.0,
             "fanStatus": True,
-            "operationMode": 1,
+            "operationMode": "occupied",
         },
     }
 
@@ -78,8 +78,10 @@ class TestHealthActiveInstancesIntegration:
         response = integration_client.get("/api/v1/health")
         assert response.json()["active_instances"] == 0
 
-        create_response = integration_client.post("/api/v1/g36/vav-reheat/instances")
-        instance_id = create_response.json()["instance_id"]
+        created = create_reheat_instance(
+            integration_client, parameters={"temperatureUnit": "C"}
+        )
+        instance_id = created["instanceId"]
 
         integration_client.post(
             f"/api/v1/g36/vav-reheat/instances/{instance_id}/step",
@@ -95,8 +97,10 @@ class TestHealthActiveInstancesIntegration:
         if not fmu_available:
             pytest.skip("Reheat FMU not available")
 
-        create_response = integration_client.post("/api/v1/g36/vav-reheat/instances")
-        instance_id = create_response.json()["instance_id"]
+        created = create_reheat_instance(
+            integration_client, parameters={"temperatureUnit": "C"}
+        )
+        instance_id = created["instanceId"]
 
         integration_client.post(
             f"/api/v1/g36/vav-reheat/instances/{instance_id}/step",
@@ -117,8 +121,10 @@ class TestHealthActiveInstancesIntegration:
             pytest.skip("Reheat FMU not available")
 
         for _ in range(3):
-            create_response = integration_client.post("/api/v1/g36/vav-reheat/instances")
-            instance_id = create_response.json()["instance_id"]
+            created = create_reheat_instance(
+                integration_client, parameters={"temperatureUnit": "C"}
+            )
+            instance_id = created["instanceId"]
             integration_client.post(
                 f"/api/v1/g36/vav-reheat/instances/{instance_id}/step",
                 json=valid_step_request,

@@ -7,32 +7,54 @@
  * @module control-sequence
  */
 
-// ============================================================================
-// TYPES - Re-export from generated
-// ============================================================================
 export type {
   ReheatParameters,
-  ReheatInputsRequest,
-  ReheatOutputs,
+  ReheatInputsDto,
+  ReheatOutputsDto,
   StepRequest,
   StepResponse,
-  CreateInstanceResponseReheatParameters,
-  GetInstanceResponseReheatParameters,
-  UpdateInstanceResponseReheatParameters,
+  CreateInstanceRequestReheatParameters,
+  InstanceResponseWithCategoriesReheatParameters,
   DeleteInstanceResponse,
   ErrorResponse,
   HealthResponse,
   ValidationRequest,
   ValidationResponse,
+  TemperatureUnit,
+  AirflowUnit,
+  ParameterCategory,
+  InputCategory,
+  OutputCategory,
+  ReheatInputName,
+  ReheatOutputName,
 } from './api/generated/types.gen'
 
-// ============================================================================
-// COMPONENTS (future - Phase 1B)
-// ============================================================================
-// export { G36ReheatBlock } from './components/g36-reheat-block'
+export type {
+  G36VavReheatNodeData,
+  G36VavReheatNode,
+  G36VavReheatInputHandle,
+  G36VavReheatOutputHandle,
+} from './types'
 
-// ============================================================================
-// DO NOT EXPORT:
-// - api/generated/* directly (use types above)
-// - Internal implementation details
-// ============================================================================
+export { G36_VAV_REHEAT_NODE_TYPE } from './types'
+
+export {
+  REQUIRED_INPUTS as REHEAT_REQUIRED_INPUTS,
+  OPTIONAL_INPUTS as REHEAT_OPTIONAL_INPUTS,
+  ALL_INPUTS as REHEAT_ALL_INPUTS,
+  ALL_OUTPUTS as REHEAT_ALL_OUTPUTS,
+  REHEAT_ENUM_FIELDS,
+  type ReheatInputHandle,
+  type ReheatOutputHandle,
+} from './terminal-units/reheat'
+
+export {
+  SequenceTypeMap,
+  SEQUENCE_DROPDOWN_FIELDS,
+  type SequenceType,
+  type SequenceHandleConfig,
+  type ControlSequenceInputHandle,
+  type ControlSequenceOutputHandle,
+  type ControlSequenceHandleConfig,
+  type DropdownFieldsMap,
+} from './sequence-types'

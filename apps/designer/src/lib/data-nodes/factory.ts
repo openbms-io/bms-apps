@@ -21,6 +21,11 @@ import { SwitchNode } from './switch-node'
 import { TimerNode } from './timer-node'
 import { ScheduleNode, DayOfWeek } from './schedule-node'
 import { FunctionNode, FunctionInput } from './function-node'
+import { G36VavReheatNode } from './g36-vav-reheat-node'
+import type {
+  ControlSequenceInputHandle,
+  ControlSequenceOutputHandle,
+} from '@/domains/control-sequence'
 
 // Simple factory pattern for creating nodes
 class DataNodeFactory {
@@ -252,6 +257,28 @@ class DataNodeFactory {
       },
       id
     )
+  }
+
+  async createG36VavReheatNode({
+    instanceId,
+    label,
+    visibleInputs,
+    visibleOutputs,
+    id,
+  }: {
+    instanceId?: string
+    label: string
+    visibleInputs?: ControlSequenceInputHandle[]
+    visibleOutputs?: ControlSequenceOutputHandle[]
+    id?: string
+  }): Promise<G36VavReheatNode> {
+    return G36VavReheatNode.create({
+      instanceId,
+      label,
+      visibleInputs,
+      visibleOutputs,
+      id,
+    })
   }
 }
 

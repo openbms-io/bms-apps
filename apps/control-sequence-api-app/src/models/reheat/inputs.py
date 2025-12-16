@@ -9,54 +9,46 @@ from src.models.reheat.enums import OperationMode
 
 
 class ReheatInputs(BaseModel):
-    """Internal model for FMU inputs. All temperatures in Kelvin."""
+    """Internal model for FMU inputs.
+
+    Values are stored in user-specified units. Unit validation and conversion
+    to SI units happens in ReheatFMUData based on stored parameter preferences.
+    """
 
     zoneTemperature: float = Field(
         ...,
-        ge=250,
-        le=350,
-        description="Zone temperature in Kelvin (FMU: TZon)",
+        description="Zone temperature (FMU: TZon)",
         json_schema_extra={"fmu_var": "TZon"},
     )
     coolingSetpoint: float = Field(
         ...,
-        ge=250,
-        le=350,
-        description="Cooling setpoint in Kelvin (FMU: TCooSet)",
+        description="Cooling setpoint (FMU: TCooSet)",
         json_schema_extra={"fmu_var": "TCooSet"},
     )
     heatingSetpoint: float = Field(
         ...,
-        ge=250,
-        le=350,
-        description="Heating setpoint in Kelvin (FMU: THeaSet)",
+        description="Heating setpoint (FMU: THeaSet)",
         json_schema_extra={"fmu_var": "THeaSet"},
     )
     dischargeAirTemperature: float = Field(
         ...,
-        ge=250,
-        le=350,
-        description="Discharge air temperature in Kelvin (FMU: TDis)",
+        description="Discharge air temperature (FMU: TDis)",
         json_schema_extra={"fmu_var": "TDis"},
     )
     primaryAirflow: float = Field(
         ...,
         ge=0,
-        description="Primary airflow in m³/s (FMU: VDis_flow)",
+        description="Primary airflow (FMU: VDis_flow)",
         json_schema_extra={"fmu_var": "VDis_flow"},
     )
     supplyAirTemperature: float = Field(
         ...,
-        ge=250,
-        le=350,
-        description="AHU supply air temperature in Kelvin (FMU: TSup)",
+        description="AHU supply air temperature (FMU: TSup)",
         json_schema_extra={"fmu_var": "TSup"},
     )
     supplyAirTemperatureSetpoint: float = Field(
         ...,
-        ge=250,
-        le=350,
-        description="AHU supply air temperature setpoint in Kelvin (FMU: TSupSet)",
+        description="AHU supply air temperature setpoint (FMU: TSupSet)",
         json_schema_extra={"fmu_var": "TSupSet"},
     )
     co2Concentration: float = Field(

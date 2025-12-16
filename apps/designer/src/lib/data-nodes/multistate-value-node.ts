@@ -5,7 +5,7 @@ import {
   BacnetConfig,
 } from '@/types/infrastructure'
 import { BaseBacnetNode } from './base-bacnet-node'
-import { prepareMultistateProperties } from './bacnet-utils'
+import { prepareMultistateProperties } from './utils/bacnet-utils'
 import { MqttBusManager } from '@/lib/mqtt/mqtt-bus'
 
 export class MultistateValueNode extends BaseBacnetNode {

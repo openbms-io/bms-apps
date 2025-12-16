@@ -14,7 +14,7 @@ class TestTimeInitialization:
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
 
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         assert fmu_adapter.get_current_time(instance_id) == 0.0
 
@@ -26,9 +26,9 @@ class TestTimeAdvancement:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 60.0
 
@@ -37,11 +37,11 @@ class TestTimeAdvancement:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
-        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
-        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 180.0
 
@@ -50,11 +50,11 @@ class TestTimeAdvancement:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        await fmu_adapter.step(instance_id, fmu_data, step_size=30.0, sequence_type=SequenceType.REHEAT)
-        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
-        await fmu_adapter.step(instance_id, fmu_data, step_size=120.0, sequence_type=SequenceType.REHEAT)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=30.0, sequence_type=SequenceType.VAV_REHEAT)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=120.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 210.0
 
@@ -66,9 +66,9 @@ class TestStepSizes:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=1.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=1.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 1.0
         assert outputs is not None
@@ -78,9 +78,9 @@ class TestStepSizes:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 60.0
         assert outputs is not None
@@ -90,9 +90,9 @@ class TestStepSizes:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=300.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=300.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 300.0
         assert outputs is not None
@@ -102,9 +102,9 @@ class TestStepSizes:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=0.5, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=0.5, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 0.5
         assert outputs is not None
@@ -117,10 +117,10 @@ class TestLongSimulation:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(60):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 3600.0
         assert outputs is not None
@@ -130,10 +130,10 @@ class TestLongSimulation:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(100):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         damper = outputs[ReheatOutputVar.DAMPER_POSITION]
         valve = outputs[ReheatOutputVar.VALVE_POSITION]
@@ -149,16 +149,16 @@ class TestDynamicInputChanges:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(5):
-            await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         hot_inputs = base_inputs.model_copy(update={"zoneTemperature": 300.15})
         hot_data = ReheatFMUData(inputs=hot_inputs, parameters=base_parameters)
 
         for _ in range(5):
-            outputs = await fmu_adapter.step(instance_id, hot_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, hot_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 600.0
         assert outputs[ReheatOutputVar.DAMPER_POSITION] > 0.0
@@ -168,7 +168,7 @@ class TestDynamicInputChanges:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         hot_inputs = base_inputs.model_copy(update={"zoneTemperature": 300.15})
         cold_inputs = base_inputs.model_copy(update={"zoneTemperature": 290.15})
@@ -177,10 +177,10 @@ class TestDynamicInputChanges:
         cold_data = ReheatFMUData(inputs=cold_inputs, parameters=base_parameters)
 
         for _ in range(5):
-            await fmu_adapter.step(instance_id, hot_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            await fmu_adapter.step(instance_id, hot_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         for _ in range(5):
-            await fmu_adapter.step(instance_id, cold_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            await fmu_adapter.step(instance_id, cold_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert fmu_adapter.get_current_time(instance_id) == 600.0
 
@@ -192,9 +192,9 @@ class TestUpdateWithoutStep:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
         time_before = fmu_adapter.get_current_time(instance_id)
 
         new_inputs = base_inputs.model_copy(update={"zoneTemperature": 298.15})

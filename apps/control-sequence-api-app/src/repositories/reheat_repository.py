@@ -28,6 +28,12 @@ class ReheatRepository:
         """Create new instance with auto-generated ID. Returns created instance."""
         return await self._repo.create(parameters)
 
+    async def get_or_create(
+        self, instance_id: str, parameters: ReheatParameters
+    ) -> tuple[ReheatInstanceData, bool]:
+        """Get existing instance or create new one. Returns (instance, created)."""
+        return await self._repo.get_or_create(instance_id, parameters)
+
     async def save(self, instance_id: str, parameters: ReheatParameters) -> ReheatInstanceData:
         """Save/update instance. Deactivates existing, creates new record. Returns saved instance."""
         return await self._repo.save(instance_id, parameters)

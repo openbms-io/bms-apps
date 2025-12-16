@@ -92,6 +92,10 @@ export class TimerNode
     this.stateDidChange?.({ running: false, tickCount: 0 })
   }
 
+  async cleanup(): Promise<void> {
+    this.stop()
+  }
+
   getActiveOutputHandles(): readonly TimerOutputHandle[] {
     return this._isRunning ? (['output'] as const) : []
   }

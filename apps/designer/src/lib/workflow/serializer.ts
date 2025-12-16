@@ -18,6 +18,10 @@ import { type ScheduleNodeMetadata } from '@/lib/data-nodes/schedule-node'
 import { type BacnetConfig, NodeType } from '@/types/infrastructure'
 import { type SwitchNodeMetadata } from '@/lib/data-nodes/switch-node'
 import { MqttBusManager } from '@/lib/mqtt/mqtt-bus'
+import type {
+  ControlSequenceInputHandle,
+  ControlSequenceOutputHandle,
+} from '@/domains/control-sequence'
 
 export interface WorkflowMetadata {
   readonly lastModified: string
@@ -105,7 +109,7 @@ export function serializeWorkflow({
   } as VersionedWorkflowConfig
 }
 
-export function deserializeWorkflow({
+export async function deserializeWorkflow({
   versionedConfig,
   mqttBus,
   onDataChange,
@@ -113,22 +117,22 @@ export function deserializeWorkflow({
   readonly versionedConfig: VersionedWorkflowConfig
   mqttBus: MqttBusManager
   onDataChange: () => void
-}): DeserializedWorkflowState {
+}): Promise<DeserializedWorkflowState> {
   const { data } = versionedConfig
   const nodeFactory = createNodeFactory({ mqttBus, onDataChange })
 
-  const deserializedNodes: Node<Record<string, unknown>>[] = data.nodes.map(
-    (serializedNode) => {
+  const deserializedNodes: Node<Record<string, unknown>>[] = await Promise.all(
+    data.nodes.map(async (serializedNode) => {
       return {
         id: serializedNode.id,
         type: serializedNode.type,
         position: serializedNode.position,
-        data: nodeFactory(
+        data: (await nodeFactory(
           serializedNode.data.nodeType,
           serializedNode.data.serializedData
-        ) as Record<string, unknown>,
+        )) as Record<string, unknown>,
       }
-    }
+    })
   )
 
   return {
@@ -218,10 +222,10 @@ export function createNodeFactory({
   mqttBus: MqttBusManager
   onDataChange: () => void
 }) {
-  return function nodeFactory(
+  return async function nodeFactory(
     nodeType: NodeType,
     data: Record<string, unknown>
-  ): unknown {
+  ): Promise<unknown> {
     switch (nodeType) {
       // Logic nodes (enum string values)
       case 'constant':
@@ -304,6 +308,20 @@ export function createNodeFactory({
           onDataChange,
           id: data.id as string,
           semanticMappingKey: metadata.semanticMappingKey,
+        })
+      }
+      case 'g36-vav-reheat': {
+        const metadata = data.metadata as {
+          instanceId: string
+          visibleInputs: ControlSequenceInputHandle[]
+          visibleOutputs: ControlSequenceOutputHandle[]
+        }
+        return factory.createG36VavReheatNode({
+          instanceId: metadata.instanceId,
+          label: data.label as string,
+          visibleInputs: metadata.visibleInputs,
+          visibleOutputs: metadata.visibleOutputs,
+          id: data.id as string,
         })
       }
       default:

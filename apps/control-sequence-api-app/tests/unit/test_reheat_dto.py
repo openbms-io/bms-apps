@@ -4,10 +4,11 @@ import pytest
 from pydantic import ValidationError
 
 from src.dto.reheat_dto import (
-    ReheatInputsRequest,
+    ReheatInputsDTO,
+    ReheatOutputsDTO,
     StepRequest,
 )
-from src.models.reheat.enums import OperationMode
+from src.models.reheat.enums import OperationMode, OperationModeStr
 from src.models.reheat.inputs import ReheatInputs
 from src.models.reheat.outputs import ReheatOutputs
 from src.models.reheat.parameters import ReheatParameters
@@ -19,6 +20,9 @@ from src.utils.unit_conversion import (
     AirflowUnit,
     TemperatureUnit,
     airflow_in_m3_per_s,
+    kelvin_diff_to_unit,
+    m3_per_s_to_airflow,
+    temp_diff_in_kelvin,
     temp_in_kelvin,
 )
 
@@ -44,6 +48,45 @@ class TestTempInKelvin:
         assert temp_in_kelvin(212.0, TemperatureUnit.FAHRENHEIT) == 373.15
         result = temp_in_kelvin(71.6, TemperatureUnit.FAHRENHEIT)
         assert result == pytest.approx(295.15, rel=1e-2)
+
+
+class TestTempDiffInKelvin:
+    def test_kelvin_diff_unchanged(self) -> None:
+        assert temp_diff_in_kelvin(5.0, TemperatureUnit.KELVIN) == 5.0
+        assert temp_diff_in_kelvin(10.0, TemperatureUnit.KELVIN) == 10.0
+
+    def test_celsius_diff_unchanged(self) -> None:
+        assert temp_diff_in_kelvin(5.0, TemperatureUnit.CELSIUS) == 5.0
+        assert temp_diff_in_kelvin(10.0, TemperatureUnit.CELSIUS) == 10.0
+
+    def test_fahrenheit_diff_to_kelvin(self) -> None:
+        result = temp_diff_in_kelvin(9.0, TemperatureUnit.FAHRENHEIT)
+        assert result == pytest.approx(5.0, rel=1e-6)
+        result = temp_diff_in_kelvin(18.0, TemperatureUnit.FAHRENHEIT)
+        assert result == pytest.approx(10.0, rel=1e-6)
+
+
+class TestKelvinDiffToUnit:
+    def test_kelvin_diff_unchanged(self) -> None:
+        assert kelvin_diff_to_unit(5.0, TemperatureUnit.KELVIN) == 5.0
+        assert kelvin_diff_to_unit(10.0, TemperatureUnit.KELVIN) == 10.0
+
+    def test_kelvin_diff_to_celsius_unchanged(self) -> None:
+        assert kelvin_diff_to_unit(5.0, TemperatureUnit.CELSIUS) == 5.0
+        assert kelvin_diff_to_unit(10.0, TemperatureUnit.CELSIUS) == 10.0
+
+    def test_kelvin_diff_to_fahrenheit(self) -> None:
+        result = kelvin_diff_to_unit(5.0, TemperatureUnit.FAHRENHEIT)
+        assert result == pytest.approx(9.0, rel=1e-6)
+        result = kelvin_diff_to_unit(10.0, TemperatureUnit.FAHRENHEIT)
+        assert result == pytest.approx(18.0, rel=1e-6)
+
+    def test_roundtrip_conversion(self) -> None:
+        for unit in [TemperatureUnit.KELVIN, TemperatureUnit.CELSIUS, TemperatureUnit.FAHRENHEIT]:
+            original = 5.5
+            converted = temp_diff_in_kelvin(original, unit)
+            back = kelvin_diff_to_unit(converted, unit)
+            assert back == pytest.approx(original, rel=1e-6)
 
 
 class TestAirflowUnit:
@@ -75,6 +118,36 @@ class TestAirflowInM3PerS:
         assert result == pytest.approx(1.0, rel=1e-6)
         result = airflow_in_m3_per_s(1800.0, AirflowUnit.M3_PER_H)
         assert result == pytest.approx(0.5, rel=1e-6)
+
+
+class TestM3PerSToAirflow:
+    def test_m3_per_s_unchanged(self) -> None:
+        assert m3_per_s_to_airflow(0.5, AirflowUnit.M3_PER_S) == 0.5
+        assert m3_per_s_to_airflow(1.0, AirflowUnit.M3_PER_S) == 1.0
+
+    def test_m3_per_s_to_cfm(self) -> None:
+        result = m3_per_s_to_airflow(0.471947, AirflowUnit.CFM)
+        assert result == pytest.approx(1000.0, rel=1e-4)
+        result = m3_per_s_to_airflow(0.2359735, AirflowUnit.CFM)
+        assert result == pytest.approx(500.0, rel=1e-4)
+
+    def test_m3_per_s_to_l_per_s(self) -> None:
+        assert m3_per_s_to_airflow(1.0, AirflowUnit.L_PER_S) == 1000.0
+        assert m3_per_s_to_airflow(0.5, AirflowUnit.L_PER_S) == 500.0
+        assert m3_per_s_to_airflow(0.1, AirflowUnit.L_PER_S) == 100.0
+
+    def test_m3_per_s_to_m3_per_h(self) -> None:
+        result = m3_per_s_to_airflow(1.0, AirflowUnit.M3_PER_H)
+        assert result == pytest.approx(3600.0, rel=1e-6)
+        result = m3_per_s_to_airflow(0.5, AirflowUnit.M3_PER_H)
+        assert result == pytest.approx(1800.0, rel=1e-6)
+
+    def test_roundtrip_conversion(self) -> None:
+        for unit in [AirflowUnit.CFM, AirflowUnit.L_PER_S, AirflowUnit.M3_PER_H]:
+            original = 0.35
+            converted = m3_per_s_to_airflow(original, unit)
+            roundtrip = airflow_in_m3_per_s(converted, unit)
+            assert roundtrip == pytest.approx(original, rel=1e-6)
 
 
 class TestOperationMode:
@@ -136,9 +209,9 @@ class TestReheatParameters:
         assert params.minHeatingAirflow == 0
 
 
-class TestReheatInputsRequest:
+class TestReheatInputsDTO:
     @pytest.fixture
-    def valid_request_celsius(self) -> dict[str, Any]:
+    def valid_request(self) -> dict[str, Any]:
         return {
             "zoneTemperature": 22.0,
             "coolingSetpoint": 24.0,
@@ -148,129 +221,32 @@ class TestReheatInputsRequest:
             "supplyAirTemperature": 13.0,
             "supplyAirTemperatureSetpoint": 12.0,
             "fanStatus": True,
-            "operationMode": OperationMode.STANDBY,
+            "operationMode": OperationModeStr.STANDBY,
         }
 
-    def test_valid_request_default_celsius(
-        self, valid_request_celsius: dict[str, Any]
-    ) -> None:
-        request = ReheatInputsRequest(**valid_request_celsius)
-        assert request.zoneTemperature == 22.0
-        assert request.temperatureUnit == TemperatureUnit.CELSIUS
-        assert request.operationMode == OperationMode.STANDBY
+    def test_valid_request(self, valid_request: dict[str, Any]) -> None:
+        dto = ReheatInputsDTO(**valid_request)
+        assert dto.zoneTemperature == 22.0
+        assert dto.operationMode == OperationModeStr.STANDBY
 
-    def test_explicit_kelvin_unit(self) -> None:
-        request = ReheatInputsRequest(
-            temperatureUnit=TemperatureUnit.KELVIN,
-            zoneTemperature=295.15,
-            coolingSetpoint=297.15,
-            heatingSetpoint=293.15,
-            dischargeAirTemperature=289.15,
-            primaryAirflow=0.3,
-            supplyAirTemperature=286.15,
-            supplyAirTemperatureSetpoint=285.15,
-            fanStatus=True,
-            operationMode=OperationMode.STANDBY,
-        )
-        assert request.temperatureUnit == TemperatureUnit.KELVIN
-
-    def test_explicit_fahrenheit_unit(self) -> None:
-        request = ReheatInputsRequest(
-            temperatureUnit=TemperatureUnit.FAHRENHEIT,
-            zoneTemperature=71.6,
-            coolingSetpoint=75.2,
-            heatingSetpoint=68.0,
-            dischargeAirTemperature=60.8,
-            primaryAirflow=0.3,
-            supplyAirTemperature=55.4,
-            supplyAirTemperatureSetpoint=53.6,
-            fanStatus=True,
-            operationMode=OperationMode.STANDBY,
-        )
-        assert request.temperatureUnit == TemperatureUnit.FAHRENHEIT
-
-    def test_rejects_negative_airflow(
-        self, valid_request_celsius: dict[str, Any]
-    ) -> None:
-        valid_request_celsius["primaryAirflow"] = -0.1
+    def test_rejects_negative_airflow(self, valid_request: dict[str, Any]) -> None:
+        valid_request["primaryAirflow"] = -0.1
         with pytest.raises(ValidationError) as exc_info:
-            ReheatInputsRequest(**valid_request_celsius)
+            ReheatInputsDTO(**valid_request)
         assert "primaryAirflow" in str(exc_info.value)
 
     def test_rejects_invalid_operation_mode(
-        self, valid_request_celsius: dict[str, Any]
+        self, valid_request: dict[str, Any]
     ) -> None:
-        valid_request_celsius["operationMode"] = 0
+        valid_request["operationMode"] = 0
         with pytest.raises(ValidationError) as exc_info:
-            ReheatInputsRequest(**valid_request_celsius)
+            ReheatInputsDTO(**valid_request)
         assert "operationMode" in str(exc_info.value)
 
 
 class TestReheatInputs:
-    def test_valid_kelvin_inputs(self) -> None:
+    def test_valid_celsius_inputs(self) -> None:
         inputs = ReheatInputs(
-            zoneTemperature=295.15,
-            coolingSetpoint=297.15,
-            heatingSetpoint=293.15,
-            dischargeAirTemperature=289.15,
-            primaryAirflow=0.3,
-            supplyAirTemperature=286.15,
-            supplyAirTemperatureSetpoint=285.15,
-            fanStatus=True,
-            operationMode=OperationMode.STANDBY,
-        )
-        assert inputs.zoneTemperature == 295.15
-
-    def test_rejects_temperature_below_min(self) -> None:
-        with pytest.raises(ValidationError) as exc_info:
-            ReheatInputs(
-                zoneTemperature=200.0,
-                coolingSetpoint=297.15,
-                heatingSetpoint=293.15,
-                dischargeAirTemperature=289.15,
-                primaryAirflow=0.3,
-                supplyAirTemperature=286.15,
-                supplyAirTemperatureSetpoint=285.15,
-                fanStatus=True,
-                operationMode=OperationMode.STANDBY,
-            )
-        assert "zoneTemperature" in str(exc_info.value)
-
-    def test_rejects_temperature_above_max(self) -> None:
-        with pytest.raises(ValidationError) as exc_info:
-            ReheatInputs(
-                zoneTemperature=400.0,
-                coolingSetpoint=297.15,
-                heatingSetpoint=293.15,
-                dischargeAirTemperature=289.15,
-                primaryAirflow=0.3,
-                supplyAirTemperature=286.15,
-                supplyAirTemperatureSetpoint=285.15,
-                fanStatus=True,
-                operationMode=OperationMode.STANDBY,
-            )
-        assert "zoneTemperature" in str(exc_info.value)
-
-    def test_boundary_values(self) -> None:
-        inputs = ReheatInputs(
-            zoneTemperature=250.0,
-            coolingSetpoint=350.0,
-            heatingSetpoint=250.0,
-            dischargeAirTemperature=350.0,
-            primaryAirflow=0.0,
-            supplyAirTemperature=250.0,
-            supplyAirTemperatureSetpoint=350.0,
-            fanStatus=False,
-            operationMode=OperationMode.OCCUPIED,
-        )
-        assert inputs.zoneTemperature == 250.0
-        assert inputs.coolingSetpoint == 350.0
-
-
-class TestReheatInputsFromRequest:
-    def test_celsius_to_kelvin_conversion(self) -> None:
-        request = ReheatInputsRequest(
-            temperatureUnit=TemperatureUnit.CELSIUS,
             zoneTemperature=22.0,
             coolingSetpoint=24.0,
             heatingSetpoint=20.0,
@@ -281,100 +257,46 @@ class TestReheatInputsFromRequest:
             fanStatus=True,
             operationMode=OperationMode.STANDBY,
         )
-        inputs = request.to_domain()
-        assert inputs.zoneTemperature == 22.0 + CELSIUS_TO_KELVIN_OFFSET
-        assert inputs.coolingSetpoint == 24.0 + CELSIUS_TO_KELVIN_OFFSET
+        assert inputs.zoneTemperature == 22.0
+
+    def test_accepts_any_temperature_value(self) -> None:
+        inputs = ReheatInputs(
+            zoneTemperature=-50.0,
+            coolingSetpoint=100.0,
+            heatingSetpoint=-30.0,
+            dischargeAirTemperature=80.0,
+            primaryAirflow=0.3,
+            supplyAirTemperature=-20.0,
+            supplyAirTemperatureSetpoint=90.0,
+            fanStatus=True,
+            operationMode=OperationMode.STANDBY,
+        )
+        assert inputs.zoneTemperature == -50.0
+        assert inputs.coolingSetpoint == 100.0
+
+
+class TestReheatInputsDTOToDomain:
+    def test_to_domain_passes_values_as_is(self) -> None:
+        dto = ReheatInputsDTO(
+            zoneTemperature=22.0,
+            coolingSetpoint=24.0,
+            heatingSetpoint=20.0,
+            dischargeAirTemperature=16.0,
+            primaryAirflow=0.3,
+            supplyAirTemperature=13.0,
+            supplyAirTemperatureSetpoint=12.0,
+            fanStatus=True,
+            operationMode=OperationModeStr.STANDBY,
+        )
+        inputs = dto.to_domain()
+        assert inputs.zoneTemperature == 22.0
+        assert inputs.coolingSetpoint == 24.0
         assert inputs.primaryAirflow == 0.3
         assert inputs.fanStatus is True
         assert inputs.operationMode == OperationMode.STANDBY
 
-    def test_fahrenheit_to_kelvin_conversion(self) -> None:
-        request = ReheatInputsRequest(
-            temperatureUnit=TemperatureUnit.FAHRENHEIT,
-            zoneTemperature=71.6,
-            coolingSetpoint=75.2,
-            heatingSetpoint=68.0,
-            dischargeAirTemperature=60.8,
-            primaryAirflow=0.3,
-            supplyAirTemperature=55.4,
-            supplyAirTemperatureSetpoint=53.6,
-            fanStatus=True,
-            operationMode=OperationMode.STANDBY,
-        )
-        inputs = request.to_domain()
-        assert inputs.zoneTemperature == pytest.approx(295.15, rel=1e-2)
-
-    def test_kelvin_passthrough(self) -> None:
-        request = ReheatInputsRequest(
-            temperatureUnit=TemperatureUnit.KELVIN,
-            zoneTemperature=295.15,
-            coolingSetpoint=297.15,
-            heatingSetpoint=293.15,
-            dischargeAirTemperature=289.15,
-            primaryAirflow=0.3,
-            supplyAirTemperature=286.15,
-            supplyAirTemperatureSetpoint=285.15,
-            fanStatus=True,
-            operationMode=OperationMode.STANDBY,
-        )
-        inputs = request.to_domain()
-        assert inputs.zoneTemperature == 295.15
-
-    def test_rejects_out_of_range_after_conversion(self) -> None:
-        request = ReheatInputsRequest(
-            temperatureUnit=TemperatureUnit.CELSIUS,
-            zoneTemperature=-50.0,
-            coolingSetpoint=24.0,
-            heatingSetpoint=20.0,
-            dischargeAirTemperature=16.0,
-            primaryAirflow=0.3,
-            supplyAirTemperature=13.0,
-            supplyAirTemperatureSetpoint=12.0,
-            fanStatus=True,
-            operationMode=OperationMode.STANDBY,
-        )
-        with pytest.raises(ValidationError) as exc_info:
-            request.to_domain()
-        assert "zoneTemperature" in str(exc_info.value)
-
-    def test_cfm_to_m3_per_s_conversion(self) -> None:
-        request = ReheatInputsRequest(
-            temperatureUnit=TemperatureUnit.CELSIUS,
-            airflowUnit=AirflowUnit.CFM,
-            zoneTemperature=22.0,
-            coolingSetpoint=24.0,
-            heatingSetpoint=20.0,
-            dischargeAirTemperature=16.0,
-            primaryAirflow=1000.0,
-            supplyAirTemperature=13.0,
-            supplyAirTemperatureSetpoint=12.0,
-            fanStatus=True,
-            operationMode=OperationMode.STANDBY,
-        )
-        inputs = request.to_domain()
-        assert inputs.primaryAirflow == pytest.approx(0.471947, rel=1e-4)
-
-    def test_l_per_s_to_m3_per_s_conversion(self) -> None:
-        request = ReheatInputsRequest(
-            temperatureUnit=TemperatureUnit.CELSIUS,
-            airflowUnit=AirflowUnit.L_PER_S,
-            zoneTemperature=22.0,
-            coolingSetpoint=24.0,
-            heatingSetpoint=20.0,
-            dischargeAirTemperature=16.0,
-            primaryAirflow=500.0,
-            supplyAirTemperature=13.0,
-            supplyAirTemperatureSetpoint=12.0,
-            fanStatus=True,
-            operationMode=OperationMode.STANDBY,
-        )
-        inputs = request.to_domain()
-        assert inputs.primaryAirflow == 0.5
-
-    def test_m3_per_s_passthrough(self) -> None:
-        request = ReheatInputsRequest(
-            temperatureUnit=TemperatureUnit.CELSIUS,
-            airflowUnit=AirflowUnit.M3_PER_S,
+    def test_to_domain_converts_operation_mode_string_to_int(self) -> None:
+        dto = ReheatInputsDTO(
             zoneTemperature=22.0,
             coolingSetpoint=24.0,
             heatingSetpoint=20.0,
@@ -383,10 +305,10 @@ class TestReheatInputsFromRequest:
             supplyAirTemperature=13.0,
             supplyAirTemperatureSetpoint=12.0,
             fanStatus=True,
-            operationMode=OperationMode.STANDBY,
+            operationMode=OperationModeStr.OCCUPIED,
         )
-        inputs = request.to_domain()
-        assert inputs.primaryAirflow == 0.3
+        inputs = dto.to_domain()
+        assert inputs.operationMode == OperationMode.OCCUPIED
 
 
 class TestReheatOutputs:
@@ -461,7 +383,7 @@ class TestReheatOutputs:
 
 class TestStepRequest:
     def test_valid_step_request(self) -> None:
-        inputs = ReheatInputsRequest(
+        inputs = ReheatInputsDTO(
             zoneTemperature=22.0,
             coolingSetpoint=24.0,
             heatingSetpoint=20.0,
@@ -470,14 +392,14 @@ class TestStepRequest:
             supplyAirTemperature=13.0,
             supplyAirTemperatureSetpoint=12.0,
             fanStatus=True,
-            operationMode=OperationMode.STANDBY,
+            operationMode=OperationModeStr.STANDBY,
         )
         request = StepRequest(stepSize=60.0, inputs=inputs)
         assert request.stepSize == 60.0
         assert request.inputs.zoneTemperature == 22.0
 
     def test_rejects_zero_step_size(self) -> None:
-        inputs = ReheatInputsRequest(
+        inputs = ReheatInputsDTO(
             zoneTemperature=22.0,
             coolingSetpoint=24.0,
             heatingSetpoint=20.0,
@@ -486,14 +408,14 @@ class TestStepRequest:
             supplyAirTemperature=13.0,
             supplyAirTemperatureSetpoint=12.0,
             fanStatus=True,
-            operationMode=OperationMode.STANDBY,
+            operationMode=OperationModeStr.STANDBY,
         )
         with pytest.raises(ValidationError) as exc_info:
             StepRequest(stepSize=0, inputs=inputs)
         assert "stepSize" in str(exc_info.value)
 
     def test_rejects_negative_step_size(self) -> None:
-        inputs = ReheatInputsRequest(
+        inputs = ReheatInputsDTO(
             zoneTemperature=22.0,
             coolingSetpoint=24.0,
             heatingSetpoint=20.0,
@@ -502,7 +424,7 @@ class TestStepRequest:
             supplyAirTemperature=13.0,
             supplyAirTemperatureSetpoint=12.0,
             fanStatus=True,
-            operationMode=OperationMode.STANDBY,
+            operationMode=OperationModeStr.STANDBY,
         )
         with pytest.raises(ValidationError) as exc_info:
             StepRequest(stepSize=-1.0, inputs=inputs)
@@ -512,7 +434,7 @@ class TestStepRequest:
         with pytest.raises(ValidationError):
             StepRequest(
                 stepSize=60.0,
-                inputs=ReheatInputsRequest(
+                inputs=ReheatInputsDTO(
                     zoneTemperature=22.0,
                     coolingSetpoint=24.0,
                     heatingSetpoint=20.0,
@@ -521,6 +443,110 @@ class TestStepRequest:
                     supplyAirTemperature=13.0,
                     supplyAirTemperatureSetpoint=12.0,
                     fanStatus=True,
-                    operationMode=OperationMode.STANDBY,
+                    operationMode=OperationModeStr.STANDBY,
                 ),
             )
+
+
+class TestReheatOutputsDTOFromDomain:
+    @pytest.fixture
+    def domain_outputs(self) -> ReheatOutputs:
+        return ReheatOutputs(
+            damperPosition=0.75,
+            valvePosition=0.25,
+            airflowSetpoint=0.35,
+            minOutdoorAirflow=0.1,
+            adjAreaBreathingZoneFlow=0.05,
+            adjPopBreathingZoneFlow=0.03,
+            flowSensorAlarm=0,
+            heatingValveRequest=1,
+            hotWaterPlantRequest=0,
+            leakingDamperAlarm=0,
+            leakingValveAlarm=0,
+            lowFlowAlarm=0,
+            lowTempAlarm=0,
+            zonePressureRequest=2,
+            zoneTempRequest=1,
+        )
+
+    def test_from_domain_with_m3_per_s_passes_values_unchanged(
+        self, domain_outputs: ReheatOutputs
+    ) -> None:
+        dto = ReheatOutputsDTO.from_domain(domain_outputs, AirflowUnit.M3_PER_S)
+
+        assert dto.damperPosition == 0.75
+        assert dto.valvePosition == 0.25
+        assert dto.airflowSetpoint == 0.35
+        assert dto.minOutdoorAirflow == 0.1
+        assert dto.adjAreaBreathingZoneFlow == 0.05
+        assert dto.adjPopBreathingZoneFlow == 0.03
+        assert dto.flowSensorAlarm == 0
+        assert dto.heatingValveRequest == 1
+
+    def test_from_domain_with_cfm_converts_airflow_values(
+        self, domain_outputs: ReheatOutputs
+    ) -> None:
+        dto = ReheatOutputsDTO.from_domain(domain_outputs, AirflowUnit.CFM)
+
+        expected_cfm = m3_per_s_to_airflow(0.35, AirflowUnit.CFM)
+        assert dto.airflowSetpoint == pytest.approx(expected_cfm, rel=1e-4)
+        assert dto.damperPosition == 0.75
+        assert dto.valvePosition == 0.25
+
+    def test_from_domain_with_l_per_s_converts_airflow_values(
+        self, domain_outputs: ReheatOutputs
+    ) -> None:
+        dto = ReheatOutputsDTO.from_domain(domain_outputs, AirflowUnit.L_PER_S)
+
+        assert dto.airflowSetpoint == pytest.approx(350.0, rel=1e-4)
+        assert dto.minOutdoorAirflow == pytest.approx(100.0, rel=1e-4)
+
+    def test_from_domain_with_m3_per_h_converts_airflow_values(
+        self, domain_outputs: ReheatOutputs
+    ) -> None:
+        dto = ReheatOutputsDTO.from_domain(domain_outputs, AirflowUnit.M3_PER_H)
+
+        assert dto.airflowSetpoint == pytest.approx(1260.0, rel=1e-4)
+        assert dto.minOutdoorAirflow == pytest.approx(360.0, rel=1e-4)
+
+    def test_from_domain_preserves_alarm_values(
+        self, domain_outputs: ReheatOutputs
+    ) -> None:
+        dto = ReheatOutputsDTO.from_domain(domain_outputs, AirflowUnit.CFM)
+
+        assert dto.flowSensorAlarm == 0
+        assert dto.heatingValveRequest == 1
+        assert dto.hotWaterPlantRequest == 0
+        assert dto.leakingDamperAlarm == 0
+        assert dto.leakingValveAlarm == 0
+        assert dto.lowFlowAlarm == 0
+        assert dto.lowTempAlarm == 0
+        assert dto.zonePressureRequest == 2
+        assert dto.zoneTempRequest == 1
+
+
+class TestReheatParametersUnitPreferences:
+    def test_default_temperature_unit_is_kelvin(self) -> None:
+        params = ReheatParameters()
+        assert params.temperatureUnit == TemperatureUnit.KELVIN
+
+    def test_default_airflow_unit_is_m3_per_s(self) -> None:
+        params = ReheatParameters()
+        assert params.airflowUnit == AirflowUnit.M3_PER_S
+
+    def test_custom_temperature_unit(self) -> None:
+        params = ReheatParameters(temperatureUnit=TemperatureUnit.FAHRENHEIT)
+        assert params.temperatureUnit == TemperatureUnit.FAHRENHEIT
+
+    def test_custom_airflow_unit(self) -> None:
+        params = ReheatParameters(airflowUnit=AirflowUnit.CFM)
+        assert params.airflowUnit == AirflowUnit.CFM
+
+    def test_kelvin_temperature_unit(self) -> None:
+        params = ReheatParameters(temperatureUnit=TemperatureUnit.KELVIN)
+        assert params.temperatureUnit == TemperatureUnit.KELVIN
+
+    def test_all_airflow_units_accepted(self) -> None:
+        for unit in AirflowUnit:
+            params = ReheatParameters(airflowUnit=unit)
+            assert params.airflowUnit == unit

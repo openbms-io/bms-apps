@@ -8,9 +8,11 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 
 from .adapters.fmu_adapter import FmuAdapter
+from .adapters.sequence_type import SequenceType
 from .config.settings import get_settings
 from .routers.g36_vav_reheat_router import router as g36_vav_reheat_router
 from .routers.health_router import router as health_router
+from .routers.parameters_router import router as parameters_router
 from .routers.validation_router import router as validation_router
 
 settings = get_settings()
@@ -20,12 +22,12 @@ settings = get_settings()
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("=== Application Startup ===")
 
-    reheat_path = settings.get_fmu_path("reheat")
-    if reheat_path is not None:
-        if not Path(reheat_path).exists():
-            logger.warning(f"FMU file not found at {reheat_path}")
+    vav_reheat_path = settings.get_fmu_path(SequenceType.VAV_REHEAT)
+    if vav_reheat_path is not None:
+        if not Path(vav_reheat_path).exists():
+            logger.warning(f"FMU file not found at {vav_reheat_path}")
         else:
-            logger.info(f"FMU file found at {reheat_path}")
+            logger.info(f"FMU file found at {vav_reheat_path}")
 
     FmuAdapter.get_instance()
     logger.info("FmuAdapter singleton initialized")
@@ -66,4 +68,5 @@ app.add_middleware(
 
 app.include_router(g36_vav_reheat_router)
 app.include_router(health_router)
+app.include_router(parameters_router)
 app.include_router(validation_router)

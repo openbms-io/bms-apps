@@ -4,6 +4,11 @@ import { MessageNode } from '@/lib/message-system/types'
 import { SerializableNode } from '@/lib/node-serializer'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
 import type { SemanticEquipment } from '@/domains/building-semantics'
+import type {
+  ControlSequenceInputHandle,
+  ControlSequenceOutputHandle,
+  SequenceType,
+} from '@/domains/control-sequence'
 
 // BACnet namespace for deterministic UUIDs
 export const BACNET_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
@@ -14,6 +19,7 @@ export enum NodeCategory {
   LOGIC = 'logic',
   COMMAND = 'command',
   CONTROL_FLOW = 'control-flow',
+  CONTROL_SEQUENCE = 'control-sequence',
 }
 
 // Centralized NodeType enum used by all node implementations
@@ -42,6 +48,9 @@ export enum NodeType {
 
   // Command node (1 type)
   WRITE_SETPOINT = 'write-setpoint',
+
+  // Control sequence nodes (G36)
+  G36_VAV_REHEAT = 'g36-vav-reheat',
 }
 
 // BACnet object types (bacpypes3/BAC0 naming)
@@ -80,11 +89,15 @@ export interface DataNode<
   canConnectWith(other: DataNode): boolean
   getInputHandles?(): readonly TInputHandle[]
   getOutputHandles?(): readonly TOutputHandle[]
+  cleanup?(): Promise<void>
 }
+
+// Message value primitive type used in message payloads
+export type MessageValue = string | number | boolean
 
 // Computation value types - what logic nodes can work with
 export type ComputeValue = {
-  value: string | number | boolean
+  value: MessageValue
   type: 'number' | 'boolean' | 'string'
 }
 
@@ -97,6 +110,12 @@ export interface LogicNode<
   getValue(): ComputeValue | undefined
   getInputValues?(): ComputeValue[] // Optional - for nodes that have inputs
   reset?(): void // Optional - only for nodes that compute
+}
+
+export interface ControlSequenceNode
+  extends DataNode<ControlSequenceInputHandle, ControlSequenceOutputHandle> {
+  readonly category: NodeCategory.CONTROL_SEQUENCE
+  readonly sequenceType: SequenceType
 }
 
 // Command node configuration
@@ -263,6 +282,10 @@ export function isCommandNode(node: DataNode): node is CommandNode {
 
 export function isBacnetNode(node: DataNode): node is BacnetInputOutput {
   return node.category === NodeCategory.BACNET
+}
+
+export function isControlSequenceNode(node: DataNode): boolean {
+  return node.category === NodeCategory.CONTROL_SEQUENCE
 }
 
 // Parse individual status flag from array [0, 0, 0, 0]

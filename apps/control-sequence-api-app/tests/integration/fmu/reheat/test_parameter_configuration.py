@@ -5,6 +5,8 @@ from src.adapters.fmu_data.reheat_fmu_data import ReheatFMUData, ReheatOutputVar
 from src.adapters.sequence_type import SequenceType
 from src.models.reheat.inputs import ReheatInputs
 from src.models.reheat.parameters import ReheatParameters
+from src.utils.unit_conversion import TemperatureUnit
+from tests.integration.fmu.reheat.conftest import make_kelvin_params
 
 
 class TestAirflowParameters:
@@ -13,11 +15,11 @@ class TestAirflowParameters:
     async def test_min_airflow_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(minAirflow=0.25)
+        params = make_kelvin_params(minAirflow=0.25)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -25,11 +27,11 @@ class TestAirflowParameters:
     async def test_max_cooling_airflow_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(maxCoolingAirflow=1.0)
+        params = make_kelvin_params(maxCoolingAirflow=1.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -37,11 +39,11 @@ class TestAirflowParameters:
     async def test_max_heating_airflow_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(maxHeatingAirflow=0.8)
+        params = make_kelvin_params(maxHeatingAirflow=0.8)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -49,11 +51,11 @@ class TestAirflowParameters:
     async def test_min_heating_airflow_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(minHeatingAirflow=0.2)
+        params = make_kelvin_params(minHeatingAirflow=0.2)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -61,11 +63,11 @@ class TestAirflowParameters:
     async def test_area_breathing_zone_flow_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(areaBreathingZoneFlow=0.01)
+        params = make_kelvin_params(areaBreathingZoneFlow=0.01)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -73,11 +75,11 @@ class TestAirflowParameters:
     async def test_area_min_flow_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(areaMinFlow=0.05)
+        params = make_kelvin_params(areaMinFlow=0.05)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -85,11 +87,11 @@ class TestAirflowParameters:
     async def test_occ_min_flow_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(occMinFlow=0.1)
+        params = make_kelvin_params(occMinFlow=0.1)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -97,11 +99,11 @@ class TestAirflowParameters:
     async def test_pop_breathing_zone_flow_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(popBreathingZoneFlow=0.008)
+        params = make_kelvin_params(popBreathingZoneFlow=0.008)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -109,7 +111,7 @@ class TestAirflowParameters:
     async def test_all_airflow_parameters_together(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(
+        params = make_kelvin_params(
             maxCoolingAirflow=1.0,
             maxHeatingAirflow=0.8,
             minHeatingAirflow=0.2,
@@ -119,9 +121,9 @@ class TestAirflowParameters:
             popBreathingZoneFlow=0.008,
         )
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -132,11 +134,11 @@ class TestTemperatureParameters:
     async def test_discharge_air_temp_min_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(dischargeAirTempMin=280.15)
+        params = make_kelvin_params(dischargeAirTempMin=280.15)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -144,11 +146,11 @@ class TestTemperatureParameters:
     async def test_max_discharge_temp_above_setpoint_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(maxDischargeTempAboveSetpoint=15.0)
+        params = make_kelvin_params(maxDischargeTempAboveSetpoint=15.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -156,11 +158,11 @@ class TestTemperatureParameters:
     async def test_threshold_discharge_temp_1_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(thresholdDischargeTemp1=20.0)
+        params = make_kelvin_params(thresholdDischargeTemp1=20.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -168,11 +170,11 @@ class TestTemperatureParameters:
     async def test_threshold_discharge_temp_2_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(thresholdDischargeTemp2=10.0)
+        params = make_kelvin_params(thresholdDischargeTemp2=10.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -180,11 +182,11 @@ class TestTemperatureParameters:
     async def test_threshold_temp_diff_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(thresholdTempDiff=4.0)
+        params = make_kelvin_params(thresholdTempDiff=4.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -192,11 +194,11 @@ class TestTemperatureParameters:
     async def test_two_temp_diff_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(twoTempDiff=2.5)
+        params = make_kelvin_params(twoTempDiff=2.5)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -207,11 +209,11 @@ class TestControllerGainParameters:
     async def test_cooling_controller_gain_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(coolingControllerGain=0.2)
+        params = make_kelvin_params(coolingControllerGain=0.2)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -219,11 +221,11 @@ class TestControllerGainParameters:
     async def test_heating_controller_gain_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(heatingControllerGain=0.2)
+        params = make_kelvin_params(heatingControllerGain=0.2)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -231,11 +233,11 @@ class TestControllerGainParameters:
     async def test_damper_controller_gain_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(damperControllerGain=0.8)
+        params = make_kelvin_params(damperControllerGain=0.8)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -243,11 +245,11 @@ class TestControllerGainParameters:
     async def test_valve_controller_gain_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(valveControllerGain=0.8)
+        params = make_kelvin_params(valveControllerGain=0.8)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -258,11 +260,11 @@ class TestControllerTimeConstantParameters:
     async def test_damper_derivative_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(damperDerivativeTime=0.2)
+        params = make_kelvin_params(damperDerivativeTime=0.2)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -270,11 +272,11 @@ class TestControllerTimeConstantParameters:
     async def test_valve_derivative_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(valveDerivativeTime=0.2)
+        params = make_kelvin_params(valveDerivativeTime=0.2)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -282,11 +284,11 @@ class TestControllerTimeConstantParameters:
     async def test_cooling_integrator_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(coolingIntegratorTime=180.0)
+        params = make_kelvin_params(coolingIntegratorTime=180.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -294,11 +296,11 @@ class TestControllerTimeConstantParameters:
     async def test_damper_integrator_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(damperIntegratorTime=400.0)
+        params = make_kelvin_params(damperIntegratorTime=400.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -306,11 +308,11 @@ class TestControllerTimeConstantParameters:
     async def test_heating_integrator_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(heatingIntegratorTime=180.0)
+        params = make_kelvin_params(heatingIntegratorTime=180.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -318,11 +320,11 @@ class TestControllerTimeConstantParameters:
     async def test_valve_integrator_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(valveIntegratorTime=400.0)
+        params = make_kelvin_params(valveIntegratorTime=400.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -333,11 +335,11 @@ class TestTimingParameters:
     async def test_change_rate_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(changeRate=600.0)
+        params = make_kelvin_params(changeRate=600.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -345,11 +347,11 @@ class TestTimingParameters:
     async def test_duration_discharge_air_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(durationDischargeAir=360.0)
+        params = make_kelvin_params(durationDischargeAir=360.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -357,11 +359,11 @@ class TestTimingParameters:
     async def test_duration_flow_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(durationFlow=90.0)
+        params = make_kelvin_params(durationFlow=90.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -369,11 +371,11 @@ class TestTimingParameters:
     async def test_duration_temp_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(durationTemp=180.0)
+        params = make_kelvin_params(durationTemp=180.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -381,11 +383,11 @@ class TestTimingParameters:
     async def test_max_suppression_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(maxSuppressionTime=2400.0)
+        params = make_kelvin_params(maxSuppressionTime=2400.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -393,11 +395,11 @@ class TestTimingParameters:
     async def test_sample_period_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(samplePeriod=180.0)
+        params = make_kelvin_params(samplePeriod=180.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -408,11 +410,11 @@ class TestAlarmTimingParameters:
     async def test_fan_off_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(fanOffTime=900.0)
+        params = make_kelvin_params(fanOffTime=900.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -420,11 +422,11 @@ class TestAlarmTimingParameters:
     async def test_leak_flow_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(leakFlowTime=900.0)
+        params = make_kelvin_params(leakFlowTime=900.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -432,11 +434,11 @@ class TestAlarmTimingParameters:
     async def test_low_flow_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(lowFlowTime=600.0)
+        params = make_kelvin_params(lowFlowTime=600.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -444,11 +446,11 @@ class TestAlarmTimingParameters:
     async def test_low_temp_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(lowTempTime=900.0)
+        params = make_kelvin_params(lowTempTime=900.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -456,11 +458,11 @@ class TestAlarmTimingParameters:
     async def test_valve_close_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(valveCloseTime=1200.0)
+        params = make_kelvin_params(valveCloseTime=1200.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -468,11 +470,11 @@ class TestAlarmTimingParameters:
     async def test_time_check_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(timeCheck=60.0)
+        params = make_kelvin_params(timeCheck=60.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -480,11 +482,11 @@ class TestAlarmTimingParameters:
     async def test_startup_time_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(startupTime=2400.0)
+        params = make_kelvin_params(startupTime=2400.0)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -495,11 +497,11 @@ class TestMultiplierParameters:
     async def test_hot_water_reset_multiplier_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(hotWaterResetMultiplier=1.5)
+        params = make_kelvin_params(hotWaterResetMultiplier=1.5)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -507,11 +509,11 @@ class TestMultiplierParameters:
     async def test_static_pressure_multiplier_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(staticPressureMultiplier=1.5)
+        params = make_kelvin_params(staticPressureMultiplier=1.5)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -522,11 +524,11 @@ class TestZoneDistributionParameters:
     async def test_zone_dist_eff_cooling_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(zoneDistEffCooling=1.2)
+        params = make_kelvin_params(zoneDistEffCooling=1.2)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -534,11 +536,11 @@ class TestZoneDistributionParameters:
     async def test_zone_dist_eff_heating_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(zoneDistEffHeating=0.9)
+        params = make_kelvin_params(zoneDistEffHeating=0.9)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -549,11 +551,11 @@ class TestInitialValueParameters:
     async def test_initial_damper_position_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(initialDamperPosition=0.1)
+        params = make_kelvin_params(initialDamperPosition=0.1)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -564,11 +566,11 @@ class TestSensorConfigurationParameters:
     async def test_has_co2_sensor_true_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(hasCO2Sensor=True)
+        params = make_kelvin_params(hasCO2Sensor=True)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -576,11 +578,11 @@ class TestSensorConfigurationParameters:
     async def test_has_co2_sensor_false_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(hasCO2Sensor=False)
+        params = make_kelvin_params(hasCO2Sensor=False)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -588,11 +590,11 @@ class TestSensorConfigurationParameters:
     async def test_has_hot_water_coil_true_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(hasHotWaterCoil=True)
+        params = make_kelvin_params(hasHotWaterCoil=True)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -600,11 +602,11 @@ class TestSensorConfigurationParameters:
     async def test_has_hot_water_coil_false_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(hasHotWaterCoil=False)
+        params = make_kelvin_params(hasHotWaterCoil=False)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -612,11 +614,11 @@ class TestSensorConfigurationParameters:
     async def test_has_occupancy_sensor_true_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(hasOccupancySensor=True)
+        params = make_kelvin_params(hasOccupancySensor=True)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -624,11 +626,11 @@ class TestSensorConfigurationParameters:
     async def test_has_occupancy_sensor_false_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(hasOccupancySensor=False)
+        params = make_kelvin_params(hasOccupancySensor=False)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -636,11 +638,11 @@ class TestSensorConfigurationParameters:
     async def test_has_window_sensor_true_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(hasWindowSensor=True)
+        params = make_kelvin_params(hasWindowSensor=True)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -648,11 +650,11 @@ class TestSensorConfigurationParameters:
     async def test_has_window_sensor_false_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(hasWindowSensor=False)
+        params = make_kelvin_params(hasWindowSensor=False)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -660,11 +662,11 @@ class TestSensorConfigurationParameters:
     async def test_permit_occ_standby_true_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(permitOccStandby=True)
+        params = make_kelvin_params(permitOccStandby=True)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -672,11 +674,11 @@ class TestSensorConfigurationParameters:
     async def test_permit_occ_standby_false_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(permitOccStandby=False)
+        params = make_kelvin_params(permitOccStandby=False)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -688,11 +690,11 @@ class TestControllerTypeParameters:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
         from src.models.reheat.enums import ControllerType
-        params = ReheatParameters(controllerTypeDamper=ControllerType.P)
+        params = make_kelvin_params(controllerTypeDamper=ControllerType.P)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -701,11 +703,11 @@ class TestControllerTypeParameters:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
         from src.models.reheat.enums import ControllerType
-        params = ReheatParameters(controllerTypeDamper=ControllerType.PI)
+        params = make_kelvin_params(controllerTypeDamper=ControllerType.PI)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -714,11 +716,11 @@ class TestControllerTypeParameters:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
         from src.models.reheat.enums import ControllerType
-        params = ReheatParameters(controllerTypeDamper=ControllerType.PID)
+        params = make_kelvin_params(controllerTypeDamper=ControllerType.PID)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -727,11 +729,11 @@ class TestControllerTypeParameters:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
         from src.models.reheat.enums import ControllerType
-        params = ReheatParameters(controllerTypeValve=ControllerType.P)
+        params = make_kelvin_params(controllerTypeValve=ControllerType.P)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -740,11 +742,11 @@ class TestControllerTypeParameters:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
         from src.models.reheat.enums import ControllerType
-        params = ReheatParameters(controllerTypeValve=ControllerType.PI)
+        params = make_kelvin_params(controllerTypeValve=ControllerType.PI)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -753,11 +755,11 @@ class TestControllerTypeParameters:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
         from src.models.reheat.enums import ControllerType
-        params = ReheatParameters(controllerTypeValve=ControllerType.PID)
+        params = make_kelvin_params(controllerTypeValve=ControllerType.PID)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -769,11 +771,11 @@ class TestVentilationStandardParameters:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
         from src.models.reheat.enums import VentilationStandard
-        params = ReheatParameters(ventilationStandard=VentilationStandard.ASHRAE62_1)
+        params = make_kelvin_params(ventilationStandard=VentilationStandard.ASHRAE62_1)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -782,11 +784,11 @@ class TestVentilationStandardParameters:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
         from src.models.reheat.enums import VentilationStandard
-        params = ReheatParameters(ventilationStandard=VentilationStandard.CALIFORNIA_TITLE_24)
+        params = make_kelvin_params(ventilationStandard=VentilationStandard.CALIFORNIA_TITLE_24)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -797,11 +799,11 @@ class TestHysteresisParameters:
     async def test_temp_hysteresis_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(tempHysteresis=0.5)
+        params = make_kelvin_params(tempHysteresis=0.5)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -809,11 +811,11 @@ class TestHysteresisParameters:
     async def test_loop_hysteresis_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(loopHysteresis=0.02)
+        params = make_kelvin_params(loopHysteresis=0.02)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -821,11 +823,11 @@ class TestHysteresisParameters:
     async def test_flow_hysteresis_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(flowHysteresis=0.005)
+        params = make_kelvin_params(flowHysteresis=0.005)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -833,11 +835,11 @@ class TestHysteresisParameters:
     async def test_damper_position_hysteresis_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(damperPositionHysteresis=0.01)
+        params = make_kelvin_params(damperPositionHysteresis=0.01)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -845,11 +847,11 @@ class TestHysteresisParameters:
     async def test_valve_position_hysteresis_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(valvePositionHysteresis=0.01)
+        params = make_kelvin_params(valvePositionHysteresis=0.01)
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
 
@@ -858,25 +860,12 @@ class TestDefaultParameters:
 
     @pytest.mark.asyncio
     async def test_default_parameters_work(
-        self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
+        self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
-        params = ReheatParameters()
-        fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
-
-        assert outputs is not None
-        assert ReheatOutputVar.DAMPER_POSITION in outputs
-
-    @pytest.mark.asyncio
-    async def test_no_parameters_work(
-        self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
-    ):
-        fmu_data = ReheatFMUData(inputs=base_inputs, parameters=None)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
         assert ReheatOutputVar.DAMPER_POSITION in outputs
@@ -888,7 +877,7 @@ class TestAllParametersTogether:
     async def test_all_55_parameters_accepted(
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
     ):
-        params = ReheatParameters(
+        params = make_kelvin_params(
             # Airflow parameters (8)
             minAirflow=0.25,
             maxCoolingAirflow=1.0,
@@ -956,9 +945,9 @@ class TestAllParametersTogether:
             valvePositionHysteresis=0.01,
         )
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs is not None
         assert ReheatOutputVar.DAMPER_POSITION in outputs

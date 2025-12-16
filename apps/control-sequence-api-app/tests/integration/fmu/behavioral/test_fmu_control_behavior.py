@@ -19,10 +19,10 @@ class TestCoolingBehavior:
             "coolingSetpoint": 297.15,
         })
         fmu_data = ReheatFMUData(inputs=hot_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(10):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.DAMPER_POSITION] > 0.1
 
@@ -42,12 +42,12 @@ class TestCoolingBehavior:
         small_data = ReheatFMUData(inputs=small_error_inputs, parameters=base_parameters)
         large_data = ReheatFMUData(inputs=large_error_inputs, parameters=base_parameters)
 
-        id_small = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, small_data)
-        id_large = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, large_data)
+        id_small = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, small_data)
+        id_large = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, large_data)
 
         for _ in range(10):
-            outputs_small = await fmu_adapter.step(id_small, small_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
-            outputs_large = await fmu_adapter.step(id_large, large_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs_small = await fmu_adapter.step(id_small, small_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
+            outputs_large = await fmu_adapter.step(id_large, large_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs_large[ReheatOutputVar.DAMPER_POSITION] > outputs_small[ReheatOutputVar.DAMPER_POSITION]
 
@@ -60,10 +60,10 @@ class TestCoolingBehavior:
             "coolingSetpoint": 297.15,
         })
         fmu_data = ReheatFMUData(inputs=hot_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(10):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.VALVE_POSITION] == pytest.approx(0.0, abs=0.01)
 
@@ -79,10 +79,10 @@ class TestHeatingBehavior:
             "heatingSetpoint": 293.15,
         })
         fmu_data = ReheatFMUData(inputs=cold_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(10):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.VALVE_POSITION] > 0.1
 
@@ -102,12 +102,12 @@ class TestHeatingBehavior:
         small_data = ReheatFMUData(inputs=small_error_inputs, parameters=base_parameters)
         large_data = ReheatFMUData(inputs=large_error_inputs, parameters=base_parameters)
 
-        id_small = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, small_data)
-        id_large = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, large_data)
+        id_small = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, small_data)
+        id_large = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, large_data)
 
         for _ in range(10):
-            outputs_small = await fmu_adapter.step(id_small, small_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
-            outputs_large = await fmu_adapter.step(id_large, large_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs_small = await fmu_adapter.step(id_small, small_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
+            outputs_large = await fmu_adapter.step(id_large, large_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs_large[ReheatOutputVar.VALVE_POSITION] >= outputs_small[ReheatOutputVar.VALVE_POSITION]
 
@@ -124,10 +124,10 @@ class TestDeadbandBehavior:
             "heatingSetpoint": 293.15,
         })
         fmu_data = ReheatFMUData(inputs=comfort_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(10):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.VALVE_POSITION] < 0.1
 
@@ -140,9 +140,9 @@ class TestFanStatusBehavior:
     ):
         fan_off_inputs = base_inputs.model_copy(update={"fanStatus": False})
         fmu_data = ReheatFMUData(inputs=fan_off_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
-        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.DAMPER_POSITION] == pytest.approx(0.0, abs=0.05)
 
@@ -155,10 +155,10 @@ class TestFanStatusBehavior:
             "fanStatus": True,
         })
         fmu_data = ReheatFMUData(inputs=hot_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(10):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.DAMPER_POSITION] > 0.0
 
@@ -174,10 +174,10 @@ class TestOperationModes:
             "zoneTemperature": 300.15,
         })
         fmu_data = ReheatFMUData(inputs=occupied_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(10):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.DAMPER_POSITION] > 0.0
 
@@ -195,12 +195,12 @@ class TestOperationModes:
         occupied_data = ReheatFMUData(inputs=occupied_inputs, parameters=base_parameters)
         unoccupied_data = ReheatFMUData(inputs=unoccupied_inputs, parameters=base_parameters)
 
-        id_occ = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, occupied_data)
-        id_unocc = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, unoccupied_data)
+        id_occ = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, occupied_data)
+        id_unocc = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, unoccupied_data)
 
         for _ in range(10):
-            outputs_occ = await fmu_adapter.step(id_occ, occupied_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
-            outputs_unocc = await fmu_adapter.step(id_unocc, unoccupied_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs_occ = await fmu_adapter.step(id_occ, occupied_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
+            outputs_unocc = await fmu_adapter.step(id_unocc, unoccupied_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs_unocc[ReheatOutputVar.AIRFLOW_SETPOINT] <= outputs_occ[ReheatOutputVar.AIRFLOW_SETPOINT]
 
@@ -213,10 +213,10 @@ class TestOutputBounds:
     ):
         extreme_hot_inputs = base_inputs.model_copy(update={"zoneTemperature": 310.15})
         fmu_data = ReheatFMUData(inputs=extreme_hot_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(20):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.DAMPER_POSITION] <= 1.0
 
@@ -225,10 +225,10 @@ class TestOutputBounds:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(20):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.DAMPER_POSITION] >= 0.0
 
@@ -238,10 +238,10 @@ class TestOutputBounds:
     ):
         extreme_cold_inputs = base_inputs.model_copy(update={"zoneTemperature": 280.15})
         fmu_data = ReheatFMUData(inputs=extreme_cold_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(20):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.VALVE_POSITION] <= 1.0
 
@@ -250,10 +250,10 @@ class TestOutputBounds:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(20):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.VALVE_POSITION] >= 0.0
 
@@ -262,16 +262,16 @@ class TestAirflowSetpoint:
 
     @pytest.mark.asyncio
     async def test_airflow_setpoint_respects_max_cooling(
-        self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs
+        self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         max_flow = 0.8
-        params = ReheatParameters(maxCoolingAirflow=max_flow)
+        params = base_parameters.model_copy(update={"maxCoolingAirflow": max_flow})
         hot_inputs = base_inputs.model_copy(update={"zoneTemperature": 305.15})
         fmu_data = ReheatFMUData(inputs=hot_inputs, parameters=params)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(20):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.AIRFLOW_SETPOINT] <= max_flow + 0.01
 
@@ -280,10 +280,10 @@ class TestAirflowSetpoint:
         self, fmu_adapter: FmuAdapter, base_inputs: ReheatInputs, base_parameters: ReheatParameters
     ):
         fmu_data = ReheatFMUData(inputs=base_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(10):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.AIRFLOW_SETPOINT] >= 0.0
 
@@ -300,9 +300,9 @@ class TestHeatingOffSignal:
             "heatingOff": True,
         })
         fmu_data = ReheatFMUData(inputs=cold_heating_off_inputs, parameters=base_parameters)
-        instance_id = fmu_adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = fmu_adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         for _ in range(10):
-            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+            outputs = await fmu_adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
 
         assert outputs[ReheatOutputVar.VALVE_POSITION] == pytest.approx(0.0, abs=0.05)

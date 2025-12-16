@@ -55,13 +55,14 @@ development_status:
   1-14-shacl-validation-stub: done
   1-15-parameter-storage-instance-management: done
   1-16-api-documentation: done
-  1-17-designer-openapi-client: in-progress
-  1-18-unit-integration-tests: backlog
+  1-17-designer-openapi-client: done
+  1-18-unit-integration-tests: skipped # Tests already written alongside each story implementation
 
   # Phase 1B: Designer Integration
-  1b-1-g36-reheat-node-type-io-schema: backlog
-  1b-2-g36-reheat-block-ui-component: backlog
-  1b-3-g36-configuration-panel: backlog
+  1b-1-g36-reheat-node-type-io-schema: done
+  1b-2-g36-reheat-block-ui-component: done
+  1b-3-dto-layer-refactoring: done
+  1b-4-g36-configuration-panel: review
 
   epic-1-retrospective: optional
 

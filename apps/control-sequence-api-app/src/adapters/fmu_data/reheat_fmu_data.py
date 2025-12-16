@@ -3,12 +3,24 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
-from src.adapters.exceptions import FmuExecutionError
+from src.adapters.exceptions import FmuExecutionError, FmuValidationError
 from src.adapters.fmu_data.base import FmuDataType, FmuVariable, OutputSpec
 from src.models.reheat.inputs import ReheatInputs
 from src.models.reheat.calculated_parameters import ReheatCalculatedParameters
 from src.models.reheat.outputs import ReheatOutputs
 from src.models.reheat.parameters import ReheatParameters
+from src.dto.reheat_constants import (
+    REHEAT_AIRFLOW_PARAMS,
+    REHEAT_TEMP_DIFF_PARAMS,
+    REHEAT_TEMPERATURE_PARAMS,
+    ReheatParameterName,
+)
+from src.utils.unit_conversion import (
+    airflow_in_m3_per_s,
+    get_temperature_bounds,
+    temp_diff_in_kelvin,
+    temp_in_kelvin,
+)
 
 
 class ReheatInputVar(StrEnum):
@@ -160,17 +172,71 @@ class ReheatCalcParamVar(StrEnum):
     VENTILATION_STANDARD = "venStd"
 
 
+INPUT_TEMPERATURE_FIELDS = (
+    "zoneTemperature",
+    "coolingSetpoint",
+    "heatingSetpoint",
+    "dischargeAirTemperature",
+    "supplyAirTemperature",
+    "supplyAirTemperatureSetpoint",
+)
+
+PARAMETER_TEMPERATURE_FIELDS = (
+    "dischargeAirTempMin",
+)
+
+
 @dataclass(frozen=True, slots=True)
 class ReheatFMUData:
     """Immutable FMU data container for Reheat Terminal."""
 
     inputs: ReheatInputs
-    parameters: ReheatParameters | None = None
+    parameters: ReheatParameters
+
+    def __post_init__(self) -> None:
+        """Validate inputs against parameter unit preferences."""
+        self._validate_temperature_ranges()
+
+    def _validate_temperature_ranges(self) -> None:
+        temp_unit = self.parameters.temperatureUnit
+        min_temp, max_temp = get_temperature_bounds(temp_unit)
+
+        errors: list[str] = []
+        for field_name in INPUT_TEMPERATURE_FIELDS:
+            value = getattr(self.inputs, field_name)
+            if not (min_temp <= value <= max_temp):
+                errors.append(
+                    f"{field_name}={value} out of range for {temp_unit} "
+                    f"(expected {min_temp:.1f} to {max_temp:.1f})"
+                )
+
+        for field_name in PARAMETER_TEMPERATURE_FIELDS:
+            value = getattr(self.parameters, field_name)
+            if not (min_temp <= value <= max_temp):
+                errors.append(
+                    f"{field_name}={value} out of range for {temp_unit} "
+                    f"(expected {min_temp:.1f} to {max_temp:.1f})"
+                )
+
+        if errors:
+            raise FmuValidationError(
+                f"Temperature validation failed: {'; '.join(errors)}"
+            )
+
+    def _convert_param_value(self, param_name: str, value: float) -> float:
+        temp_unit = self.parameters.temperatureUnit
+        airflow_unit = self.parameters.airflowUnit
+
+        if param_name in REHEAT_TEMPERATURE_PARAMS:
+            return temp_in_kelvin(value, temp_unit)
+        if param_name in REHEAT_TEMP_DIFF_PARAMS:
+            return temp_diff_in_kelvin(value, temp_unit)
+        if param_name in REHEAT_AIRFLOW_PARAMS:
+            return airflow_in_m3_per_s(value, airflow_unit)
+        return value
 
     @property
     def configuration_variables(self) -> list[FmuVariable]:
-        if self.parameters is None:
-            return []
         p = self.parameters
         return [
             # Sensor configuration (Boolean)
@@ -183,38 +249,39 @@ class ReheatFMUData:
             FmuVariable(ReheatParameterVar.CONTROLLER_TYPE_DAMPER, int(p.controllerTypeDamper)),
             FmuVariable(ReheatParameterVar.CONTROLLER_TYPE_VALVE, int(p.controllerTypeValve)),
             FmuVariable(ReheatParameterVar.VENTILATION_STANDARD, int(p.ventilationStandard)),
-            # Airflow parameters
-            FmuVariable(ReheatParameterVar.MIN_AIRFLOW, float(p.minAirflow)),
-            FmuVariable(ReheatParameterVar.MAX_COOLING_AIRFLOW, float(p.maxCoolingAirflow)),
-            FmuVariable(ReheatParameterVar.MAX_HEATING_AIRFLOW, float(p.maxHeatingAirflow)),
-            FmuVariable(ReheatParameterVar.MIN_HEATING_AIRFLOW, float(p.minHeatingAirflow)),
-            FmuVariable(ReheatParameterVar.AREA_BREATHING_ZONE_FLOW, float(p.areaBreathingZoneFlow)),
-            FmuVariable(ReheatParameterVar.AREA_MIN_FLOW, float(p.areaMinFlow)),
-            FmuVariable(ReheatParameterVar.OCC_MIN_FLOW, float(p.occMinFlow)),
-            FmuVariable(ReheatParameterVar.POP_BREATHING_ZONE_FLOW, float(p.popBreathingZoneFlow)),
-            # Temperature parameters
-            FmuVariable(ReheatParameterVar.DISCHARGE_AIR_TEMP_MIN, float(p.dischargeAirTempMin)),
-            FmuVariable(ReheatParameterVar.MAX_DISCHARGE_TEMP_ABOVE_SETPOINT, float(p.maxDischargeTempAboveSetpoint)),
-            # Controller gains
+            # Airflow parameters - convert to m³/s
+            FmuVariable(ReheatParameterVar.MIN_AIRFLOW, self._convert_param_value(ReheatParameterName.MIN_AIRFLOW, p.minAirflow)),
+            FmuVariable(ReheatParameterVar.MAX_COOLING_AIRFLOW, self._convert_param_value(ReheatParameterName.MAX_COOLING_AIRFLOW, p.maxCoolingAirflow)),
+            FmuVariable(ReheatParameterVar.MAX_HEATING_AIRFLOW, self._convert_param_value(ReheatParameterName.MAX_HEATING_AIRFLOW, p.maxHeatingAirflow)),
+            FmuVariable(ReheatParameterVar.MIN_HEATING_AIRFLOW, self._convert_param_value(ReheatParameterName.MIN_HEATING_AIRFLOW, p.minHeatingAirflow)),
+            FmuVariable(ReheatParameterVar.AREA_BREATHING_ZONE_FLOW, self._convert_param_value(ReheatParameterName.AREA_BREATHING_ZONE_FLOW, p.areaBreathingZoneFlow)),
+            FmuVariable(ReheatParameterVar.AREA_MIN_FLOW, self._convert_param_value(ReheatParameterName.AREA_MIN_FLOW, p.areaMinFlow)),
+            FmuVariable(ReheatParameterVar.OCC_MIN_FLOW, self._convert_param_value(ReheatParameterName.OCC_MIN_FLOW, p.occMinFlow)),
+            FmuVariable(ReheatParameterVar.POP_BREATHING_ZONE_FLOW, self._convert_param_value(ReheatParameterName.POP_BREATHING_ZONE_FLOW, p.popBreathingZoneFlow)),
+            # Absolute temperature - convert to Kelvin
+            FmuVariable(ReheatParameterVar.DISCHARGE_AIR_TEMP_MIN, self._convert_param_value(ReheatParameterName.DISCHARGE_AIR_TEMP_MIN, p.dischargeAirTempMin)),
+            # Temperature difference - convert to Kelvin scale
+            FmuVariable(ReheatParameterVar.MAX_DISCHARGE_TEMP_ABOVE_SETPOINT, self._convert_param_value(ReheatParameterName.MAX_DISCHARGE_TEMP_ABOVE_SETPOINT, p.maxDischargeTempAboveSetpoint)),
+            # Controller gains (no conversion needed)
             FmuVariable(ReheatParameterVar.COOLING_CONTROLLER_GAIN, float(p.coolingControllerGain)),
             FmuVariable(ReheatParameterVar.HEATING_CONTROLLER_GAIN, float(p.heatingControllerGain)),
             FmuVariable(ReheatParameterVar.DAMPER_CONTROLLER_GAIN, float(p.damperControllerGain)),
             FmuVariable(ReheatParameterVar.VALVE_CONTROLLER_GAIN, float(p.valveControllerGain)),
-            # Controller time constants
+            # Controller time constants (no conversion needed)
             FmuVariable(ReheatParameterVar.DAMPER_DERIVATIVE_TIME, float(p.damperDerivativeTime)),
             FmuVariable(ReheatParameterVar.VALVE_DERIVATIVE_TIME, float(p.valveDerivativeTime)),
             FmuVariable(ReheatParameterVar.COOLING_INTEGRATOR_TIME, float(p.coolingIntegratorTime)),
             FmuVariable(ReheatParameterVar.DAMPER_INTEGRATOR_TIME, float(p.damperIntegratorTime)),
             FmuVariable(ReheatParameterVar.HEATING_INTEGRATOR_TIME, float(p.heatingIntegratorTime)),
             FmuVariable(ReheatParameterVar.VALVE_INTEGRATOR_TIME, float(p.valveIntegratorTime)),
-            # Duration/timing parameters
+            # Duration/timing parameters (no conversion needed)
             FmuVariable(ReheatParameterVar.CHANGE_RATE, float(p.changeRate)),
             FmuVariable(ReheatParameterVar.DURATION_DISCHARGE_AIR, float(p.durationDischargeAir)),
             FmuVariable(ReheatParameterVar.DURATION_FLOW, float(p.durationFlow)),
             FmuVariable(ReheatParameterVar.DURATION_TEMP, float(p.durationTemp)),
             FmuVariable(ReheatParameterVar.MAX_SUPPRESSION_TIME, float(p.maxSuppressionTime)),
             FmuVariable(ReheatParameterVar.SAMPLE_PERIOD, float(p.samplePeriod)),
-            # Alarm timing thresholds
+            # Alarm timing thresholds (no conversion needed)
             FmuVariable(ReheatParameterVar.FAN_OFF_TIME, float(p.fanOffTime)),
             FmuVariable(ReheatParameterVar.LEAK_FLOW_TIME, float(p.leakFlowTime)),
             FmuVariable(ReheatParameterVar.LOW_FLOW_TIME, float(p.lowFlowTime)),
@@ -222,23 +289,23 @@ class ReheatFMUData:
             FmuVariable(ReheatParameterVar.VALVE_CLOSE_TIME, float(p.valveCloseTime)),
             FmuVariable(ReheatParameterVar.TIME_CHECK, float(p.timeCheck)),
             FmuVariable(ReheatParameterVar.STARTUP_TIME, float(p.startupTime)),
-            # Temperature thresholds
-            FmuVariable(ReheatParameterVar.THRESHOLD_DISCHARGE_TEMP_1, float(p.thresholdDischargeTemp1)),
-            FmuVariable(ReheatParameterVar.THRESHOLD_DISCHARGE_TEMP_2, float(p.thresholdDischargeTemp2)),
-            FmuVariable(ReheatParameterVar.THRESHOLD_TEMP_DIFF, float(p.thresholdTempDiff)),
-            FmuVariable(ReheatParameterVar.TWO_TEMP_DIFF, float(p.twoTempDiff)),
-            # Importance multipliers
+            # Temperature difference thresholds - convert to Kelvin scale
+            FmuVariable(ReheatParameterVar.THRESHOLD_DISCHARGE_TEMP_1, self._convert_param_value(ReheatParameterName.THRESHOLD_DISCHARGE_TEMP_1, p.thresholdDischargeTemp1)),
+            FmuVariable(ReheatParameterVar.THRESHOLD_DISCHARGE_TEMP_2, self._convert_param_value(ReheatParameterName.THRESHOLD_DISCHARGE_TEMP_2, p.thresholdDischargeTemp2)),
+            FmuVariable(ReheatParameterVar.THRESHOLD_TEMP_DIFF, self._convert_param_value(ReheatParameterName.THRESHOLD_TEMP_DIFF, p.thresholdTempDiff)),
+            FmuVariable(ReheatParameterVar.TWO_TEMP_DIFF, self._convert_param_value(ReheatParameterName.TWO_TEMP_DIFF, p.twoTempDiff)),
+            # Importance multipliers (no conversion needed)
             FmuVariable(ReheatParameterVar.HOT_WATER_RESET_MULTIPLIER, float(p.hotWaterResetMultiplier)),
             FmuVariable(ReheatParameterVar.STATIC_PRESSURE_MULTIPLIER, float(p.staticPressureMultiplier)),
-            # Zone distribution effectiveness
+            # Zone distribution effectiveness (no conversion needed)
             FmuVariable(ReheatParameterVar.ZONE_DIST_EFF_COOL, float(p.zoneDistEffCooling)),
             FmuVariable(ReheatParameterVar.ZONE_DIST_EFF_HEAT, float(p.zoneDistEffHeating)),
-            # Initial values
+            # Initial values (no conversion needed)
             FmuVariable(ReheatParameterVar.INITIAL_DAMPER_POSITION, float(p.initialDamperPosition)),
-            # Hysteresis parameters (Advanced)
-            FmuVariable(ReheatParameterVar.TEMP_HYSTERESIS, float(p.tempHysteresis)),
+            # Hysteresis parameters - temp and flow need conversion
+            FmuVariable(ReheatParameterVar.TEMP_HYSTERESIS, self._convert_param_value(ReheatParameterName.TEMP_HYSTERESIS, p.tempHysteresis)),
             FmuVariable(ReheatParameterVar.LOOP_HYSTERESIS, float(p.loopHysteresis)),
-            FmuVariable(ReheatParameterVar.FLOW_HYSTERESIS, float(p.flowHysteresis)),
+            FmuVariable(ReheatParameterVar.FLOW_HYSTERESIS, self._convert_param_value(ReheatParameterName.FLOW_HYSTERESIS, p.flowHysteresis)),
             FmuVariable(ReheatParameterVar.DAMPER_POSITION_HYSTERESIS, float(p.damperPositionHysteresis)),
             FmuVariable(ReheatParameterVar.VALVE_POSITION_HYSTERESIS, float(p.valvePositionHysteresis)),
         ]
@@ -246,14 +313,16 @@ class ReheatFMUData:
     @property
     def input_variables(self) -> list[FmuVariable]:
         i = self.inputs
+        temp_unit = self.parameters.temperatureUnit
+        airflow_unit = self.parameters.airflowUnit
         return [
-            FmuVariable(ReheatInputVar.ZONE_TEMP, float(i.zoneTemperature)),
-            FmuVariable(ReheatInputVar.COOLING_SETPOINT, float(i.coolingSetpoint)),
-            FmuVariable(ReheatInputVar.HEATING_SETPOINT, float(i.heatingSetpoint)),
-            FmuVariable(ReheatInputVar.DISCHARGE_AIR_TEMP, float(i.dischargeAirTemperature)),
-            FmuVariable(ReheatInputVar.PRIMARY_AIRFLOW, float(i.primaryAirflow)),
-            FmuVariable(ReheatInputVar.SUPPLY_AIR_TEMP, float(i.supplyAirTemperature)),
-            FmuVariable(ReheatInputVar.SUPPLY_AIR_TEMP_SETPOINT, float(i.supplyAirTemperatureSetpoint)),
+            FmuVariable(ReheatInputVar.ZONE_TEMP, temp_in_kelvin(i.zoneTemperature, temp_unit)),
+            FmuVariable(ReheatInputVar.COOLING_SETPOINT, temp_in_kelvin(i.coolingSetpoint, temp_unit)),
+            FmuVariable(ReheatInputVar.HEATING_SETPOINT, temp_in_kelvin(i.heatingSetpoint, temp_unit)),
+            FmuVariable(ReheatInputVar.DISCHARGE_AIR_TEMP, temp_in_kelvin(i.dischargeAirTemperature, temp_unit)),
+            FmuVariable(ReheatInputVar.PRIMARY_AIRFLOW, airflow_in_m3_per_s(i.primaryAirflow, airflow_unit)),
+            FmuVariable(ReheatInputVar.SUPPLY_AIR_TEMP, temp_in_kelvin(i.supplyAirTemperature, temp_unit)),
+            FmuVariable(ReheatInputVar.SUPPLY_AIR_TEMP_SETPOINT, temp_in_kelvin(i.supplyAirTemperatureSetpoint, temp_unit)),
             FmuVariable(ReheatInputVar.CO2_CONCENTRATION, float(i.co2Concentration)),
             FmuVariable(ReheatInputVar.CO2_SETPOINT, float(i.co2Setpoint)),
             FmuVariable(ReheatInputVar.FAN_STATUS, bool(i.fanStatus)),

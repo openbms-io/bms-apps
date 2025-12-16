@@ -10,6 +10,7 @@ import { Plus, RefreshCw } from 'lucide-react'
 import { LogicNodesSection } from '@/components/sidebar/logic-nodes-section'
 import { ControlFlowSection } from '@/components/sidebar/control-flow-section'
 import { CommandNodesSection } from '@/components/sidebar/command-nodes-section'
+import { ControlSequencesSection } from '@/components/sidebar/control-sequences-section'
 import {
   useIotDeviceControllers,
   useDeleteIotDeviceController,
@@ -402,6 +403,7 @@ export function ControllersTreeContainer({
         <LogicNodesSection />
         <ControlFlowSection />
         <CommandNodesSection />
+        <ControlSequencesSection />
       </div>
 
       {project?.iotDeviceId && (

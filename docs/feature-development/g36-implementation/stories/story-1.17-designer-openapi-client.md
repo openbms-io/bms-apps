@@ -1,6 +1,6 @@
 # Story 1.17: Designer OpenAPI Client Generation
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -18,46 +18,46 @@ So that the Designer can consume the API with full type safety and auto-completi
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create control-sequence domain folder structure (AC: #3)
+- [x] Task 1: Create control-sequence domain folder structure (AC: #3)
 
-  - [ ] Create `apps/designer/src/domains/control-sequence/` directory
-  - [ ] Create subdirectories: `api/`, `api/types/`, `api/queries/`, `api/mutations/`
-  - [ ] Create `types.ts` for domain-specific types
-  - [ ] Create `index.ts` as domain public API (follow building-semantics pattern)
+  - [x] Create `apps/designer/src/domains/control-sequence/` directory
+  - [x] Create subdirectories: `api/`, `api/types/`, `api/queries/`, `api/mutations/`
+  - [x] Create `types.ts` for domain-specific types
+  - [x] Create `index.ts` as domain public API (follow building-semantics pattern)
 
-- [ ] Task 2: Configure openapi-ts generation script (AC: #1, #2, #5)
+- [x] Task 2: Configure openapi-ts generation script (AC: #1, #2, #5)
 
-  - [ ] Add `generate:control-sequence-client` script to `apps/designer/package.json`
-  - [ ] Configure to read from `http://localhost:8001/openapi.json`
-  - [ ] Configure output directory as `./src/domains/control-sequence/api/generated`
-  - [ ] Set client to `@hey-api/client-fetch`
-  - [ ] Add sed command to replace baseUrl with `/control-sequence` (nginx proxy route)
+  - [x] Add `generate:control-sequence-client` script to `apps/designer/package.json`
+  - [x] Configure to read from `http://localhost:8001/openapi.json`
+  - [x] Configure output directory as `./src/domains/control-sequence/api/generated`
+  - [x] Set client to `@hey-api/client-fetch`
+  - [x] Add sed command to replace baseUrl with `/control-sequence` (nginx proxy route)
 
-- [ ] Task 3: Generate TypeScript client (AC: #2, #3, #4)
+- [x] Task 3: Generate TypeScript client (AC: #2, #3, #4)
 
-  - [ ] Ensure Control Sequence API is running locally on port 8001
-  - [ ] Run `pnpm generate:control-sequence-client` from designer directory
-  - [ ] Verify generated folder structure matches building-semantics pattern
+  - [x] Ensure Control Sequence API is running locally on port 8001
+  - [x] Run `pnpm generate:control-sequence-client` from designer directory
+  - [x] Verify generated folder structure matches building-semantics pattern
 
-- [ ] Task 4: Create API config and exports (AC: #3, #5)
+- [x] Task 4: Create API config and exports (AC: #3, #5)
 
-  - [ ] Create `api/config.ts` with client configuration
-  - [ ] Create `api/index.ts` to export queries/mutations
-  - [ ] Create `api/types/index.ts` for custom type extensions
-  - [ ] Set baseUrl from environment variable or default to `/control-sequence`
+  - [x] Create `api/config.ts` with client configuration
+  - [x] Create `api/index.ts` to export queries/mutations
+  - [x] Create `api/types/index.ts` for custom type extensions
+  - [x] Set baseUrl from environment variable or default to `/control-sequence`
 
-- [ ] Task 5: Create domain index.ts with public exports (AC: #4)
+- [x] Task 5: Create domain index.ts with public exports (AC: #4)
 
-  - [ ] Export generated types from `api/generated/types.gen`
-  - [ ] Export client configuration
-  - [ ] Follow building-semantics/index.ts pattern for module organization
+  - [x] Export generated types from `api/generated/types.gen`
+  - [x] Export client configuration
+  - [x] Follow building-semantics/index.ts pattern for module organization
 
-- [ ] Task 6: Verify type alignment with Pydantic DTOs (AC: #4)
-  - [ ] Verify `ReheatParameters` type matches Python DTO fields
-  - [ ] Verify `ReheatInputsRequest` type matches Python DTO fields
-  - [ ] Verify `ReheatOutputs` type matches Python DTO fields
-  - [ ] Verify `StepRequest` and `StepResponse` types match Python DTOs
-  - [ ] Verify `ErrorResponse` type matches Python DTO
+- [x] Task 6: Verify type alignment with Pydantic DTOs (AC: #4)
+  - [x] Verify `ReheatParameters` type matches Python DTO fields
+  - [x] Verify `ReheatInputsRequest` type matches Python DTO fields
+  - [x] Verify `ReheatOutputs` type matches Python DTO fields
+  - [x] Verify `StepRequest` and `StepResponse` types match Python DTOs
+  - [x] Verify `ErrorResponse` type matches Python DTO
 
 ## Dev Notes
 
@@ -237,14 +237,39 @@ Control Sequence API exposed via nginx at `/control-sequence` (configured in Sto
 
 ### Agent Model Used
 
+Claude Opus 4.5
+
 ### Debug Log References
+
+N/A
 
 ### Completion Notes List
 
+- Generated TypeScript client from Control Sequence API OpenAPI spec
+- Created domain folder structure following building-semantics pattern
+- Added `generate:control-sequence-client` script to designer package.json
+- Client baseUrl correctly replaced to `/control-sequence` for nginx proxy
+- All 542 designer tests passing
+- Generated types match Pydantic DTOs: ReheatParameters (50+ fields), ReheatInputsRequest, ReheatOutputs, StepRequest, StepResponse, ErrorResponse, HealthResponse, ValidationRequest/Response
+
 ### File List
+
+**Created:**
+
+- `apps/designer/src/domains/control-sequence/index.ts`
+- `apps/designer/src/domains/control-sequence/types.ts`
+- `apps/designer/src/domains/control-sequence/api/config.ts`
+- `apps/designer/src/domains/control-sequence/api/index.ts`
+- `apps/designer/src/domains/control-sequence/api/types/index.ts`
+- `apps/designer/src/domains/control-sequence/api/generated/` (auto-generated by openapi-ts)
+
+**Modified:**
+
+- `apps/designer/package.json` - added `generate:control-sequence-client` script
 
 ## Change Log
 
-| Date       | Change                      |
-| ---------- | --------------------------- |
-| 2025-12-12 | Story drafted from epics.md |
+| Date       | Change                           |
+| ---------- | -------------------------------- |
+| 2025-12-12 | Story drafted from epics.md      |
+| 2025-12-12 | Story completed - all tasks done |

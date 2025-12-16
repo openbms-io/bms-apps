@@ -23,9 +23,10 @@ from src.adapters.exceptions import (
 from src.adapters.fmu_adapter import FmuAdapter
 from src.adapters.fmu_data.reheat_fmu_data import ReheatFMUData
 from src.adapters.sequence_type import SequenceType
-from src.dto.reheat_dto import OperationMode
+from src.models.reheat.enums import OperationMode
 from src.models.reheat.inputs import ReheatInputs
 from src.models.reheat.parameters import ReheatParameters
+from src.utils.unit_conversion import TemperatureUnit
 
 
 @pytest.fixture
@@ -224,6 +225,7 @@ def valid_inputs():
 @pytest.fixture
 def valid_parameters():
     return ReheatParameters(
+        temperatureUnit=TemperatureUnit.KELVIN,
         maxCoolingAirflow=0.5,
         maxHeatingAirflow=0.3,
         minHeatingAirflow=0.1,
@@ -235,9 +237,6 @@ def fmu_data(valid_inputs, valid_parameters):
     return ReheatFMUData(inputs=valid_inputs, parameters=valid_parameters)
 
 
-@pytest.fixture
-def fmu_data_no_params(valid_inputs):
-    return ReheatFMUData(inputs=valid_inputs)
 
 
 class TestSingletonPattern:
@@ -259,27 +258,23 @@ class TestSingletonPattern:
 class TestCreateInstance:
 
     def test_create_fmu_instance_returns_uuid(self, adapter, fmu_data):
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         assert instance_id is not None
         assert len(instance_id) == 36
 
     def test_create_fmu_instance_registers_instance(self, adapter, fmu_data):
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        assert adapter.has_instance(instance_id)
-
-    def test_create_fmu_instance_without_parameters(self, adapter, fmu_data_no_params):
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data_no_params)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         assert adapter.has_instance(instance_id)
 
     def test_create_fmu_instance_initializes_fmu(self, adapter, fmu_data, mock_fmpy):
-        adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         mock_fmpy["fmu"].instantiate.assert_called_once()
         mock_fmpy["fmu"].setupExperiment.assert_called_once()
         mock_fmpy["fmu"].enterInitializationMode.assert_called_once()
         mock_fmpy["fmu"].exitInitializationMode.assert_called_once()
 
     def test_create_fmu_instance_sets_configuration(self, adapter, fmu_data, mock_fmpy):
-        adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         mock_fmpy["fmu"].setReal.assert_called()
 
 
@@ -288,7 +283,7 @@ class TestUpsertInstance:
     @pytest.mark.asyncio
     async def test_upsert_creates_new_instance(self, adapter, fmu_data):
         result = await adapter.upsert_fmu_instance(
-            SequenceType.REHEAT, fmu_data, instance_id="my-custom-id"
+            SequenceType.VAV_REHEAT, fmu_data, instance_id="my-custom-id"
         )
         assert result.instance_id == "my-custom-id"
         assert result.is_created is True
@@ -297,14 +292,14 @@ class TestUpsertInstance:
     @pytest.mark.asyncio
     async def test_upsert_recreates_existing_instance(self, adapter, fmu_data, mock_fmpy):
         result1 = await adapter.upsert_fmu_instance(
-            SequenceType.REHEAT, fmu_data, instance_id="recreate-me"
+            SequenceType.VAV_REHEAT, fmu_data, instance_id="recreate-me"
         )
         assert result1.instance_id == "recreate-me"
         assert result1.is_created is True
 
         mock_fmpy["fmu"].terminate.reset_mock()
         result2 = await adapter.upsert_fmu_instance(
-            SequenceType.REHEAT, fmu_data, instance_id="recreate-me"
+            SequenceType.VAV_REHEAT, fmu_data, instance_id="recreate-me"
         )
         assert result2.instance_id == "recreate-me"
         assert result2.is_created is False
@@ -316,7 +311,7 @@ class TestUpdateInstance:
 
     @pytest.mark.asyncio
     async def test_update_fmu_instance_sets_inputs(self, adapter, fmu_data, mock_fmpy):
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         mock_fmpy["fmu"].setReal.reset_mock()
         await adapter.update_fmu_instance(instance_id, fmu_data)
         mock_fmpy["fmu"].setReal.assert_called()
@@ -335,8 +330,8 @@ class TestStep:
         mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
         mock_fmpy["fmu"].getInteger = MagicMock(return_value=[0])
         mock_fmpy["fmu"].getBoolean = MagicMock(return_value=[False])
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        outputs = await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
+        outputs = await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
         assert "yDam" in outputs
         assert "yVal" in outputs
         assert "VSet_flow" in outputs
@@ -345,22 +340,22 @@ class TestStep:
     @pytest.mark.asyncio
     async def test_step_with_nonexistent_id_creates_lazily(self, adapter, fmu_data, mock_fmpy):
         mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
-        outputs = await adapter.step("new-instance", fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        outputs = await adapter.step("new-instance", fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
         assert outputs is not None
         assert adapter.has_instance("new-instance")
 
     @pytest.mark.asyncio
     async def test_step_updates_current_time(self, adapter, fmu_data, mock_fmpy):
         mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
+        await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
         assert adapter.get_current_time(instance_id) == 60.0
 
     @pytest.mark.asyncio
     async def test_step_calls_do_step(self, adapter, fmu_data, mock_fmpy):
         mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
+        await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
         mock_fmpy["fmu"].doStep.assert_called_with(
             currentCommunicationPoint=0.0, communicationStepSize=60.0
         )
@@ -370,13 +365,13 @@ class TestDeleteInstance:
 
     @pytest.mark.asyncio
     async def test_delete_fmu_instance_removes(self, adapter, fmu_data, mock_fmpy):
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         await adapter.delete_fmu_instance(instance_id)
         assert not adapter.has_instance(instance_id)
 
     @pytest.mark.asyncio
     async def test_delete_fmu_instance_terminates_fmu(self, adapter, fmu_data, mock_fmpy):
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         result = await adapter.delete_fmu_instance(instance_id)
         assert result is True
         mock_fmpy["fmu"].terminate.assert_called()
@@ -395,7 +390,7 @@ class TestPerInstanceLock:
         import asyncio
 
         mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
 
         call_order = []
 
@@ -410,8 +405,8 @@ class TestPerInstanceLock:
         mock_fmpy["fmu"].doStep = MagicMock(side_effect=lambda *a, **k: None)
 
         await asyncio.gather(
-            adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT),
-            adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT),
+            adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT),
+            adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT),
         )
 
         assert mock_fmpy["fmu"].doStep.call_count == 2
@@ -421,12 +416,12 @@ class TestLazyFmuLoading:
 
     def test_fmu_extracted_on_first_use(self, adapter, fmu_data, mock_fmpy):
         mock_fmpy["extract"].assert_not_called()
-        adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         mock_fmpy["extract"].assert_called_once()
 
     def test_fmu_cache_reused(self, adapter, fmu_data, mock_fmpy):
-        adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
+        adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         mock_fmpy["extract"].assert_called_once()
 
 
@@ -435,39 +430,39 @@ class TestInputValidation:
     @pytest.mark.asyncio
     async def test_step_with_valid_inputs_succeeds(self, adapter, fmu_data, mock_fmpy):
         mock_fmpy["fmu"].getReal = MagicMock(return_value=[0.5])
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        outputs = await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.REHEAT)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
+        outputs = await adapter.step(instance_id, fmu_data, step_size=60.0, sequence_type=SequenceType.VAV_REHEAT)
         assert outputs is not None
 
 
 class TestHelperMethods:
 
     def test_has_instance_returns_true_for_existing(self, adapter, fmu_data):
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         assert adapter.has_instance(instance_id)
 
     def test_has_instance_returns_false_for_nonexistent(self, adapter):
         assert not adapter.has_instance("nonexistent")
 
     def test_list_instance_ids_returns_all_ids(self, adapter, fmu_data):
-        id1 = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
-        id2 = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        id1 = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
+        id2 = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         ids = adapter.list_instance_ids()
         assert set(ids) == {id1, id2}
 
     def test_get_state_returns_instance_state(self, adapter, fmu_data):
         from src.adapters.fmu_instance import FmuInstanceState
 
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         state = adapter.get_state(instance_id)
         assert state == FmuInstanceState.INITIALIZED
 
     def test_get_sequence_type_returns_type(self, adapter, fmu_data):
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         seq_type = adapter.get_sequence_type(instance_id)
-        assert seq_type == SequenceType.REHEAT
+        assert seq_type == SequenceType.VAV_REHEAT
 
     def test_get_current_time_returns_zero_initially(self, adapter, fmu_data):
-        instance_id = adapter.create_fmu_instance(SequenceType.REHEAT, fmu_data)
+        instance_id = adapter.create_fmu_instance(SequenceType.VAV_REHEAT, fmu_data)
         current_time = adapter.get_current_time(instance_id)
         assert current_time == 0.0

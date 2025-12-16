@@ -19,17 +19,59 @@ export type AirflowUnit = 'm3/s' | 'cfm' | 'L/s' | 'm3/h';
 export type ControllerType = 1 | 2 | 3 | 4;
 
 /**
- * CreateInstanceResponse[ReheatParameters]
+ * ConvertParametersRequest[ReheatParametersDTO]
  */
-export type CreateInstanceResponseReheatParameters = {
+export type ConvertParametersRequestReheatParametersDto = {
+    /**
+     * The sequence type for parameter conversion
+     */
+    sequence_type: SequenceType;
+    /**
+     * Current parameters with source units
+     */
+    parameters: ReheatParametersDto;
+    /**
+     * Target temperature unit for conversion
+     */
+    target_temperature_unit: TemperatureUnit;
+    /**
+     * Target airflow unit for conversion
+     */
+    target_airflow_unit: AirflowUnit;
+};
+
+/**
+ * ConvertParametersResponse[ReheatParametersDTO]
+ */
+export type ConvertParametersResponseReheatParametersDto = {
+    /**
+     * Parameters converted to target units
+     */
+    parameters: ReheatParametersDto;
+};
+
+/**
+ * CreateInstanceRequest[ReheatParametersDTO]
+ */
+export type CreateInstanceRequestReheatParametersDto = {
     /**
      * Instance Id
      *
-     * The auto-generated instance identifier (UUID)
+     * The instance identifier (UUID) provided by frontend
      */
     instance_id: string;
     /**
-     * The default parameters applied to this instance
+     * Optional initial parameters. If not provided, defaults are used.
+     */
+    parameters?: ReheatParametersDto | null;
+};
+
+/**
+ * DefaultsResponse[ReheatParameters]
+ */
+export type DefaultsResponseReheatParameters = {
+    /**
+     * Default parameters in SI units
      */
     parameters: ReheatParameters;
 };
@@ -41,11 +83,11 @@ export type CreateInstanceResponseReheatParameters = {
  */
 export type DeleteInstanceResponse = {
     /**
-     * Instance Id
+     * Instanceid
      *
      * The deleted instance identifier
      */
-    instance_id: string;
+    instanceId: string;
     /**
      * Deleted
      *
@@ -72,22 +114,6 @@ export type ErrorResponse = {
      * Detailed error message
      */
     detail: string;
-};
-
-/**
- * GetInstanceResponse[ReheatParameters]
- */
-export type GetInstanceResponseReheatParameters = {
-    /**
-     * Instance Id
-     *
-     * The instance identifier (UUID)
-     */
-    instance_id: string;
-    /**
-     * The current parameters for this instance
-     */
-    parameters: ReheatParameters;
 };
 
 /**
@@ -133,11 +159,79 @@ export type HealthResponse = {
 };
 
 /**
- * OperationMode
+ * InputCategory
  *
- * G36 operation modes per ASHRAE Guideline 36 specification.
+ * Categories for grouping control sequence inputs.
+ *
+ * Logical groupings based on G36 domain model.
+ * Reusable across G36 sequence types (VAV Reheat, Cooling Only, etc.)
  */
-export type OperationMode = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type InputCategory = 'zoneTemperature' | 'zoneAirQuality' | 'zoneSensors' | 'vavTerminal' | 'ahu' | 'plant' | 'control';
+
+/**
+ * InstanceResponseWithCategories[ReheatParameters]
+ */
+export type InstanceResponseWithCategoriesReheatParameters = {
+    /**
+     * Instanceid
+     *
+     * The instance identifier (UUID)
+     */
+    instanceId: string;
+    /**
+     * The parameters for this instance
+     */
+    parameters: ReheatParameters;
+    /**
+     * Categories
+     *
+     * Mapping of parameter categories to field names
+     */
+    categories: {
+        [key in ParameterCategory]?: Array<string>;
+    };
+    /**
+     * Inputcategories
+     *
+     * Mapping of input categories to input field names for UI grouping
+     */
+    inputCategories: {
+        [key in InputCategory]?: Array<ReheatInputName>;
+    };
+    /**
+     * Outputcategories
+     *
+     * Mapping of output categories to output field names for UI grouping
+     */
+    outputCategories: {
+        [key in OutputCategory]?: Array<ReheatOutputName>;
+    };
+    /**
+     * Parametertorequiredinputs
+     *
+     * Mapping of parameters to inputs that become required when enabled
+     */
+    parameterToRequiredInputs: {
+        [key in ReheatParameterName]?: Array<ReheatInputName>;
+    };
+};
+
+/**
+ * OperationModeStr
+ *
+ * G36 operation modes as string enum for API inputs.
+ */
+export type OperationModeStr = 'occupied' | 'unoccupied' | 'standby' | 'warmup' | 'cooldown' | 'setup' | 'setback';
+
+/**
+ * OutputCategory
+ *
+ * Categories for grouping control sequence outputs.
+ *
+ * Category names indicate destination for routing.
+ * Reusable across G36 sequence types (VAV Reheat, Cooling Only, etc.)
+ */
+export type OutputCategory = 'vavControl' | 'ahuRequests' | 'plantRequests' | 'alarms' | 'ventilationInfo';
 
 /**
  * OverrideMode
@@ -147,19 +241,28 @@ export type OperationMode = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type OverrideMode = 0 | 1;
 
 /**
- * ReheatInputsRequest
+ * ParameterCategory
+ *
+ * Categories for grouping ReheatParameters in UI.
+ */
+export type ParameterCategory = 'units' | 'sensors' | 'features' | 'airflows' | 'controllerGains' | 'timing' | 'thresholds' | 'hysteresis';
+
+/**
+ * ReheatInputName
+ *
+ * Input field name constants for G36 VAV Reheat.
+ */
+export type ReheatInputName = 'zoneTemperature' | 'coolingSetpoint' | 'heatingSetpoint' | 'dischargeAirTemperature' | 'primaryAirflow' | 'supplyAirTemperature' | 'supplyAirTemperatureSetpoint' | 'fanStatus' | 'operationMode' | 'co2Concentration' | 'co2Setpoint' | 'hotWaterPlantStatus' | 'occupancyStatus' | 'windowStatus' | 'heatingOff' | 'overrideDamperPosition' | 'overrideFlowSetpoint';
+
+/**
+ * ReheatInputsDTO
  *
  * API request for G36 Reheat Terminal inputs. Accepts user-friendly units.
+ *
+ * Unit preferences are stored per-instance in ReheatParametersDTO and passed
+ * to to_domain() from the controller.
  */
-export type ReheatInputsRequest = {
-    /**
-     * Unit for all temperature fields (default: Celsius)
-     */
-    temperatureUnit?: TemperatureUnit;
-    /**
-     * Unit for all airflow fields (default: m³/s)
-     */
-    airflowUnit?: AirflowUnit;
+export type ReheatInputsDto = {
     /**
      * Zonetemperature
      *
@@ -221,9 +324,9 @@ export type ReheatInputsRequest = {
      */
     fanStatus: boolean;
     /**
-     * Operation mode per G36 specification (1-7)
+     * Operation mode per G36 specification
      */
-    operationMode: OperationMode;
+    operationMode: OperationModeStr;
     /**
      * Hotwaterplantstatus
      *
@@ -259,104 +362,119 @@ export type ReheatInputsRequest = {
 };
 
 /**
- * ReheatOutputs
+ * ReheatOutputName
  *
- * Output values from G36 Reheat Terminal control sequence step execution.
- *
- * These are FMU outputs (causality=output) read after each step.
+ * Output field name constants for G36 VAV Reheat.
  */
-export type ReheatOutputs = {
+export type ReheatOutputName = 'damperPosition' | 'valvePosition' | 'airflowSetpoint' | 'heatingValveRequest' | 'zonePressureRequest' | 'zoneTempRequest' | 'hotWaterPlantRequest' | 'flowSensorAlarm' | 'leakingDamperAlarm' | 'leakingValveAlarm' | 'lowFlowAlarm' | 'lowTempAlarm' | 'minOutdoorAirflow' | 'adjAreaBreathingZoneFlow' | 'adjPopBreathingZoneFlow';
+
+/**
+ * ReheatOutputsDTO
+ *
+ * API DTO for G36 Reheat Terminal outputs.
+ *
+ * Wraps domain ReheatOutputs and converts airflow values to user units.
+ * Damper/valve positions are 0-1 normalized (unitless).
+ */
+export type ReheatOutputsDto = {
     /**
      * Damperposition
      *
-     * Damper position 0-1 normalized (FMU: yDam)
+     * Damper position 0-1 normalized
      */
     damperPosition: number;
     /**
      * Valveposition
      *
-     * Heating valve position 0-1 normalized (FMU: yVal)
+     * Heating valve position 0-1 normalized
      */
     valvePosition: number;
     /**
      * Airflowsetpoint
      *
-     * Airflow setpoint in m³/s (FMU: VSet_flow)
+     * Airflow setpoint (in user's configured unit)
      */
     airflowSetpoint: number;
     /**
      * Minoutdoorairflow
      *
-     * Minimum outdoor airflow in m³/s (FMU: VMinOA_flow)
+     * Minimum outdoor airflow (in user's configured unit)
      */
     minOutdoorAirflow: number;
     /**
      * Adjareabreathingzoneflow
      *
-     * Adjusted area breathing zone flow (FMU: VAdjAreBreZon_flow)
+     * Adjusted area breathing zone flow (in user's configured unit)
      */
     adjAreaBreathingZoneFlow: number;
     /**
      * Adjpopbreathingzoneflow
      *
-     * Adjusted population breathing zone flow (FMU: VAdjPopBreZon_flow)
+     * Adjusted population breathing zone flow (in user's configured unit)
      */
     adjPopBreathingZoneFlow: number;
     /**
      * Flowsensoralarm
      *
-     * Flow sensor alarm level (FMU: yFloSenAla)
+     * Flow sensor alarm level
      */
     flowSensorAlarm: number;
     /**
      * Heatingvalverequest
      *
-     * Heating valve reset request (FMU: yHeaValResReq)
+     * Heating valve reset request
      */
     heatingValveRequest: number;
     /**
      * Hotwaterplantrequest
      *
-     * Hot water plant request (FMU: yHotWatPlaReq)
+     * Hot water plant request
      */
     hotWaterPlantRequest: number;
     /**
      * Leakingdamperalarm
      *
-     * Leaking damper alarm level (FMU: yLeaDamAla)
+     * Leaking damper alarm level
      */
     leakingDamperAlarm: number;
     /**
      * Leakingvalvealarm
      *
-     * Leaking valve alarm level (FMU: yLeaValAla)
+     * Leaking valve alarm level
      */
     leakingValveAlarm: number;
     /**
      * Lowflowalarm
      *
-     * Low flow alarm level (FMU: yLowFloAla)
+     * Low flow alarm level
      */
     lowFlowAlarm: number;
     /**
      * Lowtempalarm
      *
-     * Low temperature alarm level (FMU: yLowTemAla)
+     * Low temperature alarm level
      */
     lowTempAlarm: number;
     /**
      * Zonepressurerequest
      *
-     * Zone pressure reset request (FMU: yZonPreResReq)
+     * Zone pressure reset request
      */
     zonePressureRequest: number;
     /**
      * Zonetemprequest
      *
-     * Zone temperature reset request (FMU: yZonTemResReq)
+     * Zone temperature reset request
      */
     zoneTempRequest: number;
 };
+
+/**
+ * ReheatParameterName
+ *
+ * Parameter field names for G36 VAV Reheat.
+ */
+export type ReheatParameterName = 'hasCO2Sensor' | 'hasHotWaterCoil' | 'hasOccupancySensor' | 'hasWindowSensor' | 'dischargeAirTempMin' | 'maxDischargeTempAboveSetpoint' | 'thresholdDischargeTemp1' | 'thresholdDischargeTemp2' | 'thresholdTempDiff' | 'twoTempDiff' | 'tempHysteresis' | 'minAirflow' | 'maxCoolingAirflow' | 'maxHeatingAirflow' | 'minHeatingAirflow' | 'areaBreathingZoneFlow' | 'areaMinFlow' | 'occMinFlow' | 'popBreathingZoneFlow' | 'flowHysteresis';
 
 /**
  * ReheatParameters
@@ -367,6 +485,14 @@ export type ReheatOutputs = {
  * Stored in database.
  */
 export type ReheatParameters = {
+    /**
+     * Unit for temperature input/output values
+     */
+    temperatureUnit?: TemperatureUnit;
+    /**
+     * Unit for airflow input/output values
+     */
+    airflowUnit?: AirflowUnit;
     /**
      * Hasco2Sensor
      *
@@ -454,7 +580,7 @@ export type ReheatParameters = {
     /**
      * Dischargeairtempmin
      *
-     * Minimum discharge air temperature (FMU: TDisMin_in) [K]
+     * Minimum discharge air temperature (FMU: TDisMin_in)
      */
     dischargeAirTempMin?: number;
     /**
@@ -658,7 +784,7 @@ export type ReheatParameters = {
     /**
      * Permitoccstandby
      *
-     * Permit occupancy standby mode (FMU: permit_occStandby_in)
+     * When enabled and zone is unpopulated (per occupancy sensor), reduces ventilation to zero per ASHRAE 62.1 for energy savings (FMU: permit_occStandby_in)
      */
     permitOccStandby?: boolean;
     /**
@@ -694,6 +820,356 @@ export type ReheatParameters = {
 };
 
 /**
+ * ReheatParametersDTO
+ *
+ * API DTO for parameters. No unit-specific temperature constraints.
+ *
+ * Validation of temperature values happens in ParameterConverter using
+ * get_temperature_bounds() before storing in database.
+ */
+export type ReheatParametersDto = {
+    /**
+     * Unit for temperature input/output values
+     */
+    temperatureUnit?: TemperatureUnit;
+    /**
+     * Unit for airflow input/output values
+     */
+    airflowUnit?: AirflowUnit;
+    /**
+     * Hasco2Sensor
+     *
+     * Zone has CO2 sensor (FMU: have_CO2Sen_in)
+     */
+    hasCO2Sensor?: boolean;
+    /**
+     * Hashotwatercoil
+     *
+     * Terminal has hot water coil (FMU: have_hotWatCoi_in)
+     */
+    hasHotWaterCoil?: boolean;
+    /**
+     * Hasoccupancysensor
+     *
+     * Zone has occupancy sensor (FMU: have_occSen_in)
+     */
+    hasOccupancySensor?: boolean;
+    /**
+     * Haswindowsensor
+     *
+     * Zone has window sensor (FMU: have_winSen_in)
+     */
+    hasWindowSensor?: boolean;
+    /**
+     * Controller type for damper: 1=P, 2=PI, 3=PD, 4=PID (FMU: controllerTypeDam_in)
+     */
+    controllerTypeDamper?: ControllerType;
+    /**
+     * Controller type for valve: 1=P, 2=PI, 3=PD, 4=PID (FMU: controllerTypeVal_in)
+     */
+    controllerTypeValve?: ControllerType;
+    /**
+     * Ventilation standard: 1=ASHRAE62_1, 2=California_Title_24 (FMU: venStd_in)
+     */
+    ventilationStandard?: VentilationStandard;
+    /**
+     * Minairflow
+     *
+     * Design zone minimum airflow setpoint (FMU: VMin_flow_in) [m3/s]
+     */
+    minAirflow?: number;
+    /**
+     * Maxcoolingairflow
+     *
+     * Maximum cooling airflow (FMU: VCooMax_flow_in) [m3/s]
+     */
+    maxCoolingAirflow?: number;
+    /**
+     * Maxheatingairflow
+     *
+     * Maximum heating airflow (FMU: VHeaMax_flow_in) [m3/s]
+     */
+    maxHeatingAirflow?: number;
+    /**
+     * Minheatingairflow
+     *
+     * Minimum heating airflow (FMU: VHeaMin_flow_in) [m3/s]
+     */
+    minHeatingAirflow?: number;
+    /**
+     * Areabreathingzoneflow
+     *
+     * Area component of breathing zone outdoor airflow (FMU: VAreBreZon_flow_in) [m3/s]
+     */
+    areaBreathingZoneFlow?: number;
+    /**
+     * Areaminflow
+     *
+     * Area component of zone minimum airflow (FMU: VAreMin_flow_in) [m3/s]
+     */
+    areaMinFlow?: number;
+    /**
+     * Occminflow
+     *
+     * Zone minimum airflow for occupied mode (FMU: VOccMin_flow_in) [m3/s]
+     */
+    occMinFlow?: number;
+    /**
+     * Popbreathingzoneflow
+     *
+     * Population component of breathing zone airflow (FMU: VPopBreZon_flow_in) [m3/s]
+     */
+    popBreathingZoneFlow?: number;
+    /**
+     * Dischargeairtempmin
+     *
+     * Minimum discharge air temperature (FMU: TDisMin_in)
+     */
+    dischargeAirTempMin?: number;
+    /**
+     * Maxdischargetempabovesetpoint
+     *
+     * Zone max discharge air temp above heating setpoint (FMU: dTDisZonSetMax_in) [K]
+     */
+    maxDischargeTempAboveSetpoint?: number;
+    /**
+     * Coolingcontrollergain
+     *
+     * Gain of cooling loop controller (FMU: kCooCon_in) [1]
+     */
+    coolingControllerGain?: number;
+    /**
+     * Heatingcontrollergain
+     *
+     * Gain of heating loop controller (FMU: kHeaCon_in) [1]
+     */
+    heatingControllerGain?: number;
+    /**
+     * Dampercontrollergain
+     *
+     * Gain of controller for damper control (FMU: kDam_in) [1]
+     */
+    damperControllerGain?: number;
+    /**
+     * Valvecontrollergain
+     *
+     * Gain of controller for valve control (FMU: kVal_in) [1]
+     */
+    valveControllerGain?: number;
+    /**
+     * Damperderivativetime
+     *
+     * Time constant of derivative block for damper control (FMU: TdDam_in) [s]
+     */
+    damperDerivativeTime?: number;
+    /**
+     * Valvederivativetime
+     *
+     * Time constant of derivative block for valve control (FMU: TdVal_in) [s]
+     */
+    valveDerivativeTime?: number;
+    /**
+     * Coolingintegratortime
+     *
+     * Time constant of integrator block for cooling control loop (FMU: TiCooCon_in) [s]
+     */
+    coolingIntegratorTime?: number;
+    /**
+     * Damperintegratortime
+     *
+     * Time constant of integrator block for damper control (FMU: TiDam_in) [s]
+     */
+    damperIntegratorTime?: number;
+    /**
+     * Heatingintegratortime
+     *
+     * Time constant of integrator block for heating control loop (FMU: TiHeaCon_in) [s]
+     */
+    heatingIntegratorTime?: number;
+    /**
+     * Valveintegratortime
+     *
+     * Time constant of integrator block for valve control (FMU: TiVal_in) [s]
+     */
+    valveIntegratorTime?: number;
+    /**
+     * Changerate
+     *
+     * Gain factor to calculate suppression time based on setpoint change (FMU: chaRat_in) [s/K]
+     */
+    changeRate?: number;
+    /**
+     * Durationdischargeair
+     *
+     * Duration time of discharge air temp less than setpoint (FMU: durTimDisAir_in) [s]
+     */
+    durationDischargeAir?: number;
+    /**
+     * Durationflow
+     *
+     * Duration time of airflow rate less than setpoint (FMU: durTimFlo_in) [s]
+     */
+    durationFlow?: number;
+    /**
+     * Durationtemp
+     *
+     * Duration time of zone temp exceeds setpoint (FMU: durTimTem_in) [s]
+     */
+    durationTemp?: number;
+    /**
+     * Maxsuppressiontime
+     *
+     * Maximum suppression time (FMU: maxSupTim_in) [s]
+     */
+    maxSuppressionTime?: number;
+    /**
+     * Sampleperiod
+     *
+     * Sample period of component (FMU: samplePeriod_in) [s]
+     */
+    samplePeriod?: number;
+    /**
+     * Fanofftime
+     *
+     * Threshold time to check fan off (FMU: fanOffTim_in) [s]
+     */
+    fanOffTime?: number;
+    /**
+     * Leakflowtime
+     *
+     * Threshold time to check damper leaking airflow (FMU: leaFloTim_in) [s]
+     */
+    leakFlowTime?: number;
+    /**
+     * Lowflowtime
+     *
+     * Threshold time to check low flow rate (FMU: lowFloTim_in) [s]
+     */
+    lowFlowTime?: number;
+    /**
+     * Lowtemptime
+     *
+     * Threshold time to check low discharge temperature (FMU: lowTemTim_in) [s]
+     */
+    lowTempTime?: number;
+    /**
+     * Valveclosetime
+     *
+     * Threshold time to check valve closed (FMU: valCloTim_in) [s]
+     */
+    valveCloseTime?: number;
+    /**
+     * Timecheck
+     *
+     * Threshold time to check zone temperature status (FMU: timChe_in) [s]
+     */
+    timeCheck?: number;
+    /**
+     * Startuptime
+     *
+     * Delay triggering alarms after enabling AHU supply fan (FMU: staTim_in) [s]
+     */
+    startupTime?: number;
+    /**
+     * Thresholddischargetemp1
+     *
+     * Threshold difference for 3 hot water reset requests (FMU: thrTDis_1_in) [K]
+     */
+    thresholdDischargeTemp1?: number;
+    /**
+     * Thresholddischargetemp2
+     *
+     * Threshold difference for 2 hot water reset requests (FMU: thrTDis_2_in) [K]
+     */
+    thresholdDischargeTemp2?: number;
+    /**
+     * Thresholdtempdiff
+     *
+     * Threshold difference for temperature alarms (FMU: thrTemDif_in) [K]
+     */
+    thresholdTempDiff?: number;
+    /**
+     * Twotempdiff
+     *
+     * Threshold temp difference for 2 zone temp requests (FMU: twoTemDif_in) [K]
+     */
+    twoTempDiff?: number;
+    /**
+     * Hotwaterresetmultiplier
+     *
+     * Importance multiplier for hot water reset control loop (FMU: hotWatRes_in) [1]
+     */
+    hotWaterResetMultiplier?: number;
+    /**
+     * Staticpressuremultiplier
+     *
+     * Importance multiplier for zone static pressure reset (FMU: staPreMul_in) [1]
+     */
+    staticPressureMultiplier?: number;
+    /**
+     * Zonedisteffcooling
+     *
+     * Zone air distribution effectiveness during cooling (FMU: zonDisEff_cool_in) [1]
+     */
+    zoneDistEffCooling?: number;
+    /**
+     * Zonedisteffheating
+     *
+     * Zone air distribution effectiveness during heating (FMU: zonDisEff_heat_in) [1]
+     */
+    zoneDistEffHeating?: number;
+    /**
+     * Initialdamperposition
+     *
+     * Initial damper position when control is enabled (FMU: iniDam_in) [1]
+     */
+    initialDamperPosition?: number;
+    /**
+     * Permitoccstandby
+     *
+     * When enabled and zone is unpopulated (per occupancy sensor), reduces ventilation to zero per ASHRAE 62.1 for energy savings (FMU: permit_occStandby_in)
+     */
+    permitOccStandby?: boolean;
+    /**
+     * Temphysteresis
+     *
+     * Near zero temperature difference hysteresis (FMU: dTHys_in) [K]
+     */
+    tempHysteresis?: number;
+    /**
+     * Loophysteresis
+     *
+     * Loop output hysteresis below which output is seen as zero (FMU: looHys_in) [1]
+     */
+    loopHysteresis?: number;
+    /**
+     * Flowhysteresis
+     *
+     * Near zero flow rate hysteresis (FMU: floHys_in) [m3/s]
+     */
+    flowHysteresis?: number;
+    /**
+     * Damperpositionhysteresis
+     *
+     * Near zero damper position, below which damper is seen as closed (FMU: damPosHys_in) [1]
+     */
+    damperPositionHysteresis?: number;
+    /**
+     * Valvepositionhysteresis
+     *
+     * Near zero valve position, below which valve is seen as closed (FMU: valPosHys_in) [1]
+     */
+    valvePositionHysteresis?: number;
+};
+
+/**
+ * SequenceType
+ *
+ * Supported G36 sequence types.
+ */
+export type SequenceType = 'vav-reheat' | 'ahu';
+
+/**
  * StepRequest
  *
  * Request to execute a simulation step on an FMU instance.
@@ -708,7 +1184,7 @@ export type StepRequest = {
     /**
      * Input values for this step
      */
-    inputs: ReheatInputsRequest;
+    inputs: ReheatInputsDto;
 };
 
 /**
@@ -718,15 +1194,15 @@ export type StepRequest = {
  */
 export type StepResponse = {
     /**
-     * Instance Id
+     * Instanceid
      *
      * The instance that executed the step
      */
-    instance_id: string;
+    instanceId: string;
     /**
      * Output values from the step execution
      */
-    outputs: ReheatOutputs;
+    outputs: ReheatOutputsDto;
 };
 
 /**
@@ -737,29 +1213,13 @@ export type StepResponse = {
 export type TemperatureUnit = 'K' | 'C' | 'F';
 
 /**
- * UpdateInstanceResponse[ReheatParameters]
+ * UpdateParametersRequest[ReheatParametersDTO]
  */
-export type UpdateInstanceResponseReheatParameters = {
-    /**
-     * Instance Id
-     *
-     * The instance identifier (UUID)
-     */
-    instance_id: string;
+export type UpdateParametersRequestReheatParametersDto = {
     /**
      * The updated parameters for this instance
      */
-    parameters: ReheatParameters;
-};
-
-/**
- * UpdateParametersRequest[ReheatParameters]
- */
-export type UpdateParametersRequestReheatParameters = {
-    /**
-     * The updated parameters for this instance
-     */
-    parameters: ReheatParameters;
+    parameters: ReheatParametersDto;
 };
 
 /**
@@ -835,13 +1295,17 @@ export type ValidationResponse = {
 export type VentilationStandard = 1 | 2;
 
 export type CreateInstanceApiV1G36VavReheatInstancesPostData = {
-    body?: never;
+    body: CreateInstanceRequestReheatParametersDto;
     path?: never;
     query?: never;
     url: '/api/v1/g36/vav-reheat/instances';
 };
 
 export type CreateInstanceApiV1G36VavReheatInstancesPostErrors = {
+    /**
+     * Validation error in request body
+     */
+    422: unknown;
     /**
      * Internal server error
      */
@@ -852,9 +1316,9 @@ export type CreateInstanceApiV1G36VavReheatInstancesPostError = CreateInstanceAp
 
 export type CreateInstanceApiV1G36VavReheatInstancesPostResponses = {
     /**
-     * Instance created with default parameters
+     * Instance created with default parameters (or existing returned)
      */
-    200: CreateInstanceResponseReheatParameters;
+    200: InstanceResponseWithCategoriesReheatParameters;
 };
 
 export type CreateInstanceApiV1G36VavReheatInstancesPostResponse = CreateInstanceApiV1G36VavReheatInstancesPostResponses[keyof CreateInstanceApiV1G36VavReheatInstancesPostResponses];
@@ -918,13 +1382,13 @@ export type GetInstanceApiV1G36VavReheatInstancesInstanceIdGetResponses = {
     /**
      * Instance parameters retrieved successfully
      */
-    200: GetInstanceResponseReheatParameters;
+    200: InstanceResponseWithCategoriesReheatParameters;
 };
 
 export type GetInstanceApiV1G36VavReheatInstancesInstanceIdGetResponse = GetInstanceApiV1G36VavReheatInstancesInstanceIdGetResponses[keyof GetInstanceApiV1G36VavReheatInstancesInstanceIdGetResponses];
 
 export type UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutData = {
-    body: UpdateParametersRequestReheatParameters;
+    body: UpdateParametersRequestReheatParametersDto;
     path: {
         /**
          * Instance Id
@@ -952,7 +1416,7 @@ export type UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutResponses = {
     /**
      * Instance parameters updated successfully
      */
-    200: UpdateInstanceResponseReheatParameters;
+    200: InstanceResponseWithCategoriesReheatParameters;
 };
 
 export type UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutResponse = UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutResponses[keyof UpdateInstanceApiV1G36VavReheatInstancesInstanceIdPutResponses];
@@ -995,6 +1459,36 @@ export type StepApiV1G36VavReheatInstancesInstanceIdStepPostResponses = {
 
 export type StepApiV1G36VavReheatInstancesInstanceIdStepPostResponse = StepApiV1G36VavReheatInstancesInstanceIdStepPostResponses[keyof StepApiV1G36VavReheatInstancesInstanceIdStepPostResponses];
 
+export type DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Instance Id
+         */
+        instance_id: string;
+    };
+    query?: never;
+    url: '/api/v1/g36/vav-reheat/instances/{instance_id}/fmu';
+};
+
+export type DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteError = DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteErrors[keyof DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteErrors];
+
+export type DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteResponses = {
+    /**
+     * FMU runtime cleaned up (or already not found - idempotent)
+     */
+    200: DeleteInstanceResponse;
+};
+
+export type DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteResponse = DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteResponses[keyof DeleteFmuApiV1G36VavReheatInstancesInstanceIdFmuDeleteResponses];
+
 export type HealthCheckApiV1HealthGetData = {
     body?: never;
     path?: never;
@@ -1010,6 +1504,69 @@ export type HealthCheckApiV1HealthGetResponses = {
 };
 
 export type HealthCheckApiV1HealthGetResponse = HealthCheckApiV1HealthGetResponses[keyof HealthCheckApiV1HealthGetResponses];
+
+export type ConvertParametersApiV1ParametersConvertPostData = {
+    body: ConvertParametersRequestReheatParametersDto;
+    path?: never;
+    query?: never;
+    url: '/api/v1/parameters/convert';
+};
+
+export type ConvertParametersApiV1ParametersConvertPostErrors = {
+    /**
+     * Unknown sequence type
+     */
+    400: ErrorResponse;
+    /**
+     * Validation error in request body
+     */
+    422: unknown;
+};
+
+export type ConvertParametersApiV1ParametersConvertPostError = ConvertParametersApiV1ParametersConvertPostErrors[keyof ConvertParametersApiV1ParametersConvertPostErrors];
+
+export type ConvertParametersApiV1ParametersConvertPostResponses = {
+    /**
+     * Parameters converted successfully
+     */
+    200: ConvertParametersResponseReheatParametersDto;
+};
+
+export type ConvertParametersApiV1ParametersConvertPostResponse = ConvertParametersApiV1ParametersConvertPostResponses[keyof ConvertParametersApiV1ParametersConvertPostResponses];
+
+export type GetDefaultsApiV1ParametersDefaultsGetData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Sequence type to get defaults for
+         */
+        sequenceType: SequenceType;
+    };
+    url: '/api/v1/parameters/defaults';
+};
+
+export type GetDefaultsApiV1ParametersDefaultsGetErrors = {
+    /**
+     * Unknown sequence type
+     */
+    400: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetDefaultsApiV1ParametersDefaultsGetError = GetDefaultsApiV1ParametersDefaultsGetErrors[keyof GetDefaultsApiV1ParametersDefaultsGetErrors];
+
+export type GetDefaultsApiV1ParametersDefaultsGetResponses = {
+    /**
+     * Default parameters returned
+     */
+    200: DefaultsResponseReheatParameters;
+};
+
+export type GetDefaultsApiV1ParametersDefaultsGetResponse = GetDefaultsApiV1ParametersDefaultsGetResponses[keyof GetDefaultsApiV1ParametersDefaultsGetResponses];
 
 export type ValidateGraphApiV1G36ValidatePostData = {
     body: ValidationRequest;

@@ -8,7 +8,7 @@ from src.adapters.fmu_data.base import FMUDataProtocol
 from src.adapters.fmu_lifecycle import FmuLifecycleManager
 from src.adapters.sequence_type import SequenceType
 from src.adapters.fmu_instance import FmuInstanceState
-
+from loguru import logger
 
 @dataclass(frozen=True, slots=True)
 class UpsertResult:
@@ -117,6 +117,10 @@ class FmuAdapter:
             self._create_fmu_instance(sequence_type, fmu_data, instance_id)
 
         lifecycle = self._lifecycle_managers[instance_id]
+
+        logger.info(f"Stepping FMU instance: {instance_id}")
+        logger.info(f"Current time before step:, {lifecycle.current_time}")
+        logger.info(f"fmu_data.input_variables: {fmu_data.input_variables}")
         return await lifecycle.step(fmu_data, step_size)
 
     async def delete_fmu_instance(self, instance_id: str) -> bool:

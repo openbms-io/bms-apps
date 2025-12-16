@@ -109,6 +109,10 @@ export class ScheduleNode
     this._inputValue = undefined
   }
 
+  async cleanup(): Promise<void> {
+    this.stop()
+  }
+
   getActiveOutputHandles(): readonly ScheduleOutputHandle[] {
     return this.state.isActive ? ['output' as const] : []
   }

@@ -1,7 +1,7 @@
 """Unit tests for VAV Reheat Controller.
 
 Tests cover acceptance criteria from Story 1.15:
-  AC1: POST /api/v1/g36/vav-reheat/instances (create with defaults)
+  AC1: POST /api/v1/g36/vav-reheat/instances (create with frontend-provided ID, idempotent)
   AC2: POST /api/v1/g36/vav-reheat/instances/{instance_id}/step
   AC3: DELETE /api/v1/g36/vav-reheat/instances/{instance_id} (idempotent)
 """
@@ -16,14 +16,14 @@ from src.adapters.exceptions import (
     FmuValidationError,
 )
 from src.controllers.vav_reheat_controller import VavReheatController
-from src.dto.base_dto import CreateInstanceResponse, DeleteInstanceResponse
+from src.dto.base_dto import CreateInstanceRequest, CreateInstanceResponse, DeleteInstanceResponse
 from src.dto.reheat_dto import (
-    OperationMode,
-    ReheatInputsRequest,
-    ReheatOutputs,
+    ReheatInputsDTO,
+    ReheatOutputsDTO,
     StepRequest,
     StepResponse,
 )
+from src.models.reheat.enums import OperationModeStr
 from src.models.reheat.parameters import ReheatParameters
 from src.repositories.base import ControlSequenceInstanceData
 
@@ -54,6 +54,7 @@ def mock_adapter():
 def mock_repository():
     repository = MagicMock()
     repository.create = AsyncMock()
+    repository.get_or_create = AsyncMock()
     repository.save = AsyncMock()
     repository.get_active = AsyncMock()
     repository.delete = AsyncMock()
@@ -68,16 +69,16 @@ def controller(mock_adapter, mock_repository):
 
 @pytest.fixture
 def valid_inputs_request():
-    return ReheatInputsRequest(
-        zoneTemperature=22.0,
-        coolingSetpoint=24.0,
-        heatingSetpoint=20.0,
-        dischargeAirTemperature=16.0,
+    return ReheatInputsDTO(
+        zoneTemperature=295.15,
+        coolingSetpoint=297.15,
+        heatingSetpoint=293.15,
+        dischargeAirTemperature=289.15,
         primaryAirflow=0.3,
-        supplyAirTemperature=13.0,
-        supplyAirTemperatureSetpoint=12.0,
+        supplyAirTemperature=286.15,
+        supplyAirTemperatureSetpoint=285.15,
         fanStatus=True,
-        operationMode=OperationMode.OCCUPIED,
+        operationMode=OperationModeStr.OCCUPIED,
     )
 
 
@@ -110,62 +111,98 @@ def valid_fmu_outputs():
 class TestCreateInstance:
 
     @pytest.mark.asyncio
-    async def test_create_instance_returns_auto_generated_id(
+    async def test_create_instance_returns_provided_id(
         self, controller, mock_repository
     ):
         default_params = ReheatParameters()
-        mock_repository.create.return_value = make_reheat_instance_data(
-            instance_id="auto-generated-uuid",
-            parameters=default_params,
+        mock_repository.get_or_create.return_value = (
+            make_reheat_instance_data(
+                instance_id="frontend-provided-uuid",
+                parameters=default_params,
+            ),
+            True,
         )
 
-        response = await controller.create_instance()
+        request = CreateInstanceRequest(instance_id="frontend-provided-uuid")
+        response = await controller.create_instance(request)
 
         assert isinstance(response, CreateInstanceResponse)
-        assert response.instance_id == "auto-generated-uuid"
+        assert response.instance_id == "frontend-provided-uuid"
 
     @pytest.mark.asyncio
     async def test_create_instance_returns_default_parameters(
         self, controller, mock_repository
     ):
         default_params = ReheatParameters()
-        mock_repository.create.return_value = make_reheat_instance_data(
-            instance_id="test-id",
-            parameters=default_params,
+        mock_repository.get_or_create.return_value = (
+            make_reheat_instance_data(
+                instance_id="test-id",
+                parameters=default_params,
+            ),
+            True,
         )
 
-        response = await controller.create_instance()
+        request = CreateInstanceRequest(instance_id="test-id")
+        response = await controller.create_instance(request)
 
         assert response.parameters == default_params
         assert response.parameters.minAirflow == 0.3
         assert response.parameters.maxCoolingAirflow == 1.5
 
     @pytest.mark.asyncio
-    async def test_create_instance_calls_repository_create(
+    async def test_create_instance_calls_repository_get_or_create(
         self, controller, mock_repository
     ):
         default_params = ReheatParameters()
-        mock_repository.create.return_value = make_reheat_instance_data(
-            instance_id="test-id",
-            parameters=default_params,
+        mock_repository.get_or_create.return_value = (
+            make_reheat_instance_data(
+                instance_id="test-id",
+                parameters=default_params,
+            ),
+            True,
         )
 
-        await controller.create_instance()
+        request = CreateInstanceRequest(instance_id="test-id")
+        await controller.create_instance(request)
 
-        mock_repository.create.assert_called_once()
-        call_args = mock_repository.create.call_args[0]
-        assert isinstance(call_args[0], ReheatParameters)
+        mock_repository.get_or_create.assert_called_once()
+        call_args = mock_repository.get_or_create.call_args[0]
+        assert call_args[0] == "test-id"
+        assert isinstance(call_args[1], ReheatParameters)
+
+    @pytest.mark.asyncio
+    async def test_create_instance_idempotent_returns_existing(
+        self, controller, mock_repository
+    ):
+        existing_params = ReheatParameters(minAirflow=0.5)
+        mock_repository.get_or_create.return_value = (
+            make_reheat_instance_data(
+                instance_id="existing-id",
+                parameters=existing_params,
+            ),
+            False,
+        )
+
+        request = CreateInstanceRequest(instance_id="existing-id")
+        response = await controller.create_instance(request)
+
+        assert response.instance_id == "existing-id"
+        assert response.parameters.minAirflow == 0.5
 
     @pytest.mark.asyncio
     async def test_create_instance_does_not_create_fmu_instance(
         self, controller, mock_adapter, mock_repository
     ):
-        mock_repository.create.return_value = make_reheat_instance_data(
-            instance_id="test-id",
-            parameters=ReheatParameters(),
+        mock_repository.get_or_create.return_value = (
+            make_reheat_instance_data(
+                instance_id="test-id",
+                parameters=ReheatParameters(),
+            ),
+            True,
         )
 
-        await controller.create_instance()
+        request = CreateInstanceRequest(instance_id="test-id")
+        await controller.create_instance(request)
 
         mock_adapter.upsert_fmu_instance.assert_not_called()
 
@@ -187,7 +224,7 @@ class TestStep:
 
         assert isinstance(response, StepResponse)
         assert response.instance_id == "test-instance-1"
-        assert isinstance(response.outputs, ReheatOutputs)
+        assert isinstance(response.outputs, ReheatOutputsDTO)
         assert response.outputs.damperPosition == 0.75
         assert response.outputs.valvePosition == 0.0
 
