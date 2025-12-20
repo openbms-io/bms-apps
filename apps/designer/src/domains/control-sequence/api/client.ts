@@ -10,7 +10,7 @@ import {
 } from './generated/sdk.gen'
 import type {
   AirflowUnit,
-  CreateInstanceRequestReheatParameters,
+  CreateInstanceRequestReheatParametersDto,
   DeleteInstanceResponse,
   ErrorResponse,
   InstanceResponseWithCategoriesReheatParameters,
@@ -37,7 +37,7 @@ function unwrap<T>(response: ApiResponse<T>, defaultMessage: string): T {
 }
 
 export async function createInstance(
-  request: CreateInstanceRequestReheatParameters
+  request: CreateInstanceRequestReheatParametersDto
 ): Promise<InstanceResponseWithCategoriesReheatParameters> {
   const response = await createInstanceApiV1G36VavReheatInstancesPost({
     body: request,

@@ -13,7 +13,7 @@ export type {
   ReheatOutputsDto,
   StepRequest,
   StepResponse,
-  CreateInstanceRequestReheatParameters,
+  CreateInstanceRequestReheatParametersDto,
   InstanceResponseWithCategoriesReheatParameters,
   DeleteInstanceResponse,
   ErrorResponse,
