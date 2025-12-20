@@ -62,7 +62,7 @@ development_status:
   1b-1-g36-reheat-node-type-io-schema: done
   1b-2-g36-reheat-block-ui-component: done
   1b-3-dto-layer-refactoring: done
-  1b-4-g36-configuration-panel: review
+  1b-4-g36-configuration-panel: done
 
   epic-1-retrospective: optional
 
