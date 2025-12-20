@@ -113,11 +113,7 @@ export function FlowCanvas({
               Run
             </Button>
 
-            <SaveProjectButton
-              orgId={orgId}
-              siteId={siteId}
-              projectId={projectId}
-            />
+            <SaveProjectButton />
           </div>
         </Panel>
         <Controls

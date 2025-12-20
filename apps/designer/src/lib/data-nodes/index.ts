@@ -1,4 +1,4 @@
-// Example node implementations
+// BACnet node implementations
 export { AnalogInputNode } from './analog-input-node'
 export { AnalogOutputNode } from './analog-output-node'
 export { CalculationNode, type CalculationOperation } from './calculation-node'
@@ -21,6 +21,14 @@ export {
   type ScheduleState,
   type DayOfWeek,
 } from './schedule-node'
+
+// Control sequence nodes
+export { G36VavReheatNode } from './g36-vav-reheat-node'
+export {
+  BaseControlSequenceNode,
+  type BaseControlSequenceMetadata,
+  type ControlSequenceHandles,
+} from './base-control-sequence-node'
 
 // Factory for creating nodes
 export { default as nodeFactory } from './factory'

@@ -10,9 +10,13 @@ import {
   DataNode,
 } from '@/types/infrastructure'
 import { Message, SendCallback } from '@/lib/message-system/types'
+import {
+  createMessageBuffer,
+  MessageBuffer,
+} from '@/lib/message-system/message-buffer'
 import { v4 as uuidv4 } from 'uuid'
 import { makeSerializable } from '@/lib/workflow/serialization-utils'
-import { toNumber } from './bacnet-utils'
+import { toNumber } from './utils/bacnet-utils'
 
 export type CalculationOperation =
   | 'add'
@@ -35,7 +39,7 @@ export class CalculationNode
   private _computedValue?: number
   private _inputValues: ComputeValue[] = []
   private sendCallback?: SendCallback<LogicOutputHandle>
-  private messageBuffer: Map<CalculationInputHandle, Message> = new Map()
+  private messageBuffer: MessageBuffer<CalculationInputHandle>
 
   get computedValue(): number | undefined {
     return this._computedValue
@@ -49,6 +53,7 @@ export class CalculationNode
     this.id = id || generateInstanceId()
     this.label = label
     this.metadata = { operation }
+    this.messageBuffer = createMessageBuffer<CalculationInputHandle>()
   }
 
   getValue(): ComputeValue | undefined {
@@ -139,17 +144,13 @@ export class CalculationNode
       `from ${fromNodeId}`
     )
 
-    // Buffer the message
     this.messageBuffer.set(handle, message)
 
-    // Check if we have all inputs
     const requiredHandles = this.getInputHandles()
-    const hasAllInputs = requiredHandles.every((h) => this.messageBuffer.has(h))
 
-    if (hasAllInputs) {
+    if (this.messageBuffer.hasAll(requiredHandles)) {
       console.log(`✅ [${this.id}] All inputs received, processing...`)
 
-      // Collect and execute
       const inputs: ComputeValue[] = requiredHandles.map(
         (h) =>
           this.messageBuffer.get(h)?.payload ?? { value: 0, type: 'number' }
@@ -166,7 +167,6 @@ export class CalculationNode
         result
       )
 
-      // Send result - this triggers downstream nodes!
       await this.send(
         {
           payload: { value: result, type: 'number' },
@@ -177,7 +177,6 @@ export class CalculationNode
         'output'
       )
 
-      // Clear buffer for next calculation
       this.messageBuffer.clear()
     } else {
       console.log(`⏳ [${this.id}] Waiting for more inputs...`)

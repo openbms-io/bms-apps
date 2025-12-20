@@ -26,7 +26,7 @@ describe('WorkflowSerializer factory compatibility', () => {
     }
   }
 
-  it('deserializes ConstantNode when nodeType is enum value', () => {
+  it('deserializes ConstantNode when nodeType is enum value', async () => {
     const config = versionedOf({
       metadata: { lastModified: '2025-09-19T10:30:00Z' },
       nodes: [
@@ -49,7 +49,7 @@ describe('WorkflowSerializer factory compatibility', () => {
       edges: [],
     })
 
-    const result = deserializeWorkflow({
+    const result = await deserializeWorkflow({
       versionedConfig: config,
       mqttBus: mockMqttBus as any,
       onDataChange: mockOnDataChange,
@@ -57,7 +57,7 @@ describe('WorkflowSerializer factory compatibility', () => {
     expect(result.nodes[0].data).toBeInstanceOf(ConstantNode)
   })
 
-  it('deserializes ConstantNode when nodeType is enum string', () => {
+  it('deserializes ConstantNode when nodeType is enum string', async () => {
     const config = versionedOf({
       metadata: { lastModified: '2025-09-19T10:30:00Z' },
       nodes: [
@@ -66,7 +66,7 @@ describe('WorkflowSerializer factory compatibility', () => {
           type: 'logic.constant',
           position: { x: 0, y: 0 },
           data: {
-            nodeType: 'constant',
+            nodeType: NodeType.CONSTANT,
             serializedData: {
               id: 'n1',
               type: NodeType.CONSTANT,
@@ -80,7 +80,7 @@ describe('WorkflowSerializer factory compatibility', () => {
       edges: [],
     })
 
-    const result = deserializeWorkflow({
+    const result = await deserializeWorkflow({
       versionedConfig: config,
       mqttBus: mockMqttBus as any,
       onDataChange: mockOnDataChange,
@@ -88,7 +88,7 @@ describe('WorkflowSerializer factory compatibility', () => {
     expect(result.nodes[0].data).toBeInstanceOf(ConstantNode)
   })
 
-  it('deserializes AnalogInputNode for enum-string nodeType', () => {
+  it('deserializes AnalogInputNode for enum-string nodeType', async () => {
     const metadata: BacnetConfig = {
       pointId: 'pid-1',
       objectType: 'analog-input',
@@ -121,7 +121,7 @@ describe('WorkflowSerializer factory compatibility', () => {
       edges: [],
     })
 
-    const r2 = deserializeWorkflow({
+    const r2 = await deserializeWorkflow({
       versionedConfig: cfgEnum,
       mqttBus: mockMqttBus as any,
       onDataChange: mockOnDataChange,

@@ -10,9 +10,8 @@ from src.actors.messages.message_type import (
     ConfigUploadResponsePayload,
     ImmediateUploadTriggerPayload,
 )
-from src.controllers.uploader.upload import upload_config, get_points_to_publish
+from src.controllers.uploader import upload
 import asyncio
-from src.controllers.uploader.upload import mark_points_as_uploaded_in_db
 
 
 class UploaderActor:
@@ -48,7 +47,7 @@ class UploaderActor:
         correlation_data: Optional[bytes] = payload.correlationData
 
         logger.info(f"Uploading config to {urlToUploadConfig} with jwtToken {jwtToken}")
-        await upload_config(urlToUploadConfig, jwtToken)
+        await upload.upload_config(urlToUploadConfig, jwtToken)
         await self.actor_queue_registry.send_from(
             sender=self.actor_name,
             receiver=ActorName.MQTT,
@@ -59,7 +58,7 @@ class UploaderActor:
         )
 
     async def publish_points(self):
-        points = await get_points_to_publish()
+        points = await upload.get_points_to_publish()
         if not points:
             logger.warning("No points found to publish.")
             return None
@@ -80,7 +79,7 @@ class UploaderActor:
         logger.info(
             f"UploaderActor received point publish response: {len(payload.points)}"
         )
-        await mark_points_as_uploaded_in_db(payload.points)
+        await upload.mark_points_as_uploaded_in_db(payload.points)
         logger.info(f"UploaderActor marked points as uploaded: {len(payload.points)}")
 
     async def on_immediate_upload_trigger(self, payload: ImmediateUploadTriggerPayload):

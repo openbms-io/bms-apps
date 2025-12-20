@@ -1,0 +1,195 @@
+<story-context id="1-10-fmu-adapter-singleton" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>10</storyId>
+    <title>FMU Adapter Singleton</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1-10-fmu-adapter-singleton.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>an FMU adapter that manages FMU instance lifecycle</iWant>
+    <soThat>the API can create, step, and delete FMU instances</soThat>
+    <tasks>
+      <task id="1">Create FMU Instance Model - FmuInstance dataclass with fmu, model_description, unzip_dir, current_time, lock, value_refs</task>
+      <task id="2">Create FMU Adapter Singleton - singleton pattern, _instances dict, _fmu_cache, startup validation, lazy FMU loading</task>
+      <task id="3">Implement create_instance() - FMPy instance creation, setupExperiment, initialization mode, idempotent, apply parameters</task>
+      <task id="4">Implement update_instance() - terminate existing, create new with parameters, reset current_time, error if not found</task>
+      <task id="5">Implement Input Validation - validate_inputs(), check ALL required inputs, raise descriptive ValidationError</task>
+      <task id="6">Implement step() - acquire lock, validate inputs, set inputs, doStep, read outputs, return ReheatOutputs</task>
+      <task id="7">Implement delete_instance() - terminate, free resources, remove from dict, idempotent</task>
+      <task id="8">Add Helper Methods - get_instance, list_instances, get_active_count</task>
+      <task id="9">Unit Tests - mock FMPy, test all methods, test input validation errors</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">fmu_adapter.py with singleton pattern</criterion>
+    <criterion id="2">create_instance(instance_id, parameters) method</criterion>
+    <criterion id="3">update_instance(instance_id, parameters) method (resets FMU)</criterion>
+    <criterion id="4">step(instance_id, inputs, step_size) method</criterion>
+    <criterion id="5">delete_instance(instance_id) method</criterion>
+    <criterion id="6">Per-instance asyncio.Lock for thread safety</criterion>
+    <criterion id="7">Lazy FMU loading with startup validation</criterion>
+    <criterion id="8">Unit tests for adapter</criterion>
+    <criterion id="9">Input completeness validation - verify ALL required inputs, throw descriptive error</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Technical Specification</title>
+        <section>Section 3.4 Key Design Decisions</section>
+        <snippet>Singleton FMU Adapter manages all FMU instances in-process memory. Per-instance asyncio.Lock for concurrent step serialization. Lazy FMU loading - startup validates files exist, extract on first use.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/poc-findings.md</path>
+        <title>G36 FMU POC Findings</title>
+        <section>Code Examples</section>
+        <snippet>POC demonstrates FMU lifecycle: create_fmu_instance(), set_inputs(), doStep(), get_outputs(), cleanup. Q13 confirms FMU accepts invalid inputs silently - pre-validation required.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1-8-reheat-dtos-validation.md</path>
+        <title>Story 1.8 Reheat DTOs</title>
+        <section>Completion Notes</section>
+        <snippet>Separated API layer (ReheatInputsRequest) from internal FMU layer (ReheatInputs). ReheatInputs validates Kelvin 250-350K. Use ReheatInputs for adapter, ReheatInputsRequest for API.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <file>
+        <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+        <kind>dto</kind>
+        <symbol>ReheatInputs, ReheatOutputs, ReheatParameters</symbol>
+        <reason>Internal FMU layer DTOs. ReheatInputs has validated Kelvin temps. Adapter uses these for type-safe input/output mapping.</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/config/settings.py</path>
+        <kind>config</kind>
+        <symbol>Settings, get_settings, get_fmu_path</symbol>
+        <reason>FMU path configuration via pydantic-settings. get_fmu_path(sequence_type) returns Path for FMU file.</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/main.py</path>
+        <kind>application</kind>
+        <symbol>app, lifespan</symbol>
+        <reason>FastAPI app with lifespan context. Shows FMU path validation on startup pattern.</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/fmu-sequence/scripts/validate_fmu_execution.py</path>
+        <kind>poc-script</kind>
+        <symbol>create_fmu_instance, set_inputs, get_outputs</symbol>
+        <lines>58-70, 73-85, 88-92</lines>
+        <reason>POC reference implementation of FMU lifecycle. Shows FMPy usage: FMU2Slave, instantiate, setupExperiment, enterInitializationMode, exitInitializationMode, doStep, terminate, freeInstance.</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/tests/conftest.py</path>
+        <kind>test-fixture</kind>
+        <symbol>client</symbol>
+        <reason>Existing test fixtures. TestClient pattern for FastAPI testing.</reason>
+      </file>
+    </code>
+    <dependencies>
+      <python>
+        <package name="fmpy" version=">=0.3.0">FMU execution library - read_model_description, extract, FMU2Slave</package>
+        <package name="fastapi" version=">=0.104.0">Web framework</package>
+        <package name="pydantic" version=">=2.5.0">Data validation</package>
+        <package name="pytest" version=">=7.4.0">Testing framework</package>
+        <package name="pytest-mock" version=">=3.11.1">Mocking for tests</package>
+        <package name="pytest-asyncio" version=">=0.21.0">Async test support</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <interfaces>
+    <interface>
+      <name>FmuAdapter</name>
+      <kind>singleton-class</kind>
+      <signature>
+class FmuAdapter:
+    def create_instance(self, instance_id: str, sequence_type: str, parameters: ReheatParameters | None = None) -> bool
+    def update_instance(self, instance_id: str, parameters: ReheatParameters) -> bool
+    def step(self, instance_id: str, inputs: ReheatInputs, step_size: float) -> ReheatOutputs
+    def delete_instance(self, instance_id: str) -> bool
+    def get_instance(self, instance_id: str) -> FmuInstance
+    def list_instances(self) -> list[str]
+    def get_active_count(self) -> int
+      </signature>
+      <path>apps/control-sequence-api-app/src/adapters/fmu_adapter.py</path>
+    </interface>
+    <interface>
+      <name>FmuInstance</name>
+      <kind>dataclass</kind>
+      <signature>
+@dataclass
+class FmuInstance:
+    fmu: FMU2Slave
+    model_description: ModelDescription
+    unzip_dir: str
+    current_time: float
+    lock: asyncio.Lock
+    value_refs: dict[str, int]
+    sequence_type: str
+      </signature>
+      <path>apps/control-sequence-api-app/src/models/fmu_instance.py</path>
+    </interface>
+    <interface>
+      <name>FMPy FMU2Slave</name>
+      <kind>external-library</kind>
+      <signature>
+fmu.instantiate()
+fmu.setupExperiment(startTime=0.0)
+fmu.enterInitializationMode()
+fmu.exitInitializationMode()
+fmu.setReal([ref], [value])
+fmu.setBoolean([ref], [value])
+fmu.setInteger([ref], [value])
+fmu.doStep(currentCommunicationPoint, communicationStepSize)
+fmu.getReal([ref]) -> list[float]
+fmu.terminate()
+fmu.freeInstance()
+      </signature>
+      <path>fmpy.fmi2.FMU2Slave</path>
+    </interface>
+  </interfaces>
+
+  <constraints>
+    <constraint source="tech-spec">Singleton pattern - single adapter manages all FMU instances in-process memory</constraint>
+    <constraint source="tech-spec">Per-instance asyncio.Lock - concurrent step calls on same instance serialized, different instances parallel</constraint>
+    <constraint source="tech-spec">Lazy FMU loading - startup validates files exist, extract on first use per sequence type</constraint>
+    <constraint source="poc-findings">FMU accepts invalid inputs silently - must validate ALL inputs before FMU call</constraint>
+    <constraint source="poc-findings">FMU is stateful - instances must be kept alive in memory</constraint>
+    <constraint source="poc-findings">No native state persistence - crash recovery starts fresh</constraint>
+    <constraint source="story-1.8">Use ReheatInputs (internal Kelvin-validated) not ReheatInputsRequest (API layer)</constraint>
+    <constraint source="CLAUDE.md">TDD workflow - write failing test first, implement to pass</constraint>
+    <constraint source="CLAUDE.md">Mock external libraries (FMPy) for unit tests</constraint>
+  </constraints>
+
+  <tests>
+    <standards>
+TDD workflow per CLAUDE.md: Write failing test first, implement to make test pass.
+Mock FMPy library for unit tests - no actual FMU file needed.
+pytest with pytest-mock for mocking, pytest-asyncio for async tests.
+Tests in apps/control-sequence-api-app/tests/unit/test_fmu_adapter.py.
+    </standards>
+    <locations>
+      <location>apps/control-sequence-api-app/tests/unit/</location>
+      <location>apps/control-sequence-api-app/tests/integration/</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Test singleton pattern returns same instance</idea>
+      <idea ac="2">Test create_instance with default and custom parameters</idea>
+      <idea ac="2">Test create_instance idempotent (duplicate returns success)</idea>
+      <idea ac="3">Test update_instance resets state, raises error if not found</idea>
+      <idea ac="4">Test step returns valid ReheatOutputs</idea>
+      <idea ac="5">Test delete_instance removes instance, idempotent</idea>
+      <idea ac="6">Test per-instance lock serializes concurrent steps</idea>
+      <idea ac="7">Test lazy loading extracts FMU on first use</idea>
+      <idea ac="9">Test step with missing inputs raises ValidationError with descriptive message</idea>
+      <idea ac="9">Test validate_inputs checks ALL required inputs before FMU call</idea>
+    </ideas>
+  </tests>
+</story-context>

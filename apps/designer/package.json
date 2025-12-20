@@ -14,6 +14,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "generate:api-client": "openapi-ts --input http://localhost:8000/openapi.json --output ./src/domains/building-semantics/api/generated --client @hey-api/client-fetch && sed -i '' \"s|baseUrl: 'http://localhost:8000'|baseUrl: '/building-semantics'|g\" ./src/domains/building-semantics/api/generated/client.gen.ts",
+    "generate:control-sequence-client": "openapi-ts --input http://localhost:8001/openapi.json --output ./src/domains/control-sequence/api/generated --client @hey-api/client-fetch && sed -i '' \"s|baseUrl: 'http://localhost:8001'|baseUrl: '/control-sequence'|g\" ./src/domains/control-sequence/api/generated/client.gen.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
@@ -45,6 +46,7 @@
     "cmdk": "^1.1.1",
     "drizzle-orm": "^0.44.5",
     "jose": "^6.1.0",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.468.0",
     "monaco-editor": "^0.53.0",
     "mqtt": "^5.14.1",
@@ -72,6 +74,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^30.0.0",
+    "@types/lodash": "^4.17.21",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

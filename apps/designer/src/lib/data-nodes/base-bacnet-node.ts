@@ -19,7 +19,7 @@ import { v4 as uuidv4 } from 'uuid'
 import {
   toComputeValueWithParsing,
   convertMultistatePresentValue,
-} from './bacnet-utils'
+} from './utils/bacnet-utils'
 import { makeSerializable } from '@/lib/workflow/serialization-utils'
 import { Subscription } from 'rxjs'
 import { MqttBusManager } from '@/lib/mqtt/mqtt-bus'
@@ -289,7 +289,7 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
     this.onDataChange()
   }
 
-  dispose(): void {
+  async cleanup(): Promise<void> {
     this.mqttSubscription?.unsubscribe()
     this.mqttSubscription = undefined
   }

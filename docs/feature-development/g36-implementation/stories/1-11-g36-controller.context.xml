@@ -1,0 +1,289 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.11</storyId>
+    <title>G36 Router &amp; Endpoints</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-07</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.11-g36-controller.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>all Reheat API endpoints implemented</iWant>
+    <soThat>Designer can interact with the Control Sequence API</soThat>
+    <tasks>
+      <task id="1" ac="6">Add FMU Variable Metadata to DTO Fields
+        <subtask>Add fmu_var metadata to all ReheatInputs fields using Field json_schema_extra</subtask>
+        <subtask>Add fmu_var metadata to all ReheatParameters fields</subtask>
+        <subtask>Add fmu_var metadata to all ReheatOutputs fields</subtask>
+        <subtask>Add fmu_var metadata to all ReheatCalculatedParameters fields</subtask>
+      </task>
+      <task id="2" ac="1">Define Unit Conversion Strategy
+        <subtask>DECISION REQUIRED: Where should unit fields live in request DTOs?</subtask>
+        <subtask>Identify all unit types needed (Temperature, Airflow, Pressure)</subtask>
+        <subtask>Define default units and document which fields require conversion</subtask>
+        <subtask>Design conversion helpers and unit tests</subtask>
+      </task>
+      <task id="3" ac="1-4">Create G36 Router
+        <subtask>Create src/routers/g36_router.py</subtask>
+        <subtask>Add POST /api/v1/g36/reheat/instances endpoint (upsert)</subtask>
+        <subtask>Add POST /api/v1/g36/reheat/instances/{instance_id}/step endpoint</subtask>
+        <subtask>Add DELETE /api/v1/g36/instances/{instance_id} endpoint</subtask>
+        <subtask>Add docstrings for OpenAPI documentation</subtask>
+        <subtask>Define request/response DTOs</subtask>
+      </task>
+      <task id="4" ac="1-3">Create G36 Controller
+        <subtask>Create src/controllers/g36_controller.py</subtask>
+        <subtask>Implement G36Controller class with FmuAdapter dependency injection</subtask>
+        <subtask>Implement async upsert_instance()</subtask>
+        <subtask>Implement async step()</subtask>
+        <subtask>Implement async delete_instance() - idempotent</subtask>
+        <subtask>Map adapter exceptions to HTTP errors per tech spec Section 4.3</subtask>
+      </task>
+      <task id="5" ac="1">Extend FmuAdapter for Upsert
+        <subtask>Add async upsert_fmu_instance(instance_id, sequence_type, fmu_data) method</subtask>
+        <subtask>If instance exists: terminate existing, create new with same instance_id</subtask>
+        <subtask>If instance doesn't exist: create new</subtask>
+        <subtask>Unit tests for upsert_fmu_instance</subtask>
+      </task>
+      <task id="6" ac="4">Register Router in main.py
+        <subtask>Import g36_router in main.py</subtask>
+        <subtask>Register with app.include_router(g36_router)</subtask>
+        <subtask>Verify endpoints appear in /docs</subtask>
+      </task>
+      <task id="7" ac="1-3">Unit Tests for Controller
+        <subtask>Create tests/unit/test_controllers/test_g36_controller.py</subtask>
+        <subtask>Test upsert_instance creates/recreates</subtask>
+        <subtask>Test step success/400/404</subtask>
+        <subtask>Test delete_instance idempotent</subtask>
+        <subtask>Mock FmuAdapter for unit tests</subtask>
+      </task>
+      <task id="8" ac="5">Integration Tests for Router
+        <subtask>Create tests/integration/test_g36_router.py</subtask>
+        <subtask>Test POST /instances creates/recreates</subtask>
+        <subtask>Test POST /instances/{id}/step returns outputs/400/404</subtask>
+        <subtask>Test DELETE /instances/{id} idempotent</subtask>
+        <subtask>Use TestClient with real FmuAdapter and FMU file</subtask>
+      </task>
+      <task id="9" ac="6">DTO-to-ReheatFMUData Field Completeness Tests
+        <subtask>Create tests/unit/test_dto_fmu_completeness.py</subtask>
+        <subtask>Use fmu_var metadata to validate mappings</subtask>
+        <subtask>Test every DTO field has corresponding FMU mapping</subtask>
+        <subtask>Fail-fast: test fails if DTO field added without FMU mapping</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">POST /api/v1/g36/reheat/instances (upsert - creates or recreates with provided params)</criterion>
+    <criterion id="2">POST /api/v1/g36/reheat/instances/{instance_id}/step (execute step)</criterion>
+    <criterion id="3">DELETE /api/v1/g36/instances/{instance_id} (delete - idempotent, sequence-agnostic)</criterion>
+    <criterion id="4">All endpoints documented in OpenAPI</criterion>
+    <criterion id="5">Integration tests for all endpoints</criterion>
+    <criterion id="6">DTO-to-FMU mapping verified with unit tests (inputs, outputs, parameters, calculated parameters)</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API - Technical Specification</title>
+        <section>Section 3.2 - Component Responsibilities</section>
+        <snippet>Router → Controller → Adapter layering. Routers handle HTTP, Controllers handle business logic, Adapters wrap FMPy.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API - Technical Specification</title>
+        <section>Section 4.1 - Endpoints</section>
+        <snippet>POST /api/v1/g36/reheat/instances (create), POST /step (execute), DELETE /api/v1/g36/instances/{id} (sequence-agnostic delete).</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API - Technical Specification</title>
+        <section>Section 4.2 - Request/Response Schemas</section>
+        <snippet>CreateInstanceRequest, CreateInstanceResponse, StepRequest, StepResponse, DeleteInstanceResponse with JSON examples.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API - Technical Specification</title>
+        <section>Section 4.3 - Error Handling</section>
+        <snippet>400 for validation errors, 404 for instance not found, 500 for FMU execution errors.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.10-fmu-adapter-singleton.md</path>
+        <title>Story 1.10: FMU Adapter Singleton</title>
+        <section>Dev Agent Record - Learnings</section>
+        <snippet>FmuAdapter.get_instance(), current methods: create_fmu_instance, update_fmu_instance, step, delete_fmu_instance, has_instance. Gap: need upsert_fmu_instance with caller-provided instance_id.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Development Guidelines</title>
+        <section>TDD Workflow</section>
+        <snippet>Write tests first, Red-Green-Refactor cycle. Run pytest from project root with PYTHONPATH set.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/adapters/fmu_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>FmuAdapter</symbol>
+        <lines>1-97</lines>
+        <reason>Singleton adapter managing FMU instances. Must extend with upsert_fmu_instance method. Current create_fmu_instance generates UUID internally.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/adapters/fmu_lifecycle.py</path>
+        <kind>lifecycle-manager</kind>
+        <symbol>FmuLifecycleManager</symbol>
+        <lines>1-175</lines>
+        <reason>Per-instance lifecycle with asyncio.Lock. terminate() method needed for upsert recreation.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/adapters/exceptions.py</path>
+        <kind>exceptions</kind>
+        <symbol>FmuInstanceNotFoundError, FmuValidationError, FmuExecutionError</symbol>
+        <lines>1-31</lines>
+        <reason>Custom exceptions to map to HTTP status codes in controller.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+        <kind>dto</kind>
+        <symbol>ReheatParameters, ReheatInputs, ReheatInputsRequest, ReheatOutputs, ReheatCalculatedParameters, CreateInstanceRequest, CreateInstanceResponse, StepRequest, StepResponse, DeleteInstanceResponse</symbol>
+        <lines>1-927</lines>
+        <reason>All Pydantic DTOs for request/response. Already has temp_in_kelvin conversion. Need to add fmu_var metadata to fields.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/adapters/fmu_data/reheat_fmu_data.py</path>
+        <kind>fmu-data</kind>
+        <symbol>ReheatFMUData, ReheatInputVar, ReheatOutputVar, ReheatParameterVar</symbol>
+        <lines>1-374</lines>
+        <reason>Maps DTOs to FMU variables. create_outputs() converts FMU output dict to ReheatOutputs DTO.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/main.py</path>
+        <kind>entrypoint</kind>
+        <symbol>app, lifespan</symbol>
+        <lines>1-71</lines>
+        <reason>FastAPI app entry point. Must register g36_router here. Currently only has /health endpoint.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/routers/__init__.py</path>
+        <kind>module</kind>
+        <symbol>routers package</symbol>
+        <lines>empty</lines>
+        <reason>Empty routers package. g36_router.py will be created here.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/controllers/__init__.py</path>
+        <kind>module</kind>
+        <symbol>controllers package</symbol>
+        <lines>empty</lines>
+        <reason>Empty controllers package. g36_controller.py will be created here.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/adapters/sequence_type.py</path>
+        <kind>enum</kind>
+        <symbol>SequenceType</symbol>
+        <reason>Enum for sequence types (REHEAT). Used in upsert_fmu_instance.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="fastapi" version=">=0.104.0">Web framework for API endpoints</package>
+        <package name="uvicorn" version=">=0.24.0">ASGI server</package>
+        <package name="pydantic" version=">=2.5.0">Data validation and DTOs</package>
+        <package name="pydantic-settings" version=">=2.0.0">Settings management</package>
+        <package name="fmpy" version=">=0.3.0">FMU execution library</package>
+        <package name="loguru" version=">=0.7.0">Logging</package>
+        <package name="pytest" version=">=7.4.0" dev="true">Testing framework</package>
+        <package name="pytest-asyncio" version=">=0.21.0" dev="true">Async test support</package>
+        <package name="httpx" version=">=0.25.0" dev="true">HTTP client for TestClient</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="pattern">Router → Controller → Adapter layering per tech spec Section 3.2</constraint>
+    <constraint type="pattern">Use FastAPI Depends for controller dependency injection</constraint>
+    <constraint type="pattern">Controller maps adapter exceptions to HTTPException</constraint>
+    <constraint type="pattern">Upsert semantics: creates if new, recreates if exists (no 409/404 edge cases)</constraint>
+    <constraint type="pattern">Delete is idempotent: returns success even if not found</constraint>
+    <constraint type="pattern">Delete endpoint is sequence-agnostic: /api/v1/g36/instances/{id} (no /reheat/)</constraint>
+    <constraint type="testing">TDD workflow: write failing test first, then implement</constraint>
+    <constraint type="testing">Unit tests mock FmuAdapter; integration tests use real FMU</constraint>
+    <constraint type="fmu">FMPy has no native reset - must terminate and recreate for parameter changes</constraint>
+    <constraint type="fmu">instance_id must be globally unique across all sequence types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>POST /api/v1/g36/reheat/instances</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/v1/g36/reheat/instances -> CreateInstanceResponse</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_router.py (to be created)</path>
+      <request>CreateInstanceRequest { instance_id: str, parameters?: ReheatParameters }</request>
+      <response>CreateInstanceResponse { instance_id: str, created: bool }</response>
+    </interface>
+    <interface>
+      <name>POST /api/v1/g36/reheat/instances/{instance_id}/step</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/v1/g36/reheat/instances/{instance_id}/step -> StepResponse</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_router.py (to be created)</path>
+      <request>StepRequest { stepSize: float, inputs: ReheatInputsRequest }</request>
+      <response>StepResponse { instance_id: str, outputs: ReheatOutputs }</response>
+    </interface>
+    <interface>
+      <name>DELETE /api/v1/g36/instances/{instance_id}</name>
+      <kind>REST endpoint</kind>
+      <signature>DELETE /api/v1/g36/instances/{instance_id} -> DeleteInstanceResponse</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_router.py (to be created)</path>
+      <response>DeleteInstanceResponse { instance_id: str, deleted: bool }</response>
+    </interface>
+    <interface>
+      <name>FmuAdapter.upsert_fmu_instance</name>
+      <kind>method</kind>
+      <signature>async upsert_fmu_instance(instance_id: str, sequence_type: SequenceType, fmu_data: FMUDataProtocol) -> bool</signature>
+      <path>apps/control-sequence-api-app/src/adapters/fmu_adapter.py</path>
+      <returns>True if created new, False if recreated existing</returns>
+    </interface>
+    <interface>
+      <name>G36Controller</name>
+      <kind>class</kind>
+      <signature>G36Controller(adapter: FmuAdapter)</signature>
+      <path>apps/control-sequence-api-app/src/controllers/g36_controller.py (to be created)</path>
+      <methods>upsert_instance(request) -> CreateInstanceResponse, step(instance_id, request) -> StepResponse, delete_instance(instance_id) -> DeleteInstanceResponse</methods>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      TDD workflow per CLAUDE.md: write failing test first, implement to pass, refactor.
+      Use pytest with pytest-asyncio for async tests.
+      Unit tests mock external dependencies (FmuAdapter for controller tests).
+      Integration tests use real FMU file with TestClient.
+      Run from project root: PYTHONPATH=.:apps/control-sequence-api-app python -m pytest apps/control-sequence-api-app/tests/ -v
+    </standards>
+    <locations>
+      <location>apps/control-sequence-api-app/tests/unit/test_controllers/test_g36_controller.py (to be created)</location>
+      <location>apps/control-sequence-api-app/tests/integration/test_g36_router.py (to be created)</location>
+      <location>apps/control-sequence-api-app/tests/unit/test_dto_fmu_completeness.py (to be created)</location>
+      <location>apps/control-sequence-api-app/tests/unit/test_fmu_adapter.py (existing - extend for upsert)</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Test upsert creates new instance when instance_id doesn't exist</idea>
+      <idea ac="1">Test upsert recreates instance when instance_id exists (returns created=False)</idea>
+      <idea ac="2">Test step returns valid outputs for valid inputs</idea>
+      <idea ac="2">Test step returns 400 for invalid inputs (validation error)</idea>
+      <idea ac="2">Test step returns 404 for unknown instance_id</idea>
+      <idea ac="3">Test delete returns success for existing instance</idea>
+      <idea ac="3">Test delete returns success for non-existent instance (idempotent)</idea>
+      <idea ac="4">Verify all endpoints appear in /docs (OpenAPI)</idea>
+      <idea ac="5">Full integration test: create -> step -> delete flow</idea>
+      <idea ac="6">Test all ReheatInputs fields have corresponding fmu_var metadata</idea>
+      <idea ac="6">Test all ReheatParameters fields have corresponding fmu_var metadata</idea>
+      <idea ac="6">Test all ReheatOutputs fields have corresponding fmu_var metadata</idea>
+      <idea ac="6">Test all fmu_var metadata values match ReheatFMUData mappings</idea>
+    </ideas>
+  </tests>
+</story-context>

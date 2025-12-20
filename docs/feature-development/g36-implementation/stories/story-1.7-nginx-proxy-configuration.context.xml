@@ -1,0 +1,141 @@
+<story-context id="story-1.7-nginx-proxy-configuration" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>7</storyId>
+    <title>Nginx Proxy Configuration</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.7-nginx-proxy-configuration.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>the control-sequence-api routed through the nginx proxy</iWant>
+    <soThat>Designer can access the API through the unified gateway</soThat>
+    <tasks>
+      <task id="1" ac="2">Add environment variables to .env
+        <subtask>Add CONTROL_SEQUENCE_HOST=host.docker.internal</subtask>
+        <subtask>Add CONTROL_SEQUENCE_PORT=8001</subtask>
+        <subtask>Verify port matches tech spec (8001)</subtask>
+      </task>
+      <task id="2" ac="1,3">Add nginx location block
+        <subtask>Add /control-sequence location to nginx.conf.template</subtask>
+        <subtask>Configure rewrite rule to strip /control-sequence prefix</subtask>
+        <subtask>Set proxy_pass to http://${CONTROL_SEQUENCE_HOST}:${CONTROL_SEQUENCE_PORT}</subtask>
+        <subtask>Add standard proxy headers (Host, X-Real-IP, X-Forwarded-For, X-Forwarded-Proto)</subtask>
+        <subtask>Follow existing building-semantics pattern</subtask>
+      </task>
+      <task id="3" ac="4">Update infra README
+        <subtask>Document new /control-sequence route</subtask>
+        <subtask>Document CONTROL_SEQUENCE_HOST and CONTROL_SEQUENCE_PORT variables</subtask>
+        <subtask>Add example curl command for health check</subtask>
+      </task>
+      <task id="4" ac="5">Verify proxy routing
+        <subtask>Start control-sequence-api on port 8001 (from Story 1.6)</subtask>
+        <subtask>Start nginx proxy with docker-compose</subtask>
+        <subtask>Test with curl: curl http://localhost:3000/control-sequence/docs</subtask>
+        <subtask>Verify Swagger UI loads through proxy</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Add /control-sequence location to nginx.conf.template</criterion>
+    <criterion id="2">Add CONTROL_SEQUENCE_HOST and CONTROL_SEQUENCE_PORT to .env</criterion>
+    <criterion id="3">Route /control-sequence/* to http://${CONTROL_SEQUENCE_HOST}:${CONTROL_SEQUENCE_PORT}</criterion>
+    <criterion id="4">Update infra README with new service documentation</criterion>
+    <criterion id="5">Verify proxy routing works with curl test</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Tech Spec</title>
+        <section>3.3 Configuration</section>
+        <snippet>API_PORT defaults to 8001 to avoid conflict with building-semantics-api (8000). API path prefix: /api/v1/g36/</snippet>
+      </doc>
+      <doc>
+        <path>infra/README.md</path>
+        <title>Infra README</title>
+        <section>Overview</section>
+        <snippet>Nginx reverse proxy on port 3000. Routes / to Next.js, /mqtt to NanoMQ, /building-semantics to building-semantics-api. Need to add /control-sequence route.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>infra/proxy/nginx.conf.template</path>
+        <kind>config</kind>
+        <symbol>nginx config</symbol>
+        <lines>1-45</lines>
+        <reason>Main file to modify. Contains existing /building-semantics location block (lines 33-42) as template pattern for new /control-sequence location.</reason>
+      </artifact>
+      <artifact>
+        <path>infra/.env</path>
+        <kind>config</kind>
+        <symbol>environment variables</symbol>
+        <lines>1-10</lines>
+        <reason>Environment file to add CONTROL_SEQUENCE_HOST and CONTROL_SEQUENCE_PORT. Follow pattern of existing BUILDING_SEMANTICS_HOST/PORT.</reason>
+      </artifact>
+      <artifact>
+        <path>infra/README.md</path>
+        <kind>documentation</kind>
+        <symbol>infra readme</symbol>
+        <lines>1-51</lines>
+        <reason>Documentation to update with new /control-sequence route information. Follow existing documentation patterns.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <docker>
+        <service name="nginx">Reverse proxy container, reads nginx.conf.template with environment variable substitution</service>
+        <service name="nanomq">MQTT broker, not modified by this story</service>
+      </docker>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint source="tech-spec">Control Sequence API runs on port 8001</constraint>
+    <constraint source="infra-pattern">Follow building-semantics location block pattern exactly</constraint>
+    <constraint source="infra-pattern">Use rewrite rule to strip path prefix before forwarding</constraint>
+    <constraint source="infra-pattern">Use host.docker.internal for cross-container host communication</constraint>
+    <constraint source="dependency">Story 1.6 (Project Setup) must be complete for verification testing</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>/control-sequence location</name>
+      <kind>nginx location block</kind>
+      <signature>location /control-sequence { rewrite ^/control-sequence(/.*)$ $1 break; proxy_pass http://${CONTROL_SEQUENCE_HOST}:${CONTROL_SEQUENCE_PORT}; ... }</signature>
+      <path>infra/proxy/nginx.conf.template</path>
+    </interface>
+    <interface>
+      <name>CONTROL_SEQUENCE_HOST</name>
+      <kind>environment variable</kind>
+      <signature>CONTROL_SEQUENCE_HOST=host.docker.internal</signature>
+      <path>infra/.env</path>
+    </interface>
+    <interface>
+      <name>CONTROL_SEQUENCE_PORT</name>
+      <kind>environment variable</kind>
+      <signature>CONTROL_SEQUENCE_PORT=8001</signature>
+      <path>infra/.env</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Manual verification using curl commands and docker-compose. No automated tests for nginx configuration - verify by running and testing endpoints.</standards>
+    <locations>
+      <location>Manual testing via curl</location>
+      <location>Docker compose up for proxy verification</location>
+    </locations>
+    <ideas>
+      <idea ac="1,3">curl http://localhost:3000/control-sequence/docs returns 200 (Swagger UI)</idea>
+      <idea ac="1,3">curl http://localhost:3000/control-sequence/api/v1/health returns healthy JSON</idea>
+      <idea ac="3">Verify path prefix /control-sequence is stripped (API receives /api/v1/health not /control-sequence/api/v1/health)</idea>
+      <idea ac="2">Verify .env file parses correctly in docker-compose</idea>
+    </ideas>
+  </tests>
+</story-context>

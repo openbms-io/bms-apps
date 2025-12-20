@@ -1,0 +1,222 @@
+<story-context id="1b.1-g36-vav-reheat-node-type-schema" v="1.0">
+  <metadata>
+    <epicId>1B</epicId>
+    <storyId>1</storyId>
+    <title>G36 VAV Reheat Node Type & Schema</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-13</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1b.1-g36-vav-reheat-node-type-schema.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>to define the G36 VAV Reheat node type in Designer</iWant>
+    <soThat>the block structure matches the Control Sequence API interface</soThat>
+    <tasks>
+      <task id="1" status="pending">
+        <description>Create G36 VAV Reheat node type definition using generated types from @/domains/control-sequence</description>
+        <subtasks>
+          <subtask>Define node type using React Flow's Node&lt;T&gt; with generated types</subtask>
+          <subtask>Node data extends generated types: { instance_id: string }</subtask>
+          <subtask>Import types directly from @/domains/control-sequence</subtask>
+          <subtask>Add to control-sequence domain exports</subtask>
+        </subtasks>
+      </task>
+      <task id="2" status="pending">
+        <description>Define input handles from ReheatInputsRequest generated type</description>
+        <subtasks>
+          <subtask>Use ReheatInputsRequest fields as input handle definitions</subtask>
+          <subtask>Map field names to handle IDs (zoneTemperature, coolingSetpoint, etc.)</subtask>
+          <subtask>Configure handle positions on left side of node</subtask>
+          <subtask>Required vs optional inputs from generated type's optional fields</subtask>
+        </subtasks>
+      </task>
+      <task id="3" status="pending">
+        <description>Define output handles from ReheatOutputs generated type</description>
+        <subtasks>
+          <subtask>Use ReheatOutputs fields as output handle definitions</subtask>
+          <subtask>Map field names to handle IDs (damperPosition, valvePosition, airflowSetpoint, etc.)</subtask>
+          <subtask>Configure handle positions on right side of node</subtask>
+        </subtasks>
+      </task>
+      <task id="4" status="pending">
+        <description>Register node type in Designer node registry</description>
+        <subtasks>
+          <subtask>Add g36-vav-reheat to node type registry</subtask>
+          <subtask>Configure node category as "Control Sequences"</subtask>
+          <subtask>Set default node dimensions</subtask>
+          <subtask>Register React Flow node component mapping</subtask>
+        </subtasks>
+      </task>
+      <task id="5" status="pending">
+        <description>Write node type tests</description>
+        <subtasks>
+          <subtask>Test node type registration exists</subtask>
+          <subtask>Test node data type compatibility with generated types</subtask>
+          <subtask>Test handle definitions match generated type fields</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">g36-vav-reheat node type added to Designer node registry</criterion>
+    <criterion id="2">Node data uses generated types from @/domains/control-sequence (no manual schema duplication)</criterion>
+    <criterion id="3">Input handles derived from ReheatInputsRequest generated type</criterion>
+    <criterion id="4">Output handles derived from ReheatOutputs generated type</criterion>
+    <criterion id="5">Node type registration tests pass</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Tech Spec</title>
+        <section>Section 5.2 - Designer Integration</section>
+        <snippet>Designer only stores instance_id in node data, fetches parameters from API when needed. API is source of truth for parameters.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/epics.md</path>
+        <title>G36 Visual Programming Blocks - Epic Breakdown</title>
+        <section>Story 1B.1: G36 VAV Reheat Node Type & Schema</section>
+        <snippet>Node data schema includes instance_id: string (only required field). Input handles defined from ReheatInputsRequest, output handles from ReheatOutputs generated types.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.17-designer-openapi-client.md</path>
+        <title>Story 1.17: Designer OpenAPI Client Generation</title>
+        <section>Dev Agent Record - Completion Notes</section>
+        <snippet>Generated types available at @/domains/control-sequence: ReheatParameters (50+ fields), ReheatInputsRequest, ReheatOutputs, StepRequest, StepResponse. All 542 designer tests passing.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <!-- Generated Types from Control Sequence API -->
+      <artifact>
+        <path>apps/designer/src/domains/control-sequence/index.ts</path>
+        <kind>domain-index</kind>
+        <symbol>control-sequence exports</symbol>
+        <reason>Public API for control-sequence domain - exports ReheatInputsRequest, ReheatOutputs, ReheatParameters types</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/control-sequence/api/generated/types.gen.ts</path>
+        <kind>generated-types</kind>
+        <symbol>ReheatInputsRequest, ReheatOutputs, ReheatParameters</symbol>
+        <lines>154-359</lines>
+        <reason>Generated TypeScript types from OpenAPI spec - ReheatInputsRequest has 17 fields (9 required, 8 optional), ReheatOutputs has 14 fields</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/domains/control-sequence/api/config.ts</path>
+        <kind>config</kind>
+        <symbol>client configuration</symbol>
+        <reason>API client configuration with baseUrl for nginx proxy route (/control-sequence)</reason>
+      </artifact>
+
+      <!-- Existing Node Type Patterns -->
+      <artifact>
+        <path>apps/designer/src/types/infrastructure.ts</path>
+        <kind>types</kind>
+        <symbol>NodeCategory, NodeType, DataNode, LogicNode, ControlFlowNode</symbol>
+        <reason>Core node type definitions and interfaces - follow these patterns for G36 node</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/types/node-data-types.ts</path>
+        <kind>types</kind>
+        <symbol>NodeData, NodeTypesMap, BaseNodeData</symbol>
+        <reason>UI-layer node data types - shows pattern for typed node data with React Flow</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/lib/schemas/nodes/types.ts</path>
+        <kind>schema</kind>
+        <symbol>NodeTypeSchema, CONTROL_NODE_TYPES</symbol>
+        <reason>Zod schema for node type validation - may need to add g36-vav-reheat here</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/components/nodes/custom-handle.tsx</path>
+        <kind>component</kind>
+        <symbol>CustomHandle</symbol>
+        <reason>Reusable handle component with connection count limiting - use for G36 node handles</reason>
+      </artifact>
+      <artifact>
+        <path>apps/designer/src/containers/canvas/use-node-creation.ts</path>
+        <kind>hook</kind>
+        <symbol>useNodeCreation, createNode</symbol>
+        <reason>Node creation hook - shows pattern for drag-drop node creation, may need to extend for control-sequence nodes</reason>
+      </artifact>
+
+      <!-- Test Patterns -->
+      <artifact>
+        <path>apps/designer/src/lib/schemas/nodes/types.spec.ts</path>
+        <kind>test</kind>
+        <symbol>NodeTypeSchema tests</symbol>
+        <reason>Test pattern for node type validation - follow for G36 node type tests</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="node">
+        <package name="@xyflow/react" version="^12.8.4">React Flow library for visual node-based interfaces</package>
+        <package name="zod" version="^3.x">Schema validation library</package>
+        <package name="typescript" version="^5.x">TypeScript for type definitions</package>
+        <package name="jest" version="^29.x">Testing framework</package>
+        <package name="uuid" version="^10.x">UUID generation for instance_id</package>
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint category="architecture">Use generated types directly from @/domains/control-sequence - NO manual Zod schema duplication</constraint>
+    <constraint category="architecture">Node data only stores instance_id - parameters are fetched from API</constraint>
+    <constraint category="architecture">Follow existing domain folder structure pattern (see building-semantics domain)</constraint>
+    <constraint category="code-style">Follow CLAUDE.md coding standards - no comments unless explaining "why"</constraint>
+    <constraint category="code-style">Use TypeScript strict mode with no any/unknown types</constraint>
+    <constraint category="testing">Write tests alongside implementation (TDD approach)</constraint>
+    <constraint category="testing">Use Jest with React Testing Library patterns</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>G36VavReheatNodeData</name>
+      <kind>TypeScript interface</kind>
+      <signature>interface G36VavReheatNodeData { instance_id: string }</signature>
+      <path>apps/designer/src/domains/control-sequence/types.ts (to be created)</path>
+    </interface>
+    <interface>
+      <name>G36VavReheatNode</name>
+      <kind>React Flow Node type</kind>
+      <signature>type G36VavReheatNode = Node&lt;G36VavReheatNodeData, 'g36-vav-reheat'&gt;</signature>
+      <path>apps/designer/src/domains/control-sequence/types.ts (to be created)</path>
+    </interface>
+    <interface>
+      <name>ReheatInputsRequest</name>
+      <kind>Generated TypeScript type</kind>
+      <signature>17 input fields (9 required, 8 optional): zoneTemperature, coolingSetpoint, heatingSetpoint, dischargeAirTemperature, primaryAirflow, supplyAirTemperature, supplyAirTemperatureSetpoint, fanStatus, operationMode + optional co2, override fields</signature>
+      <path>apps/designer/src/domains/control-sequence/api/generated/types.gen.ts</path>
+    </interface>
+    <interface>
+      <name>ReheatOutputs</name>
+      <kind>Generated TypeScript type</kind>
+      <signature>14 output fields: damperPosition, valvePosition, airflowSetpoint, minOutdoorAirflow, adjAreaBreathingZoneFlow, adjPopBreathingZoneFlow, flowSensorAlarm, heatingValveRequest, hotWaterPlantRequest, leakingDamperAlarm, leakingValveAlarm, lowFlowAlarm, lowTempAlarm, zonePressureRequest, zoneTempRequest</signature>
+      <path>apps/designer/src/domains/control-sequence/api/generated/types.gen.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Designer uses Jest with React Testing Library. Tests are co-located with source files using .spec.ts/.spec.tsx naming convention.
+      Follow TDD approach: write failing test first, then implement. Test behavior, not implementation details.
+      All 542 existing tests must continue to pass.
+    </standards>
+    <locations>
+      <location>apps/designer/src/**/*.spec.ts</location>
+      <location>apps/designer/src/**/*.spec.tsx</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Test that 'g36-vav-reheat' is a valid node type in the registry</idea>
+      <idea ac="2">Test that G36VavReheatNodeData type requires instance_id field</idea>
+      <idea ac="3">Test that input handle definitions match ReheatInputsRequest field names</idea>
+      <idea ac="4">Test that output handle definitions match ReheatOutputs field names</idea>
+      <idea ac="5">Test node type registration integration with React Flow nodeTypes</idea>
+    </ideas>
+  </tests>
+</story-context>

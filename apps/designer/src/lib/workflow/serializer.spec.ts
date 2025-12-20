@@ -12,8 +12,6 @@ import {
   createWorkflowConfig,
   validateWorkflowConfig,
   serializeFromReactFlowObject,
-  // prepareForReactFlow,
-  createNodeFactory,
   type WorkflowMetadata,
   type VersionedWorkflowConfig,
 } from './serializer'
@@ -60,10 +58,6 @@ describe('WorkflowSerializer', () => {
 
   const mockMqttBus = { pointBulkStream$: { subscribe: jest.fn() } }
   const mockOnDataChange = jest.fn()
-  const nodeFactory = createNodeFactory({
-    mqttBus: mockMqttBus as any,
-    onDataChange: mockOnDataChange,
-  })
 
   const mockMetadata: WorkflowMetadata = {
     lastModified: '2025-09-19T10:30:00Z',
@@ -166,7 +160,7 @@ describe('WorkflowSerializer', () => {
   })
 
   describe('deserializeWorkflow', () => {
-    it('should deserialize versioned workflow config to React Flow state', () => {
+    it('should deserialize versioned workflow config to React Flow state', async () => {
       // First create a serialized config from our real nodes
       const workflowConfig = createWorkflowConfig({
         nodes: mockNodes,
@@ -184,9 +178,10 @@ describe('WorkflowSerializer', () => {
         data: workflowConfig,
       }
 
-      const reactFlowState = deserializeWorkflow({
+      const reactFlowState = await deserializeWorkflow({
         versionedConfig,
-        nodeFactory,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       })
 
       expect(reactFlowState.nodes).toHaveLength(2)
@@ -200,7 +195,7 @@ describe('WorkflowSerializer', () => {
       expect(deserializedNode.data).toBeInstanceOf(ConstantNode)
     })
 
-    it('should handle empty versioned config', () => {
+    it('should handle empty versioned config', async () => {
       const emptyVersionedConfig: VersionedWorkflowConfig = {
         schema_info: {
           version: SCHEMA_VERSION,
@@ -214,9 +209,10 @@ describe('WorkflowSerializer', () => {
         },
       }
 
-      const reactFlowState = deserializeWorkflow({
+      const reactFlowState = await deserializeWorkflow({
         versionedConfig: emptyVersionedConfig,
-        nodeFactory,
+        mqttBus: mockMqttBus as any,
+        onDataChange: mockOnDataChange,
       })
 
       expect(reactFlowState.nodes).toEqual([])

@@ -1,0 +1,17 @@
+# FMU/OpenModelica build artifacts (CMake timestamp files with .ts extension)
+apps/control-sequence-api-app/fmu-sequence/reheat/
+*.fmutmp/
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+coverage/
+
+# Python
+.venv/
+__pycache__/
+*.egg-info/

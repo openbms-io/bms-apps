@@ -1,0 +1,255 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1B</epicId>
+    <storyId>4</storyId>
+    <title>G36 Configuration Panel</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-12-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1b.4-g36-configuration-panel.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>building controls engineer</asA>
+    <iWant>configure G36 block parameters</iWant>
+    <soThat>I can customize the controller for my zone</soThat>
+    <tasks>
+      <task id="0">Add Categories Mapping to Instance Responses (AC: #2)</task>
+      <task id="1">Add getInstance/updateInstance to API Client (AC: #2, #6)</task>
+      <task id="2">Create G36ConfigurationPanel Component (AC: #1, #7)</task>
+      <task id="3">Fetch and Display Parameters (AC: #2)</task>
+      <task id="4">Parameter Category Grouping (AC: #3)</task>
+      <task id="5">Unit Selection Dropdowns (AC: #4)</task>
+      <task id="6">Conditional Visibility - Panel Fields (AC: #5)</task>
+      <task id="7">Sensor Params Control Node Input Handles (AC: #5)</task>
+      <task id="8">Save Functionality (AC: #6)</task>
+      <task id="9">Write Component Tests (AC: #8)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1">Click block opens configuration panel</ac>
+    <ac id="2">All instance responses (GET/PUT/POST) return flat parameters + categories mapping</ac>
+    <ac id="3">Parameters grouped into Basic (Units, Sensors - expanded) and Advanced (collapsed) sections</ac>
+    <ac id="4">Unit selection dropdown for temperature (K/C/F) and airflow (m³/s, cfm, L/s, m³/h)</ac>
+    <ac id="5">Conditional visibility: sensor toggle changes hide/show related panel fields AND node input handles</ac>
+    <ac id="6">Save button calls PUT /api/v1/g36/vav-reheat/instances/{instance_id} and updates node handles</ac>
+    <ac id="7">Uses existing side panel patterns from Designer (FunctionPropertiesContainer pattern)</ac>
+    <ac id="8">Component tests pass</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Tech Spec</title>
+        <section>Section 5.2 - Designer Integration</section>
+        <snippet>Designer integration flows for node creation, parameter fetching, updating, and step execution. Defines API endpoints and data flow.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/epics.md</path>
+        <title>G36 Implementation Epics</title>
+        <section>Story 1B.4: G36 Configuration Panel</section>
+        <snippet>Defines acceptance criteria for configuration panel: click opens panel, fetches parameters, grouped by category, unit dropdowns, conditional fields, save button.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Development Guidelines</title>
+        <section>Development Philosophy</section>
+        <snippet>TDD workflow, shadcn/ui components, Zustand state management, no overengineering, fail fast principles.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <file>
+        <path>apps/designer/src/domains/control-sequence/api/client.ts</path>
+        <kind>api-client</kind>
+        <symbol>createInstance, deleteInstance, stepInstance</symbol>
+        <lines>1-69</lines>
+        <reason>API client wrapper - NEED to add getInstance and updateInstance functions for AC #2 and #6</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/control-sequence/api/generated/types.gen.ts</path>
+        <kind>generated-types</kind>
+        <symbol>ReheatParameters, TemperatureUnit, AirflowUnit, GetInstanceResponseReheatParameters, UpdateParametersRequestReheatParameters</symbol>
+        <lines>379-712</lines>
+        <reason>Generated TypeScript types from OpenAPI spec - contains all parameter types for the form</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/components/nodes/g36-vav-reheat-node.tsx</path>
+        <kind>component</kind>
+        <symbol>G36VavReheatNode</symbol>
+        <lines>1-17</lines>
+        <reason>G36 node component - needs click handler to open configuration panel</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/components/nodes/control-sequence-node-ui.tsx</path>
+        <kind>component</kind>
+        <symbol>createControlSequenceNodeUI</symbol>
+        <lines>1-294</lines>
+        <reason>Factory for control sequence node UI - may need to add click handler or expose callback for panel opening</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/components/nodes/properties-panel.tsx</path>
+        <kind>component</kind>
+        <symbol>PropertiesPanel</symbol>
+        <lines>1-148</lines>
+        <reason>Existing side panel pattern using Sheet component - follow this pattern for G36 configuration panel</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/components/ui/sheet.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter</symbol>
+        <lines>1-141</lines>
+        <reason>shadcn/ui Sheet component - use for slide-in panel UI</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/models/reheat/parameters.py</path>
+        <kind>domain-model</kind>
+        <symbol>ReheatParameters</symbol>
+        <lines>1-384</lines>
+        <reason>Python model defining all 55+ parameters with categories, units, and descriptions - use as reference for form groupings</reason>
+      </file>
+      <file>
+        <path>apps/control-sequence-api-app/src/routers/g36_vav_reheat_router.py</path>
+        <kind>router</kind>
+        <symbol>get_instance, update_instance</symbol>
+        <lines>58-104</lines>
+        <reason>API endpoints for GET and PUT instance parameters</reason>
+      </file>
+      <file>
+        <path>apps/designer/src/domains/control-sequence/api/generated/sdk.gen.ts</path>
+        <kind>generated-sdk</kind>
+        <symbol>getInstanceApiV1G36VavReheatInstancesInstanceIdGet, updateInstanceApiV1G36VavReheatInstancesInstanceIdPut</symbol>
+        <reason>Generated SDK functions to wrap in client.ts for getInstance and updateInstance</reason>
+      </file>
+    </code>
+
+    <dependencies>
+      <package>
+        <name>@radix-ui/react-dialog</name>
+        <version>^1.1.15</version>
+        <reason>Used by Sheet component for side panel</reason>
+      </package>
+      <package>
+        <name>@radix-ui/react-select</name>
+        <version>^2.2.6</version>
+        <reason>For unit selection dropdowns</reason>
+      </package>
+      <package>
+        <name>@radix-ui/react-collapsible</name>
+        <version>^1.1.12</version>
+        <reason>For collapsible parameter category sections</reason>
+      </package>
+      <package>
+        <name>@radix-ui/react-switch</name>
+        <version>^1.2.6</version>
+        <reason>For boolean sensor config toggles</reason>
+      </package>
+      <package>
+        <name>zustand</name>
+        <version>^5.0.8</version>
+        <reason>Existing useFlowStore used for updateNode to modify node handles on save</reason>
+      </package>
+      <package>
+        <name>sonner</name>
+        <version>^2.0.7</version>
+        <reason>Toast notifications for save success/error</reason>
+      </package>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="1">Use shadcn/ui components for all UI elements (Sheet, Select, Input, Switch, Collapsible, Button)</constraint>
+    <constraint id="2">Follow existing PropertiesPanel pattern for side panel structure</constraint>
+    <constraint id="3">Use generated types from OpenAPI - do not manually redefine ReheatParameters</constraint>
+    <constraint id="4">API client functions must wrap generated SDK functions with error handling</constraint>
+    <constraint id="5">Maintain existing test health (435+ tests passing)</constraint>
+    <constraint id="6">Keep form state local to panel - update Zustand store only on successful save</constraint>
+    <constraint id="7">Use TDD approach - write tests alongside implementation</constraint>
+    <constraint id="8">Do not add comments unless explaining WHY (per CLAUDE.md)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/v1/g36/vav-reheat/instances/{instance_id}</name>
+      <kind>REST endpoint</kind>
+      <signature>GET → { instance_id: string, parameters: ReheatParameters, categories: Record&lt;string, string[]&gt; }</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_vav_reheat_router.py:58-78</path>
+    </interface>
+    <interface>
+      <name>PUT /api/v1/g36/vav-reheat/instances/{instance_id}</name>
+      <kind>REST endpoint</kind>
+      <signature>PUT { parameters: ReheatParameters } → { instance_id: string, parameters: ReheatParameters, categories: Record&lt;string, string[]&gt; }</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_vav_reheat_router.py:81-104</path>
+    </interface>
+    <interface>
+      <name>POST /api/v1/g36/vav-reheat/instances</name>
+      <kind>REST endpoint</kind>
+      <signature>POST { parameters?: ReheatParameters } → { instance_id: string, parameters: ReheatParameters, categories: Record&lt;string, string[]&gt; }</signature>
+      <path>apps/control-sequence-api-app/src/routers/g36_vav_reheat_router.py</path>
+    </interface>
+    <interface>
+      <name>ReheatParameters</name>
+      <kind>TypeScript type (generated)</kind>
+      <signature>type ReheatParameters = { temperatureUnit?: TemperatureUnit; airflowUnit?: AirflowUnit; hasCO2Sensor?: boolean; ... 50+ fields }</signature>
+      <path>apps/designer/src/domains/control-sequence/api/generated/types.gen.ts:379-712</path>
+    </interface>
+    <interface>
+      <name>TemperatureUnit</name>
+      <kind>TypeScript enum (generated)</kind>
+      <signature>type TemperatureUnit = 'K' | 'C' | 'F'</signature>
+      <path>apps/designer/src/domains/control-sequence/api/generated/types.gen.ts:755</path>
+    </interface>
+    <interface>
+      <name>AirflowUnit</name>
+      <kind>TypeScript enum (generated)</kind>
+      <signature>type AirflowUnit = 'm3/s' | 'cfm' | 'L/s' | 'm3/h'</signature>
+      <path>apps/designer/src/domains/control-sequence/api/generated/types.gen.ts:12</path>
+    </interface>
+  </interfaces>
+
+  <sensorHandleMapping>
+    <mapping sensor="hasCO2Sensor">
+      <panelFields>CO2 threshold and setpoint parameters</panelFields>
+      <nodeInputs>co2Concentration, co2Setpoint</nodeInputs>
+    </mapping>
+    <mapping sensor="hasHotWaterCoil">
+      <panelFields>Hot water coil parameters</panelFields>
+      <nodeInputs>hotWaterPlantStatus</nodeInputs>
+    </mapping>
+    <mapping sensor="hasOccupancySensor">
+      <panelFields>Occupancy-related parameters</panelFields>
+      <nodeInputs>occupancyStatus</nodeInputs>
+    </mapping>
+    <mapping sensor="hasWindowSensor">
+      <panelFields>Window-related parameters</panelFields>
+      <nodeInputs>windowStatus</nodeInputs>
+    </mapping>
+  </sensorHandleMapping>
+
+  <tests>
+    <standards>
+      Designer uses Jest with @testing-library/react for component tests. Tests are colocated with source files using .spec.ts/.spec.tsx extension. Mock API calls using jest.mock or MSW. Follow existing patterns in apps/designer/src/components/sidebar/*.spec.tsx and apps/designer/src/domains/control-sequence/api/client.spec.ts.
+    </standards>
+    <locations>
+      <location>apps/designer/src/components/**/*.spec.tsx</location>
+      <location>apps/designer/src/domains/control-sequence/**/*.spec.ts</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Test clicking G36 node opens configuration panel (mock useFlowStore)</idea>
+      <idea ac="2">Test panel fetches parameters + categories on mount (mock getInstance API call)</idea>
+      <idea ac="3">Test Basic (units, sensors) and Advanced category sections render correctly</idea>
+      <idea ac="4">Test unit Select dropdowns render with correct options and current value</idea>
+      <idea ac="5">Test CO2 panel fields hidden when hasCO2Sensor=false, visible when true</idea>
+      <idea ac="5">Test hot water coil panel fields hidden when hasHotWaterCoil=false</idea>
+      <idea ac="5">Test node input handles updated when sensor toggle changes</idea>
+      <idea ac="5">Test co2Concentration/co2Setpoint handles visible only when hasCO2Sensor=true</idea>
+      <idea ac="6">Test save button calls updateInstance API with form values</idea>
+      <idea ac="6">Test success toast shown after save completes</idea>
+      <idea ac="6">Test error toast shown when save fails</idea>
+      <idea ac="6">Test node handles updated via updateNode after successful save</idea>
+      <idea ac="7">Test panel uses Sheet component structure</idea>
+    </ideas>
+  </tests>
+</story-context>

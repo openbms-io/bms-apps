@@ -1,0 +1,200 @@
+<story-context id="1-13-health-router" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>13</storyId>
+    <title>Health Router</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-08</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.13-health-router.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>a health check endpoint that reports API status and active FMU instance count</iWant>
+    <soThat>we can monitor API health and track resource usage</soThat>
+    <tasks>
+      <task id="1" ac="1,4">
+        <title>Create Health Router</title>
+        <subtasks>
+          <subtask>Create src/routers/health_router.py</subtask>
+          <subtask>Add GET /api/v1/health endpoint</subtask>
+          <subtask>Return HealthResponse with status, active_instances, service, version</subtask>
+          <subtask>Add docstring for OpenAPI documentation</subtask>
+        </subtasks>
+      </task>
+      <task id="2" ac="1">
+        <title>Create Health DTOs</title>
+        <subtasks>
+          <subtask>Create src/dto/health_dto.py or add to common_dto.py</subtask>
+          <subtask>Define HealthResponse model with fields: status, active_instances, service, version</subtask>
+        </subtasks>
+      </task>
+      <task id="3" ac="1">
+        <title>Integrate with FmuAdapter</title>
+        <subtasks>
+          <subtask>Inject FmuAdapter dependency to get active instance count</subtask>
+          <subtask>Use len(adapter.list_instance_ids()) or add instance_count() method</subtask>
+        </subtasks>
+      </task>
+      <task id="4" ac="4">
+        <title>Register Router in main.py</title>
+        <subtasks>
+          <subtask>Import health_router in main.py</subtask>
+          <subtask>Register with app.include_router(health_router)</subtask>
+          <subtask>Remove or deprecate existing /health endpoint in main.py</subtask>
+        </subtasks>
+      </task>
+      <task id="5" ac="1,2,3">
+        <title>Unit Tests</title>
+        <subtasks>
+          <subtask>Create tests/unit/test_routers/test_health_router.py</subtask>
+          <subtask>Test health endpoint returns correct structure</subtask>
+          <subtask>Test active_instances reflects actual FMU instances</subtask>
+          <subtask>Verify response time less than 10ms</subtask>
+        </subtasks>
+      </task>
+      <task id="6" ac="1,4">
+        <title>Integration Tests</title>
+        <subtasks>
+          <subtask>Add health endpoint test to integration tests</subtask>
+          <subtask>Test health with 0 instances</subtask>
+          <subtask>Test health with active instances</subtask>
+          <subtask>Verify OpenAPI documentation includes health endpoint</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">GET /api/v1/health endpoint returns status and active_instances count</criterion>
+    <criterion id="2">Response includes service name and version</criterion>
+    <criterion id="3">Response time less than 10ms</criterion>
+    <criterion id="4">Endpoint documented in OpenAPI</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API Tech Spec</title>
+        <section>4.1 Endpoints, UC6: Health Check</section>
+        <snippet>GET /api/v1/health returns status:healthy and active_instances count. NFR4 requires less than 10ms p95 response time.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.11-g36-controller.md</path>
+        <title>Story 1.11 G36 Controller</title>
+        <section>Dev Agent Record - Learnings</section>
+        <snippet>Router pattern uses FastAPI Depends for DI. Use app.include_router() for registration. FmuAdapter.get_instance() for singleton access.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/main.py</path>
+        <kind>entrypoint</kind>
+        <symbol>health_check, app</symbol>
+        <lines>68-74</lines>
+        <reason>Existing inline health endpoint to be replaced. Shows current response structure and where router registration happens.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/adapters/fmu_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>FmuAdapter.list_instance_ids, FmuAdapter.get_instance</symbol>
+        <lines>125-126, 34-43</lines>
+        <reason>Singleton adapter with list_instance_ids() method needed for active_instances count.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/routers/g36_router.py</path>
+        <kind>router</kind>
+        <symbol>router, get_g36_reheat_controller</symbol>
+        <lines>1-52</lines>
+        <reason>Reference implementation showing router pattern with Depends() for controller injection.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/controllers/g36_controller.py</path>
+        <kind>controller</kind>
+        <symbol>G36ReheatController</symbol>
+        <lines>1-98</lines>
+        <reason>Reference showing controller pattern with adapter dependency injection.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/tests/integration/test_g36_router.py</path>
+        <kind>test</kind>
+        <symbol>TestOpenAPIDocumentation, integration_client</symbol>
+        <lines>349-376, 23-30</lines>
+        <reason>Test patterns for router integration tests and OpenAPI verification.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/tests/conftest.py</path>
+        <kind>test-fixture</kind>
+        <symbol>client, fmu_adapter</symbol>
+        <lines>1-62</lines>
+        <reason>Shared test fixtures including TestClient and FmuAdapter reset patterns.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="fastapi" version=">=0.104.0" />
+        <package name="pydantic" version=">=2.5.0" />
+        <package name="uvicorn" version=">=0.24.0" />
+        <package name="pytest" version=">=7.4.0" scope="test" />
+        <package name="httpx" version=">=0.25.0" scope="test" />
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="pattern">Follow MVC pattern: Router (HTTP) → Controller (Business Logic) → Adapter (FMU)</constraint>
+    <constraint type="pattern">Use FastAPI Depends() for dependency injection</constraint>
+    <constraint type="pattern">Use Pydantic models for request/response DTOs</constraint>
+    <constraint type="testing">TDD: Write tests first, then implement</constraint>
+    <constraint type="testing">No mocking of FmuAdapter in integration tests - test with real singleton</constraint>
+    <constraint type="performance">Health endpoint must respond in less than 10ms (NFR4)</constraint>
+    <constraint type="api">API path prefix: /api/v1/ for versioned endpoints</constraint>
+    <constraint type="architecture">FmuAdapter is singleton - use get_instance() not constructor</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/v1/health</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/v1/health → HealthResponse</signature>
+      <path>apps/control-sequence-api-app/src/routers/health_router.py</path>
+    </interface>
+    <interface>
+      <name>HealthResponse</name>
+      <kind>Pydantic model</kind>
+      <signature>HealthResponse(status: str, active_instances: int, service: str, version: str)</signature>
+      <path>apps/control-sequence-api-app/src/dto/health_dto.py</path>
+    </interface>
+    <interface>
+      <name>FmuAdapter.list_instance_ids</name>
+      <kind>method</kind>
+      <signature>def list_instance_ids(self) -> list[str]</signature>
+      <path>apps/control-sequence-api-app/src/adapters/fmu_adapter.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      TDD approach: write failing tests first, implement to make them pass. Use pytest with pytest-asyncio for async tests.
+      Unit tests mock external dependencies. Integration tests use real FmuAdapter singleton with reset between tests.
+      Test files follow pattern test_*.py in tests/unit/ or tests/integration/ directories.
+    </standards>
+    <locations>
+      <location>apps/control-sequence-api-app/tests/unit/test_routers/</location>
+      <location>apps/control-sequence-api-app/tests/integration/</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Test health returns 200 with status, active_instances, service, version fields</idea>
+      <idea ac="1">Test active_instances is 0 when no FMU instances exist</idea>
+      <idea ac="1">Test active_instances reflects actual count after creating instances</idea>
+      <idea ac="2">Test service equals "control-sequence-api" and version equals "0.1.0"</idea>
+      <idea ac="3">Test response time is less than 10ms using time measurement</idea>
+      <idea ac="4">Test /api/v1/health appears in OpenAPI spec at /openapi.json</idea>
+      <idea ac="4">Test endpoint has proper docstring visible in /docs</idea>
+    </ideas>
+  </tests>
+</story-context>

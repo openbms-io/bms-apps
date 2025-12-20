@@ -7,6 +7,7 @@ import { FunctionNode } from './function-node'
 import { SwitchNode } from './switch-node'
 import { TimerNode } from './timer-node'
 import { ScheduleNode } from './schedule-node'
+import { G36VavReheatNode } from './g36-vav-reheat-node'
 import { NodeType, NodeCategory } from '@/types/infrastructure'
 
 // Strongly typed node types for React Flow
@@ -37,4 +38,8 @@ export const nodeTypes = {
   [`${NodeCategory.CONTROL_FLOW}.${NodeType.SWITCH}`]: SwitchNode,
   [`${NodeCategory.CONTROL_FLOW}.${NodeType.TIMER}`]: TimerNode,
   [`${NodeCategory.CONTROL_FLOW}.${NodeType.SCHEDULE}`]: ScheduleNode,
+
+  // Control sequence nodes (G36)
+  [`${NodeCategory.CONTROL_SEQUENCE}.${NodeType.G36_VAV_REHEAT}`]:
+    G36VavReheatNode,
 } as const

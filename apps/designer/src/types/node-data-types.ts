@@ -13,7 +13,12 @@ import {
   ScheduleState,
 } from '@/lib/data-nodes/schedule-node'
 import { FunctionNodeMetadata } from '@/lib/data-nodes/function-node'
+import {
+  BaseControlSequenceMetadata,
+  ControlSequenceHandles,
+} from '@/lib/data-nodes/base-control-sequence-node'
 import { NodeType } from './infrastructure'
+import { SequenceType } from '@/domains/control-sequence'
 
 /**
   - React Flow UI node data types
@@ -134,6 +139,19 @@ export interface ScheduleNodeData extends ControlFlowNode, BaseNodeData {
   stateDidChange?: (state: ScheduleState) => void
 }
 
+// Control sequence node data types
+export interface ControlSequenceNodeData extends BaseNodeData {
+  category: NodeCategory.CONTROL_SEQUENCE
+  sequenceType: SequenceType
+  label: string
+  metadata: BaseControlSequenceMetadata
+  handles: ControlSequenceHandles
+}
+
+export interface G36VavReheatNodeData extends ControlSequenceNodeData {
+  type: NodeType.G36_VAV_REHEAT
+}
+
 // Discriminated union of all node data types
 export type NodeData =
   | BacnetNodeData
@@ -145,6 +163,7 @@ export type NodeData =
   | SwitchNodeData
   | TimerNodeData
   | ScheduleNodeData
+  | G36VavReheatNodeData
 
 // Map node type strings to their data types
 export interface NodeTypesMap {
@@ -172,6 +191,9 @@ export interface NodeTypesMap {
   'control-flow.switch': SwitchNodeData
   'control-flow.timer': TimerNodeData
   'control-flow.schedule': ScheduleNodeData
+
+  // Control sequence nodes
+  'control-sequence.g36-vav-reheat': G36VavReheatNodeData
 }
 
 // Type helper to get node data type from node type string

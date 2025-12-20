@@ -11,7 +11,7 @@ import {
 } from '@/types/infrastructure'
 import { Message, SendCallback } from '@/lib/message-system/types'
 import { makeSerializable } from '@/lib/workflow/serialization-utils'
-import { toNumber } from './bacnet-utils'
+import { toNumber } from './utils/bacnet-utils'
 
 export interface SwitchNodeMetadata {
   condition: 'gt' | 'lt' | 'eq' | 'gte' | 'lte'

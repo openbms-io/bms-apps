@@ -5,28 +5,18 @@ import { Button } from '@/components/ui/button'
 import { useFlowStore } from '@/store/use-flow-store'
 import { Save, Loader2, Check } from 'lucide-react'
 
-interface SaveProjectButtonProps {
-  orgId: string
-  siteId: string
-  projectId: string
-}
-
-export function SaveProjectButton({
-  orgId,
-  siteId,
-  projectId,
-}: SaveProjectButtonProps) {
+export function SaveProjectButton() {
   const saveProject = useFlowStore((state) => state.saveProject)
   const saveStatus = useFlowStore((state) => state.saveStatus)
   const [showSaved, setShowSaved] = useState(false)
 
   const handleSave = useCallback(async () => {
     try {
-      await saveProject({ orgId, siteId, projectId })
+      await saveProject()
     } catch (err) {
       console.error('Save failed:', err)
     }
-  }, [orgId, siteId, projectId, saveProject])
+  }, [saveProject])
 
   // Cmd+S / Ctrl+S keyboard shortcut
   useEffect(() => {

@@ -31,12 +31,15 @@ describe('FlowSlice - Save/Load Integration', () => {
   })
 
   describe('saveProject', () => {
+    const orgId = 'test-org-123'
+    const siteId = 'test-site-123'
+    const projectId = 'test-project-123'
+
     it('should successfully save a project with workflow config', async () => {
       // Arrange
-      const projectId = 'test-project-123'
       const mockProject: Project = {
         id: projectId,
-        siteId: 'test-site-123',
+        siteId: siteId,
         name: 'Test Project',
         description: 'Test Description',
         workflowConfig: undefined,
@@ -62,8 +65,11 @@ describe('FlowSlice - Save/Load Integration', () => {
       mockSerializeWorkflow.mockReturnValue(mockVersionedConfig)
       mockProjectsApi.update.mockResolvedValue(mockProject)
 
+      // Set project context in store
+      store.setState({ orgId, siteId, projectId })
+
       // Act
-      await store.getState().saveProject({ projectId })
+      await store.getState().saveProject()
 
       // Assert
       expect(store.getState().saveStatus).toBe('saved')
@@ -78,16 +84,15 @@ describe('FlowSlice - Save/Load Integration', () => {
         }),
       })
       expect(mockProjectsApi.update).toHaveBeenCalledWith({
-        orgId: undefined,
-        siteId: undefined,
-        projectId: projectId,
+        orgId,
+        siteId,
+        projectId,
         workflowConfig: mockVersionedConfig,
       })
     })
 
     it('should set saveStatus to error when save fails', async () => {
       // Arrange
-      const projectId = 'test-project-123'
       const error = new Error('API Error')
       const mockVersionedConfig = {
         schema_info: {
@@ -107,16 +112,16 @@ describe('FlowSlice - Save/Load Integration', () => {
       mockSerializeWorkflow.mockReturnValue(mockVersionedConfig)
       mockProjectsApi.update.mockRejectedValue(error)
 
+      // Set project context in store
+      store.setState({ orgId, siteId, projectId })
+
       // Act & Assert
-      await expect(store.getState().saveProject({ projectId })).rejects.toThrow(
-        'API Error'
-      )
+      await expect(store.getState().saveProject()).rejects.toThrow('API Error')
       expect(store.getState().saveStatus).toBe('error')
     })
 
     it('should set saveStatus to saving during operation', async () => {
       // Arrange
-      const projectId = 'test-project-123'
       const mockVersionedConfig = {
         schema_info: {
           version: '1.0.0',
@@ -141,8 +146,11 @@ describe('FlowSlice - Save/Load Integration', () => {
       })
       mockProjectsApi.update.mockReturnValue(updatePromise)
 
+      // Set project context in store
+      store.setState({ orgId, siteId, projectId })
+
       // Act
-      const savePromise = store.getState().saveProject({ projectId })
+      const savePromise = store.getState().saveProject()
 
       // Assert - status should be saving
       expect(store.getState().saveStatus).toBe('saving')
@@ -150,7 +158,7 @@ describe('FlowSlice - Save/Load Integration', () => {
       // Resolve the update
       const mockProject: Project = {
         id: projectId,
-        siteId: 'test-site-123',
+        siteId: siteId,
         name: 'Test Project',
         description: 'Test Description',
         workflowConfig: undefined,
@@ -202,7 +210,7 @@ describe('FlowSlice - Save/Load Integration', () => {
       }
 
       mockProjectsApi.get.mockResolvedValue(mockProject)
-      mockDeserializeWorkflow.mockReturnValue(mockDeserializedState)
+      mockDeserializeWorkflow.mockResolvedValue(mockDeserializedState)
 
       // Act
       await store.getState().loadWorkflowIntoCanvas({

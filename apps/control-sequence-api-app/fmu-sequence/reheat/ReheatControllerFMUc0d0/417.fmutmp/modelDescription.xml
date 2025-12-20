@@ -1,0 +1,1900 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  modelName="ReheatControllerFMU"
+  guid="{a0d4b065-5679-4c0d-8119-dfce7b8d9013}"
+  description="FMU wrapper for G36 VAV Reheat Terminal Unit Controller with all parameters tunable"
+  version=""
+  generationTool="OpenModelica Compiler OpenModelica 1.25.7"
+  generationDateAndTime="2025-12-07T04:11:09Z"
+  variableNamingConvention="structured"
+  numberOfEventIndicators="65">
+  <ModelExchange
+    modelIdentifier="ReheatControllerFMU"
+    needsExecutionTool="false"
+    completedIntegratorStepNotNeeded="false"
+    canBeInstantiatedOnlyOncePerProcess="false"
+    canNotUseMemoryManagementFunctions="false"
+    canGetAndSetFMUstate="false"
+    canSerializeFMUstate="false"
+    providesDirectionalDerivative="false">
+    <SourceFiles>
+      <File name="ReheatControllerFMU.c" />
+      <File name="ReheatControllerFMU_functions.c" />
+      <File name="ReheatControllerFMU_records.c" />
+      <File name="ReheatControllerFMU_01exo.c" />
+      <File name="ReheatControllerFMU_02nls.c" />
+      <File name="ReheatControllerFMU_03lsy.c" />
+      <File name="ReheatControllerFMU_04set.c" />
+      <File name="ReheatControllerFMU_05evt.c" />
+      <File name="ReheatControllerFMU_06inz.c" />
+      <File name="ReheatControllerFMU_07dly.c" />
+      <File name="ReheatControllerFMU_08bnd.c" />
+      <File name="ReheatControllerFMU_09alg.c" />
+      <File name="ReheatControllerFMU_10asr.c" />
+      <File name="ReheatControllerFMU_11mix.c" />
+      <File name="ReheatControllerFMU_12jac.c" />
+      <File name="ReheatControllerFMU_13opt.c" />
+      <File name="ReheatControllerFMU_14lnz.c" />
+      <File name="ReheatControllerFMU_15syn.c" />
+      <File name="ReheatControllerFMU_16dae.c" />
+      <File name="ReheatControllerFMU_17inl.c" />
+      <File name="ReheatControllerFMU_18spd.c" />
+      <File name="ReheatControllerFMU_init_fmu.c" />
+      <File name="ReheatControllerFMU_FMU.c" />
+      <File name="./gc/memory_pool.c" />
+      <File name="./gc/omc_gc.c" />
+      <File name="./util/base_array.c" />
+      <File name="./util/boolean_array.c" />
+      <File name="./util/context.c" />
+      <File name="./util/division.c" />
+      <File name="./util/doubleEndedList.c" />
+      <File name="./util/generic_array.c" />
+      <File name="./util/index_spec.c" />
+      <File name="./util/integer_array.c" />
+      <File name="./util/list.c" />
+      <File name="./util/modelica_string_lit.c" />
+      <File name="./util/modelica_string.c" />
+      <File name="./util/ModelicaUtilities.c" />
+      <File name="./util/omc_error.c" />
+      <File name="./util/omc_file.c" />
+      <File name="./util/omc_init.c" />
+      <File name="./util/omc_mmap.c" />
+      <File name="./util/omc_msvc.c" />
+      <File name="./util/omc_numbers.c" />
+      <File name="./util/parallel_helper.c" />
+      <File name="./util/rational.c" />
+      <File name="./util/real_array.c" />
+      <File name="./util/ringbuffer.c" />
+      <File name="./util/simulation_options.c" />
+      <File name="./util/string_array.c" />
+      <File name="./util/utility.c" />
+      <File name="./util/varinfo.c" />
+      <File name="./math-support/pivot.c" />
+      <File name="./simulation/jacobian_util.c" />
+      <File name="./simulation/omc_simulation_util.c" />
+      <File name="./simulation/options.c" />
+      <File name="./simulation/simulation_info_json.c" />
+      <File name="./simulation/simulation_omc_assert.c" />
+      <File name="./simulation/solver/delay.c" />
+      <File name="./simulation/solver/fmi_events.c" />
+      <File name="./simulation/solver/model_help.c" />
+      <File name="./simulation/solver/omc_math.c" />
+      <File name="./simulation/solver/spatialDistribution.c" />
+      <File name="./simulation/solver/stateset.c" />
+      <File name="./simulation/solver/synchronous.c" />
+      <File name="./simulation/solver/initialization/initialization.c" />
+      <File name="./meta/meta_modelica_catch.c" />
+      <File name="./external_solvers/dgesv.c" />
+      <File name="./external_solvers/dgetrf.c" />
+      <File name="./external_solvers/dgetri.c" />
+      <File name="./external_solvers/dtrtri.c" />
+      <File name="./external_solvers/dtrti2.c" />
+      <File name="./external_solvers/dlamch.c" />
+      <File name="./external_solvers/ilaenv.c" />
+      <File name="./external_solvers/xerbla.c" />
+      <File name="./external_solvers/dgetf2.c" />
+      <File name="./external_solvers/dgetrs.c" />
+      <File name="./external_solvers/dlaswp.c" />
+      <File name="./external_solvers/ieeeck.c" />
+      <File name="./external_solvers/iparmq.c" />
+      <File name="./external_solvers/dgemm.c" />
+      <File name="./external_solvers/dger.c" />
+      <File name="./external_solvers/dgemv.c" />
+      <File name="./external_solvers/dscal.c" />
+      <File name="./external_solvers/dswap.c" />
+      <File name="./external_solvers/dtrsm.c" />
+      <File name="./external_solvers/dtrmm.c" />
+      <File name="./external_solvers/dtrmv.c" />
+      <File name="./external_solvers/idamax.c" />
+      <File name="./external_solvers/lsame.c" />
+      <File name="./external_solvers/i_nint.c" />
+      <File name="./external_solvers/pow_di.c" />
+      <File name="./external_solvers/s_cmp.c" />
+      <File name="./external_solvers/s_copy.c" />
+      <File name="./external_solvers/s_cat.c" />
+      <File name="./external_solvers/F77_aloc.c" />
+      <File name="./external_solvers/exit_.c" />
+      <File name="./external_solvers/enorm_.c" />
+      <File name="./external_solvers/hybrj_.c" />
+      <File name="./external_solvers/dpmpar_.c" />
+      <File name="./external_solvers/qrfac_.c" />
+      <File name="./external_solvers/qform_.c" />
+      <File name="./external_solvers/dogleg_.c" />
+      <File name="./external_solvers/r1updt_.c" />
+      <File name="./external_solvers/r1mpyq_.c" />
+      <File name="ModelicaExternalC/ModelicaStandardTables.c" />
+      <File name="ModelicaExternalC/ModelicaMatIO.c" />
+      <File name="ModelicaExternalC/ModelicaIO.c" />
+      <File name="ModelicaExternalC/ModelicaStandardTablesDummyUsertab.c" />
+      <File name="ModelicaExternalC/snprintf.c" />
+    </SourceFiles>
+  </ModelExchange>
+  <CoSimulation
+    modelIdentifier="ReheatControllerFMU"
+    needsExecutionTool="false"
+    canHandleVariableCommunicationStepSize="true"
+    canInterpolateInputs="true"
+    maxOutputDerivativeOrder="1"
+    canRunAsynchronuously = "false"
+    canBeInstantiatedOnlyOncePerProcess="false"
+    canNotUseMemoryManagementFunctions="false"
+    canGetAndSetFMUstate="false"
+    canSerializeFMUstate="false"
+    providesDirectionalDerivative="false">
+    <SourceFiles>
+      <File name="ReheatControllerFMU.c" />
+      <File name="ReheatControllerFMU_functions.c" />
+      <File name="ReheatControllerFMU_records.c" />
+      <File name="ReheatControllerFMU_01exo.c" />
+      <File name="ReheatControllerFMU_02nls.c" />
+      <File name="ReheatControllerFMU_03lsy.c" />
+      <File name="ReheatControllerFMU_04set.c" />
+      <File name="ReheatControllerFMU_05evt.c" />
+      <File name="ReheatControllerFMU_06inz.c" />
+      <File name="ReheatControllerFMU_07dly.c" />
+      <File name="ReheatControllerFMU_08bnd.c" />
+      <File name="ReheatControllerFMU_09alg.c" />
+      <File name="ReheatControllerFMU_10asr.c" />
+      <File name="ReheatControllerFMU_11mix.c" />
+      <File name="ReheatControllerFMU_12jac.c" />
+      <File name="ReheatControllerFMU_13opt.c" />
+      <File name="ReheatControllerFMU_14lnz.c" />
+      <File name="ReheatControllerFMU_15syn.c" />
+      <File name="ReheatControllerFMU_16dae.c" />
+      <File name="ReheatControllerFMU_17inl.c" />
+      <File name="ReheatControllerFMU_18spd.c" />
+      <File name="ReheatControllerFMU_init_fmu.c" />
+      <File name="ReheatControllerFMU_FMU.c" />
+      <File name="./gc/memory_pool.c" />
+      <File name="./gc/omc_gc.c" />
+      <File name="./util/base_array.c" />
+      <File name="./util/boolean_array.c" />
+      <File name="./util/context.c" />
+      <File name="./util/division.c" />
+      <File name="./util/doubleEndedList.c" />
+      <File name="./util/generic_array.c" />
+      <File name="./util/index_spec.c" />
+      <File name="./util/integer_array.c" />
+      <File name="./util/list.c" />
+      <File name="./util/modelica_string_lit.c" />
+      <File name="./util/modelica_string.c" />
+      <File name="./util/ModelicaUtilities.c" />
+      <File name="./util/omc_error.c" />
+      <File name="./util/omc_file.c" />
+      <File name="./util/omc_init.c" />
+      <File name="./util/omc_mmap.c" />
+      <File name="./util/omc_msvc.c" />
+      <File name="./util/omc_numbers.c" />
+      <File name="./util/parallel_helper.c" />
+      <File name="./util/rational.c" />
+      <File name="./util/real_array.c" />
+      <File name="./util/ringbuffer.c" />
+      <File name="./util/simulation_options.c" />
+      <File name="./util/string_array.c" />
+      <File name="./util/utility.c" />
+      <File name="./util/varinfo.c" />
+      <File name="./math-support/pivot.c" />
+      <File name="./simulation/jacobian_util.c" />
+      <File name="./simulation/omc_simulation_util.c" />
+      <File name="./simulation/options.c" />
+      <File name="./simulation/simulation_info_json.c" />
+      <File name="./simulation/simulation_omc_assert.c" />
+      <File name="./simulation/solver/delay.c" />
+      <File name="./simulation/solver/fmi_events.c" />
+      <File name="./simulation/solver/model_help.c" />
+      <File name="./simulation/solver/omc_math.c" />
+      <File name="./simulation/solver/spatialDistribution.c" />
+      <File name="./simulation/solver/stateset.c" />
+      <File name="./simulation/solver/synchronous.c" />
+      <File name="./simulation/solver/initialization/initialization.c" />
+      <File name="./meta/meta_modelica_catch.c" />
+      <File name="./external_solvers/dgesv.c" />
+      <File name="./external_solvers/dgetrf.c" />
+      <File name="./external_solvers/dgetri.c" />
+      <File name="./external_solvers/dtrtri.c" />
+      <File name="./external_solvers/dtrti2.c" />
+      <File name="./external_solvers/dlamch.c" />
+      <File name="./external_solvers/ilaenv.c" />
+      <File name="./external_solvers/xerbla.c" />
+      <File name="./external_solvers/dgetf2.c" />
+      <File name="./external_solvers/dgetrs.c" />
+      <File name="./external_solvers/dlaswp.c" />
+      <File name="./external_solvers/ieeeck.c" />
+      <File name="./external_solvers/iparmq.c" />
+      <File name="./external_solvers/dgemm.c" />
+      <File name="./external_solvers/dger.c" />
+      <File name="./external_solvers/dgemv.c" />
+      <File name="./external_solvers/dscal.c" />
+      <File name="./external_solvers/dswap.c" />
+      <File name="./external_solvers/dtrsm.c" />
+      <File name="./external_solvers/dtrmm.c" />
+      <File name="./external_solvers/dtrmv.c" />
+      <File name="./external_solvers/idamax.c" />
+      <File name="./external_solvers/lsame.c" />
+      <File name="./external_solvers/i_nint.c" />
+      <File name="./external_solvers/pow_di.c" />
+      <File name="./external_solvers/s_cmp.c" />
+      <File name="./external_solvers/s_copy.c" />
+      <File name="./external_solvers/s_cat.c" />
+      <File name="./external_solvers/F77_aloc.c" />
+      <File name="./external_solvers/exit_.c" />
+      <File name="./external_solvers/enorm_.c" />
+      <File name="./external_solvers/hybrj_.c" />
+      <File name="./external_solvers/dpmpar_.c" />
+      <File name="./external_solvers/qrfac_.c" />
+      <File name="./external_solvers/qform_.c" />
+      <File name="./external_solvers/dogleg_.c" />
+      <File name="./external_solvers/r1updt_.c" />
+      <File name="./external_solvers/r1mpyq_.c" />
+      <File name="ModelicaExternalC/ModelicaStandardTables.c" />
+      <File name="ModelicaExternalC/ModelicaMatIO.c" />
+      <File name="ModelicaExternalC/ModelicaIO.c" />
+      <File name="ModelicaExternalC/ModelicaStandardTablesDummyUsertab.c" />
+      <File name="ModelicaExternalC/snprintf.c" />
+    </SourceFiles>
+  </CoSimulation>
+  <UnitDefinitions>
+    <Unit name="s/K">
+      <BaseUnit s="1" K="-1" />
+    </Unit>
+    <Unit name="s">
+      <BaseUnit s="1" />
+    </Unit>
+    <Unit name="1">
+      <BaseUnit />
+    </Unit>
+    <Unit name="m3/s">
+      <BaseUnit m="3" s="-1" />
+    </Unit>
+    <Unit name="K">
+      <BaseUnit K="1" />
+    </Unit>
+  </UnitDefinitions>
+  <TypeDefinitions>
+    <SimpleType name="Buildings.Controls.OBC.ASHRAE.G36.Types.HeatingCoil">
+      <Enumeration>
+        <Item name="None" value="1"/>
+        <Item name="WaterBased" value="2"/>
+        <Item name="Electric" value="3"/>
+      </Enumeration>
+    </SimpleType>
+    <SimpleType name="Buildings.Controls.OBC.CDL.Types.SimpleController">
+      <Enumeration>
+        <Item name="P" value="1"/>
+        <Item name="PI" value="2"/>
+        <Item name="PD" value="3"/>
+        <Item name="PID" value="4"/>
+      </Enumeration>
+    </SimpleType>
+    <SimpleType name="Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard">
+      <Enumeration>
+        <Item name="ASHRAE62_1" value="1"/>
+        <Item name="California_Title_24" value="2"/>
+      </Enumeration>
+    </SimpleType>
+  </TypeDefinitions>
+  <LogCategories>
+    <Category name="logEvents" />
+    <Category name="logSingularLinearSystems" />
+    <Category name="logNonlinearSystems" />
+    <Category name="logDynamicStateSelection" />
+    <Category name="logStatusWarning" />
+    <Category name="logStatusDiscard" />
+    <Category name="logStatusError" />
+    <Category name="logStatusFatal" />
+    <Category name="logStatusPending" />
+    <Category name="logAll" />
+    <Category name="logFmi2Call" />
+  </LogCategories>
+  <DefaultExperiment startTime="0.0" stopTime="86400.0" tolerance="1e-6" stepSize="172.8"/>
+  <ModelVariables>
+  <!-- Index of variable = "1" -->
+  <ScalarVariable
+    name="conLoo.conCoo.I.y"
+    valueReference="0"
+    description="Value of the integrator"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "2" -->
+  <ScalarVariable
+    name="conLoo.conHea.I.y"
+    valueReference="1"
+    description="Value of the integrator"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "3" -->
+  <ScalarVariable
+    name="damVal.conDam.I.y"
+    valueReference="2"
+    description="Value of the integrator"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "4" -->
+  <ScalarVariable
+    name="damVal.conVal.I.y"
+    valueReference="3"
+    description="Value of the integrator"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "5" -->
+  <ScalarVariable
+    name="der(conLoo.conCoo.I.y)"
+    valueReference="4"
+    description="der(Value of the integrator)"
+    >
+    <Real derivative="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "6" -->
+  <ScalarVariable
+    name="der(conLoo.conHea.I.y)"
+    valueReference="5"
+    description="der(Value of the integrator)"
+    >
+    <Real derivative="2"/>
+  </ScalarVariable>
+  <!-- Index of variable = "7" -->
+  <ScalarVariable
+    name="der(damVal.conDam.I.y)"
+    valueReference="6"
+    description="der(Value of the integrator)"
+    >
+    <Real derivative="3"/>
+  </ScalarVariable>
+  <!-- Index of variable = "8" -->
+  <ScalarVariable
+    name="der(damVal.conVal.I.y)"
+    valueReference="7"
+    description="der(Value of the integrator)"
+    >
+    <Real derivative="4"/>
+  </ScalarVariable>
+  <!-- Index of variable = "9" -->
+  <ScalarVariable
+    name="TCooSet"
+    valueReference="13"
+    description="Setpoint temperature for room for cooling"
+    causality="input"
+    >
+    <Real start="0.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "10" -->
+  <ScalarVariable
+    name="TDis"
+    valueReference="14"
+    description="Measured supply air temperature after heating coil"
+    causality="input"
+    >
+    <Real start="0.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "11" -->
+  <ScalarVariable
+    name="THeaSet"
+    valueReference="15"
+    description="Setpoint temperature for room for heating"
+    causality="input"
+    >
+    <Real start="0.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "12" -->
+  <ScalarVariable
+    name="TSup"
+    valueReference="16"
+    description="Temperature of the air supplied from central air handler"
+    causality="input"
+    >
+    <Real start="0.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "13" -->
+  <ScalarVariable
+    name="TSupSet"
+    valueReference="17"
+    description="Supply air temperature setpoint from central air handler"
+    causality="input"
+    >
+    <Real start="0.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "14" -->
+  <ScalarVariable
+    name="TZon"
+    valueReference="18"
+    description="Measured room temperature"
+    causality="input"
+    >
+    <Real start="0.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "15" -->
+  <ScalarVariable
+    name="VAdjAreBreZon_flow"
+    valueReference="19"
+    description="Adjusted area component breathing zone flow rate"
+    causality="output"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "16" -->
+  <ScalarVariable
+    name="VAdjPopBreZon_flow"
+    valueReference="20"
+    description="Adjusted population component breathing zone flow rate"
+    causality="output"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "17" -->
+  <ScalarVariable
+    name="VDis_flow"
+    valueReference="21"
+    description="Measured primary discharge airflow rate"
+    causality="input"
+    >
+    <Real start="0.0" min="0.0" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "18" -->
+  <ScalarVariable
+    name="VMinOA_flow"
+    valueReference="22"
+    description="Minimum outdoor airflow setpoint"
+    causality="output"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "19" -->
+  <ScalarVariable
+    name="VSet_flow"
+    valueReference="23"
+    description="Airflow setpoint after considering override"
+    causality="output"
+    >
+    <Real min="0.0" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "20" -->
+  <ScalarVariable
+    name="ppmCO2"
+    valueReference="142"
+    description="Detected CO2 concentration"
+    causality="input"
+    >
+    <Real start="0.0"/>
+  </ScalarVariable>
+  <!-- Index of variable = "21" -->
+  <ScalarVariable
+    name="ppmCO2Set"
+    valueReference="143"
+    description="CO2 concentration setpoint"
+    causality="input"
+    >
+    <Real start="0.0"/>
+  </ScalarVariable>
+  <!-- Index of variable = "22" -->
+  <ScalarVariable
+    name="yDam"
+    valueReference="190"
+    description="Damper commanded position, or commanded flow rate ratio"
+    causality="output"
+    >
+    <Real min="0.0" max="1.0" unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "23" -->
+  <ScalarVariable
+    name="yVal"
+    valueReference="191"
+    description="Heating valve commanded position, after considering override"
+    causality="output"
+    >
+    <Real min="0.0" max="1.0" unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "24" -->
+  <ScalarVariable
+    name="TDisMin"
+    valueReference="223"
+    description="Lowest discharge air temperature"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "25" -->
+  <ScalarVariable
+    name="TDisMin_in"
+    valueReference="224"
+    description="Lowest discharge air temperature"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="283.15" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "26" -->
+  <ScalarVariable
+    name="TdDam"
+    valueReference="225"
+    description="Time constant of derivative block for damper control"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "27" -->
+  <ScalarVariable
+    name="TdDam_in"
+    valueReference="226"
+    description="Time constant of derivative block for damper control"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.1" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "28" -->
+  <ScalarVariable
+    name="TdVal"
+    valueReference="227"
+    description="Time constant of derivative block for valve control"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "29" -->
+  <ScalarVariable
+    name="TdVal_in"
+    valueReference="228"
+    description="Time constant of derivative block for valve control"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.1" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "30" -->
+  <ScalarVariable
+    name="TiCooCon"
+    valueReference="229"
+    description="Time constant of integrator block for cooling control loop"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "31" -->
+  <ScalarVariable
+    name="TiCooCon_in"
+    valueReference="230"
+    description="Time constant of integrator block for cooling control loop"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="120.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "32" -->
+  <ScalarVariable
+    name="TiDam"
+    valueReference="231"
+    description="Time constant of integrator block for damper control"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "33" -->
+  <ScalarVariable
+    name="TiDam_in"
+    valueReference="232"
+    description="Time constant of integrator block for damper control"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="300.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "34" -->
+  <ScalarVariable
+    name="TiHeaCon"
+    valueReference="233"
+    description="Time constant of integrator block for heating control loop"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "35" -->
+  <ScalarVariable
+    name="TiHeaCon_in"
+    valueReference="234"
+    description="Time constant of integrator block for heating control loop"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="120.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "36" -->
+  <ScalarVariable
+    name="TiVal"
+    valueReference="235"
+    description="Time constant of integrator block for valve control"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "37" -->
+  <ScalarVariable
+    name="TiVal_in"
+    valueReference="236"
+    description="Time constant of integrator block for valve control"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="300.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "38" -->
+  <ScalarVariable
+    name="VAreBreZon_flow"
+    valueReference="237"
+    description="Design area component of the breathing zone outdoor airflow"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "39" -->
+  <ScalarVariable
+    name="VAreBreZon_flow_in"
+    valueReference="238"
+    description="Design area component of the breathing zone outdoor airflow"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.006" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "40" -->
+  <ScalarVariable
+    name="VAreMin_flow"
+    valueReference="239"
+    description="Zone minimum outdoor airflow for building area"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "41" -->
+  <ScalarVariable
+    name="VAreMin_flow_in"
+    valueReference="240"
+    description="Zone minimum outdoor airflow for building area"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.0" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "42" -->
+  <ScalarVariable
+    name="VCooMax_flow"
+    valueReference="241"
+    description="Design zone cooling maximum airflow rate"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "43" -->
+  <ScalarVariable
+    name="VCooMax_flow_in"
+    valueReference="242"
+    description="Design zone cooling maximum airflow rate"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="1.5" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "44" -->
+  <ScalarVariable
+    name="VHeaMax_flow"
+    valueReference="243"
+    description="Design zone heating maximum airflow rate"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "45" -->
+  <ScalarVariable
+    name="VHeaMax_flow_in"
+    valueReference="244"
+    description="Design zone heating maximum airflow rate"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="1.2" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "46" -->
+  <ScalarVariable
+    name="VHeaMin_flow"
+    valueReference="245"
+    description="Design zone heating minimum airflow rate, for the reheat box with water hot coil, it should be zero"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "47" -->
+  <ScalarVariable
+    name="VHeaMin_flow_in"
+    valueReference="246"
+    description="Design zone heating minimum airflow rate"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.5" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "48" -->
+  <ScalarVariable
+    name="VMin_flow"
+    valueReference="247"
+    description="Design zone minimum airflow setpoint"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "49" -->
+  <ScalarVariable
+    name="VMin_flow_in"
+    valueReference="248"
+    description="Design zone minimum airflow setpoint"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.3" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "50" -->
+  <ScalarVariable
+    name="VOccMin_flow"
+    valueReference="249"
+    description="Zone minimum outdoor airflow for occupants"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "51" -->
+  <ScalarVariable
+    name="VOccMin_flow_in"
+    valueReference="250"
+    description="Zone minimum outdoor airflow for occupants"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.0" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "52" -->
+  <ScalarVariable
+    name="VPopBreZon_flow"
+    valueReference="251"
+    description="Design population component of the breathing zone outdoor airflow"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "53" -->
+  <ScalarVariable
+    name="VPopBreZon_flow_in"
+    valueReference="252"
+    description="Design population component of the breathing zone outdoor airflow"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.005" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "54" -->
+  <ScalarVariable
+    name="chaRat"
+    valueReference="352"
+    description="Gain factor to calculate suppression time based on the change of the setpoint, seconds per Kelvin"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s/K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "55" -->
+  <ScalarVariable
+    name="chaRat_in"
+    valueReference="353"
+    description="Gain factor to calculate suppression time based on the change of the setpoint"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="540.0" unit="s/K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "56" -->
+  <ScalarVariable
+    name="dTDisZonSetMax"
+    valueReference="429"
+    description="Zone maximum discharge air temperature above heating setpoint"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "57" -->
+  <ScalarVariable
+    name="dTDisZonSetMax_in"
+    valueReference="430"
+    description="Zone maximum discharge air temperature above heating setpoint"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="11.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "58" -->
+  <ScalarVariable
+    name="dTHys"
+    valueReference="431"
+    description="Near zero temperature difference, below which the difference will be seen as zero"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "59" -->
+  <ScalarVariable
+    name="dTHys_in"
+    valueReference="432"
+    description="Near zero temperature difference, below which the difference will be seen as zero"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.25" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "60" -->
+  <ScalarVariable
+    name="damPosHys"
+    valueReference="433"
+    description="Near zero damper position, below which the damper will be seen as closed"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "61" -->
+  <ScalarVariable
+    name="damPosHys_in"
+    valueReference="434"
+    description="Near zero damper position, below which the damper will be seen as closed"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.005" unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "62" -->
+  <ScalarVariable
+    name="durTimDisAir"
+    valueReference="545"
+    description="Duration time of discharge air temperature less than setpoint"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "63" -->
+  <ScalarVariable
+    name="durTimDisAir_in"
+    valueReference="546"
+    description="Duration time of discharge air temperature less than setpoint"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="300.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "64" -->
+  <ScalarVariable
+    name="durTimFlo"
+    valueReference="547"
+    description="Duration time of airflow rate less than setpoint"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "65" -->
+  <ScalarVariable
+    name="durTimFlo_in"
+    valueReference="548"
+    description="Duration time of airflow rate less than setpoint"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="60.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "66" -->
+  <ScalarVariable
+    name="durTimTem"
+    valueReference="549"
+    description="Duration time of zone temperature exceeds setpoint"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "67" -->
+  <ScalarVariable
+    name="durTimTem_in"
+    valueReference="550"
+    description="Duration time of zone temperature exceeds setpoint"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="120.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "68" -->
+  <ScalarVariable
+    name="fanOffTim"
+    valueReference="551"
+    description="Threshold time to check fan off"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "69" -->
+  <ScalarVariable
+    name="fanOffTim_in"
+    valueReference="552"
+    description="Threshold time to check fan off"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="600.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "70" -->
+  <ScalarVariable
+    name="floHys"
+    valueReference="553"
+    description="Near zero flow rate, below which the flow rate or difference will be seen as zero"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "71" -->
+  <ScalarVariable
+    name="floHys_in"
+    valueReference="554"
+    description="Near zero flow rate, below which the flow rate or difference will be seen as zero"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.003" unit="m3/s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "72" -->
+  <ScalarVariable
+    name="hotWatRes"
+    valueReference="555"
+    description="Importance multiplier for the hot water reset control loop"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "73" -->
+  <ScalarVariable
+    name="hotWatRes_in"
+    valueReference="556"
+    description="Importance multiplier for the hot water reset control loop"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="1.0"/>
+  </ScalarVariable>
+  <!-- Index of variable = "74" -->
+  <ScalarVariable
+    name="iniDam"
+    valueReference="557"
+    description="Initial damper position when the damper control is enabled"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "75" -->
+  <ScalarVariable
+    name="iniDam_in"
+    valueReference="558"
+    description="Initial damper position when the damper control is enabled"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.01" unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "76" -->
+  <ScalarVariable
+    name="kCooCon"
+    valueReference="559"
+    description="Gain of controller for cooling control loop"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "77" -->
+  <ScalarVariable
+    name="kCooCon_in"
+    valueReference="560"
+    description="Gain of controller for cooling control loop"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "78" -->
+  <ScalarVariable
+    name="kDam"
+    valueReference="561"
+    description="Gain of controller for damper control"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "79" -->
+  <ScalarVariable
+    name="kDam_in"
+    valueReference="562"
+    description="Gain of controller for damper control"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.5"/>
+  </ScalarVariable>
+  <!-- Index of variable = "80" -->
+  <ScalarVariable
+    name="kHeaCon"
+    valueReference="563"
+    description="Gain of controller for heating control loop"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "81" -->
+  <ScalarVariable
+    name="kHeaCon_in"
+    valueReference="564"
+    description="Gain of controller for heating control loop"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "82" -->
+  <ScalarVariable
+    name="kVal"
+    valueReference="565"
+    description="Gain of controller for valve control"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "83" -->
+  <ScalarVariable
+    name="kVal_in"
+    valueReference="566"
+    description="Gain of controller for valve control"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.5"/>
+  </ScalarVariable>
+  <!-- Index of variable = "84" -->
+  <ScalarVariable
+    name="leaFloTim"
+    valueReference="567"
+    description="Threshold time to check damper leaking airflow"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "85" -->
+  <ScalarVariable
+    name="leaFloTim_in"
+    valueReference="568"
+    description="Threshold time to check damper leaking airflow"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="600.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "86" -->
+  <ScalarVariable
+    name="looHys"
+    valueReference="569"
+    description="Loop output hysteresis below which the output will be seen as zero"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "87" -->
+  <ScalarVariable
+    name="looHys_in"
+    valueReference="570"
+    description="Loop output hysteresis below which the output will be seen as zero"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.01" unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "88" -->
+  <ScalarVariable
+    name="lowFloTim"
+    valueReference="571"
+    description="Threshold time to check low flow rate"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "89" -->
+  <ScalarVariable
+    name="lowFloTim_in"
+    valueReference="572"
+    description="Threshold time to check low flow rate"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="300.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "90" -->
+  <ScalarVariable
+    name="lowTemTim"
+    valueReference="573"
+    description="Threshold time to check low discharge temperature"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "91" -->
+  <ScalarVariable
+    name="lowTemTim_in"
+    valueReference="574"
+    description="Threshold time to check low discharge temperature"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="600.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "92" -->
+  <ScalarVariable
+    name="maxSupTim"
+    valueReference="575"
+    description="Maximum suppression time"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "93" -->
+  <ScalarVariable
+    name="maxSupTim_in"
+    valueReference="576"
+    description="Maximum suppression time"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="1800.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "94" -->
+  <ScalarVariable
+    name="samplePeriod"
+    valueReference="577"
+    description="Sample period of component, set to the same value as the trim and respond that process static pressure reset"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "95" -->
+  <ScalarVariable
+    name="samplePeriod_in"
+    valueReference="578"
+    description="Sample period of component"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="120.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "96" -->
+  <ScalarVariable
+    name="staPreMul"
+    valueReference="619"
+    description="Importance multiplier for the zone static pressure reset control loop"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "97" -->
+  <ScalarVariable
+    name="staPreMul_in"
+    valueReference="620"
+    description="Importance multiplier for the zone static pressure reset control loop"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="1.0"/>
+  </ScalarVariable>
+  <!-- Index of variable = "98" -->
+  <ScalarVariable
+    name="staTim"
+    valueReference="621"
+    description="Delay triggering alarms after enabling AHU supply fan"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "99" -->
+  <ScalarVariable
+    name="staTim_in"
+    valueReference="622"
+    description="Delay triggering alarms after enabling AHU supply fan"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="1800.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "100" -->
+  <ScalarVariable
+    name="thrTDis_1"
+    valueReference="694"
+    description="Threshold difference between discharge air temperature and its setpoint for generating 3 hot water reset requests"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "101" -->
+  <ScalarVariable
+    name="thrTDis_1_in"
+    valueReference="695"
+    description="Threshold difference between discharge air temperature and its setpoint for generating 3 hot water reset requests"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="17.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "102" -->
+  <ScalarVariable
+    name="thrTDis_2"
+    valueReference="696"
+    description="Threshold difference between discharge air temperature and its setpoint for generating 2 hot water reset requests"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "103" -->
+  <ScalarVariable
+    name="thrTDis_2_in"
+    valueReference="697"
+    description="Threshold difference between discharge air temperature and its setpoint for generating 2 hot water reset requests"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="8.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "104" -->
+  <ScalarVariable
+    name="thrTemDif"
+    valueReference="698"
+    description="Threshold difference between zone temperature and cooling setpoint for generating 3 cooling SAT reset requests"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "105" -->
+  <ScalarVariable
+    name="thrTemDif_in"
+    valueReference="699"
+    description="Threshold difference between zone temperature and cooling setpoint for generating 3 cooling SAT reset requests"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="3.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "106" -->
+  <ScalarVariable
+    name="timChe"
+    valueReference="700"
+    description="Threshold time to check the zone temperature status"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "107" -->
+  <ScalarVariable
+    name="timChe_in"
+    valueReference="701"
+    description="Threshold time to check the zone temperature status"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="30.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "108" -->
+  <ScalarVariable
+    name="twoTemDif"
+    valueReference="726"
+    description="Threshold difference between zone temperature and cooling setpoint for generating 2 cooling SAT reset requests"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "109" -->
+  <ScalarVariable
+    name="twoTemDif_in"
+    valueReference="727"
+    description="Threshold difference between zone temperature and cooling setpoint for generating 2 cooling SAT reset requests"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="2.0" unit="K"/>
+  </ScalarVariable>
+  <!-- Index of variable = "110" -->
+  <ScalarVariable
+    name="valCloTim"
+    valueReference="728"
+    description="Threshold time to check valve leaking water flow"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "111" -->
+  <ScalarVariable
+    name="valCloTim_in"
+    valueReference="729"
+    description="Threshold time to check valve leaking water flow"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="900.0" unit="s"/>
+  </ScalarVariable>
+  <!-- Index of variable = "112" -->
+  <ScalarVariable
+    name="valPosHys"
+    valueReference="730"
+    description="Near zero valve position, below which the valve will be seen as closed"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "113" -->
+  <ScalarVariable
+    name="valPosHys_in"
+    valueReference="731"
+    description="Near zero valve position, below which the valve will be seen as closed"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.005" unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "114" -->
+  <ScalarVariable
+    name="zonDisEff_cool"
+    valueReference="732"
+    description="Zone cooling air distribution effectiveness"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "115" -->
+  <ScalarVariable
+    name="zonDisEff_cool_in"
+    valueReference="733"
+    description="Zone cooling air distribution effectiveness"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="1.0" unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "116" -->
+  <ScalarVariable
+    name="zonDisEff_heat"
+    valueReference="734"
+    description="Zone heating air distribution effectiveness"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Real unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "117" -->
+  <ScalarVariable
+    name="zonDisEff_heat_in"
+    valueReference="735"
+    description="Zone heating air distribution effectiveness"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Real start="0.8" unit="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "118" -->
+  <ScalarVariable
+    name="oveDamPos"
+    valueReference="20"
+    description="Index of overriding damper position, 1: set to close; 2: set to open"
+    variability="discrete"
+    causality="input"
+    >
+    <Integer start="0"/>
+  </ScalarVariable>
+  <!-- Index of variable = "119" -->
+  <ScalarVariable
+    name="oveFloSet"
+    valueReference="21"
+    description="Index of overriding flow setpoint, 1: set to zero; 2: set to cooling maximum; 3: set to minimum flow; 4: set to heating maximum"
+    variability="discrete"
+    causality="input"
+    >
+    <Integer start="0"/>
+  </ScalarVariable>
+  <!-- Index of variable = "120" -->
+  <ScalarVariable
+    name="uOpeMod"
+    valueReference="37"
+    description="Zone operation mode"
+    variability="discrete"
+    causality="input"
+    >
+    <Integer start="0"/>
+  </ScalarVariable>
+  <!-- Index of variable = "121" -->
+  <ScalarVariable
+    name="yFloSenAla"
+    valueReference="38"
+    description="Airflow sensor calibration alarm"
+    variability="discrete"
+    causality="output"
+    >
+    <Integer/>
+  </ScalarVariable>
+  <!-- Index of variable = "122" -->
+  <ScalarVariable
+    name="yHeaValResReq"
+    valueReference="39"
+    description="Hot water reset requests"
+    variability="discrete"
+    causality="output"
+    >
+    <Integer/>
+  </ScalarVariable>
+  <!-- Index of variable = "123" -->
+  <ScalarVariable
+    name="yHotWatPlaReq"
+    valueReference="40"
+    description="Request to heating hot-water plant"
+    variability="discrete"
+    causality="output"
+    >
+    <Integer/>
+  </ScalarVariable>
+  <!-- Index of variable = "124" -->
+  <ScalarVariable
+    name="yLeaDamAla"
+    valueReference="41"
+    description="Leaking damper alarm"
+    variability="discrete"
+    causality="output"
+    >
+    <Integer/>
+  </ScalarVariable>
+  <!-- Index of variable = "125" -->
+  <ScalarVariable
+    name="yLeaValAla"
+    valueReference="42"
+    description="Leaking valve alarm"
+    variability="discrete"
+    causality="output"
+    >
+    <Integer/>
+  </ScalarVariable>
+  <!-- Index of variable = "126" -->
+  <ScalarVariable
+    name="yLowFloAla"
+    valueReference="43"
+    description="Low airflow alarms"
+    variability="discrete"
+    causality="output"
+    >
+    <Integer/>
+  </ScalarVariable>
+  <!-- Index of variable = "127" -->
+  <ScalarVariable
+    name="yLowTemAla"
+    valueReference="44"
+    description="Low discharge air temperature alarms"
+    variability="discrete"
+    causality="output"
+    >
+    <Integer/>
+  </ScalarVariable>
+  <!-- Index of variable = "128" -->
+  <ScalarVariable
+    name="yZonPreResReq"
+    valueReference="45"
+    description="Zone static pressure reset requests"
+    variability="discrete"
+    causality="output"
+    >
+    <Integer/>
+  </ScalarVariable>
+  <!-- Index of variable = "129" -->
+  <ScalarVariable
+    name="yZonTemResReq"
+    valueReference="46"
+    description="Zone cooling supply air temperature reset request"
+    variability="discrete"
+    causality="output"
+    >
+    <Integer/>
+  </ScalarVariable>
+  <!-- Index of variable = "130" -->
+  <ScalarVariable
+    name="controllerTypeDam"
+    valueReference="72"
+    description="Type of controller"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Enumeration declaredType="Buildings.Controls.OBC.CDL.Types.SimpleController"/>
+  </ScalarVariable>
+  <!-- Index of variable = "131" -->
+  <ScalarVariable
+    name="controllerTypeDam_in"
+    valueReference="73"
+    description="Type of controller for damper"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Enumeration declaredType="Buildings.Controls.OBC.CDL.Types.SimpleController" start="2"/>
+  </ScalarVariable>
+  <!-- Index of variable = "132" -->
+  <ScalarVariable
+    name="controllerTypeVal"
+    valueReference="74"
+    description="Type of controller"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Enumeration declaredType="Buildings.Controls.OBC.CDL.Types.SimpleController"/>
+  </ScalarVariable>
+  <!-- Index of variable = "133" -->
+  <ScalarVariable
+    name="controllerTypeVal_in"
+    valueReference="75"
+    description="Type of controller for valve"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Enumeration declaredType="Buildings.Controls.OBC.CDL.Types.SimpleController" start="2"/>
+  </ScalarVariable>
+  <!-- Index of variable = "134" -->
+  <ScalarVariable
+    name="venStd"
+    valueReference="105"
+    description="Ventilation standard, ASHRAE 62.1 or Title 24"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Enumeration declaredType="Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard"/>
+  </ScalarVariable>
+  <!-- Index of variable = "135" -->
+  <ScalarVariable
+    name="venStd_in"
+    valueReference="106"
+    description="Ventilation standard, ASHRAE 62.1 or Title 24"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Enumeration declaredType="Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard" start="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "136" -->
+  <ScalarVariable
+    name="u1Fan"
+    valueReference="221"
+    description="AHU supply fan status"
+    variability="discrete"
+    causality="input"
+    >
+    <Boolean start="false"/>
+  </ScalarVariable>
+  <!-- Index of variable = "137" -->
+  <ScalarVariable
+    name="u1HotPla"
+    valueReference="222"
+    description="Hot water plant status"
+    variability="discrete"
+    causality="input"
+    >
+    <Boolean start="false"/>
+  </ScalarVariable>
+  <!-- Index of variable = "138" -->
+  <ScalarVariable
+    name="u1Occ"
+    valueReference="223"
+    description="True: the zone is populated"
+    variability="discrete"
+    causality="input"
+    >
+    <Boolean start="false"/>
+  </ScalarVariable>
+  <!-- Index of variable = "139" -->
+  <ScalarVariable
+    name="u1Win"
+    valueReference="224"
+    description="Window status, normally closed (true), when windows open, it becomes false"
+    variability="discrete"
+    causality="input"
+    >
+    <Boolean start="false"/>
+  </ScalarVariable>
+  <!-- Index of variable = "140" -->
+  <ScalarVariable
+    name="uHeaOff"
+    valueReference="225"
+    description="Override heating valve position, true: close heating valve"
+    variability="discrete"
+    causality="input"
+    >
+    <Boolean start="false"/>
+  </ScalarVariable>
+  <!-- Index of variable = "141" -->
+  <ScalarVariable
+    name="have_CO2Sen"
+    valueReference="323"
+    description="True: the zone has CO2 sensor"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Boolean/>
+  </ScalarVariable>
+  <!-- Index of variable = "142" -->
+  <ScalarVariable
+    name="have_CO2Sen_in"
+    valueReference="324"
+    description="True: the zone has CO2 sensor"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Boolean start="true"/>
+  </ScalarVariable>
+  <!-- Index of variable = "143" -->
+  <ScalarVariable
+    name="have_hotWatCoi"
+    valueReference="325"
+    description="True: the unit has the hot water coil; False: the unit has the modulated electric coil"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Boolean/>
+  </ScalarVariable>
+  <!-- Index of variable = "144" -->
+  <ScalarVariable
+    name="have_hotWatCoi_in"
+    valueReference="326"
+    description="True: the unit has the hot water coil; False: the unit has the modulated electric coil"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Boolean start="true"/>
+  </ScalarVariable>
+  <!-- Index of variable = "145" -->
+  <ScalarVariable
+    name="have_occSen"
+    valueReference="327"
+    description="True: the zone has occupancy sensor"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Boolean/>
+  </ScalarVariable>
+  <!-- Index of variable = "146" -->
+  <ScalarVariable
+    name="have_occSen_in"
+    valueReference="328"
+    description="True: the zone has occupancy sensor"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Boolean start="true"/>
+  </ScalarVariable>
+  <!-- Index of variable = "147" -->
+  <ScalarVariable
+    name="have_winSen"
+    valueReference="329"
+    description="True: the zone has window sensor"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Boolean/>
+  </ScalarVariable>
+  <!-- Index of variable = "148" -->
+  <ScalarVariable
+    name="have_winSen_in"
+    valueReference="330"
+    description="True: the zone has window sensor"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Boolean start="true"/>
+  </ScalarVariable>
+  <!-- Index of variable = "149" -->
+  <ScalarVariable
+    name="permit_occStandby"
+    valueReference="331"
+    description="True: occupied-standby mode is permitted"
+    variability="fixed"
+    causality="calculatedParameter"
+    >
+    <Boolean/>
+  </ScalarVariable>
+  <!-- Index of variable = "150" -->
+  <ScalarVariable
+    name="permit_occStandby_in"
+    valueReference="332"
+    description="True: occupied-standby mode is permitted"
+    variability="fixed"
+    causality="parameter"
+    >
+    <Boolean start="true"/>
+  </ScalarVariable>
+  </ModelVariables>
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="15" dependencies="120 138 139" dependenciesKind="dependent dependent dependent" />
+      <Unknown index="16" dependencies="20 21 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent" />
+      <Unknown index="18" dependencies="10 14 20 21 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="19" dependencies="1 2 9 10 11 12 14 20 21 119 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="22" dependencies="1 2 3 9 10 11 12 14 17 20 21 118 119 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="23" dependencies="2 4 10 11 13 14 120 140" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="121" dependencies="17 136" dependenciesKind="dependent dependent" />
+      <Unknown index="122" dependencies="2 4 10 11 13 14 120 140" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="123" dependencies="2 4 10 11 13 14 120 140" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="124" dependencies="1 2 3 9 10 11 12 14 17 20 21 118 119 120 136 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="125" dependencies="2 4 10 11 12 13 14 120 136 140" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="126" dependencies="1 2 9 10 11 12 14 17 20 21 119 120 136 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="127" dependencies="2 10 11 13 14 120 136 137" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="128" dependencies="1 2 3 9 10 11 12 14 17 20 21 118 119 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="129" dependencies="1 9 14" dependenciesKind="dependent dependent dependent" />
+    </Outputs>
+    <Derivatives>
+      <Unknown index="5" dependencies="1 9 14" dependenciesKind="dependent dependent dependent" />
+      <Unknown index="6" dependencies="2 11 14" dependenciesKind="dependent dependent dependent" />
+      <Unknown index="7" dependencies="1 2 3 9 10 11 12 14 17 20 21 119 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="8" dependencies="2 4 10 11 13 14" dependenciesKind="dependent dependent dependent dependent dependent dependent" />
+    </Derivatives>
+    <InitialUnknowns>
+      <Unknown index="1" dependencies="" dependenciesKind="" />
+      <Unknown index="2" dependencies="" dependenciesKind="" />
+      <Unknown index="3" dependencies="" dependenciesKind="" />
+      <Unknown index="4" dependencies="" dependenciesKind="" />
+      <Unknown index="5" dependencies="9 14" dependenciesKind="dependent dependent" />
+      <Unknown index="6" dependencies="11 14" dependenciesKind="dependent dependent" />
+      <Unknown index="7" dependencies="9 10 11 12 14 17 20 21 119 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="8" dependencies="10 11 13 14" dependenciesKind="dependent dependent dependent dependent" />
+      <Unknown index="15" dependencies="120 138 139" dependenciesKind="dependent dependent dependent" />
+      <Unknown index="16" dependencies="20 21 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent" />
+      <Unknown index="18" dependencies="10 14 20 21 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="19" dependencies="9 10 11 12 14 20 21 119 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="22" dependencies="9 10 11 12 14 17 20 21 118 119 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="23" dependencies="10 11 13 14 120 140" dependenciesKind="dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="24" dependencies="25" dependenciesKind="dependent" />
+      <Unknown index="26" dependencies="27" dependenciesKind="dependent" />
+      <Unknown index="28" dependencies="29" dependenciesKind="dependent" />
+      <Unknown index="30" dependencies="31" dependenciesKind="dependent" />
+      <Unknown index="32" dependencies="33" dependenciesKind="dependent" />
+      <Unknown index="34" dependencies="35" dependenciesKind="dependent" />
+      <Unknown index="36" dependencies="37" dependenciesKind="dependent" />
+      <Unknown index="38" dependencies="39" dependenciesKind="dependent" />
+      <Unknown index="40" dependencies="41" dependenciesKind="dependent" />
+      <Unknown index="42" dependencies="43" dependenciesKind="dependent" />
+      <Unknown index="44" dependencies="45" dependenciesKind="dependent" />
+      <Unknown index="46" dependencies="47" dependenciesKind="dependent" />
+      <Unknown index="48" dependencies="" dependenciesKind="" />
+      <Unknown index="49" dependencies="" dependenciesKind="" />
+      <Unknown index="50" dependencies="51" dependenciesKind="dependent" />
+      <Unknown index="52" dependencies="53" dependenciesKind="dependent" />
+      <Unknown index="54" dependencies="55" dependenciesKind="dependent" />
+      <Unknown index="56" dependencies="57" dependenciesKind="dependent" />
+      <Unknown index="58" dependencies="" dependenciesKind="" />
+      <Unknown index="59" dependencies="" dependenciesKind="" />
+      <Unknown index="60" dependencies="" dependenciesKind="" />
+      <Unknown index="61" dependencies="" dependenciesKind="" />
+      <Unknown index="62" dependencies="63" dependenciesKind="dependent" />
+      <Unknown index="64" dependencies="65" dependenciesKind="dependent" />
+      <Unknown index="66" dependencies="67" dependenciesKind="dependent" />
+      <Unknown index="68" dependencies="69" dependenciesKind="dependent" />
+      <Unknown index="70" dependencies="" dependenciesKind="" />
+      <Unknown index="71" dependencies="" dependenciesKind="" />
+      <Unknown index="72" dependencies="73" dependenciesKind="dependent" />
+      <Unknown index="74" dependencies="75" dependenciesKind="dependent" />
+      <Unknown index="76" dependencies="77" dependenciesKind="dependent" />
+      <Unknown index="78" dependencies="79" dependenciesKind="dependent" />
+      <Unknown index="80" dependencies="81" dependenciesKind="dependent" />
+      <Unknown index="82" dependencies="83" dependenciesKind="dependent" />
+      <Unknown index="84" dependencies="85" dependenciesKind="dependent" />
+      <Unknown index="86" dependencies="" dependenciesKind="" />
+      <Unknown index="87" dependencies="" dependenciesKind="" />
+      <Unknown index="88" dependencies="89" dependenciesKind="dependent" />
+      <Unknown index="90" dependencies="91" dependenciesKind="dependent" />
+      <Unknown index="92" dependencies="93" dependenciesKind="dependent" />
+      <Unknown index="94" dependencies="95" dependenciesKind="dependent" />
+      <Unknown index="96" dependencies="97" dependenciesKind="dependent" />
+      <Unknown index="98" dependencies="99" dependenciesKind="dependent" />
+      <Unknown index="100" dependencies="101" dependenciesKind="dependent" />
+      <Unknown index="102" dependencies="103" dependenciesKind="dependent" />
+      <Unknown index="104" dependencies="105" dependenciesKind="dependent" />
+      <Unknown index="106" dependencies="107" dependenciesKind="dependent" />
+      <Unknown index="108" dependencies="109" dependenciesKind="dependent" />
+      <Unknown index="110" dependencies="111" dependenciesKind="dependent" />
+      <Unknown index="112" dependencies="" dependenciesKind="" />
+      <Unknown index="113" dependencies="" dependenciesKind="" />
+      <Unknown index="114" dependencies="115" dependenciesKind="dependent" />
+      <Unknown index="116" dependencies="117" dependenciesKind="dependent" />
+      <Unknown index="121" dependencies="17 136" dependenciesKind="dependent dependent" />
+      <Unknown index="122" dependencies="10 11 13 14 120 140" dependenciesKind="dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="123" dependencies="10 11 13 14 120 140" dependenciesKind="dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="124" dependencies="9 10 11 12 14 17 20 21 118 119 120 136 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="125" dependencies="10 11 12 13 14 120 136 140" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="126" dependencies="9 10 11 12 14 17 20 21 119 120 136 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="127" dependencies="10 11 13 14 120 136 137" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="128" dependencies="9 10 11 12 14 17 20 21 118 119 120 138 139" dependenciesKind="dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent dependent" />
+      <Unknown index="129" dependencies="9 14" dependenciesKind="dependent dependent" />
+      <Unknown index="130" dependencies="" dependenciesKind="" />
+      <Unknown index="131" dependencies="" dependenciesKind="" />
+      <Unknown index="132" dependencies="" dependenciesKind="" />
+      <Unknown index="133" dependencies="" dependenciesKind="" />
+      <Unknown index="134" dependencies="" dependenciesKind="" />
+      <Unknown index="135" dependencies="" dependenciesKind="" />
+      <Unknown index="141" dependencies="" dependenciesKind="" />
+      <Unknown index="142" dependencies="" dependenciesKind="" />
+      <Unknown index="143" dependencies="" dependenciesKind="" />
+      <Unknown index="144" dependencies="" dependenciesKind="" />
+      <Unknown index="145" dependencies="" dependenciesKind="" />
+      <Unknown index="146" dependencies="" dependenciesKind="" />
+      <Unknown index="147" dependencies="" dependenciesKind="" />
+      <Unknown index="148" dependencies="" dependenciesKind="" />
+      <Unknown index="149" dependencies="150" dependenciesKind="dependent" />
+    </InitialUnknowns>
+  </ModelStructure>
+</fmiModelDescription>

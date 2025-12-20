@@ -105,26 +105,16 @@ export class DataGraph {
     this.nodesMap.set(node.id, reactFlowNode)
   }
 
-  removeNode(nodeId: string): void {
-    // Get node before removal for cleanup
+  async removeNode(nodeId: string): Promise<void> {
     const node = this.nodesMap.get(nodeId)
     if (node) {
       const dataNode = node.data as DataNode
-      // CRITICAL: Call destroy() FIRST to cleanup MQTT subscriptions
-      if ('destroy' in dataNode && typeof dataNode.destroy === 'function') {
-        dataNode.destroy()
-      }
-      // Call dispose() for BACnet nodes to cleanup MQTT subscriptions
-      if ('dispose' in dataNode && typeof dataNode.dispose === 'function') {
-        dataNode.dispose()
-      }
-      // Then call reset() to cleanup timers/intervals
-      if ('reset' in dataNode && typeof dataNode.reset === 'function') {
-        dataNode.reset()
+
+      if (dataNode.cleanup) {
+        await dataNode.cleanup()
       }
     }
 
-    // Remove all edges connected to this node
     const edgesToRemove: string[] = []
     for (const [edgeId, edge] of this.edgesMap) {
       if (edge.source === nodeId || edge.target === nodeId) {
@@ -133,7 +123,6 @@ export class DataGraph {
     }
     edgesToRemove.forEach((id) => this.edgesMap.delete(id))
 
-    // Remove node
     this.nodesMap.delete(nodeId)
   }
 

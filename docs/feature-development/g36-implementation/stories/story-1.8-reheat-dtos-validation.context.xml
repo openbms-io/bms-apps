@@ -1,0 +1,168 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>8</storyId>
+    <title>Reheat DTOs and Validation</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1-8-reheat-dtos-validation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>Pydantic schemas for Reheat parameters, inputs, and outputs</iWant>
+    <soThat>the API has type-safe request/response validation</soThat>
+    <tasks>
+      <task id="1">Create ReheatParameters DTO with VCooMax, VHeaMax, VMin fields</task>
+      <task id="2">Create ReheatInputs DTO with all FMU inputs and Field validation</task>
+      <task id="3">Create ReheatOutputs DTO with yDam, yVal, VSet_flow</task>
+      <task id="4">Create Request/Response DTOs for endpoints</task>
+      <task id="5">Create common DTOs (ErrorResponse, HealthResponse)</task>
+      <task id="6">Export DTOs from package</task>
+      <task id="7">Unit tests for DTO validation</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">ReheatParameters DTO with VCooMax, VHeaMax, VMin fields</criterion>
+    <criterion id="2">ReheatInputs DTO with all FMU inputs (TZon, TCooSet, THeaSet, TDis, VDis_flow, TSup, TSupSet, u1Fan, uOpeMod) and Field validation</criterion>
+    <criterion id="3">ReheatOutputs DTO with yDam, yVal, VSet_flow</criterion>
+    <criterion id="4">Range validation (e.g., temps 250-350K, airflow >=0, uOpeMod 1-7)</criterion>
+    <criterion id="5">Unit tests for DTO validation</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API - Technical Specification</title>
+        <section>Section 4.2 Request/Response Schemas</section>
+        <snippet>Defines all Reheat DTOs including parameters (VCooMax, VHeaMax, VMin), inputs (TZon, TCooSet, etc.), outputs (yDam, yVal, VSet_flow), and all endpoint request/response structures.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Python Coding Standards</section>
+        <snippet>Project coding conventions including type hints, docstrings, naming conventions (snake_case for variables/functions, PascalCase for classes), and tool configuration (Black, Ruff, mypy).</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/epics.md</path>
+        <title>G36 Visual Programming Blocks - Epic Breakdown</title>
+        <section>Story 1.8: Reheat DTOs and Validation</section>
+        <snippet>Acceptance criteria specifying ReheatParameters, ReheatInputs, ReheatOutputs DTOs with range validation for temperatures (250-350K), airflow (>=0), and operation mode (1-7).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/config/settings.py</path>
+        <kind>config</kind>
+        <symbol>Settings</symbol>
+        <lines>8-40</lines>
+        <reason>Pydantic BaseSettings pattern with Field validation - reference for DTO Field usage</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/main.py</path>
+        <kind>entry</kind>
+        <symbol>app</symbol>
+        <lines>31-67</lines>
+        <reason>FastAPI app entry point - DTOs will be used by routers registered here</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/dto/__init__.py</path>
+        <kind>module</kind>
+        <symbol>dto</symbol>
+        <lines>1</lines>
+        <reason>Empty DTO package - DTOs to be created here</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/tests/conftest.py</path>
+        <kind>test-fixture</kind>
+        <symbol>client</symbol>
+        <lines>1-9</lines>
+        <reason>Test client fixture pattern for FastAPI testing</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/dto/systems_dto.py</path>
+        <kind>dto-reference</kind>
+        <symbol>CreateSystemRequestDTO, SystemInstanceDTO, PropertyDTO</symbol>
+        <lines>1-146</lines>
+        <reason>Reference pattern for Pydantic DTOs with Field, ConfigDict, alias, description, examples</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="pydantic" version=">=2.5.0">Core validation library - BaseModel, Field, ConfigDict</package>
+        <package name="pydantic-settings" version=">=2.0.0">Settings management pattern</package>
+        <package name="fastapi" version=">=0.104.0">Web framework - DTOs used for request/response</package>
+        <package name="pytest" version=">=7.4.0">Testing framework</package>
+        <package name="pytest-asyncio" version=">=0.21.0">Async test support</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="pattern">Follow Pydantic BaseModel with Field validation pattern per tech spec Section 4.2</constraint>
+    <constraint type="pattern">Use ConfigDict(populate_by_name=True) for camelCase API aliases if needed</constraint>
+    <constraint type="validation">Temperature fields: ge=250, le=350 (Kelvin range)</constraint>
+    <constraint type="validation">Airflow fields: ge=0 (non-negative)</constraint>
+    <constraint type="validation">uOpeMod field: ge=1, le=7 (operation mode range)</constraint>
+    <constraint type="validation">Output position fields (yDam, yVal): ge=0, le=1 (normalized 0-1)</constraint>
+    <constraint type="documentation">All fields must have description and json_schema_extra with example for OpenAPI</constraint>
+    <constraint type="structure">DTOs in src/dto/, tests in tests/unit/</constraint>
+    <constraint type="naming">Class names: PascalCase (ReheatInputs), fields: matching FMU names (TZon, VDis_flow)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>ReheatParameters</name>
+      <kind>Pydantic BaseModel</kind>
+      <signature>class ReheatParameters(BaseModel): VCooMax: float, VHeaMax: float, VMin: float</signature>
+      <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+    </interface>
+    <interface>
+      <name>ReheatInputs</name>
+      <kind>Pydantic BaseModel</kind>
+      <signature>class ReheatInputs(BaseModel): TZon: float, TCooSet: float, THeaSet: float, TDis: float, VDis_flow: float, TSup: float, TSupSet: float, u1Fan: bool, uOpeMod: int</signature>
+      <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+    </interface>
+    <interface>
+      <name>ReheatOutputs</name>
+      <kind>Pydantic BaseModel</kind>
+      <signature>class ReheatOutputs(BaseModel): yDam: float, yVal: float, VSet_flow: float</signature>
+      <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+    </interface>
+    <interface>
+      <name>CreateInstanceRequest</name>
+      <kind>Pydantic BaseModel</kind>
+      <signature>class CreateInstanceRequest(BaseModel): instance_id: str, parameters: ReheatParameters | None = None</signature>
+      <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+    </interface>
+    <interface>
+      <name>StepRequest</name>
+      <kind>Pydantic BaseModel</kind>
+      <signature>class StepRequest(BaseModel): step_size: float, inputs: ReheatInputs</signature>
+      <path>apps/control-sequence-api-app/src/dto/reheat_dto.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>TDD workflow: write failing tests first, implement DTOs to pass. Use pytest with pytest-asyncio. Test edge cases including boundary values (250K, 350K), invalid types, missing required fields, and extra fields. Follow naming convention test_*.py.</standards>
+    <locations>
+      <location>apps/control-sequence-api-app/tests/unit/</location>
+      <location>apps/control-sequence-api-app/tests/integration/</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Test ReheatParameters with valid defaults and custom values</idea>
+      <idea ac="1">Test ReheatParameters rejects negative airflow values</idea>
+      <idea ac="2">Test ReheatInputs with all valid inputs at boundary values (250K, 350K)</idea>
+      <idea ac="4">Test ReheatInputs rejects temperature outside 250-350K range</idea>
+      <idea ac="4">Test ReheatInputs rejects negative VDis_flow</idea>
+      <idea ac="4">Test ReheatInputs rejects uOpeMod outside 1-7 range</idea>
+      <idea ac="3">Test ReheatOutputs with valid normalized values (0-1)</idea>
+      <idea ac="3">Test ReheatOutputs rejects yDam or yVal outside 0-1 range</idea>
+      <idea ac="2">Test CreateInstanceRequest with optional parameters (None)</idea>
+      <idea ac="2">Test StepRequest validates both step_size and inputs</idea>
+    </ideas>
+  </tests>
+</story-context>

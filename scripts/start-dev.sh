@@ -101,17 +101,22 @@ start_building_semantics_api() {
   pnpm building-semantics:run 2>&1 | sed 's/^/[Semantics-API] /' &
 }
 
+start_control_sequence_api() {
+  pnpm control-sequence:run 2>&1 | sed 's/^/[Control-Seq-API] /' &
+}
+
 # --- Shutdown Management ---
 
 setup_shutdown_trap() {
   local pid_python="$1"
-  local pid_api="$2"
-  local pid_designer="$3"
+  local pid_semantics_api="$2"
+  local pid_control_seq_api="$3"
+  local pid_designer="$4"
 
   trap "
     echo ''
     echo '▶ Shutting down services...'
-    kill $pid_python $pid_api $pid_designer 2>/dev/null || true
+    kill $pid_python $pid_semantics_api $pid_control_seq_api $pid_designer 2>/dev/null || true
     if [ \"$KEEP_INFRA\" != \"true\" ]; then
       stop_infrastructure
     else
@@ -137,24 +142,25 @@ main() {
 
   cd "$ROOT_DIR"
 
-
   start_building_semantics_api
-  PID_API=$!
+  PID_SEMANTICS_API=$!
+
+  start_control_sequence_api
+  PID_CONTROL_SEQ_API=$!
 
   start_designer_app
   PID_DESIGNER=$!
 
-  # Start all services and capture PIDs
   start_bms_iot_app "$BMS_LOG_LEVEL"
   PID_PYTHON=$!
 
-
   # Setup clean shutdown
-  setup_shutdown_trap "$PID_PYTHON" "$PID_API" "$PID_DESIGNER"
+  setup_shutdown_trap "$PID_PYTHON" "$PID_SEMANTICS_API" "$PID_CONTROL_SEQ_API" "$PID_DESIGNER"
 
   echo "▶ Services started:"
   echo "   - BMS IoT App (PID: $PID_PYTHON, Log Level: $BMS_LOG_LEVEL)"
-  echo "   - Building Semantics API (PID: $PID_API, Port: 8000)"
+  echo "   - Building Semantics API (PID: $PID_SEMANTICS_API, Port: 8000)"
+  echo "   - Control Sequence API (PID: $PID_CONTROL_SEQ_API, Port: 8001)"
   echo "   - Designer (PID: $PID_DESIGNER, Port: 3003)"
   echo ""
 

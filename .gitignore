@@ -226,3 +226,6 @@ test_hook.py
 
 # Python app-specific virtual environments
 apps/*/.venv/
+
+# Control sequence API database
+apps/control-sequence-api-app/data/*.db

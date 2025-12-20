@@ -1,0 +1,87 @@
+# generated: 2025-11-29
+# project: bms-apps
+# project_key: bms-apps
+# tracking_system: file-system
+# story_location: "{project-root}/docs/feature-development/g36-implementation/stories"
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic exists in epic file but not contexted
+#   - contexted: Next epic tech context created by *epic-tech-context (required)
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder by *create-story
+#   - ready-for-dev: Draft approved and story context created by *story-ready
+#   - in-progress: Developer actively working on implementation by *dev-story
+#   - review: Implementation complete, ready for review by *code-review
+#   - done: Story completed by *story-done
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done by *retrospective
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics should be 'contexted' before stories can be 'drafted'
+# - SM typically drafts next story ONLY after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', dev reviews, then Dev moves to 'done'
+
+generated: 2025-11-29
+project: bms-apps
+project_key: bms-apps
+tracking_system: file-system
+story_location: "{project-root}/docs/feature-development/g36-implementation/stories"
+
+development_status:
+  # Epic 1: G36 Reheat FMU Block Foundation
+  epic-1: contexted
+
+  # Phase 1A: POC & Backend Service
+  1-1-fmu-loading-poc: done
+  1-2-fmu-state-lifecycle: done
+  1-3-fmu-execution-validation: done
+  1-4-document-poc-findings: done
+  1-5-control-sequence-api-tech-spec: done
+  1-6-project-setup-scaffolding: done
+  1-7-nginx-proxy-configuration: done
+  1-8-reheat-dtos-validation: done
+  1-9-schema-endpoint: skipped # Decision: Use generated types instead, add schema endpoint later if needed for multiple G36 types
+  1-10-fmu-adapter-singleton: done
+  1-11-g36-controller: done
+  1-12-g36-router-endpoints: done
+  1-13-health-router: done
+  1-14-shacl-validation-stub: done
+  1-15-parameter-storage-instance-management: done
+  1-16-api-documentation: done
+  1-17-designer-openapi-client: done
+  1-18-unit-integration-tests: skipped # Tests already written alongside each story implementation
+
+  # Phase 1B: Designer Integration
+  1b-1-g36-reheat-node-type-io-schema: done
+  1b-2-g36-reheat-block-ui-component: done
+  1b-3-dto-layer-refactoring: done
+  1b-4-g36-configuration-panel: done
+
+  epic-1-retrospective: optional
+
+  # Epic 2: BACnet MQTT Write Integration
+  epic-2: backlog
+  # Stories to be defined after Epic 1 completion
+  epic-2-retrospective: optional
+
+  # Epic 3: Two-Level Validation
+  epic-3: backlog
+  # Stories to be defined after Epic 2 completion
+  epic-3-retrospective: optional
+
+  # Epic 4: Graph Execution with Scheduler
+  epic-4: backlog
+  # Stories to be defined after Epic 3 completion
+  epic-4-retrospective: optional
+
+  # Epic 5: BOPTEST Integration Testing
+  epic-5: backlog
+  # Stories to be defined after Epic 4 completion
+  epic-5-retrospective: optional

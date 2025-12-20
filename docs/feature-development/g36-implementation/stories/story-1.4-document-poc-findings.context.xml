@@ -1,0 +1,159 @@
+<story-context id="story-1.4-document-poc-findings" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.4</storyId>
+    <title>Document POC Findings</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-27</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.4-document-poc-findings.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>to consolidate and document all POC findings</iWant>
+    <soThat>we have a clear reference for G36 Service design decisions</soThat>
+    <tasks>
+      <task n="1">Create README.md structure with all 13 POC questions</task>
+      <task n="2">Document Q1-Q4 findings (FMU Fundamentals) from Story 1.2</task>
+      <task n="3">Document Q5-Q6 findings (Practical Usage) from Story 1.1</task>
+      <task n="4">Document Q7-Q13 findings (Execution &amp; Validation) from Story 1.3</task>
+      <task n="5">Add architecture and API design recommendations</task>
+      <task n="6">Include code examples for common patterns</task>
+      <task n="7">Document blockers and concerns</task>
+      <task n="8">Create ADR in apps/g36-api-app/docs/decisions/ documenting FMU library choice and architecture decisions</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1">All 13 POC questions answered in README.md</ac>
+    <ac id="2">Recommendations for G36 Service design captured</ac>
+    <ac id="3">Any blockers or concerns documented</ac>
+    <ac id="4">Code examples for common patterns included</ac>
+    <ac id="5">Architecture Decision Record (ADR) created in apps/g36-api-app/docs/decisions/</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>apps/g36-api-app/docs/fmu-audit/reheat-terminal/reheat-terminal-behavior.md</path>
+        <title>FMU Audit: G36 VAV Reheat Terminal Unit Controller</title>
+        <section>Complete document</section>
+        <snippet>Contains all POC findings Q1-Q13: state management, pure function behavior, execution model, I/O summary, performance metrics, API design implications</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.1-fmu-loading-poc.md</path>
+        <title>Story 1.1: FMU Loading POC</title>
+        <section>POC Answers</section>
+        <snippet>Q5: FMPy library choice, Q6: FMU source from LBL modelica-buildings</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.2-fmu-state-lifecycle.md</path>
+        <title>Story 1.2: FMU State &amp; Lifecycle Exploration</title>
+        <section>POC Answers</section>
+        <snippet>Q1-Q4: State management via simulation time, pure function, step-on-demand, no state save/restore</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.3-fmu-execution-validation.md</path>
+        <title>Story 1.3: FMU Execution &amp; Validation</title>
+        <section>POC Answers</section>
+        <snippet>Q7-Q13: Simulated time, concurrent instances, reasonable outputs, ~0.1ms step time, ~177KB memory, accepts invalid inputs</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <file>
+        <path>apps/g36-api-app/fmu-sequence/scripts/explore_lifecycle.py</path>
+        <kind>script</kind>
+        <symbol>create_fmu_instance, get_variable_references, set_default_inputs</symbol>
+        <lines>57-98</lines>
+        <reason>Code examples for FMU loading and initialization</reason>
+      </file>
+      <file>
+        <path>apps/g36-api-app/fmu-sequence/scripts/validate_fmu_execution.py</path>
+        <kind>script</kind>
+        <symbol>set_inputs, get_outputs, experiment functions</symbol>
+        <lines>73-104</lines>
+        <reason>Code examples for stepping FMU and validation</reason>
+      </file>
+      <file>
+        <path>apps/g36-api-app/fmu-sequence/builds/ReheatControllerFMU.fmu</path>
+        <kind>binary</kind>
+        <symbol>FMU</symbol>
+        <lines>N/A</lines>
+        <reason>Reference FMU location for documentation</reason>
+      </file>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="fmpy">FMU loading and simulation library (chosen over PyFMI)</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <interfaces>
+    <interface>
+      <name>FMPy FMU2Slave</name>
+      <kind>Python class</kind>
+      <signature>FMU2Slave(guid, unzipDirectory, modelIdentifier, instanceName)</signature>
+      <path>fmpy.fmi2</path>
+    </interface>
+  </interfaces>
+
+  <constraints>
+    <constraint>Documentation-only story - no code changes required</constraint>
+    <constraint>README.md output location: apps/g36-api-app/README.md</constraint>
+    <constraint>Must answer all 13 POC questions with evidence from Stories 1.1-1.3</constraint>
+    <constraint>Recommendations must be actionable for API design (Story 1.5)</constraint>
+  </constraints>
+
+  <tests>
+    <standards>Review README for completeness. Verify all 13 questions have clear answers. Ensure recommendations are actionable.</standards>
+    <locations>
+      <location>apps/g36-api-app/README.md</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Verify each Q1-Q13 has Finding + Impact/Recommendation</idea>
+      <idea ac="2">Review architecture recommendations section exists</idea>
+      <idea ac="3">Check blockers/concerns section for any issues</idea>
+      <idea ac="4">Verify code examples are included and work</idea>
+    </ideas>
+  </tests>
+
+  <pocQuestionsSummary>
+    <question id="1" topic="State management">Via simulation time progression, deterministic</question>
+    <question id="2" topic="Save/restore state">NOT SUPPORTED - track sim_time in DB</question>
+    <question id="3" topic="Always running">NO - step-on-demand model</question>
+    <question id="4" topic="Pure function">YES - f(inputs, sim_time) = outputs</question>
+    <question id="5" topic="Library choice">FMPy (over PyFMI) - simpler, better maintained</question>
+    <question id="6" topic="Obtain FMU">LBL modelica-buildings library, export via OpenModelica</question>
+    <question id="7" topic="Step time">SIMULATED time, ~0.1ms wall clock</question>
+    <question id="8" topic="Concurrent instances">YES - 5 tested successfully</question>
+    <question id="9" topic="Reasonable outputs">YES - heating/cooling/satisfied validated</question>
+    <question id="10" topic="Required inputs">All 9 have defaults, explicit setting recommended</question>
+    <question id="11" topic="Step execution time">~0.1 ms average</question>
+    <question id="12" topic="Memory footprint">~177 KB tracked Python memory</question>
+    <question id="13" topic="Error handling">Accepts invalid inputs, pre-validation recommended</question>
+  </pocQuestionsSummary>
+
+  <previousStoryLearnings>
+    <from story="1.3">
+      <newFiles>
+        <file>apps/g36-api-app/fmu-sequence/scripts/validate_fmu_execution.py</file>
+      </newFiles>
+      <modifiedFiles>
+        <file>apps/g36-api-app/docs/fmu-audit/reheat-terminal/reheat-terminal-behavior.md</file>
+      </modifiedFiles>
+      <patterns>FMU validation pattern with 9 experiments covering all scenarios</patterns>
+      <warnings>FMU accepts invalid inputs without exceptions - always pre-validate</warnings>
+    </from>
+    <from story="1.2">
+      <newFiles>
+        <file>apps/g36-api-app/fmu-sequence/scripts/explore_lifecycle.py</file>
+      </newFiles>
+      <patterns>FMU lifecycle: instantiate → setup → init → step → terminate → free</patterns>
+      <warnings>State save/restore not supported - must track simulation time externally</warnings>
+    </from>
+  </previousStoryLearnings>
+</story-context>

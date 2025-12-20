@@ -114,7 +114,7 @@ describe('NodeSerializer', () => {
       expect(result).toEqual({ id: 'test', label: 'Deserialized' })
     })
 
-    it('should handle calculation node deserialization', () => {
+    it('should handle calculation node deserialization', async () => {
       const nodeFactory = createNodeFactory({
         mqttBus: mockMqttBus as any,
         onDataChange: mockOnDataChange,
@@ -127,7 +127,7 @@ describe('NodeSerializer', () => {
         metadata: { operation: 'multiply' },
       }
 
-      const result = deserializeNodeData({
+      const result = await deserializeNodeData({
         nodeType: 'calculation',
         serializedData,
         nodeFactory,
@@ -163,7 +163,7 @@ describe('NodeSerializer', () => {
       expect(serialized.serializedData.type).toBe('calculation')
     })
 
-    it('should roundtrip serialize/deserialize correctly', () => {
+    it('should roundtrip serialize/deserialize correctly', async () => {
       const originalNode = new CalculationNode(
         'Roundtrip Test',
         'divide',
@@ -178,7 +178,7 @@ describe('NodeSerializer', () => {
       const serialized = serializeNodeData(originalNode)
 
       // Deserialize
-      const deserialized = deserializeNodeData({
+      const deserialized = await deserializeNodeData({
         nodeType: serialized.nodeType,
         serializedData: serialized.serializedData,
         nodeFactory,
@@ -193,7 +193,7 @@ describe('NodeSerializer', () => {
       )
     })
 
-    it('should prevent the original "aH" nodeType issue', () => {
+    it('should prevent the original "aH" nodeType issue', async () => {
       // This is the exact scenario that was causing the error
       const mockMinifiedNode = {
         constructor: { name: 'aH' }, // The problematic minified name
@@ -213,16 +213,16 @@ describe('NodeSerializer', () => {
       })
 
       // This should NOT throw "Unknown node type: aH"
-      expect(() =>
+      await expect(
         deserializeNodeData({
           nodeType: serialized.nodeType,
           serializedData: serialized.serializedData,
           nodeFactory,
         })
-      ).not.toThrow()
+      ).resolves.toBeDefined()
 
       // And it should work correctly
-      const result = deserializeNodeData({
+      const result = await deserializeNodeData({
         nodeType: serialized.nodeType,
         serializedData: serialized.serializedData,
         nodeFactory,

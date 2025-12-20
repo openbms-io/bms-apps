@@ -1,0 +1,199 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>14</storyId>
+    <title>SHACL Validation Stub</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-08</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/g36-implementation/stories/story-1.14-shacl-validation-stub.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>a SHACL validation stub endpoint</iWant>
+    <soThat>the API structure supports future validation without blocking Epic 1</soThat>
+    <tasks>
+      <task id="1" name="Create Validation DTOs" ac="2">
+        <subtask>Create src/dto/validation_dto.py</subtask>
+        <subtask>Define ValidationRequest model (accepts graph data as dict/Any)</subtask>
+        <subtask>Define ValidationResponse model with fields: valid (bool), errors (list), message (str)</subtask>
+      </task>
+      <task id="2" name="Create Validation Router" ac="1,3">
+        <subtask>Create src/routers/validation_router.py</subtask>
+        <subtask>Add POST /api/v1/g36/validate endpoint</subtask>
+        <subtask>Return ValidationResponse with valid=True, empty errors, message indicating stub</subtask>
+        <subtask>Add docstring clearly marking endpoint as "Stub for future SHACL implementation"</subtask>
+      </task>
+      <task id="3" name="Register Router in main.py" ac="1">
+        <subtask>Import validation_router in main.py</subtask>
+        <subtask>Register with app.include_router(validation_router)</subtask>
+      </task>
+      <task id="4" name="Unit Tests" ac="1,2">
+        <subtask>Create tests/unit/test_routers/test_validation_router.py</subtask>
+        <subtask>Test validate endpoint returns 200</subtask>
+        <subtask>Test response has valid=True</subtask>
+        <subtask>Test response includes stub message</subtask>
+      </task>
+      <task id="5" name="Integration Tests" ac="1,3">
+        <subtask>Add validation endpoint test to integration tests</subtask>
+        <subtask>Verify endpoint appears in OpenAPI documentation</subtask>
+        <subtask>Verify endpoint docstring visible in /docs</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">POST /api/v1/g36/validate endpoint exists</criterion>
+    <criterion id="2">Endpoint returns stub response indicating always valid</criterion>
+    <criterion id="3">Endpoint documented as "stub for future implementation" in OpenAPI</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API - Technical Specification</title>
+        <section>UC7: SHACL Validation (Stub)</section>
+        <snippet>Actor: Designer. Trigger: User clicks save/run. Flow: Caller sends graph for validation, API returns stub response (always valid). Output: Validation result (stubbed).</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/specs/control-sequence-api-tech-spec.md</path>
+        <title>Control Sequence API - Technical Specification</title>
+        <section>4.1 Endpoints</section>
+        <snippet>POST /api/v1/g36/validate - SHACL validation (stub) - UC7</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/epics.md</path>
+        <title>G36 Visual Programming Blocks - Epic Breakdown</title>
+        <section>Story 1.14: SHACL Validation Stub</section>
+        <snippet>POST /api/v1/g36/validate endpoint. Returns stub response (always valid). Documented as "stub for future implementation". Prerequisites: Story 1.7.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/g36-implementation/stories/story-1.13-health-router.md</path>
+        <title>Story 1.13: Health Router</title>
+        <section>Learnings from Previous Story</section>
+        <snippet>Router Pattern: Use FastAPI Depends for dependency injection. DTO Pattern: Create dedicated dto file with Pydantic models. Router Registration: Use app.include_router(router) in main.py.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Python Coding Standards</section>
+        <snippet>Use snake_case for functions/variables, PascalCase for classes. Type hints required. Black formatter (88 chars). Ruff linter.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Context - CLAUDE.md</title>
+        <section>Development Philosophy</section>
+        <snippet>TDD - Write tests first. DO NOT OVERENGINEER. Fail Fast. DO NOT ADD COMMENTS unless explaining WHY.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/main.py</path>
+        <kind>entry-point</kind>
+        <symbol>app</symbol>
+        <lines>1-68</lines>
+        <reason>FastAPI app entry point where validation_router must be registered via app.include_router()</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/routers/health_router.py</path>
+        <kind>router</kind>
+        <symbol>router</symbol>
+        <lines>1-33</lines>
+        <reason>Reference pattern for router structure, APIRouter setup, and FastAPI Depends usage</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/src/dto/health_dto.py</path>
+        <kind>dto</kind>
+        <symbol>HealthResponse</symbol>
+        <lines>1-16</lines>
+        <reason>Reference pattern for Pydantic BaseModel DTO with Field descriptors</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/tests/unit/test_routers/test_health_router.py</path>
+        <kind>test</kind>
+        <symbol>TestHealthEndpointResponse</symbol>
+        <lines>1-112</lines>
+        <reason>Reference pattern for unit tests with mock adapter, TestClient, and pytest fixtures</reason>
+      </artifact>
+      <artifact>
+        <path>apps/control-sequence-api-app/tests/integration/test_health_router.py</path>
+        <kind>test</kind>
+        <symbol>TestHealthOpenAPIDocumentation</symbol>
+        <lines>166-200</lines>
+        <reason>Reference pattern for OpenAPI documentation verification tests</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="fastapi" version=">=0.104.0" />
+        <package name="pydantic" version=">=2.5.0" />
+        <package name="pytest" version=">=7.4.0" />
+        <package name="httpx" version=">=0.25.0" />
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint source="tech-spec">API path prefix must be /api/v1/g36/ for G36 endpoints</constraint>
+    <constraint source="tech-spec">Stub endpoint returns always valid for Epic 1; full SHACL planned for Epic 3</constraint>
+    <constraint source="claude.md">TDD - Write tests first, Red-Green-Refactor cycle</constraint>
+    <constraint source="claude.md">DO NOT OVERENGINEER - Simple, direct implementations</constraint>
+    <constraint source="claude.md">Fail Fast - Surface issues immediately with clear error messages</constraint>
+    <constraint source="claude.md">DO NOT ADD COMMENTS unless explaining WHY, not WHAT</constraint>
+    <constraint source="coding-standards">Python: snake_case functions, PascalCase classes, type hints required</constraint>
+    <constraint source="coding-standards">Use Black (88 chars) and Ruff for formatting/linting</constraint>
+    <constraint source="project-pattern">Follow MVC structure: dto/ for schemas, routers/ for endpoints</constraint>
+    <constraint source="project-pattern">Use FastAPI Depends() for dependency injection if needed</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>POST /api/v1/g36/validate</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/v1/g36/validate -> ValidationResponse</signature>
+      <path>apps/control-sequence-api-app/src/routers/validation_router.py (to be created)</path>
+    </interface>
+    <interface>
+      <name>ValidationRequest</name>
+      <kind>Pydantic model</kind>
+      <signature>class ValidationRequest(BaseModel): graph: dict[str, Any]</signature>
+      <path>apps/control-sequence-api-app/src/dto/validation_dto.py (to be created)</path>
+    </interface>
+    <interface>
+      <name>ValidationResponse</name>
+      <kind>Pydantic model</kind>
+      <signature>class ValidationResponse(BaseModel): valid: bool, errors: list[str], message: str</signature>
+      <path>apps/control-sequence-api-app/src/dto/validation_dto.py (to be created)</path>
+    </interface>
+    <interface>
+      <name>app.include_router</name>
+      <kind>FastAPI registration</kind>
+      <signature>app.include_router(validation_router)</signature>
+      <path>apps/control-sequence-api-app/src/main.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest with pytest-asyncio for async tests. TestClient from FastAPI for endpoint testing.
+      Mock external dependencies in unit tests. Integration tests use real app without mocking.
+      Test files: test_*.py. Test classes: TestXxx. Test methods: test_xxx_xxx.
+      Run tests from project root with PYTHONPATH set.
+    </standards>
+    <locations>
+      <location>apps/control-sequence-api-app/tests/unit/test_routers/</location>
+      <location>apps/control-sequence-api-app/tests/integration/</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Test POST /api/v1/g36/validate returns 200 status code</idea>
+      <idea ac="2">Test response body contains valid=True field</idea>
+      <idea ac="2">Test response body contains empty errors list</idea>
+      <idea ac="2">Test response body contains stub message explaining future implementation</idea>
+      <idea ac="3">Test endpoint appears in OpenAPI schema at /openapi.json</idea>
+      <idea ac="3">Test endpoint has docstring visible describing stub nature</idea>
+      <idea ac="1">Test endpoint accepts ValidationRequest with graph structure</idea>
+    </ideas>
+  </tests>
+</story-context>

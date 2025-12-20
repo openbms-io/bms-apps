@@ -1,0 +1,54 @@
+EXPORTS
+  ;***************************************************
+  ;Common Functions
+  ;****************************************************
+  ReheatControllerFMU_fmiGetTypesPlatform @1
+  ReheatControllerFMU_fmiGetVersion @2
+  ReheatControllerFMU_fmiSetDebugLogging @3
+  ReheatControllerFMU_fmiInstantiate @4
+  ReheatControllerFMU_fmiFreeInstance @5
+  ReheatControllerFMU_fmiSetupExperiment @6
+  ReheatControllerFMU_fmiEnterInitializationMode @7
+  ReheatControllerFMU_fmiExitInitializationMode @8
+  ReheatControllerFMU_fmiTerminate @9
+  ReheatControllerFMU_fmiReset @10
+  ReheatControllerFMU_fmiGetReal @11
+  ReheatControllerFMU_fmiGetInteger @12
+  ReheatControllerFMU_fmiGetBoolean @13
+  ReheatControllerFMU_fmiGetString @14
+  ReheatControllerFMU_fmiSetReal @15
+  ReheatControllerFMU_fmiSetInteger @16
+  ReheatControllerFMU_fmiSetBoolean @17
+  ReheatControllerFMU_fmiSetString @18
+  ReheatControllerFMU_fmiGetFMUstate @19
+  ReheatControllerFMU_fmiSetFMUstate @20
+  ReheatControllerFMU_fmiFreeFMUstate @21
+  ReheatControllerFMU_fmiSerializedFMUstateSize @22
+  ReheatControllerFMU_fmiSerializeFMUstate @23
+  ReheatControllerFMU_fmiDeSerializeFMUstate @24
+  ReheatControllerFMU_fmiGetDirectionalDerivative @25
+  ;***************************************************
+  ;Functions for FMI for Model Exchange
+  ;****************************************************
+  ReheatControllerFMU_fmiEnterEventMode @26
+  ReheatControllerFMU_fmiNewDiscreteStates @27
+  ReheatControllerFMU_fmiEnterContinuousTimeMode @28
+  ReheatControllerFMU_fmiCompletedIntegratorStep @29
+  ReheatControllerFMU_fmiSetTime @30
+  ReheatControllerFMU_fmiSetContinuousStates @31
+  ReheatControllerFMU_fmiGetDerivatives @32
+  ReheatControllerFMU_fmiGetEventIndicators @33
+  ReheatControllerFMU_fmiGetContinuousStates @34
+  ReheatControllerFMU_fmiGetNominalsOfContinuousStates @35
+  ;***************************************************
+  ;Functions for FMI for Co-Simulation
+  ;****************************************************
+  ReheatControllerFMU_fmiSetRealInputDerivatives @36
+  ReheatControllerFMU_fmiGetRealOutputDerivatives @37
+  ReheatControllerFMU_fmiDoStep @38
+  ReheatControllerFMU_fmiCancelStep @39
+  ReheatControllerFMU_fmiGetStatus @40
+  ReheatControllerFMU_fmiGetRealStatus @41
+  ReheatControllerFMU_fmiGetIntegerStatus @42
+  ReheatControllerFMU_fmiGetBooleanStatus @43
+  ReheatControllerFMU_fmiGetStringStatus @44
