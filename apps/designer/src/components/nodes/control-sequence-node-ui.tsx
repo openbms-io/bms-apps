@@ -62,6 +62,20 @@ function formatOutputValue(value: MessageValue): string {
   return value
 }
 
+function groupByVisibility<THandle extends string, TCategory extends string>(
+  categories: Record<TCategory, readonly THandle[]>,
+  filterFn: (handle: THandle) => boolean
+): [TCategory, THandle[]][] {
+  const groups: [TCategory, THandle[]][] = []
+  for (const [category, categoryHandles] of Object.entries(categories)) {
+    const filtered = (categoryHandles as THandle[]).filter(filterFn)
+    if (filtered.length > 0) {
+      groups.push([category as TCategory, filtered])
+    }
+  }
+  return groups
+}
+
 export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
   const ControlSequenceNode = memo(({ data, id }: NodeProps) => {
     const typedData = data as ControlSequenceNodeData
@@ -126,70 +140,35 @@ export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
       updateNodeInternals(id)
     }, [id, updateNodeInternals, visibleInputs, visibleOutputs])
 
-    const groupedVisibleInputs = useMemo(() => {
-      const groups: [InputCategory, ControlSequenceInputHandle[]][] = []
-      for (const [category, categoryInputs] of Object.entries(
-        inputCategories
-      )) {
-        const visible = (categoryInputs as ControlSequenceInputHandle[]).filter(
-          (h) => visibleInputs.includes(h)
-        )
-        if (visible.length > 0) {
-          groups.push([category as InputCategory, visible])
-        }
-      }
-      return groups
-    }, [inputCategories, visibleInputs])
+    const groupedVisibleInputs = useMemo(
+      () =>
+        groupByVisibility(inputCategories, (h) => visibleInputs.includes(h)),
+      [inputCategories, visibleInputs]
+    )
 
-    const groupedOptionalInputs = useMemo(() => {
-      const groups: [InputCategory, ControlSequenceInputHandle[]][] = []
-      for (const [category, categoryInputs] of Object.entries(
-        inputCategories
-      )) {
-        const available = (
-          categoryInputs as ControlSequenceInputHandle[]
-        ).filter(
+    const groupedOptionalInputs = useMemo(
+      () =>
+        groupByVisibility(
+          inputCategories,
           (h) =>
             !visibleInputs.includes(h) && !parameterControlledInputs.includes(h)
-        )
-        if (available.length > 0) {
-          groups.push([category as InputCategory, available])
-        }
-      }
-      return groups
-    }, [inputCategories, visibleInputs, parameterControlledInputs])
+        ),
+      [inputCategories, visibleInputs, parameterControlledInputs]
+    )
 
     const hasOptionalInputs = groupedOptionalInputs.length > 0
 
-    const groupedVisibleOutputs = useMemo(() => {
-      const groups: [OutputCategory, ControlSequenceOutputHandle[]][] = []
-      for (const [category, categoryOutputs] of Object.entries(
-        outputCategories
-      )) {
-        const visible = (
-          categoryOutputs as ControlSequenceOutputHandle[]
-        ).filter((h) => visibleOutputs.includes(h))
-        if (visible.length > 0) {
-          groups.push([category as OutputCategory, visible])
-        }
-      }
-      return groups
-    }, [outputCategories, visibleOutputs])
+    const groupedVisibleOutputs = useMemo(
+      () =>
+        groupByVisibility(outputCategories, (h) => visibleOutputs.includes(h)),
+      [outputCategories, visibleOutputs]
+    )
 
-    const groupedOptionalOutputs = useMemo(() => {
-      const groups: [OutputCategory, ControlSequenceOutputHandle[]][] = []
-      for (const [category, categoryOutputs] of Object.entries(
-        outputCategories
-      )) {
-        const available = (
-          categoryOutputs as ControlSequenceOutputHandle[]
-        ).filter((h) => !visibleOutputs.includes(h))
-        if (available.length > 0) {
-          groups.push([category as OutputCategory, available])
-        }
-      }
-      return groups
-    }, [outputCategories, visibleOutputs])
+    const groupedOptionalOutputs = useMemo(
+      () =>
+        groupByVisibility(outputCategories, (h) => !visibleOutputs.includes(h)),
+      [outputCategories, visibleOutputs]
+    )
 
     const hasOptionalOutputs = groupedOptionalOutputs.length > 0
 

@@ -267,7 +267,39 @@ The G36 Configuration Panel story has been successfully implemented with:
 
 ### Key Findings
 
-**No HIGH or MEDIUM severity issues found.**
+**MEDIUM Severity:**
+
+1. **OCP Violation in Factory/Serializer** (SOLID - Open/Closed Principle)
+
+   - **Files:** `factory.ts:49-124` and `serializer.ts:229-329`
+   - **Issue:** Large `switch` statements keyed by `NodeType` require edits in multiple places when adding a new node type. Adding `g36-vav-reheat` required modifications to both files.
+   - **Impact:** Violates OCP - code is not closed for modification when extending with new node types.
+   - **Suggestion:** Introduce a **Node Registry Pattern**:
+
+     ```typescript
+     // node-registry.ts
+     type NodeHandler = {
+       create: (params: CreateParams) => DataNode | Promise<DataNode>;
+       serialize: (node: DataNode) => SerializedData;
+       deserialize: (data: SerializedData) => DataNode | Promise<DataNode>;
+     };
+
+     const nodeRegistry = new Map<NodeType, NodeHandler>();
+
+     export function registerNodeType(type: NodeType, handler: NodeHandler) {
+       nodeRegistry.set(type, handler);
+     }
+
+     // Each node module registers itself on import
+     // g36-vav-reheat-node.ts
+     registerNodeType("g36-vav-reheat", {
+       create: G36VavReheatNode.create,
+       serialize: (node) => node.toSerializable(),
+       deserialize: async (data) => G36VavReheatNode.create(data),
+     });
+     ```
+
+   - **Benefit:** New node types can be added by creating a single module that self-registers, without modifying factory.ts or serializer.ts.
 
 **LOW Severity:**
 

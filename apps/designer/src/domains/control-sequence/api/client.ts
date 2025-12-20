@@ -21,21 +21,28 @@ import type {
   TemperatureUnit,
 } from './generated/types.gen'
 
+interface ApiResponse<T> {
+  data?: T
+  error?: unknown
+}
+
+function unwrap<T>(response: ApiResponse<T>, defaultMessage: string): T {
+  if (response.error) {
+    const errorResponse = response.error as ErrorResponse
+    throw new Error(
+      errorResponse.detail ?? errorResponse.error ?? defaultMessage
+    )
+  }
+  return response.data!
+}
+
 export async function createInstance(
   request: CreateInstanceRequestReheatParameters
 ): Promise<InstanceResponseWithCategoriesReheatParameters> {
   const response = await createInstanceApiV1G36VavReheatInstancesPost({
     body: request,
   })
-
-  if (response.error) {
-    const errorResponse = response.error as ErrorResponse
-    throw new Error(
-      errorResponse.detail ?? 'Failed to create control sequence instance'
-    )
-  }
-
-  return response.data!
+  return unwrap(response, 'Failed to create control sequence instance')
 }
 
 export async function deleteInstance(
@@ -45,15 +52,7 @@ export async function deleteInstance(
     await deleteInstanceApiV1G36VavReheatInstancesInstanceIdDelete({
       path: { instance_id: instanceId },
     })
-
-  if (response.error) {
-    const errorResponse = response.error as unknown as ErrorResponse
-    throw new Error(
-      errorResponse.detail ?? 'Failed to delete control sequence instance'
-    )
-  }
-
-  return response.data!
+  return unwrap(response, 'Failed to delete control sequence instance')
 }
 
 export async function deleteFmu(
@@ -64,13 +63,7 @@ export async function deleteFmu(
       path: { instance_id: instanceId },
     }
   )
-
-  if (response.error) {
-    const errorResponse = response.error as unknown as ErrorResponse
-    throw new Error(errorResponse.detail ?? 'Failed to delete FMU instance')
-  }
-
-  return response.data!
+  return unwrap(response, 'Failed to delete FMU instance')
 }
 
 export async function stepInstance(
@@ -81,17 +74,7 @@ export async function stepInstance(
     path: { instance_id: instanceId },
     body: request,
   })
-
-  if (response.error) {
-    const errorResponse = response.error as unknown as ErrorResponse
-    throw new Error(
-      errorResponse.detail ??
-        errorResponse.error ??
-        'Failed to execute control sequence step'
-    )
-  }
-
-  return response.data!
+  return unwrap(response, 'Failed to execute control sequence step')
 }
 
 export async function getInstance({
@@ -102,15 +85,7 @@ export async function getInstance({
   const response = await getInstanceApiV1G36VavReheatInstancesInstanceIdGet({
     path: { instance_id: instanceId },
   })
-
-  if (response.error) {
-    const errorResponse = response.error as unknown as ErrorResponse
-    throw new Error(
-      errorResponse.detail ?? 'Failed to get control sequence instance'
-    )
-  }
-
-  return response.data!
+  return unwrap(response, 'Failed to get control sequence instance')
 }
 
 export async function updateInstance({
@@ -124,15 +99,7 @@ export async function updateInstance({
     path: { instance_id: instanceId },
     body: { parameters },
   })
-
-  if (response.error) {
-    const errorResponse = response.error as unknown as ErrorResponse
-    throw new Error(
-      errorResponse.detail ?? 'Failed to update control sequence instance'
-    )
-  }
-
-  return response.data!
+  return unwrap(response, 'Failed to update control sequence instance')
 }
 
 export async function convertParameters({
@@ -154,13 +121,7 @@ export async function convertParameters({
       target_airflow_unit: targetAirflowUnit,
     },
   })
-
-  if (response.error) {
-    const errorResponse = response.error as unknown as ErrorResponse
-    throw new Error(errorResponse.detail ?? 'Failed to convert parameters')
-  }
-
-  return response.data!.parameters
+  return unwrap(response, 'Failed to convert parameters').parameters
 }
 
 export async function getDefaultParameters(
@@ -169,11 +130,5 @@ export async function getDefaultParameters(
   const response = await getDefaultsApiV1ParametersDefaultsGet({
     query: { sequenceType },
   })
-
-  if (response.error) {
-    const errorResponse = response.error as unknown as ErrorResponse
-    throw new Error(errorResponse.detail ?? 'Failed to get default parameters')
-  }
-
-  return response.data!.parameters
+  return unwrap(response, 'Failed to get default parameters').parameters
 }
