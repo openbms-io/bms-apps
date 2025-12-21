@@ -45,6 +45,7 @@ export interface BaseControlSequenceMetadata {
   handles: ControlSequenceHandles
   computedOutputs?: ComputedOutputs
   inputValues?: Record<string, unknown>
+  parameters?: Record<string, unknown>
 }
 
 export abstract class BaseControlSequenceNode implements ControlSequenceNode {
@@ -61,6 +62,7 @@ export abstract class BaseControlSequenceNode implements ControlSequenceNode {
   private sendCallback?: SendCallback<ControlSequenceOutputHandle>
   private _computedOutputs?: ComputedOutputs
   private _inputValues: Record<string, unknown> = {}
+  private _parameters: Record<string, unknown> = {}
 
   abstract readonly type: NodeType
   abstract readonly sequenceType: SequenceType
@@ -72,6 +74,7 @@ export abstract class BaseControlSequenceNode implements ControlSequenceNode {
       handles: this.handles,
       computedOutputs: this._computedOutputs,
       inputValues: this._inputValues,
+      parameters: this._parameters,
     }
   }
 
@@ -84,6 +87,7 @@ export abstract class BaseControlSequenceNode implements ControlSequenceNode {
       visibleInputs: [...config.handles.visibleInputs],
       visibleOutputs: [...config.handles.visibleOutputs],
     }
+    this._parameters = config.parameters ?? {}
     this.messageBuffer = createMessageBuffer<ControlSequenceInputHandle>()
   }
 
@@ -126,6 +130,10 @@ export abstract class BaseControlSequenceNode implements ControlSequenceNode {
 
   setVisibleOutputs(outputs: ControlSequenceOutputHandle[]): void {
     this.handles = { ...this.handles, visibleOutputs: outputs }
+  }
+
+  setParameters(params: Record<string, unknown>): void {
+    this._parameters = params
   }
 
   async receive(

@@ -30,7 +30,7 @@ class OutputCategory(StrEnum):
     AHU_REQUESTS = "ahuRequests"
     PLANT_REQUESTS = "plantRequests"
     ALARMS = "alarms"
-    VENTILATION_INFO = "ventilationInfo"
+    MONITORING = "monitoring"
 
 
 class ErrorResponse(BaseModel):

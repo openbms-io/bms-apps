@@ -78,6 +78,7 @@ class VavReheatController:
             input_categories=INPUT_CATEGORIES,
             output_categories=OUTPUT_CATEGORIES,
             parameter_to_required_inputs=ReheatParameters.get_parameter_to_required_inputs(),
+            parameter_to_required_outputs=ReheatParameters.get_parameter_to_required_outputs(),
         )
 
     async def get_instance(
@@ -93,6 +94,7 @@ class VavReheatController:
             input_categories=INPUT_CATEGORIES,
             output_categories=OUTPUT_CATEGORIES,
             parameter_to_required_inputs=ReheatParameters.get_parameter_to_required_inputs(),
+            parameter_to_required_outputs=ReheatParameters.get_parameter_to_required_outputs(),
         )
 
     async def update_instance(
@@ -115,6 +117,7 @@ class VavReheatController:
             input_categories=INPUT_CATEGORIES,
             output_categories=OUTPUT_CATEGORIES,
             parameter_to_required_inputs=ReheatParameters.get_parameter_to_required_inputs(),
+            parameter_to_required_outputs=ReheatParameters.get_parameter_to_required_outputs(),
         )
 
     async def step(

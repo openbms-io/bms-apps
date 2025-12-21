@@ -99,6 +99,15 @@ PARAMETER_TO_REQUIRED_INPUTS: dict[ReheatParameterName, list[ReheatInputName]] =
     ],
 }
 
+PARAMETER_TO_REQUIRED_OUTPUTS: dict[ReheatParameterName, list[ReheatOutputName]] = {
+    ReheatParameterName.HAS_HOT_WATER_COIL: [
+        ReheatOutputName.HEATING_VALVE_REQUEST,
+        ReheatOutputName.HOT_WATER_PLANT_REQUEST,
+        ReheatOutputName.LOW_TEMP_ALARM,
+        ReheatOutputName.LEAKING_VALVE_ALARM,
+    ],
+}
+
 
 INPUT_CATEGORIES: dict[InputCategory, list[ReheatInputName]] = {
     InputCategory.ZONE_TEMPERATURE: [
@@ -139,7 +148,6 @@ OUTPUT_CATEGORIES: dict[OutputCategory, list[ReheatOutputName]] = {
     OutputCategory.VAV_CONTROL: [
         ReheatOutputName.DAMPER_POSITION,
         ReheatOutputName.VALVE_POSITION,
-        ReheatOutputName.AIRFLOW_SETPOINT,
     ],
     OutputCategory.AHU_REQUESTS: [
         ReheatOutputName.HEATING_VALVE_REQUEST,
@@ -156,7 +164,8 @@ OUTPUT_CATEGORIES: dict[OutputCategory, list[ReheatOutputName]] = {
         ReheatOutputName.LOW_FLOW_ALARM,
         ReheatOutputName.LOW_TEMP_ALARM,
     ],
-    OutputCategory.VENTILATION_INFO: [
+    OutputCategory.MONITORING: [
+        ReheatOutputName.AIRFLOW_SETPOINT,
         ReheatOutputName.MIN_OUTDOOR_AIRFLOW,
         ReheatOutputName.ADJ_AREA_BREATHING_ZONE_FLOW,
         ReheatOutputName.ADJ_POP_BREATHING_ZONE_FLOW,

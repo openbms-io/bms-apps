@@ -176,7 +176,7 @@ export abstract class BaseBacnetNode implements BacnetInputOutput {
       // Update the property value locally for UI updates
       this.discoveredProperties = {
         ...this.discoveredProperties,
-        [handle]: message.payload,
+        [handle]: message.payload?.value,
       }
 
       // Send the updated value downstream

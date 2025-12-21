@@ -94,6 +94,7 @@ describe('G36VavReheatNode', () => {
               metadata: {
                 computedOutputs: {},
                 inputValues: {},
+                parameters: { hasHotWaterCoil: true },
               },
             },
           },
@@ -240,6 +241,7 @@ describe('G36VavReheatNode', () => {
                 metadata: {
                   computedOutputs: {},
                   inputValues: {},
+                  parameters: { hasHotWaterCoil: true },
                 },
               },
             },
@@ -287,6 +289,7 @@ describe('G36VavReheatNode', () => {
                     valvePosition: { type: 'number', value: 0.5 },
                   },
                   inputValues: {},
+                  parameters: { hasHotWaterCoil: true },
                 },
               },
             },
@@ -318,6 +321,7 @@ describe('G36VavReheatNode', () => {
                     zoneTemperature: 22.5,
                     coolingSetpoint: 24.0,
                   },
+                  parameters: { hasHotWaterCoil: true },
                 },
               },
             },
@@ -348,6 +352,7 @@ describe('G36VavReheatNode', () => {
                   inputValues: {
                     fanStatus: true,
                   },
+                  parameters: { hasHotWaterCoil: true },
                 },
               },
             },

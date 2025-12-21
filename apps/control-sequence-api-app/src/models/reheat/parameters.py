@@ -6,8 +6,10 @@ from src.models.reheat.enums import ControllerType, ParameterCategory, Ventilati
 from src.utils.unit_conversion import AirflowUnit, TemperatureUnit
 from src.dto.reheat_constants import (
     ReheatInputName,
+    ReheatOutputName,
     ReheatParameterName,
     PARAMETER_TO_REQUIRED_INPUTS,
+    PARAMETER_TO_REQUIRED_OUTPUTS,
 )
 
 
@@ -38,6 +40,13 @@ class ReheatParameters(BaseModel):
     ) -> dict[ReheatParameterName, list[ReheatInputName]]:
         """Return mapping of parameters to their required inputs."""
         return PARAMETER_TO_REQUIRED_INPUTS
+
+    @classmethod
+    def get_parameter_to_required_outputs(
+        cls,
+    ) -> dict[ReheatParameterName, list[ReheatOutputName]]:
+        """Return mapping of parameters to their required outputs."""
+        return PARAMETER_TO_REQUIRED_OUTPUTS
 
     # === Unit preferences (stored per-instance) ===
     temperatureUnit: TemperatureUnit = Field(

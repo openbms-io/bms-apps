@@ -42,6 +42,10 @@ import {
 } from '@/lib/data-nodes/base-control-sequence-node'
 import { camelToLabel } from '@/lib/utils'
 import { G36ConfigurationPanel } from '@/components/panels/g36-configuration-panel'
+import {
+  getHandleLabel,
+  REHEAT_CONDITIONAL_LABELS,
+} from '@/domains/control-sequence'
 
 interface ControlSequenceNodeConfig {
   sequenceType: SequenceType
@@ -108,20 +112,44 @@ export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
       })
     )
 
+    const parameters = useFlowStore(
+      useShallow((state) => {
+        const node = state.nodes.find((n) => n.id === id)
+        const nodeData = node?.data as ControlSequenceNodeData | undefined
+        return (nodeData?.metadata?.parameters ?? {}) as Record<string, unknown>
+      })
+    )
+
+    const getLabel = useCallback(
+      (handle: string) =>
+        getHandleLabel(handle, parameters, REHEAT_CONDITIONAL_LABELS),
+      [parameters]
+    )
+
     const updateNode = useFlowStore((state) => state.updateNode)
     const saveProject = useFlowStore((state) => state.saveProject)
 
     const handlePanelClose = useCallback(() => setIsPanelOpen(false), [])
 
     const handleHandlesChange = useCallback(
-      (visibleInputs: ControlSequenceInputHandle[]) => {
+      ({
+        visibleInputs,
+        visibleOutputs,
+        parameters,
+      }: {
+        visibleInputs: ControlSequenceInputHandle[]
+        visibleOutputs: ControlSequenceOutputHandle[]
+        parameters: Record<string, unknown>
+      }) => {
         updateNode({
           type: 'UPDATE_CONTROL_SEQUENCE_HANDLES',
           nodeId: id,
           handles: {
             ...handles,
             visibleInputs,
+            visibleOutputs,
           },
+          parameters,
         })
       },
       [updateNode, id, handles]
@@ -274,7 +302,7 @@ export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
                                 style={{ position: 'relative' }}
                               />
                               <div className="flex-1 text-sm ml-2">
-                                {camelToLabel(handle)}
+                                {getLabel(handle)}
                                 {isRequired && (
                                   <span className="text-destructive ml-0.5">
                                     *
@@ -329,7 +357,7 @@ export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
                                 key={handle}
                                 onClick={() => addInput(handle)}
                               >
-                                {camelToLabel(handle)}
+                                {getLabel(handle)}
                               </DropdownMenuItem>
                             ))}
                           </Fragment>
@@ -367,7 +395,7 @@ export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
                                 <X className="h-3 w-3" />
                               </Button>
                               <div className="flex-1 text-sm text-right mr-2">
-                                {camelToLabel(handle)}
+                                {getLabel(handle)}
                                 {outputValue !== undefined && (
                                   <span className="text-xs text-muted-foreground ml-1">
                                     {formatOutputValue(outputValue.value)}
@@ -414,7 +442,7 @@ export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
                                 key={handle}
                                 onClick={() => addOutput(handle)}
                               >
-                                {camelToLabel(handle)}
+                                {getLabel(handle)}
                               </DropdownMenuItem>
                             ))}
                           </Fragment>

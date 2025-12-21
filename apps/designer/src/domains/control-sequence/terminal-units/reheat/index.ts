@@ -7,6 +7,7 @@ export {
   OPTIONAL_INPUTS,
   ALL_INPUTS,
   ALL_OUTPUTS,
+  REHEAT_CONDITIONAL_LABELS,
   type ReheatInputHandle,
   type ReheatOutputHandle,
 } from './handles'

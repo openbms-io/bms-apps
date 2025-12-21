@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import {
   Sheet,
@@ -25,18 +25,81 @@ import type {
   ParameterCategory,
   TemperatureUnit,
   AirflowUnit,
+  ReheatOutputName,
 } from '@/domains/control-sequence/api/generated/types.gen'
 import type {
   ControlSequenceInputHandle,
+  ControlSequenceOutputHandle,
   SequenceType,
 } from '@/domains/control-sequence'
 import {
   REHEAT_REQUIRED_INPUTS,
+  REHEAT_ALL_OUTPUTS,
   SEQUENCE_DROPDOWN_FIELDS,
 } from '@/domains/control-sequence'
 import { CollapsibleSection, CategoryFields } from './components'
 import { camelToLabel } from '@/lib/utils'
 import { type G36ConfigurationPanelProps, BASIC_CATEGORIES } from './types'
+
+type ParameterToOutputsMap = Record<string, ReheatOutputName[] | undefined>
+type ParameterToInputsMap = Record<string, string[] | undefined>
+
+function findControllingParameter({
+  output,
+  parameterToRequiredOutputs,
+}: {
+  output: ReheatOutputName
+  parameterToRequiredOutputs: ParameterToOutputsMap
+}): keyof ReheatParameters | undefined {
+  for (const [param, outputs] of Object.entries(parameterToRequiredOutputs)) {
+    if (outputs?.includes(output)) {
+      return param as keyof ReheatParameters
+    }
+  }
+  return undefined
+}
+
+function computeVisibleInputs({
+  params,
+  parameterToRequiredInputs,
+}: {
+  params: ReheatParameters
+  parameterToRequiredInputs: ParameterToInputsMap
+}): ControlSequenceInputHandle[] {
+  const conditionalInputs: ControlSequenceInputHandle[] = []
+
+  for (const [param, inputs] of Object.entries(parameterToRequiredInputs)) {
+    if (params[param as keyof ReheatParameters] && inputs) {
+      conditionalInputs.push(...(inputs as ControlSequenceInputHandle[]))
+    }
+  }
+
+  return [
+    ...REHEAT_REQUIRED_INPUTS,
+    ...conditionalInputs,
+  ] as ControlSequenceInputHandle[]
+}
+
+function computeVisibleOutputs({
+  params,
+  parameterToRequiredOutputs,
+}: {
+  params: ReheatParameters
+  parameterToRequiredOutputs: ParameterToOutputsMap
+}): ControlSequenceOutputHandle[] {
+  return REHEAT_ALL_OUTPUTS.filter((output) => {
+    const controllingParam = findControllingParameter({
+      output,
+      parameterToRequiredOutputs,
+    })
+
+    const isAlwaysVisible = controllingParam === undefined
+    const isEnabledByParameter =
+      controllingParam && params[controllingParam] === true
+
+    return isAlwaysVisible || isEnabledByParameter
+  }) as ControlSequenceOutputHandle[]
+}
 
 export function G36ConfigurationPanel({
   instanceId,
@@ -63,93 +126,75 @@ export function G36ConfigurationPanel({
   }, [data?.parameters])
 
   const parameterToRequiredInputs = data?.parameterToRequiredInputs ?? {}
+  const parameterToRequiredOutputs = data?.parameterToRequiredOutputs ?? {}
 
-  const computeVisibleInputs = useCallback(
-    (params: ReheatParameters): ControlSequenceInputHandle[] => {
-      const conditionalInputs: ControlSequenceInputHandle[] = []
+  const handleParameterChange = <K extends keyof ReheatParameters>(
+    key: K,
+    value: ReheatParameters[K]
+  ) => {
+    setLocalParams((prev) => ({ ...prev, [key]: value }))
+  }
 
-      for (const [param, inputs] of Object.entries(parameterToRequiredInputs)) {
-        if (params[param as keyof ReheatParameters] && inputs) {
-          conditionalInputs.push(...(inputs as ControlSequenceInputHandle[]))
-        }
-      }
+  const handleUnitChange = async (
+    unitType: 'temperatureUnit' | 'airflowUnit',
+    newValue: TemperatureUnit | AirflowUnit
+  ) => {
+    const targetTempUnit =
+      unitType === 'temperatureUnit'
+        ? (newValue as TemperatureUnit)
+        : localParams.temperatureUnit!
+    const targetAirflowUnit =
+      unitType === 'airflowUnit'
+        ? (newValue as AirflowUnit)
+        : localParams.airflowUnit!
 
-      return [
-        ...REHEAT_REQUIRED_INPUTS,
-        ...conditionalInputs,
-      ] as ControlSequenceInputHandle[]
-    },
-    [parameterToRequiredInputs]
-  )
+    const converted = await convertMutation.mutateAsync({
+      sequenceType: sequenceType as SequenceType,
+      parameters: localParams,
+      targetTemperatureUnit: targetTempUnit,
+      targetAirflowUnit: targetAirflowUnit,
+    })
+    setLocalParams(converted)
+  }
 
-  const handleParameterChange = useCallback(
-    <K extends keyof ReheatParameters>(key: K, value: ReheatParameters[K]) => {
-      setLocalParams((prev) => ({ ...prev, [key]: value }))
-    },
-    []
-  )
-
-  const handleUnitChange = useCallback(
-    async (
-      unitType: 'temperatureUnit' | 'airflowUnit',
-      newValue: TemperatureUnit | AirflowUnit
-    ) => {
-      const targetTempUnit =
-        unitType === 'temperatureUnit'
-          ? (newValue as TemperatureUnit)
-          : localParams.temperatureUnit!
-      const targetAirflowUnit =
-        unitType === 'airflowUnit'
-          ? (newValue as AirflowUnit)
-          : localParams.airflowUnit!
-
-      const converted = await convertMutation.mutateAsync({
-        sequenceType: sequenceType as SequenceType,
-        parameters: localParams,
-        targetTemperatureUnit: targetTempUnit,
-        targetAirflowUnit: targetAirflowUnit,
-      })
-      setLocalParams(converted)
-    },
-    [localParams, convertMutation, sequenceType]
-  )
-
-  const handleResetDefaults = useCallback(async () => {
+  const handleResetDefaults = async () => {
     const { data: defaults } = await refetchDefaults()
     if (defaults) {
       setLocalParams(defaults)
     }
-  }, [refetchDefaults])
+  }
 
-  const handleSave = useCallback(async () => {
+  const handleSave = async () => {
     try {
       await updateMutation.mutateAsync({
         instanceId,
         parameters: localParams,
       })
 
-      onHandlesChange(computeVisibleInputs(localParams))
+      onHandlesChange({
+        visibleInputs: computeVisibleInputs({
+          params: localParams,
+          parameterToRequiredInputs,
+        }),
+        visibleOutputs: computeVisibleOutputs({
+          params: localParams,
+          parameterToRequiredOutputs,
+        }),
+        parameters: localParams as Record<string, unknown>,
+      })
       await onSaveParameters()
       onClose()
     } catch {
       // Error handled by mutation
     }
-  }, [
-    instanceId,
-    localParams,
-    updateMutation,
-    computeVisibleInputs,
-    onHandlesChange,
-    onSaveParameters,
-    onClose,
-  ])
+  }
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     if (data?.parameters) {
       setLocalParams(data.parameters)
     }
     onClose()
-  }, [data?.parameters, onClose])
+  }
 
   if (!isOpen) return null
 
