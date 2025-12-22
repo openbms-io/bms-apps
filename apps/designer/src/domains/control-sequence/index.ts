@@ -44,9 +44,12 @@ export {
   ALL_INPUTS as REHEAT_ALL_INPUTS,
   ALL_OUTPUTS as REHEAT_ALL_OUTPUTS,
   REHEAT_ENUM_FIELDS,
+  REHEAT_CONDITIONAL_LABELS,
   type ReheatInputHandle,
   type ReheatOutputHandle,
 } from './terminal-units/reheat'
+
+export { getHandleLabel, type ConditionalLabel } from './conditional-labels'
 
 export {
   SequenceTypeMap,

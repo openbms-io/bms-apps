@@ -17,6 +17,7 @@ ParameterCategories = dict[ParameterCategory, list[str]]
 InputCategories = dict[InputCategory, list[ReheatInputName]]
 OutputCategories = dict[OutputCategory, list[ReheatOutputName]]
 ParameterToRequiredInputs = dict[ReheatParameterName, list[ReheatInputName]]
+ParameterToRequiredOutputs = dict[ReheatParameterName, list[ReheatOutputName]]
 
 
 class CreateInstanceRequest(BaseModel, Generic[TParams]):
@@ -66,6 +67,11 @@ class InstanceResponseWithCategories(BaseModel, Generic[TParams]):
         ...,
         serialization_alias="parameterToRequiredInputs",
         description="Mapping of parameters to inputs that become required when enabled",
+    )
+    parameter_to_required_outputs: ParameterToRequiredOutputs = Field(
+        ...,
+        serialization_alias="parameterToRequiredOutputs",
+        description="Mapping of parameters to outputs that become available when enabled",
     )
 
 

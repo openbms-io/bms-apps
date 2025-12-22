@@ -8,10 +8,11 @@
  */
 
 import type {
-  InputCategory,
   ReheatInputsDto,
   ReheatOutputsDto,
+  ReheatParameters,
 } from '../../api/generated/types.gen'
+import type { ConditionalLabel } from '../../conditional-labels'
 
 type RequiredKeys<T> = {
   [K in keyof T]-?: undefined extends T[K] ? never : K
@@ -66,3 +67,15 @@ export const ALL_INPUTS = [...REQUIRED_INPUTS, ...OPTIONAL_INPUTS] as const
 
 export type ReheatInputHandle = (typeof ALL_INPUTS)[number]
 export type ReheatOutputHandle = (typeof ALL_OUTPUTS)[number]
+
+export const REHEAT_CONDITIONAL_LABELS: readonly ConditionalLabel<
+  ReheatOutputHandle | ReheatInputHandle,
+  ReheatParameters
+>[] = [
+  {
+    handle: 'valvePosition',
+    parameter: 'hasHotWaterCoil',
+    whenTrue: 'Valve Position',
+    whenFalse: 'Electric Heater Power',
+  },
+]

@@ -214,6 +214,14 @@ export type InstanceResponseWithCategoriesReheatParameters = {
     parameterToRequiredInputs: {
         [key in ReheatParameterName]?: Array<ReheatInputName>;
     };
+    /**
+     * Parametertorequiredoutputs
+     *
+     * Mapping of parameters to outputs that become available when enabled
+     */
+    parameterToRequiredOutputs: {
+        [key in ReheatParameterName]?: Array<ReheatOutputName>;
+    };
 };
 
 /**
@@ -231,7 +239,7 @@ export type OperationModeStr = 'occupied' | 'unoccupied' | 'standby' | 'warmup' 
  * Category names indicate destination for routing.
  * Reusable across G36 sequence types (VAV Reheat, Cooling Only, etc.)
  */
-export type OutputCategory = 'vavControl' | 'ahuRequests' | 'plantRequests' | 'alarms' | 'ventilationInfo';
+export type OutputCategory = 'vavControl' | 'ahuRequests' | 'plantRequests' | 'alarms' | 'monitoring';
 
 /**
  * OverrideMode

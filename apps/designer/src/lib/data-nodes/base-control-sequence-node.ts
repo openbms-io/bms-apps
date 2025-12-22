@@ -13,6 +13,7 @@ import type {
   SequenceType,
   InputCategory,
   OutputCategory,
+  ConditionalLabel,
 } from '@/domains/control-sequence'
 import { Message, SendCallback } from '@/lib/message-system/types'
 import {
@@ -35,6 +36,10 @@ export interface ControlSequenceHandles {
   parameterControlledInputs: readonly ControlSequenceInputHandle[]
   inputCategories: Record<InputCategory, ControlSequenceInputHandle[]>
   outputCategories: Record<OutputCategory, ControlSequenceOutputHandle[]>
+  conditionalLabels: readonly ConditionalLabel<
+    ControlSequenceInputHandle | ControlSequenceOutputHandle,
+    Record<string, unknown>
+  >[]
 }
 
 export type ComputedOutputs = Record<string, ComputeValue>
@@ -43,8 +48,11 @@ export interface BaseControlSequenceMetadata {
   instanceId: string
   label?: string
   handles: ControlSequenceHandles
+  badgeLabel: string
+  defaultLabel: string
   computedOutputs?: ComputedOutputs
   inputValues?: Record<string, unknown>
+  parameters?: Record<string, unknown>
 }
 
 export abstract class BaseControlSequenceNode implements ControlSequenceNode {
@@ -54,6 +62,8 @@ export abstract class BaseControlSequenceNode implements ControlSequenceNode {
   readonly direction = NodeDirection.BIDIRECTIONAL
 
   readonly instanceId: string
+  readonly badgeLabel: string
+  readonly defaultLabel: string
   handles: ControlSequenceHandles
 
   protected messageBuffer: MessageBuffer<ControlSequenceInputHandle>
@@ -61,6 +71,7 @@ export abstract class BaseControlSequenceNode implements ControlSequenceNode {
   private sendCallback?: SendCallback<ControlSequenceOutputHandle>
   private _computedOutputs?: ComputedOutputs
   private _inputValues: Record<string, unknown> = {}
+  private _parameters: Record<string, unknown> = {}
 
   abstract readonly type: NodeType
   abstract readonly sequenceType: SequenceType
@@ -70,8 +81,11 @@ export abstract class BaseControlSequenceNode implements ControlSequenceNode {
       instanceId: this.instanceId,
       label: this.label,
       handles: this.handles,
+      badgeLabel: this.badgeLabel,
+      defaultLabel: this.defaultLabel,
       computedOutputs: this._computedOutputs,
       inputValues: this._inputValues,
+      parameters: this._parameters,
     }
   }
 
@@ -79,11 +93,14 @@ export abstract class BaseControlSequenceNode implements ControlSequenceNode {
     this.id = id ?? generateInstanceId()
     this.instanceId = config.instanceId
     this.label = config.label ?? ''
+    this.badgeLabel = config.badgeLabel
+    this.defaultLabel = config.defaultLabel
     this.handles = {
       ...config.handles,
       visibleInputs: [...config.handles.visibleInputs],
       visibleOutputs: [...config.handles.visibleOutputs],
     }
+    this._parameters = config.parameters ?? {}
     this.messageBuffer = createMessageBuffer<ControlSequenceInputHandle>()
   }
 
@@ -126,6 +143,10 @@ export abstract class BaseControlSequenceNode implements ControlSequenceNode {
 
   setVisibleOutputs(outputs: ControlSequenceOutputHandle[]): void {
     this.handles = { ...this.handles, visibleOutputs: outputs }
+  }
+
+  setParameters(params: Record<string, unknown>): void {
+    this._parameters = params
   }
 
   async receive(

@@ -135,6 +135,7 @@ export type NodeUpdate =
       type: 'UPDATE_CONTROL_SEQUENCE_HANDLES'
       nodeId: string
       handles: ControlSequenceHandles
+      parameters?: Record<string, unknown>
     }
 
 export interface FlowSlice {
@@ -606,6 +607,9 @@ export const createFlowSlice: StateCreator<FlowSlice, [], [], FlowSlice> = (
         if (dataNode instanceof BaseControlSequenceNode) {
           dataNode.setVisibleInputs(update.handles.visibleInputs)
           dataNode.setVisibleOutputs(update.handles.visibleOutputs)
+          if (update.parameters) {
+            dataNode.setParameters(update.parameters)
+          }
 
           dataGraph.updateNodeData(update.nodeId)
 

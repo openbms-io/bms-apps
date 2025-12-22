@@ -50,7 +50,7 @@ const mockInstanceResponse: InstanceResponseWithCategoriesReheatParameters = {
     ],
   },
   outputCategories: {
-    vavControl: ['damperPosition', 'valvePosition', 'airflowSetpoint'],
+    vavControl: ['damperPosition', 'valvePosition'],
     ahuRequests: [
       'heatingValveRequest',
       'zonePressureRequest',
@@ -64,7 +64,8 @@ const mockInstanceResponse: InstanceResponseWithCategoriesReheatParameters = {
       'lowFlowAlarm',
       'lowTempAlarm',
     ],
-    ventilationInfo: [
+    monitoring: [
+      'airflowSetpoint',
       'minOutdoorAirflow',
       'adjAreaBreathingZoneFlow',
       'adjPopBreathingZoneFlow',
@@ -75,6 +76,14 @@ const mockInstanceResponse: InstanceResponseWithCategoriesReheatParameters = {
     hasHotWaterCoil: ['hotWaterPlantStatus'],
     hasOccupancySensor: ['occupancyStatus'],
     hasWindowSensor: ['windowStatus'],
+  },
+  parameterToRequiredOutputs: {
+    hasHotWaterCoil: [
+      'heatingValveRequest',
+      'hotWaterPlantRequest',
+      'lowTempAlarm',
+      'leakingValveAlarm',
+    ],
   },
 }
 
@@ -300,8 +309,8 @@ describe('G36ConfigurationPanel', () => {
       await user.click(saveButton)
 
       await waitFor(() => {
-        expect(onHandlesChange).toHaveBeenCalledWith(
-          expect.arrayContaining([
+        expect(onHandlesChange).toHaveBeenCalledWith({
+          visibleInputs: expect.arrayContaining([
             'zoneTemperature',
             'coolingSetpoint',
             'heatingSetpoint',
@@ -311,11 +320,13 @@ describe('G36ConfigurationPanel', () => {
             'supplyAirTemperatureSetpoint',
             'fanStatus',
             'operationMode',
-          ])
-        )
+          ]),
+          visibleOutputs: expect.any(Array),
+          parameters: expect.any(Object),
+        })
       })
 
-      const callArg = onHandlesChange.mock.calls[0][0]
+      const callArg = onHandlesChange.mock.calls[0][0].visibleInputs
       expect(callArg).not.toContain('co2Concentration')
       expect(callArg).not.toContain('hotWaterPlantStatus')
     })
@@ -349,9 +360,14 @@ describe('G36ConfigurationPanel', () => {
       await user.click(saveButton)
 
       await waitFor(() => {
-        expect(onHandlesChange).toHaveBeenCalledWith(
-          expect.arrayContaining(['co2Concentration', 'co2Setpoint'])
-        )
+        expect(onHandlesChange).toHaveBeenCalledWith({
+          visibleInputs: expect.arrayContaining([
+            'co2Concentration',
+            'co2Setpoint',
+          ]),
+          visibleOutputs: expect.any(Array),
+          parameters: expect.any(Object),
+        })
       })
     })
 
@@ -385,9 +401,16 @@ describe('G36ConfigurationPanel', () => {
       await user.click(saveButton)
 
       await waitFor(() => {
-        expect(onHandlesChange).toHaveBeenCalledWith(
-          expect.arrayContaining(['hotWaterPlantStatus'])
-        )
+        expect(onHandlesChange).toHaveBeenCalledWith({
+          visibleInputs: expect.arrayContaining(['hotWaterPlantStatus']),
+          visibleOutputs: expect.arrayContaining([
+            'heatingValveRequest',
+            'hotWaterPlantRequest',
+            'lowTempAlarm',
+            'leakingValveAlarm',
+          ]),
+          parameters: expect.any(Object),
+        })
       })
     })
 
@@ -421,15 +444,22 @@ describe('G36ConfigurationPanel', () => {
       await user.click(saveButton)
 
       await waitFor(() => {
-        expect(onHandlesChange).toHaveBeenCalledWith(
-          expect.arrayContaining([
+        expect(onHandlesChange).toHaveBeenCalledWith({
+          visibleInputs: expect.arrayContaining([
             'co2Concentration',
             'co2Setpoint',
             'hotWaterPlantStatus',
             'occupancyStatus',
             'windowStatus',
-          ])
-        )
+          ]),
+          visibleOutputs: expect.arrayContaining([
+            'heatingValveRequest',
+            'hotWaterPlantRequest',
+            'lowTempAlarm',
+            'leakingValveAlarm',
+          ]),
+          parameters: expect.any(Object),
+        })
       })
     })
 
@@ -441,6 +471,181 @@ describe('G36ConfigurationPanel', () => {
           instanceId: 'test-instance-123',
         })
       })
+    })
+  })
+
+  describe('conditional outputs', () => {
+    it('excludes hot water outputs when hasHotWaterCoil is disabled', async () => {
+      const user = userEvent.setup()
+      const onHandlesChange = jest.fn()
+
+      const responseWithNoHotWater: InstanceResponseWithCategoriesReheatParameters =
+        {
+          ...mockInstanceResponse,
+          parameters: {
+            ...mockInstanceResponse.parameters,
+            hasHotWaterCoil: false,
+          },
+        }
+      mockClient.getInstance.mockResolvedValue(responseWithNoHotWater)
+      mockClient.updateInstance.mockResolvedValue(responseWithNoHotWater)
+
+      render(
+        <G36ConfigurationPanel
+          {...defaultProps}
+          onHandlesChange={onHandlesChange}
+        />
+      )
+
+      await screen.findByText('Basic Settings')
+      const saveButton = screen.getByRole('button', { name: 'Save' })
+      await user.click(saveButton)
+
+      await waitFor(() => {
+        expect(onHandlesChange).toHaveBeenCalled()
+      })
+
+      const callArg = onHandlesChange.mock.calls[0][0].visibleOutputs
+      expect(callArg).not.toContain('heatingValveRequest')
+      expect(callArg).not.toContain('hotWaterPlantRequest')
+      expect(callArg).not.toContain('lowTempAlarm')
+      expect(callArg).not.toContain('leakingValveAlarm')
+    })
+
+    it('always includes base outputs regardless of parameters', async () => {
+      const user = userEvent.setup()
+      const onHandlesChange = jest.fn()
+
+      const responseWithNoSensors: InstanceResponseWithCategoriesReheatParameters =
+        {
+          ...mockInstanceResponse,
+          parameters: {
+            ...mockInstanceResponse.parameters,
+            hasCO2Sensor: false,
+            hasHotWaterCoil: false,
+            hasOccupancySensor: false,
+            hasWindowSensor: false,
+          },
+        }
+      mockClient.getInstance.mockResolvedValue(responseWithNoSensors)
+      mockClient.updateInstance.mockResolvedValue(responseWithNoSensors)
+
+      render(
+        <G36ConfigurationPanel
+          {...defaultProps}
+          onHandlesChange={onHandlesChange}
+        />
+      )
+
+      await screen.findByText('Basic Settings')
+      const saveButton = screen.getByRole('button', { name: 'Save' })
+      await user.click(saveButton)
+
+      await waitFor(() => {
+        expect(onHandlesChange).toHaveBeenCalledWith({
+          visibleOutputs: expect.arrayContaining([
+            'damperPosition',
+            'valvePosition',
+            'airflowSetpoint',
+            'zonePressureRequest',
+            'zoneTempRequest',
+            'flowSensorAlarm',
+            'leakingDamperAlarm',
+            'lowFlowAlarm',
+            'minOutdoorAirflow',
+            'adjAreaBreathingZoneFlow',
+            'adjPopBreathingZoneFlow',
+          ]),
+          visibleInputs: expect.any(Array),
+          parameters: expect.any(Object),
+        })
+      })
+    })
+  })
+
+  describe('conditional inputs - individual sensors', () => {
+    it('adds occupancy status input when hasOccupancySensor is enabled', async () => {
+      const user = userEvent.setup()
+      const onHandlesChange = jest.fn()
+
+      const responseWithOccupancy: InstanceResponseWithCategoriesReheatParameters =
+        {
+          ...mockInstanceResponse,
+          parameters: {
+            ...mockInstanceResponse.parameters,
+            hasCO2Sensor: false,
+            hasHotWaterCoil: false,
+            hasOccupancySensor: true,
+            hasWindowSensor: false,
+          },
+        }
+      mockClient.getInstance.mockResolvedValue(responseWithOccupancy)
+      mockClient.updateInstance.mockResolvedValue(responseWithOccupancy)
+
+      render(
+        <G36ConfigurationPanel
+          {...defaultProps}
+          onHandlesChange={onHandlesChange}
+        />
+      )
+
+      await screen.findByText('Basic Settings')
+      const saveButton = screen.getByRole('button', { name: 'Save' })
+      await user.click(saveButton)
+
+      await waitFor(() => {
+        expect(onHandlesChange).toHaveBeenCalledWith({
+          visibleInputs: expect.arrayContaining(['occupancyStatus']),
+          visibleOutputs: expect.any(Array),
+          parameters: expect.any(Object),
+        })
+      })
+
+      const callArg = onHandlesChange.mock.calls[0][0].visibleInputs
+      expect(callArg).not.toContain('co2Concentration')
+      expect(callArg).not.toContain('windowStatus')
+    })
+
+    it('adds window status input when hasWindowSensor is enabled', async () => {
+      const user = userEvent.setup()
+      const onHandlesChange = jest.fn()
+
+      const responseWithWindow: InstanceResponseWithCategoriesReheatParameters =
+        {
+          ...mockInstanceResponse,
+          parameters: {
+            ...mockInstanceResponse.parameters,
+            hasCO2Sensor: false,
+            hasHotWaterCoil: false,
+            hasOccupancySensor: false,
+            hasWindowSensor: true,
+          },
+        }
+      mockClient.getInstance.mockResolvedValue(responseWithWindow)
+      mockClient.updateInstance.mockResolvedValue(responseWithWindow)
+
+      render(
+        <G36ConfigurationPanel
+          {...defaultProps}
+          onHandlesChange={onHandlesChange}
+        />
+      )
+
+      await screen.findByText('Basic Settings')
+      const saveButton = screen.getByRole('button', { name: 'Save' })
+      await user.click(saveButton)
+
+      await waitFor(() => {
+        expect(onHandlesChange).toHaveBeenCalledWith({
+          visibleInputs: expect.arrayContaining(['windowStatus']),
+          visibleOutputs: expect.any(Array),
+          parameters: expect.any(Object),
+        })
+      })
+
+      const callArg = onHandlesChange.mock.calls[0][0].visibleInputs
+      expect(callArg).not.toContain('co2Concentration')
+      expect(callArg).not.toContain('occupancyStatus')
     })
   })
 })

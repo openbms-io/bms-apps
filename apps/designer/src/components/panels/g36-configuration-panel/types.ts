@@ -6,6 +6,7 @@ import type {
 } from '@/domains/control-sequence/api/generated/types.gen'
 import type {
   ControlSequenceInputHandle,
+  ControlSequenceOutputHandle,
   SequenceType,
   DropdownFieldsMap,
 } from '@/domains/control-sequence'
@@ -20,12 +21,18 @@ export type {
 
 export type { DropdownFieldsMap }
 
+export interface HandleChangePayload {
+  visibleInputs: ControlSequenceInputHandle[]
+  visibleOutputs: ControlSequenceOutputHandle[]
+  parameters: Record<string, unknown>
+}
+
 export interface G36ConfigurationPanelProps {
   instanceId: string
   sequenceType: SequenceType
   isOpen: boolean
   onClose: () => void
-  onHandlesChange: (visibleInputs: ControlSequenceInputHandle[]) => void
+  onHandlesChange: (payload: HandleChangePayload) => void
   onSaveParameters: () => Promise<void>
 }
 
