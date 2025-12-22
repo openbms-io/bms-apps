@@ -1,5 +1,8 @@
 import { camelToLabel } from '@/lib/utils'
 
+// G36 sequences are parameterized - the same logical output can represent
+// different physical actuators (e.g., valvePosition → hot water valve vs electric heater)
+// depending on terminal unit configuration parameters like hasHotWaterCoil.
 export interface ConditionalLabel<
   THandle extends string,
   TParams extends Record<string, unknown>,

@@ -39,21 +39,14 @@ import { useFlowStore } from '@/store/use-flow-store'
 import {
   ControlSequenceHandles,
   ComputedOutputs,
+  BaseControlSequenceMetadata,
 } from '@/lib/data-nodes/base-control-sequence-node'
 import { camelToLabel } from '@/lib/utils'
 import { G36ConfigurationPanel } from '@/components/panels/g36-configuration-panel'
-import {
-  getHandleLabel,
-  REHEAT_CONDITIONAL_LABELS,
-} from '@/domains/control-sequence'
+import { getHandleLabel } from '@/domains/control-sequence'
 
 interface ControlSequenceNodeConfig {
   sequenceType: SequenceType
-  badgeLabel: string
-  defaultLabel: string
-  allInputs: readonly ControlSequenceInputHandle[]
-  allOutputs: readonly ControlSequenceOutputHandle[]
-  requiredInputs: readonly ControlSequenceInputHandle[]
 }
 
 function formatOutputValue(value: MessageValue): string {
@@ -120,10 +113,26 @@ export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
       })
     )
 
+    const badgeLabel = useFlowStore((state) => {
+      const node = state.nodes.find((n) => n.id === id)
+      const metadata = node?.data?.metadata as
+        | BaseControlSequenceMetadata
+        | undefined
+      return metadata?.badgeLabel ?? 'G36'
+    })
+
+    const defaultLabel = useFlowStore((state) => {
+      const node = state.nodes.find((n) => n.id === id)
+      const metadata = node?.data?.metadata as
+        | BaseControlSequenceMetadata
+        | undefined
+      return metadata?.defaultLabel ?? 'Control Sequence'
+    })
+
     const getLabel = useCallback(
       (handle: string) =>
-        getHandleLabel(handle, parameters, REHEAT_CONDITIONAL_LABELS),
-      [parameters]
+        getHandleLabel(handle, parameters, handles.conditionalLabels ?? []),
+      [parameters, handles.conditionalLabels]
     )
 
     const updateNode = useFlowStore((state) => state.updateNode)
@@ -252,7 +261,7 @@ export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
           <div className="p-3">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium">
-                {typedData.label ?? config.defaultLabel}
+                {typedData.label ?? defaultLabel}
               </span>
               <div className="flex items-center gap-1">
                 <Button
@@ -264,7 +273,7 @@ export function createControlSequenceNodeUI(config: ControlSequenceNodeConfig) {
                   <Settings className="h-4 w-4" />
                 </Button>
                 <Badge variant="default" className="text-xs bg-primary">
-                  {config.badgeLabel}
+                  {badgeLabel}
                 </Badge>
               </div>
             </div>

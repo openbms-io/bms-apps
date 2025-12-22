@@ -9,6 +9,7 @@ import {
   REHEAT_ALL_INPUTS,
   REHEAT_ALL_OUTPUTS,
   REHEAT_REQUIRED_INPUTS,
+  REHEAT_CONDITIONAL_LABELS,
 } from '@/domains/control-sequence'
 
 jest.mock('@/store/use-flow-store')
@@ -49,6 +50,7 @@ const createMockHandles = (overrides = {}) => ({
     primary: ['damperPosition', 'valvePosition', 'airflowSetpoint'],
     secondary: ['minOutdoorAirflow', 'flowSensorAlarm'],
   },
+  conditionalLabels: REHEAT_CONDITIONAL_LABELS,
   ...overrides,
 })
 
@@ -92,6 +94,8 @@ describe('G36VavReheatNode', () => {
             data: {
               handles: createMockHandles(),
               metadata: {
+                badgeLabel: 'G36',
+                defaultLabel: 'VAV Reheat',
                 computedOutputs: {},
                 inputValues: {},
                 parameters: { hasHotWaterCoil: true },
@@ -239,6 +243,8 @@ describe('G36VavReheatNode', () => {
                   visibleOutputs: ['damperPosition', 'valvePosition'],
                 }),
                 metadata: {
+                  badgeLabel: 'G36',
+                  defaultLabel: 'VAV Reheat',
                   computedOutputs: {},
                   inputValues: {},
                   parameters: { hasHotWaterCoil: true },
@@ -284,6 +290,8 @@ describe('G36VavReheatNode', () => {
               data: {
                 handles: createMockHandles(),
                 metadata: {
+                  badgeLabel: 'G36',
+                  defaultLabel: 'VAV Reheat',
                   computedOutputs: {
                     damperPosition: { type: 'number', value: 0.75 },
                     valvePosition: { type: 'number', value: 0.5 },
@@ -316,6 +324,8 @@ describe('G36VavReheatNode', () => {
               data: {
                 handles: createMockHandles(),
                 metadata: {
+                  badgeLabel: 'G36',
+                  defaultLabel: 'VAV Reheat',
                   computedOutputs: {},
                   inputValues: {
                     zoneTemperature: 22.5,
@@ -348,6 +358,8 @@ describe('G36VavReheatNode', () => {
               data: {
                 handles: createMockHandles(),
                 metadata: {
+                  badgeLabel: 'G36',
+                  defaultLabel: 'VAV Reheat',
                   computedOutputs: {},
                   inputValues: {
                     fanStatus: true,

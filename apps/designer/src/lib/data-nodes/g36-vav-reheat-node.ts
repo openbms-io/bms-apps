@@ -15,6 +15,7 @@ import {
   ALL_INPUTS,
   ALL_OUTPUTS,
   REQUIRED_INPUTS,
+  REHEAT_CONDITIONAL_LABELS,
   type ReheatInputHandle,
   type ReheatOutputHandle,
 } from '@/domains/control-sequence/terminal-units/reheat'
@@ -66,12 +67,15 @@ export class G36VavReheatNode extends BaseControlSequenceNode {
         OutputCategory,
         ControlSequenceOutputHandle[]
       >,
+      conditionalLabels: REHEAT_CONDITIONAL_LABELS,
     }
 
     const config: BaseControlSequenceMetadata = {
       instanceId,
       label: params.label,
       handles,
+      badgeLabel: 'G36',
+      defaultLabel: 'VAV Reheat',
     }
     return new G36VavReheatNode(config, params.id)
   }
