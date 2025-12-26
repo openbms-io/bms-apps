@@ -39,8 +39,8 @@ development_status:
   epic-2-13: backlog
   2-13-1-install-packages-and-env-config: done
   2-13-2-ai-client-multi-provider: done
-  2-13-3-memory-manager-mem0: in-progress
-  2-13-4-suggestion-engine: drafted
+  2-13-3-memory-manager-mem0: done
+  2-13-4-suggestion-engine: done
   2-13-5-api-routes-and-dto-schemas: drafted
   2-13-6-react-query-hooks: drafted
   2-13-7-modal-orgid-integration: drafted
