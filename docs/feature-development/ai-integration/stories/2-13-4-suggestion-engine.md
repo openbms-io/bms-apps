@@ -128,9 +128,16 @@ interface AIPointContext {
 - StepSuggestionSchema defined using Zod for structured AI output
 - STEP_SYSTEM_PROMPTS map provides step-specific system instructions
 - buildUserPrompt creates rich metadata prompt with point info, selection context, and memory
+- Added AISuggestionService as orchestration layer combining MemoryManager + SuggestionEngine
+- AISuggestionService.getSuggestion() handles memory retrieval + suggestion generation
+- AISuggestionService.confirmMapping() handles storing confirmed mappings to Mem0
+- createAISuggestionService() factory creates all dependencies
+- Total: 32 tests pass across all AI modules
 
 ### File List
 
 - `apps/designer/src/lib/server-only/ai/suggestion-engine.ts` (created)
 - `apps/designer/src/lib/server-only/ai/suggestion-engine.spec.ts` (created)
+- `apps/designer/src/lib/server-only/ai/ai-suggestion-service.ts` (created)
+- `apps/designer/src/lib/server-only/ai/ai-suggestion-service.spec.ts` (created)
 - `apps/designer/src/lib/server-only/ai/index.ts` (modified - added exports)

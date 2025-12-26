@@ -41,7 +41,7 @@ development_status:
   2-13-2-ai-client-multi-provider: done
   2-13-3-memory-manager-mem0: done
   2-13-4-suggestion-engine: done
-  2-13-5-api-routes-and-dto-schemas: drafted
+  2-13-5-api-routes-and-dto-schemas: in-progress
   2-13-6-react-query-hooks: drafted
   2-13-7-modal-orgid-integration: drafted
   2-13-8-modal-ai-integration: drafted
