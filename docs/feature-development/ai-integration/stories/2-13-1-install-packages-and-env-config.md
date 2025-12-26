@@ -1,6 +1,6 @@
 # Story 2.13.1: Install Packages and Environment Configuration
 
-Status: review
+Status: done
 
 ## Story
 

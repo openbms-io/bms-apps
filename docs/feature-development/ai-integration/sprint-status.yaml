@@ -37,8 +37,8 @@ story_location: "{project-root}/docs/feature-development/ai-integration/stories"
 development_status:
   # Epic 2.13: Setup Vercel AI SDK + Mem0 in Designer App
   epic-2-13: backlog
-  2-13-1-install-packages-and-env-config: review
-  2-13-2-ai-client-multi-provider: drafted
+  2-13-1-install-packages-and-env-config: done
+  2-13-2-ai-client-multi-provider: review
   2-13-3-memory-manager-mem0: drafted
   2-13-4-suggestion-engine: drafted
   2-13-5-api-routes-and-dto-schemas: drafted
