@@ -20,6 +20,8 @@ import { ShaclValidationErrorModal } from '../shacl-validation-error-modal'
 import { useBuildingSemanticsForm } from './use-building-semantics-form'
 
 interface BuildingSemanticsModalProps {
+  orgId: string
+  siteId: string
   projectId: string
   open: boolean
   bacnetPointId: string
@@ -33,6 +35,8 @@ interface BuildingSemanticsModalProps {
 }
 
 export function BuildingSemanticsModal({
+  orgId,
+  siteId,
   projectId,
   open,
   bacnetPointId,
@@ -46,6 +50,8 @@ export function BuildingSemanticsModal({
 }: BuildingSemanticsModalProps) {
   const { state, actions, data, validation, loading } =
     useBuildingSemanticsForm({
+      orgId,
+      siteId,
       projectId,
       bacnetPointId,
       bacnetObjectType,

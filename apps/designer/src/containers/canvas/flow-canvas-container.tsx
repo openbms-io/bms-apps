@@ -103,6 +103,8 @@ export function FlowCanvasContainer({
 
       {modalHandlers.bacnetPoint && modalHandlers.bacnetController && (
         <BuildingSemanticsModal
+          orgId={orgId}
+          siteId={siteId}
           projectId={projectId}
           open={modalHandlers.isOpen}
           bacnetPointId={modalHandlers.bacnetPoint.pointId}

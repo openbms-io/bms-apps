@@ -104,6 +104,8 @@ function formReducer(state: FormState, action: FormAction): FormState {
 }
 
 interface UseBuildingSemanticsFormParams {
+  orgId: string
+  siteId: string
   projectId: string
   bacnetPointId: string
   bacnetObjectType: string
@@ -114,6 +116,8 @@ interface UseBuildingSemanticsFormParams {
 }
 
 export function useBuildingSemanticsForm({
+  orgId,
+  siteId,
   projectId,
   bacnetPointId,
   bacnetObjectType,

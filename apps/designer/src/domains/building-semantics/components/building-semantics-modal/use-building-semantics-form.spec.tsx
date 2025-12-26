@@ -42,9 +42,17 @@ describe('useBuildingSemanticsForm', () => {
   const mockMutate = jest.fn()
 
   const defaultParams = {
+    orgId: 'org-123',
+    siteId: 'site-456',
     projectId: 'project-123',
     bacnetPointId: 'point-abc',
     bacnetObjectType: 'analog-input',
+    buildingSemanticsBacnetConfig: {
+      objectType: 'analog-input' as const,
+      objectId: 1,
+      controllerDeviceId: 123,
+      controllerIPAddress: '192.168.1.100',
+    },
     open: true,
     onSaved: mockOnSaved,
     onOpenChange: mockOnOpenChange,
@@ -344,6 +352,12 @@ describe('useBuildingSemanticsForm', () => {
           projectId: 'project-123',
           bacnetPointId: 'point-abc',
           propertyUri: 'prop-1',
+          buildingSemanticsBacnetConfig: {
+            objectType: 'analog-input',
+            objectId: 1,
+            controllerDeviceId: 123,
+            controllerIPAddress: '192.168.1.100',
+          },
         },
         expect.objectContaining({
           onSuccess: expect.any(Function),

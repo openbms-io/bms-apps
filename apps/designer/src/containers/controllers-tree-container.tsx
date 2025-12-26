@@ -448,6 +448,8 @@ export function ControllersTreeContainer({
 
       {mappingModalState && (
         <BuildingSemanticsModal
+          orgId={orgId}
+          siteId={siteId}
           projectId={projectId}
           open={mappingModalState.isOpen}
           bacnetPointId={mappingModalState.bacnetPointId}
