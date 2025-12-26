@@ -1,6 +1,15 @@
 import { z } from 'zod'
 
 /**
+ * Mapping Step Schema
+ *
+ * Represents the step in the multi-step mapping flow.
+ */
+export const MappingStepSchema = z.enum(['system', 'device', 'property'])
+
+export type MappingStep = z.infer<typeof MappingStepSchema>
+
+/**
  * AI Point DTO Schema
  *
  * Rich point metadata for AI suggestion requests.
@@ -26,7 +35,7 @@ export type AIPointDTO = z.infer<typeof AIPointDTOSchema>
  * Note: orgId, siteId, projectId come from path params, not body
  */
 export const AISuggestionRequestDTOSchema = z.object({
-  step: z.enum(['system', 'device', 'property']),
+  step: MappingStepSchema,
   point: AIPointDTOSchema,
   candidates: z.array(z.string()).max(10),
   selectionContext: z
@@ -76,7 +85,7 @@ export type AISuggestionResponseDTO = z.infer<
 export const MappingRecordDTOSchema = z.object({
   pointPattern: z.string(),
   controllerId: z.string(),
-  step: z.enum(['system', 'device', 'property']),
+  step: MappingStepSchema,
   selectedId: z.string(),
   wasOverridden: z.boolean(),
 })
