@@ -1,0 +1,123 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>13.1</storyId>
+    <title>Install Packages and Environment Configuration</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/ai-integration/stories/2-13-1-install-packages-and-env-config.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>Vercel AI SDK and Mem0 packages installed with environment configuration</iWant>
+    <soThat>the AI infrastructure dependencies are available for development</soThat>
+    <tasks>
+      <task id="1" ac="1">
+        <title>Install npm packages</title>
+        <subtasks>
+          <subtask>Run `pnpm add ai @ai-sdk/anthropic @ai-sdk/openai mem0ai` in apps/designer</subtask>
+          <subtask>Verify packages appear in package.json</subtask>
+        </subtasks>
+      </task>
+      <task id="2" ac="2,3,4">
+        <title>Update .env.template</title>
+        <subtasks>
+          <subtask>Add AI_PROVIDER with default "anthropic"</subtask>
+          <subtask>Add ANTHROPIC_API_KEY (conditional on AI_PROVIDER)</subtask>
+          <subtask>Add OPENAI_API_KEY (conditional on AI_PROVIDER)</subtask>
+          <subtask>Add MEM0_API_KEY (required)</subtask>
+          <subtask>Add AI_MODEL (optional override)</subtask>
+          <subtask>Add comments documenting each variable</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">`ai`, `@ai-sdk/anthropic`, `@ai-sdk/openai`, and `mem0ai` packages are installed</criterion>
+    <criterion id="2">`.env.template` updated with AI_PROVIDER, ANTHROPIC_API_KEY, OPENAI_API_KEY, MEM0_API_KEY, AI_MODEL</criterion>
+    <criterion id="3">Environment variables have clear comments explaining usage</criterion>
+    <criterion id="4">No NEXT_PUBLIC_ prefix on any AI-related environment variables (server-side only)</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ai-integration/specs/vercel-ai-sdk-mem0-integration.md</path>
+        <title>Technical Specification: Vercel AI SDK + Mem0 Integration</title>
+        <section>3.1 Dependencies</section>
+        <snippet>Specifies required packages: ai ^3.x, @ai-sdk/anthropic ^0.x, @ai-sdk/openai ^0.x, mem0ai ^1.x</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ai-integration/specs/vercel-ai-sdk-mem0-integration.md</path>
+        <title>Technical Specification: Vercel AI SDK + Mem0 Integration</title>
+        <section>3.2 Environment Variables</section>
+        <snippet>Defines AI_PROVIDER (anthropic|openai), API keys, AI_MODEL override. Security note: No NEXT_PUBLIC_ prefix - server-side only.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Core Principles</section>
+        <snippet>Follow existing patterns, explicit is better than implicit, code should be self-documenting with clear naming.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <file>
+        <path>apps/designer/package.json</path>
+        <kind>config</kind>
+        <symbol>dependencies</symbol>
+        <lines>22-66</lines>
+        <reason>Target file for adding new AI packages to dependencies section</reason>
+      </file>
+      <file>
+        <path>apps/designer/.env.template</path>
+        <kind>config</kind>
+        <symbol>environment template</symbol>
+        <lines>1-3</lines>
+        <reason>Target file for adding AI-related environment variables</reason>
+      </file>
+    </code>
+    <dependencies>
+      <node>
+        <package name="ai" version="^3.x" purpose="Vercel AI SDK core" />
+        <package name="@ai-sdk/anthropic" version="^0.x" purpose="Anthropic/Claude provider" />
+        <package name="@ai-sdk/openai" version="^0.x" purpose="OpenAI provider" />
+        <package name="mem0ai" version="^1.x" purpose="Mem0 Cloud SDK" />
+      </node>
+      <packageManager>pnpm</packageManager>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="security">No NEXT_PUBLIC_ prefix on environment variables - all AI keys are server-side only</constraint>
+    <constraint type="scope">Install packages only in apps/designer, not in shared packages</constraint>
+    <constraint type="naming">Use exact package names as specified in spec: ai, @ai-sdk/anthropic, @ai-sdk/openai, mem0ai</constraint>
+    <constraint type="defaults">Default AI_PROVIDER to "anthropic", default models: claude-3-5-sonnet-20241022 (Anthropic), gpt-4o (OpenAI)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Environment Variables</name>
+      <kind>configuration</kind>
+      <signature>
+AI_PROVIDER=anthropic|openai (default: anthropic)
+ANTHROPIC_API_KEY=string (required if AI_PROVIDER=anthropic)
+OPENAI_API_KEY=string (required if AI_PROVIDER=openai)
+MEM0_API_KEY=string (required)
+AI_MODEL=string (optional, overrides provider default)
+      </signature>
+      <path>apps/designer/.env.template</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>No unit tests required for this story. This is a package installation and environment configuration task. Verification is done by checking package.json and .env.template files.</standards>
+    <locations>N/A - no tests for this story</locations>
+    <ideas>
+      <idea ac="1">Verify packages appear in package.json dependencies section after installation</idea>
+      <idea ac="2,3,4">Verify .env.template contains all required variables with appropriate comments and no NEXT_PUBLIC_ prefix</idea>
+    </ideas>
+  </tests>
+</story-context>

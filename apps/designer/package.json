@@ -20,6 +20,8 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.1",
+    "@ai-sdk/openai": "^3.0.1",
     "@libsql/client": "^0.10.0",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -39,6 +41,7 @@
     "@tanstack/react-query-devtools": "^5.86.0",
     "@types/uuid": "^10.0.0",
     "@xyflow/react": "^12.8.4",
+    "ai": "^6.0.3",
     "better-sqlite3": "^12.2.0",
     "buffer": "^6.0.3",
     "class-variance-authority": "^0.7.1",
@@ -48,6 +51,7 @@
     "jose": "^6.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.468.0",
+    "mem0ai": "^2.1.38",
     "monaco-editor": "^0.53.0",
     "mqtt": "^5.14.1",
     "mqtt-topics": "workspace:^",
