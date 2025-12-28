@@ -28,6 +28,7 @@ interface BuildingSemanticsModalProps {
   bacnetObjectType: string
   buildingSemanticsBacnetConfig: BuildingSemanticsBacnetConfig
   pointLabel?: string
+  pointDescription?: string
   templates?: TemplateSystemDto[]
   onSaved: () => void
   onSkip?: () => void
@@ -43,17 +44,20 @@ export function BuildingSemanticsModal({
   bacnetObjectType,
   buildingSemanticsBacnetConfig,
   pointLabel,
+  pointDescription,
   templates = [],
   onSaved,
   onSkip,
   onOpenChange,
 }: BuildingSemanticsModalProps) {
-  const { state, actions, data, validation, loading } =
+  const { state, actions, data, validation, loading, ai } =
     useBuildingSemanticsForm({
       orgId,
       siteId,
       projectId,
       bacnetPointId,
+      bacnetPointName: pointLabel,
+      bacnetPointDescription: pointDescription,
       bacnetObjectType,
       buildingSemanticsBacnetConfig,
       open,
@@ -91,6 +95,9 @@ export function BuildingSemanticsModal({
                 disabled={loading.isLoadingSystems}
                 templates={templates}
                 isLoadingTemplates={false}
+                aiSuggestion={ai.suggestions.system}
+                isLoadingAi={ai.loading.system}
+                isLowConfidence={ai.lowConfidence.system}
               />
               <p className="text-xs text-muted-foreground">
                 Select an existing system or create a new one from a template
@@ -105,6 +112,9 @@ export function BuildingSemanticsModal({
                 onDeviceSelect={actions.selectDevice}
                 disabled={!state.selectedSystemUri}
                 isLoading={loading.isLoadingDevices}
+                aiSuggestion={ai.suggestions.device}
+                isLoadingAi={ai.loading.device}
+                isLowConfidence={ai.lowConfidence.device}
               />
               <p className="text-xs text-muted-foreground">
                 Select a device from the system
@@ -120,6 +130,9 @@ export function BuildingSemanticsModal({
                 disabled={!state.selectedDeviceUri}
                 isLoading={loading.isLoadingProperties}
                 bacnetObjectType={bacnetObjectType}
+                aiSuggestion={ai.suggestions.property}
+                isLoadingAi={ai.loading.property}
+                isLowConfidence={ai.lowConfidence.property}
               />
               <p className="text-xs text-muted-foreground">
                 Select a property (automatically filtered by {bacnetObjectType})

@@ -2,7 +2,8 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { semanticQueryKeys } from './query-keys'
 import type {
   AIPointDTO,
-  MappingStep,
+  AICandidate,
+  StepType,
   MappingRecordDTO,
   AISuggestionResponseDTO,
 } from '../../adapters/ashrae-223p/schemas/ai-suggestion.dto.schemas'
@@ -12,7 +13,7 @@ interface BaseSuggestionParams {
   siteId: string
   projectId: string
   point: AIPointDTO | undefined
-  candidates: string[]
+  candidates: AICandidate[]
 }
 
 interface SystemSuggestionParams extends BaseSuggestionParams {}
@@ -36,9 +37,9 @@ interface FetchSuggestionParams {
   orgId: string
   siteId: string
   projectId: string
-  step: MappingStep
+  step: StepType
   point: AIPointDTO
-  candidates: string[]
+  candidates: AICandidate[]
   selectionContext?: { systemId?: string; deviceId?: string }
 }
 
@@ -108,9 +109,7 @@ export function useSystemSuggestion({
   point,
   candidates,
 }: SystemSuggestionParams) {
-  const pointId = point
-    ? `${point.controllerId}-${point.objectType}-${point.objectId}`
-    : 'none'
+  const pointId = point?.id ?? 'none'
 
   return useQuery({
     queryKey: semanticQueryKeys.aiSuggestions.step(
@@ -141,9 +140,7 @@ export function useDeviceSuggestion({
   candidates,
   systemId,
 }: DeviceSuggestionParams) {
-  const pointId = point
-    ? `${point.controllerId}-${point.objectType}-${point.objectId}`
-    : 'none'
+  const pointId = point?.id ?? 'none'
 
   return useQuery({
     queryKey: semanticQueryKeys.aiSuggestions.step(
@@ -176,9 +173,7 @@ export function usePropertySuggestion({
   systemId,
   deviceId,
 }: PropertySuggestionParams) {
-  const pointId = point
-    ? `${point.controllerId}-${point.objectType}-${point.objectId}`
-    : 'none'
+  const pointId = point?.id ?? 'none'
 
   return useQuery({
     queryKey: semanticQueryKeys.aiSuggestions.step(

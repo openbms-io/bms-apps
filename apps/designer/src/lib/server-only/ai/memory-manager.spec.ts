@@ -34,7 +34,7 @@ describe('MemoryManager', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith(
         'VAV zone temperature mapping',
-        { org_id: 'org-123' }
+        { user_id: 'org-123' }
       )
       expect(result).toEqual({
         relevantMemories: [
@@ -58,7 +58,7 @@ describe('MemoryManager', () => {
       })
 
       expect(mockClient.search).toHaveBeenCalledWith('test query', {
-        org_id: 'org-123',
+        user_id: 'org-123',
         metadata: { projectId: 'proj-456' },
       })
     })
@@ -105,7 +105,7 @@ describe('MemoryManager', () => {
           },
         ],
         {
-          org_id: 'org-123',
+          user_id: 'org-123',
           metadata: {
             pointPattern: 'VAV-*_ZoneTemp',
             controllerId: 'controller-1',
@@ -144,7 +144,7 @@ describe('MemoryManager', () => {
           },
         ],
         expect.objectContaining({
-          org_id: 'org-123',
+          user_id: 'org-123',
         })
       )
     })
@@ -169,7 +169,7 @@ describe('MemoryManager', () => {
       })
 
       expect(mockClient.add).toHaveBeenCalledWith(expect.any(Array), {
-        org_id: 'org-123',
+        user_id: 'org-123',
         metadata: {
           pointPattern: 'FCU-*_Valve',
           controllerId: 'controller-3',

@@ -10,9 +10,9 @@ import {
   createObjectGenerator,
   type StepSuggestion,
   type AIPointContext,
+  type AICandidate,
+  type StepType,
 } from './suggestion-engine'
-
-type StepType = 'system' | 'device' | 'property'
 
 export interface IAISuggestionService {
   getSuggestion(params: {
@@ -20,7 +20,7 @@ export interface IAISuggestionService {
     orgId: string
     projectId?: string
     point: AIPointContext['point']
-    candidates: string[]
+    candidates: AICandidate[]
     selectionContext?: { systemId?: string; deviceId?: string }
   }): Promise<StepSuggestion>
 
@@ -55,7 +55,7 @@ export class AISuggestionService implements IAISuggestionService {
     orgId: string
     projectId?: string
     point: AIPointContext['point']
-    candidates: string[]
+    candidates: AICandidate[]
     selectionContext?: { systemId?: string; deviceId?: string }
   }): Promise<StepSuggestion> {
     const query = this.buildMemoryQuery(point)

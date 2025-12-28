@@ -1,4 +1,4 @@
-import type { MappingStep } from '../../adapters/ashrae-223p/schemas/ai-suggestion.dto.schemas'
+import type { StepType } from '../../adapters/ashrae-223p/schemas/ai-suggestion.dto.schemas'
 
 const all = ['building-semantics'] as const
 
@@ -29,12 +29,7 @@ export const semanticQueryKeys = {
     all: [...all, 'ai-suggestions'] as const,
     detail: (pointId: string, projectId: string) =>
       [...all, 'ai-suggestions', 'detail', pointId, projectId] as const,
-    step: (
-      step: MappingStep,
-      orgId: string,
-      projectId: string,
-      pointId: string
-    ) =>
+    step: (step: StepType, orgId: string, projectId: string, pointId: string) =>
       [
         ...all,
         'ai-suggestions',

@@ -37,74 +37,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  BacnetConfig,
-  BacnetObjectType,
-  convertStatusFlagsToIndividualProperties,
-} from '@/types/infrastructure'
+import { BacnetObjectType } from '@/types/infrastructure'
 import { DraggedPoint } from '@/store/slices/flow-slice'
 import { ControllerPoint } from '@/lib/domain/models/controller-point'
 import { IotDeviceController } from '@/lib/domain/models/iot-device-controller'
-
-function convertPointToBacnetConfig(
-  point: ControllerPoint,
-  iotDeviceId: string
-): BacnetConfig {
-  const statusFlags = convertStatusFlagsToIndividualProperties({
-    statusFlags: point.metadata?.statusFlags,
-  })
-  return {
-    pointId: point.id,
-    objectType: point.pointType as BacnetObjectType,
-    objectId: point.instanceNumber,
-    supervisorId: iotDeviceId,
-    controllerId: point.controllerId,
-    discoveredProperties: {
-      // Spread all metadata from Python (camelCase)
-      ...(point.metadata || {}),
-      // Override with top-level fields if present
-      units: point.units ?? point.metadata?.units,
-      description: point.description ?? point.metadata?.description,
-      // Expand statusFlags string into individual boolean properties
-      inAlarm: statusFlags.inAlarm,
-      fault: statusFlags.fault,
-      overridden: statusFlags.overridden,
-      outOfService: statusFlags.outOfService,
-    },
-    name: point.pointName,
-  }
-}
+import { convertPointToBacnetConfig, filterTreeNodes } from './utils'
 
 interface ControllersTreeContainerProps {
   orgId: string
   siteId: string
   projectId: string
-}
-
-function filterTreeNodes(
-  nodes: TreeNodeType[],
-  searchTerm: string
-): TreeNodeType[] {
-  return nodes.reduce<TreeNodeType[]>((filtered, node) => {
-    const nodeMatches =
-      node.label.toLowerCase().includes(searchTerm) ||
-      node.sublabel?.toLowerCase().includes(searchTerm)
-
-    let filteredChildren: TreeNodeType[] = []
-    if (node.children) {
-      filteredChildren = filterTreeNodes(node.children, searchTerm)
-    }
-
-    if (nodeMatches || filteredChildren.length > 0) {
-      filtered.push({
-        ...node,
-        children: filteredChildren,
-        isExpanded: filteredChildren.length > 0,
-      })
-    }
-
-    return filtered
-  }, [])
 }
 
 export function ControllersTreeContainer({
@@ -144,6 +86,7 @@ export function ControllersTreeContainer({
     bacnetPointId: string
     bacnetObjectType: BacnetObjectType
     pointLabel: string
+    pointDescription?: string
     objectId: number
     controllerDeviceId: number
     controllerIPAddress: string
@@ -186,7 +129,10 @@ export function ControllersTreeContainer({
   )
 
   const filteredTreeData = searchValue
-    ? filterTreeNodes(treeData, searchValue.toLowerCase())
+    ? filterTreeNodes({
+        nodes: treeData,
+        searchTerm: searchValue.toLowerCase(),
+      })
     : treeData
 
   const openMappingModal = useCallback(
@@ -213,6 +159,7 @@ export function ControllersTreeContainer({
         bacnetPointId: foundPoint.id,
         bacnetObjectType: foundPoint.pointType as BacnetObjectType,
         pointLabel: foundPoint.pointName || '',
+        pointDescription: foundPoint.description,
         objectId: foundPoint.instanceNumber,
         controllerDeviceId: foundController.deviceId,
         controllerIPAddress: foundController.ipAddress,
@@ -229,10 +176,10 @@ export function ControllersTreeContainer({
     (e: React.DragEvent, node: TreeNodeType) => {
       if (node.type === 'point' && node.data && project?.iotDeviceId) {
         const point = node.data as ControllerPoint
-        const bacnetConfig = convertPointToBacnetConfig(
+        const bacnetConfig = convertPointToBacnetConfig({
           point,
-          project.iotDeviceId
-        )
+          iotDeviceId: project.iotDeviceId,
+        })
 
         const controller = controllers.find((c) => c.id === point.controllerId)
 
@@ -461,6 +408,7 @@ export function ControllersTreeContainer({
             controllerIPAddress: mappingModalState.controllerIPAddress,
           }}
           pointLabel={mappingModalState.pointLabel}
+          pointDescription={mappingModalState.pointDescription}
           templates={templates}
           onSaved={handleMappingSaved}
           onOpenChange={closeMappingModal}

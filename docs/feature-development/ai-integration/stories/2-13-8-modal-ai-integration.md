@@ -1,6 +1,6 @@
 # Story 2.13.8: Wire Up AI Suggestions in Building Semantics Modal
 
-Status: drafted
+Status: done
 
 ## Story
 
@@ -21,38 +21,38 @@ so that mapping BACnet points to ASHRAE 223P ontology is faster and more accurat
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update SystemSelector component (AC: 1, 4, 5, 6)
+- [x] Task 1: Update SystemSelector component (AC: 1, 4, 5, 6)
 
-  - [ ] Call useSystemSuggestionQuery hook
-  - [ ] Show loading indicator while fetching
-  - [ ] Pre-select AI suggested system
-  - [ ] Show "AI unavailable" badge if error
-  - [ ] Allow user to change selection
+  - [x] Call useSystemSuggestionQuery hook
+  - [x] Show loading indicator while fetching
+  - [x] Pre-select AI suggested system
+  - [x] Show "AI unavailable" badge if error
+  - [x] Allow user to change selection
 
-- [ ] Task 2: Update DeviceSelector component (AC: 2, 4, 5, 6)
+- [x] Task 2: Update DeviceSelector component (AC: 2, 4, 5, 6)
 
-  - [ ] Call useDeviceSuggestionQuery with selected system
-  - [ ] Show loading indicator while fetching
-  - [ ] Pre-select AI suggested device
-  - [ ] Track if user overrides AI suggestion
+  - [x] Call useDeviceSuggestionQuery with selected system
+  - [x] Show loading indicator while fetching
+  - [x] Pre-select AI suggested device
+  - [x] Track if user overrides AI suggestion
 
-- [ ] Task 3: Update PropertySelector component (AC: 3, 4, 5, 6)
+- [x] Task 3: Update PropertySelector component (AC: 3, 4, 5, 6)
 
-  - [ ] Call usePropertySuggestionQuery with selected device
-  - [ ] Show loading indicator while fetching
-  - [ ] Pre-select AI suggested property
-  - [ ] Track if user overrides AI suggestion
+  - [x] Call usePropertySuggestionQuery with selected device
+  - [x] Show loading indicator while fetching
+  - [x] Pre-select AI suggested property
+  - [x] Track if user overrides AI suggestion
 
-- [ ] Task 4: Implement confirmation flow (AC: 7, 8)
+- [x] Task 4: Implement confirmation flow (AC: 7, 8)
 
-  - [ ] On form submit, call useConfirmSuggestionMutation
-  - [ ] Calculate wasOverridden for each step
-  - [ ] Store all three mappings (system, device, property)
+  - [x] On form submit, call useConfirmSuggestionMutation
+  - [x] Calculate wasOverridden for each step
+  - [x] Store all three mappings (system, device, property)
 
-- [ ] Task 5: Add integration tests (AC: 1-8)
-  - [ ] Test full flow with mocked API
-  - [ ] Test AI unavailable scenario
-  - [ ] Test user override scenario
+- [x] Task 5: Add integration tests (AC: 1-8)
+  - [x] Test full flow with mocked API
+  - [x] Test AI unavailable scenario
+  - [x] Test user override scenario
 
 ## Dev Notes
 

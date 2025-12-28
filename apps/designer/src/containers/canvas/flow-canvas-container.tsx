@@ -60,20 +60,7 @@ export function FlowCanvasContainer({
     nodeCreation,
   })
 
-  const handleModalConfirm = useCallback(async () => {
-    if (!modalHandlers.pendingDraggedPoint || !modalHandlers.pendingPosition) {
-      modalHandlers.closeModal()
-      return
-    }
-
-    await nodeCreation.createNode(
-      modalHandlers.pendingDraggedPoint,
-      modalHandlers.pendingPosition
-    )
-    modalHandlers.closeModal()
-  }, [modalHandlers, nodeCreation])
-
-  const handleModalSkip = useCallback(async () => {
+  const createNodeAndCloseModal = useCallback(async () => {
     if (!modalHandlers.pendingDraggedPoint || !modalHandlers.pendingPosition) {
       modalHandlers.closeModal()
       return
@@ -117,9 +104,14 @@ export function FlowCanvasContainer({
             controllerIPAddress: modalHandlers.bacnetController.ipAddress,
           }}
           pointLabel={modalHandlers.bacnetPoint.name}
+          pointDescription={
+            modalHandlers.bacnetPoint.discoveredProperties?.description as
+              | string
+              | undefined
+          }
           templates={templates}
-          onSaved={handleModalConfirm}
-          onSkip={handleModalSkip}
+          onSaved={createNodeAndCloseModal}
+          onSkip={createNodeAndCloseModal}
           onOpenChange={modalHandlers.setIsOpen}
         />
       )}

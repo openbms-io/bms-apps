@@ -56,12 +56,16 @@ describe('POST /api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/ai
       body: JSON.stringify({
         step: 'system',
         point: {
+          id: 'point-123',
           name: 'VAV-2-01_ZoneTemp',
           objectType: 'analog-input',
           objectId: 1,
           controllerId: 'controller-123',
         },
-        candidates: ['vav-reheat-system', 'vav-cooling-only'],
+        candidates: [
+          { id: 'vav-reheat-system', label: 'VAV Reheat System' },
+          { id: 'vav-cooling-only', label: 'VAV Cooling Only' },
+        ],
       }),
     }) as any
 
@@ -90,12 +94,13 @@ describe('POST /api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/ai
       body: JSON.stringify({
         step: 'system',
         point: {
+          id: 'point-123',
           name: 'VAV-2-01_ZoneTemp',
           objectType: 'analog-input',
           objectId: 1,
           controllerId: 'controller-123',
         },
-        candidates: ['candidate-1'],
+        candidates: [{ id: 'candidate-1', label: 'Candidate 1' }],
       }),
     }) as any
 
@@ -116,12 +121,13 @@ describe('POST /api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/ai
       body: JSON.stringify({
         step: 'invalid-step',
         point: {
+          id: 'point-123',
           name: 'VAV-2-01_ZoneTemp',
           objectType: 'analog-input',
           objectId: 1,
           controllerId: 'controller-123',
         },
-        candidates: ['candidate-1'],
+        candidates: [{ id: 'candidate-1', label: 'Candidate 1' }],
       }),
     }) as any
 
@@ -146,12 +152,13 @@ describe('POST /api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/ai
       body: JSON.stringify({
         step: 'property',
         point: {
+          id: 'point-123',
           name: 'VAV-2-01_ZoneTemp',
           objectType: 'analog-input',
           objectId: 1,
           controllerId: 'controller-123',
         },
-        candidates: ['property-1'],
+        candidates: [{ id: 'property-1', label: 'Property 1' }],
         selectionContext: {
           systemId: 'selected-system',
           deviceId: 'selected-device',
@@ -184,12 +191,13 @@ describe('POST /api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/ai
       body: JSON.stringify({
         step: 'system',
         point: {
+          id: 'point-123',
           name: 'VAV-2-01_ZoneTemp',
           objectType: 'analog-input',
           objectId: 1,
           controllerId: 'controller-123',
         },
-        candidates: ['candidate-1'],
+        candidates: [{ id: 'candidate-1', label: 'Candidate 1' }],
       }),
     }) as any
 

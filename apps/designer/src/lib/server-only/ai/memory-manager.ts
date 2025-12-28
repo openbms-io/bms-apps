@@ -1,6 +1,11 @@
 import 'server-only'
 
 import { MemoryClient } from 'mem0ai'
+import { type StepType } from '@/domains/building-semantics/adapters/ashrae-223p/schemas/ai-suggestion.dto.schemas'
+import {
+  MappingMessageFormatter,
+  type IMappingMessageFormatter,
+} from './mapping-message-formatter'
 
 export interface MemoryContext {
   relevantMemories: Array<{
@@ -12,7 +17,7 @@ export interface MemoryContext {
 export interface MappingRecord {
   pointPattern: string
   controllerId: string
-  step: 'system' | 'device' | 'property'
+  step: StepType
   selectedId: string
   wasOverridden: boolean
 }
@@ -38,9 +43,14 @@ export function createMemoryClient(): IMemoryClient {
 
 export class MemoryManager {
   private readonly client: IMemoryClient
+  private readonly formatter: IMappingMessageFormatter
 
-  constructor(client: IMemoryClient) {
+  constructor(
+    client: IMemoryClient,
+    formatter: IMappingMessageFormatter = new MappingMessageFormatter()
+  ) {
     this.client = client
+    this.formatter = formatter
   }
 
   async retrieveContext({
@@ -52,13 +62,16 @@ export class MemoryManager {
     query: string
     projectId?: string
   }): Promise<MemoryContext> {
-    const filters: Record<string, unknown> = { org_id: orgId }
+    const start = performance.now()
+    const filters: Record<string, unknown> = { user_id: orgId }
 
     if (projectId) {
       filters.metadata = { projectId }
     }
 
     const response = await this.client.search(query, filters)
+    const duration = performance.now() - start
+    console.log(`[Mem0] retrieveContext took ${duration.toFixed(0)}ms`)
 
     return {
       relevantMemories: (response.results || []).map((result) => ({
@@ -77,26 +90,11 @@ export class MemoryManager {
     mapping: MappingRecord
     projectId?: string
   }): Promise<void> {
-    const overrideText = mapping.wasOverridden
-      ? 'User overrode AI suggestion.'
-      : 'AI suggestion was accepted.'
-
-    const message = `Mapping decision: Points matching pattern "${mapping.pointPattern}" from controller "${mapping.controllerId}" were mapped to "${mapping.selectedId}" at step "${mapping.step}". ${overrideText}`
-
-    const metadata: Record<string, unknown> = {
-      pointPattern: mapping.pointPattern,
-      controllerId: mapping.controllerId,
-      step: mapping.step,
-      selectedId: mapping.selectedId,
-      wasOverridden: mapping.wasOverridden,
-    }
-
-    if (projectId) {
-      metadata.projectId = projectId
-    }
+    const message = this.formatter.formatMessage({ mapping })
+    const metadata = this.formatter.formatMetadata({ mapping, projectId })
 
     await this.client.add([{ role: 'user', content: message }], {
-      org_id: orgId,
+      user_id: orgId,
       metadata,
     })
   }

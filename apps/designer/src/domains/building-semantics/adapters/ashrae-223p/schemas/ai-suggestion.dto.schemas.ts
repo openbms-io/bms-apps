@@ -1,13 +1,13 @@
 import { z } from 'zod'
 
 /**
- * Mapping Step Schema
+ * Step Type Schema
  *
  * Represents the step in the multi-step mapping flow.
  */
-export const MappingStepSchema = z.enum(['system', 'device', 'property'])
+export const StepTypeSchema = z.enum(['system', 'device', 'property'])
 
-export type MappingStep = z.infer<typeof MappingStepSchema>
+export type StepType = z.infer<typeof StepTypeSchema>
 
 /**
  * AI Point DTO Schema
@@ -16,6 +16,7 @@ export type MappingStep = z.infer<typeof MappingStepSchema>
  * Contains all relevant BACnet point information for semantic mapping.
  */
 export const AIPointDTOSchema = z.object({
+  id: z.string(),
   name: z.string(),
   objectType: z.string(),
   objectId: z.number(),
@@ -29,15 +30,28 @@ export const AIPointDTOSchema = z.object({
 export type AIPointDTO = z.infer<typeof AIPointDTOSchema>
 
 /**
+ * AI Candidate Schema
+ *
+ * Represents a candidate option for AI suggestion.
+ * Contains both the unique ID (URI) and human-readable label.
+ */
+export const AICandidateSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+})
+
+export type AICandidate = z.infer<typeof AICandidateSchema>
+
+/**
  * AI Suggestion Request DTO Schema
  *
  * Request body for POST /api/organizations/[orgId]/sites/[siteId]/projects/[projectId]/ai/suggestions
  * Note: orgId, siteId, projectId come from path params, not body
  */
 export const AISuggestionRequestDTOSchema = z.object({
-  step: MappingStepSchema,
+  step: StepTypeSchema,
   point: AIPointDTOSchema,
-  candidates: z.array(z.string()).max(10),
+  candidates: z.array(AICandidateSchema).max(10),
   selectionContext: z
     .object({
       systemId: z.string().optional(),
@@ -85,7 +99,7 @@ export type AISuggestionResponseDTO = z.infer<
 export const MappingRecordDTOSchema = z.object({
   pointPattern: z.string(),
   controllerId: z.string(),
-  step: MappingStepSchema,
+  step: StepTypeSchema,
   selectedId: z.string(),
   wasOverridden: z.boolean(),
 })

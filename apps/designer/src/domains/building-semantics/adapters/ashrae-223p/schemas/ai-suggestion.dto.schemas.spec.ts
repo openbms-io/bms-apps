@@ -12,6 +12,7 @@ describe('AI Suggestion DTO Schemas', () => {
   describe('AIPointDTOSchema', () => {
     it('validates point with required fields', () => {
       const point = {
+        id: 'point-123',
         name: 'VAV-2-01_ZoneTemp',
         objectType: 'analog-input',
         objectId: 1,
@@ -24,6 +25,7 @@ describe('AI Suggestion DTO Schemas', () => {
 
     it('validates point with optional fields', () => {
       const point = {
+        id: 'point-123',
         name: 'VAV-2-01_ZoneTemp',
         objectType: 'analog-input',
         objectId: 1,
@@ -54,12 +56,16 @@ describe('AI Suggestion DTO Schemas', () => {
       const request: AISuggestionRequestDTO = {
         step: 'system',
         point: {
+          id: 'point-123',
           name: 'VAV-2-01_ZoneTemp',
           objectType: 'analog-input',
           objectId: 1,
           controllerId: 'controller-123',
         },
-        candidates: ['vav-reheat-system', 'vav-cooling-only'],
+        candidates: [
+          { id: 'vav-reheat-system', label: 'VAV Reheat System' },
+          { id: 'vav-cooling-only', label: 'VAV Cooling Only' },
+        ],
       }
 
       const result = AISuggestionRequestDTOSchema.safeParse(request)
@@ -73,12 +79,13 @@ describe('AI Suggestion DTO Schemas', () => {
         const request = {
           step,
           point: {
+            id: 'point-123',
             name: 'VAV-2-01_ZoneTemp',
             objectType: 'analog-input',
             objectId: 1,
             controllerId: 'controller-123',
           },
-          candidates: ['candidate-1'],
+          candidates: [{ id: 'candidate-1', label: 'Candidate 1' }],
         }
 
         const result = AISuggestionRequestDTOSchema.safeParse(request)
@@ -90,12 +97,13 @@ describe('AI Suggestion DTO Schemas', () => {
       const request = {
         step: 'property',
         point: {
+          id: 'point-123',
           name: 'VAV-2-01_ZoneTemp',
           objectType: 'analog-input',
           objectId: 1,
           controllerId: 'controller-123',
         },
-        candidates: ['property-1'],
+        candidates: [{ id: 'property-1', label: 'Property 1' }],
         selectionContext: {
           systemId: 'selected-system',
           deviceId: 'selected-device',
@@ -110,12 +118,13 @@ describe('AI Suggestion DTO Schemas', () => {
       const request = {
         step: 'invalid',
         point: {
+          id: 'point-123',
           name: 'VAV-2-01_ZoneTemp',
           objectType: 'analog-input',
           objectId: 1,
           controllerId: 'controller-123',
         },
-        candidates: ['candidate-1'],
+        candidates: [{ id: 'candidate-1', label: 'Candidate 1' }],
       }
 
       const result = AISuggestionRequestDTOSchema.safeParse(request)
@@ -126,12 +135,13 @@ describe('AI Suggestion DTO Schemas', () => {
       const request = {
         step: 'system',
         point: {
+          id: 'point-123',
           name: 'VAV-2-01_ZoneTemp',
           objectType: 'analog-input',
           objectId: 1,
           controllerId: 'controller-123',
         },
-        candidates: Array(11).fill('candidate'),
+        candidates: Array(11).fill({ id: 'candidate', label: 'Candidate' }),
       }
 
       const result = AISuggestionRequestDTOSchema.safeParse(request)

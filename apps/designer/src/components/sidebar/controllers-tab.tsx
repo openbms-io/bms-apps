@@ -1,6 +1,6 @@
 'use client'
 
-import { ControllersTreeContainer } from '@/containers/controllers-tree-container'
+import { ControllersTreeContainer } from '@/containers/controllers-tree'
 import { PointPropertiesContainer } from '@/containers/point-properties-container'
 import { useTreeUIStore } from '@/store/use-tree-ui-store'
 

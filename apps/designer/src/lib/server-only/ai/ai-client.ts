@@ -25,6 +25,8 @@ export function getAIModel() {
     throw new Error('AI_MODEL environment variable is required')
   }
 
+  console.log(`[AI Client] Using provider: ${provider}, model: ${modelId}`)
+
   if (provider === 'anthropic') {
     const anthropic = createAnthropic()
     return anthropic(modelId)
