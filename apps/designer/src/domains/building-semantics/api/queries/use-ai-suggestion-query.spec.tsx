@@ -17,9 +17,12 @@ const createWrapper = () => {
       },
     },
   })
-  return ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  )
+  function TestWrapper({ children }: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+  }
+  return TestWrapper
 }
 
 const mockPoint: AIPointDTO = {

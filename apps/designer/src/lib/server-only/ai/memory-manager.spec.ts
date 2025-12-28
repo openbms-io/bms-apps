@@ -1,14 +1,19 @@
 jest.mock('server-only', () => ({}))
 
+import type { MemoryClient } from 'mem0ai'
 import {
   MemoryManager,
   createMemoryClient,
-  type IMemoryClient,
   type MappingRecord,
 } from './memory-manager'
 
+type MockMemoryClient = {
+  search: jest.Mock
+  add: jest.Mock
+}
+
 describe('MemoryManager', () => {
-  const createMockClient = (): jest.Mocked<IMemoryClient> => ({
+  const createMockClient = (): MockMemoryClient => ({
     search: jest.fn(),
     add: jest.fn(),
   })
@@ -16,17 +21,15 @@ describe('MemoryManager', () => {
   describe('retrieveContext', () => {
     it('calls client.search with org_id filter', async () => {
       const mockClient = createMockClient()
-      mockClient.search.mockResolvedValue({
-        results: [
-          {
-            memory:
-              'Points matching VAV-*_ZoneTemp were mapped to VAV-Reheat system',
-            score: 0.85,
-          },
-        ],
-      })
+      mockClient.search.mockResolvedValue([
+        {
+          memory:
+            'Points matching VAV-*_ZoneTemp were mapped to VAV-Reheat system',
+          score: 0.85,
+        },
+      ])
 
-      const manager = new MemoryManager(mockClient)
+      const manager = new MemoryManager(mockClient as unknown as MemoryClient)
       const result = await manager.retrieveContext({
         orgId: 'org-123',
         query: 'VAV zone temperature mapping',
@@ -48,9 +51,9 @@ describe('MemoryManager', () => {
 
     it('includes projectId in search filter when provided', async () => {
       const mockClient = createMockClient()
-      mockClient.search.mockResolvedValue({ results: [] })
+      mockClient.search.mockResolvedValue([])
 
-      const manager = new MemoryManager(mockClient)
+      const manager = new MemoryManager(mockClient as unknown as MemoryClient)
       await manager.retrieveContext({
         orgId: 'org-123',
         query: 'test query',
@@ -65,9 +68,9 @@ describe('MemoryManager', () => {
 
     it('returns empty array when no memories found', async () => {
       const mockClient = createMockClient()
-      mockClient.search.mockResolvedValue({ results: [] })
+      mockClient.search.mockResolvedValue([])
 
-      const manager = new MemoryManager(mockClient)
+      const manager = new MemoryManager(mockClient as unknown as MemoryClient)
       const result = await manager.retrieveContext({
         orgId: 'org-123',
         query: 'unknown query',
@@ -80,9 +83,9 @@ describe('MemoryManager', () => {
   describe('storeMapping', () => {
     it('calls client.add with formatted mapping text and org_id', async () => {
       const mockClient = createMockClient()
-      mockClient.add.mockResolvedValue({ id: 'mem-new' })
+      mockClient.add.mockResolvedValue([{ id: 'mem-new' }])
 
-      const manager = new MemoryManager(mockClient)
+      const manager = new MemoryManager(mockClient as unknown as MemoryClient)
       const mapping: MappingRecord = {
         pointPattern: 'VAV-*_ZoneTemp',
         controllerId: 'controller-1',
@@ -119,9 +122,9 @@ describe('MemoryManager', () => {
 
     it('includes wasOverridden=true in message when user overrode suggestion', async () => {
       const mockClient = createMockClient()
-      mockClient.add.mockResolvedValue({ id: 'mem-new' })
+      mockClient.add.mockResolvedValue([{ id: 'mem-new' }])
 
-      const manager = new MemoryManager(mockClient)
+      const manager = new MemoryManager(mockClient as unknown as MemoryClient)
       const mapping: MappingRecord = {
         pointPattern: 'AHU-*_SupplyFan',
         controllerId: 'controller-2',
@@ -151,9 +154,9 @@ describe('MemoryManager', () => {
 
     it('includes projectId in metadata when provided', async () => {
       const mockClient = createMockClient()
-      mockClient.add.mockResolvedValue({ id: 'mem-new' })
+      mockClient.add.mockResolvedValue([{ id: 'mem-new' }])
 
-      const manager = new MemoryManager(mockClient)
+      const manager = new MemoryManager(mockClient as unknown as MemoryClient)
       const mapping: MappingRecord = {
         pointPattern: 'FCU-*_Valve',
         controllerId: 'controller-3',

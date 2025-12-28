@@ -22,31 +22,20 @@ export interface MappingRecord {
   wasOverridden: boolean
 }
 
-export interface IMemoryClient {
-  search(
-    query: string,
-    filters: Record<string, unknown>
-  ): Promise<{ results: Array<{ memory: string; score: number }> }>
-  add(
-    messages: Array<{ role: string; content: string }>,
-    options: Record<string, unknown>
-  ): Promise<{ id: string }>
-}
-
-export function createMemoryClient(): IMemoryClient {
+export function createMemoryClient(): MemoryClient {
   const apiKey = process.env.MEM0_API_KEY
   if (!apiKey) {
     throw new Error('MEM0_API_KEY environment variable is required')
   }
-  return new MemoryClient({ apiKey }) as IMemoryClient
+  return new MemoryClient({ apiKey })
 }
 
 export class MemoryManager {
-  private readonly client: IMemoryClient
+  private readonly client: MemoryClient
   private readonly formatter: IMappingMessageFormatter
 
   constructor(
-    client: IMemoryClient,
+    client: MemoryClient,
     formatter: IMappingMessageFormatter = new MappingMessageFormatter()
   ) {
     this.client = client
@@ -63,21 +52,25 @@ export class MemoryManager {
     projectId?: string
   }): Promise<MemoryContext> {
     const start = performance.now()
-    const filters: Record<string, unknown> = { user_id: orgId }
 
-    if (projectId) {
-      filters.metadata = { projectId }
-    }
-
-    const response = await this.client.search(query, filters)
+    const memories = await this.client.search(query, {
+      user_id: orgId,
+      ...(projectId && { metadata: { projectId } }),
+    })
     const duration = performance.now() - start
     console.log(`[Mem0] retrieveContext took ${duration.toFixed(0)}ms`)
 
+    console.log(`[Mem0] retrieveContext found ${memories.length} results`)
+
+    const relevantMemories = memories
+      .filter((memory) => memory.memory !== undefined)
+      .map((memory) => ({
+        text: memory.memory,
+        score: memory.score ?? 0,
+      })) as MemoryContext['relevantMemories']
+
     return {
-      relevantMemories: (response.results || []).map((result) => ({
-        text: result.memory,
-        score: result.score,
-      })),
+      relevantMemories,
     }
   }
 

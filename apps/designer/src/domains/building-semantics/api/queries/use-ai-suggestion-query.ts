@@ -16,7 +16,7 @@ interface BaseSuggestionParams {
   candidates: AICandidate[]
 }
 
-interface SystemSuggestionParams extends BaseSuggestionParams {}
+type SystemSuggestionParams = BaseSuggestionParams
 
 interface DeviceSuggestionParams extends BaseSuggestionParams {
   systemId: string | undefined
