@@ -24,10 +24,18 @@ describe('BuildingSemanticsModal - Presentation Tests', () => {
   const mockMutate = jest.fn()
 
   const defaultProps = {
+    orgId: 'org-123',
+    siteId: 'site-456',
     projectId: 'project-123',
     open: true,
     bacnetPointId: 'point-abc',
     bacnetObjectType: 'analog-input',
+    buildingSemanticsBacnetConfig: {
+      objectType: 'analog-input' as const,
+      objectId: 1,
+      controllerDeviceId: 123,
+      controllerIPAddress: '192.168.1.100',
+    },
     pointLabel: 'Temperature Sensor 1',
     templates: [],
     onSaved: mockOnSaved,

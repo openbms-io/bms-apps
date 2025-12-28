@@ -20,12 +20,15 @@ import { ShaclValidationErrorModal } from '../shacl-validation-error-modal'
 import { useBuildingSemanticsForm } from './use-building-semantics-form'
 
 interface BuildingSemanticsModalProps {
+  orgId: string
+  siteId: string
   projectId: string
   open: boolean
   bacnetPointId: string
   bacnetObjectType: string
   buildingSemanticsBacnetConfig: BuildingSemanticsBacnetConfig
   pointLabel?: string
+  pointDescription?: string
   templates?: TemplateSystemDto[]
   onSaved: () => void
   onSkip?: () => void
@@ -33,21 +36,28 @@ interface BuildingSemanticsModalProps {
 }
 
 export function BuildingSemanticsModal({
+  orgId,
+  siteId,
   projectId,
   open,
   bacnetPointId,
   bacnetObjectType,
   buildingSemanticsBacnetConfig,
   pointLabel,
+  pointDescription,
   templates = [],
   onSaved,
   onSkip,
   onOpenChange,
 }: BuildingSemanticsModalProps) {
-  const { state, actions, data, validation, loading } =
+  const { state, actions, data, validation, loading, ai } =
     useBuildingSemanticsForm({
+      orgId,
+      siteId,
       projectId,
       bacnetPointId,
+      bacnetPointName: pointLabel,
+      bacnetPointDescription: pointDescription,
       bacnetObjectType,
       buildingSemanticsBacnetConfig,
       open,
@@ -85,6 +95,9 @@ export function BuildingSemanticsModal({
                 disabled={loading.isLoadingSystems}
                 templates={templates}
                 isLoadingTemplates={false}
+                aiSuggestion={ai.suggestions.system}
+                isLoadingAi={ai.loading.system}
+                isLowConfidence={ai.lowConfidence.system}
               />
               <p className="text-xs text-muted-foreground">
                 Select an existing system or create a new one from a template
@@ -99,6 +112,9 @@ export function BuildingSemanticsModal({
                 onDeviceSelect={actions.selectDevice}
                 disabled={!state.selectedSystemUri}
                 isLoading={loading.isLoadingDevices}
+                aiSuggestion={ai.suggestions.device}
+                isLoadingAi={ai.loading.device}
+                isLowConfidence={ai.lowConfidence.device}
               />
               <p className="text-xs text-muted-foreground">
                 Select a device from the system
@@ -114,6 +130,9 @@ export function BuildingSemanticsModal({
                 disabled={!state.selectedDeviceUri}
                 isLoading={loading.isLoadingProperties}
                 bacnetObjectType={bacnetObjectType}
+                aiSuggestion={ai.suggestions.property}
+                isLoadingAi={ai.loading.property}
+                isLowConfidence={ai.lowConfidence.property}
               />
               <p className="text-xs text-muted-foreground">
                 Select a property (automatically filtered by {bacnetObjectType})
