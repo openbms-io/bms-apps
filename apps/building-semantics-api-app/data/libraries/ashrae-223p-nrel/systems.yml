@@ -106,11 +106,13 @@ makeup-air-unit:
 vav-reheat:
   body: >
     @prefix P: <urn:___param___#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:TerminalUnit ;
-      s223:contains P:rhc, P:dmp, P:sup-air-flow-sensor,
-                    P:sup-air-temp-sensor, P:sup-air-pressure-sensor ;
-      s223:hasProperty P:sup-air-temp, P:sup-air-flow, P:sup-air-pressure ;
+      rdfs:label "VAV Reheat Terminal Unit" ;
+      s223:contains P:reheat-coil, P:damper, P:supply-air-flow-sensor,
+                    P:supply-air-temperature-sensor, P:supply-air-pressure-sensor ;
+      s223:hasProperty P:supply-air-temperature, P:supply-air-flow, P:supply-air-pressure ;
       s223:hasConnectionPoint P:air-in, P:air-out .
 
     P:air-in a s223:InletConnectionPoint ;
@@ -120,40 +122,45 @@ vav-reheat:
 
   dependencies:
     - template: duct
-      args: { "name": "c0", "a": "dmp-out", "b": "rhc-air-in" }
+      args:
+        {
+          "name": "connection-damper-to-coil",
+          "a": "damper-out",
+          "b": "reheat-coil-air-in",
+        }
     - template: hot-water-coil
-      args: { "name": "rhc" }
+      args: { "name": "reheat-coil" }
     - template: damper
-      args: { "name": "dmp" }
+      args: { "name": "damper" }
     - template: air-inlet-cp
       args: { "name": "air-in", "equipment": "name" }
     - template: air-outlet-cp
       args: { "name": "air-out", "equipment": "name" }
     - template: air-temperature
-      args: { "name": "sup-air-temp" }
+      args: { "name": "supply-air-temperature" }
     - template: sensor
       args:
         {
-          "name": "sup-air-temp-sensor",
-          "property": "sup-air-temp",
+          "name": "supply-air-temperature-sensor",
+          "property": "supply-air-temperature",
           "where": "air-out",
         }
     - template: air-flow
-      args: { "name": "sup-air-flow" }
+      args: { "name": "supply-air-flow" }
     - template: sensor
       args:
         {
-          "name": "sup-air-flow-sensor",
-          "property": "sup-air-flow",
+          "name": "supply-air-flow-sensor",
+          "property": "supply-air-flow",
           "where": "air-out",
         }
     - template: static-pressure
-      args: { "name": "sup-air-pressure" }
+      args: { "name": "supply-air-pressure" }
     - template: sensor
       args:
         {
-          "name": "sup-air-pressure-sensor",
-          "property": "sup-air-pressure",
+          "name": "supply-air-pressure-sensor",
+          "property": "supply-air-pressure",
           "where": "air-out",
         }
 
@@ -211,56 +218,59 @@ hot-water-system:
 lab-vav-reheat:
   body: >
     @prefix P: <urn:___param___#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:TerminalUnit ;
-      s223:contains P:rhc, P:vlv-dmp, P:sup-air-flow-sensor,
-                    P:sup-air-temp-sensor, P:sup-air-pressure-sensor ;
-      s223:hasProperty P:sup-air-temp, P:sup-air-flow, P:sup-air-pressure ;
+      rdfs:label "Lab VAV Reheat Terminal Unit" ;
+      s223:contains P:reheat-coil, P:valve-damper, P:supply-air-flow-sensor,
+                    P:supply-air-temperature-sensor, P:supply-air-pressure-sensor ;
+      s223:hasProperty P:supply-air-temperature, P:supply-air-flow, P:supply-air-pressure ;
       s223:hasConnectionPoint P:air-in, P:air-out .
 
-    # damper, then coil
-    # - vlv-dmp-in maps to air-in
-    P:vlv-dmp-in s223:mapsTo P:air-in .
-    # - vlv-dmp-out (a) -> duct -> rhc-air-in (b)
-    # (in deps)
-    P:rhc-air-out s223:mapsTo P:air-out .
+    P:valve-damper-in s223:mapsTo P:air-in .
+    P:reheat-coil-air-out s223:mapsTo P:air-out .
 
   dependencies:
     - template: duct
-      args: { "name": "c0", "a": "vlv-dmp-out", "b": "rhc-air-in" }
+      args:
+        {
+          "name": "connection-damper-to-coil",
+          "a": "valve-damper-out",
+          "b": "reheat-coil-air-in",
+        }
     - template: vlv-dmp
-      args: { "name": "vlv-dmp", "in-mapsto": "air-in" }
+      args: { "name": "valve-damper", "in-mapsto": "air-in" }
     - template: hot-water-coil
-      args: { "name": "rhc", "air-out-mapsto": "air-out" }
+      args: { "name": "reheat-coil", "air-out-mapsto": "air-out" }
     - template: air-inlet-cp
       args: { "name": "air-in", "equipment": "name" }
     - template: air-outlet-cp
       args: { "name": "air-out", "equipment": "name" }
     - template: air-temperature
-      args: { "name": "sup-air-temp" }
+      args: { "name": "supply-air-temperature" }
     - template: sensor
       args:
         {
-          "name": "sup-air-temp-sensor",
-          "property": "sup-air-temp",
+          "name": "supply-air-temperature-sensor",
+          "property": "supply-air-temperature",
           "where": "air-out",
         }
     - template: air-flow
-      args: { "name": "sup-air-flow" }
+      args: { "name": "supply-air-flow" }
     - template: sensor
       args:
         {
-          "name": "sup-air-flow-sensor",
-          "property": "sup-air-flow",
+          "name": "supply-air-flow-sensor",
+          "property": "supply-air-flow",
           "where": "air-out",
         }
     - template: static-pressure
-      args: { "name": "sup-air-pressure" }
+      args: { "name": "supply-air-pressure" }
     - template: sensor
       args:
         {
-          "name": "sup-air-pressure-sensor",
-          "property": "sup-air-pressure",
+          "name": "supply-air-pressure-sensor",
+          "property": "supply-air-pressure",
           "where": "air-out",
         }
 

@@ -116,44 +116,31 @@ class BuildingMOTIFAdapter:
             raise RuntimeError(f"Failed to load NREL template library: {e}") from e
 
     def _load_ontology_libraries(self) -> None:
-        """Load 223P and QUDT ontology libraries (mode controlled by settings)."""
-        # Skip loading ontology libraries if validation is disabled
+        """Load 223P and QUDT ontology libraries for validation."""
         if not self._settings.enable_validation:
             logger.info("SHACL validation disabled - skipping ontology library loading")
             return
 
         try:
             s223_path = Path(self._settings.buildingmotif_223p_path)
-
             if not s223_path.exists():
                 raise FileNotFoundError(f"223P ontology not found: {s223_path}")
 
             self._223p_lib = Library.load(ontology_graph=str(s223_path), overwrite=False, infer_templates=False)
             logger.info(f"223P library loaded from: {s223_path}")
 
-            # Load QUDT based on flag
-            if self._settings.should_use_qudt_all:
-                # Mode 1: Combined qudt-all.ttl (slower init, fewer import warnings)
-                qudt_path = Path(self._settings.buildingmotif_qudt_path)
-                if not qudt_path.exists():
-                    raise FileNotFoundError(f"QUDT ontology not found: {qudt_path}")
+            unit_path = Path(self._settings.buildingmotif_unit_path)
+            qk_path = Path(self._settings.buildingmotif_quantity_kind_path)
 
-                self._qudt_lib = Library.load(ontology_graph=str(qudt_path), overwrite=False, infer_templates=False)
-                logger.info(f"QUDT library (combined) loaded from: {qudt_path}")
-            else:
-                # Mode 2: Separate unit/quantitykind files (faster init, more import warnings)
-                unit_path = Path(self._settings.buildingmotif_unit_path)
-                qk_path = Path(self._settings.buildingmotif_quantity_kind_path)
+            if not unit_path.exists():
+                raise FileNotFoundError(f"Unit ontology not found: {unit_path}")
+            if not qk_path.exists():
+                raise FileNotFoundError(f"QuantityKind ontology not found: {qk_path}")
 
-                if not unit_path.exists():
-                    raise FileNotFoundError(f"Unit ontology not found: {unit_path}")
-                if not qk_path.exists():
-                    raise FileNotFoundError(f"QuantityKind ontology not found: {qk_path}")
-
-                self._unit_lib = Library.load(ontology_graph=str(unit_path), overwrite=False, infer_templates=False)
-                self._quantitykind_lib = Library.load(ontology_graph=str(qk_path), overwrite=False, infer_templates=False)
-                logger.info(f"Unit library loaded from: {unit_path}")
-                logger.info(f"QuantityKind library loaded from: {qk_path}")
+            self._unit_lib = Library.load(ontology_graph=str(unit_path), overwrite=False, infer_templates=False)
+            self._quantitykind_lib = Library.load(ontology_graph=str(qk_path), overwrite=False, infer_templates=False)
+            logger.info(f"Unit library loaded from: {unit_path}")
+            logger.info(f"QuantityKind library loaded from: {qk_path}")
 
         except Exception as e:
             logger.error(f"Failed to load ontology libraries: {e}")
