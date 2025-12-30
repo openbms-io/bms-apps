@@ -26,6 +26,7 @@ test = [
     "pytest-xdist>=3.3.0",
     "pytest-forked>=1.6.0",
     "pytest-isolate",
+    "filelock>=3.12.0",
 ]
 dev = [
     "mypy>=1.7.0",

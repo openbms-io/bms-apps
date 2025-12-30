@@ -109,7 +109,7 @@ class BuildingMOTIFAdapter:
             if not template_dir.exists():
                 raise FileNotFoundError(f"NREL template directory not found: {template_dir}")
 
-            self._nrel_lib = Library.load(directory=str(template_dir))
+            self._nrel_lib = Library.load(directory=str(template_dir), overwrite=False)
             logger.info(f"NREL template library loaded from: {template_dir}")
         except Exception as e:
             logger.error(f"Failed to load NREL template library: {e}")
@@ -346,8 +346,11 @@ class BuildingMOTIFAdapter:
         Returns:
             Model instance for RDF operations
         """
+        bm = self.get_buildingmotif_instance()
         ns = Namespace(namespace)
         model = Model.create(ns)
+
+        bm.session.commit()
         logger.info(f"Created model with namespace: {namespace}")
         return model
 

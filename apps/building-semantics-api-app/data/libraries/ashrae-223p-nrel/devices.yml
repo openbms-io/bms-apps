@@ -285,9 +285,9 @@ HR-pump:
     - template: run-status
       args: { "name": "onoff-sts" }
     - template: water-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: vfd-current
       args: { "name": "vfd-cur" }
     - template: vfd-energy
@@ -353,9 +353,9 @@ belimo-energy-valve:
       s223:hasConnectionPoint P:in, P:out .
   dependencies:
     - template: water-inlet-cp
-      args: { "name": "in" }
+      args: { "name": "in", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "out" }
+      args: { "name": "out", "equipment": "name" }
     - template: water-flow
       args: { "name": "flow" }
     - template: sensor
@@ -368,14 +368,7 @@ sensor:
     P:name a s223:Sensor ;
       s223:hasObservationLocation P:where ;
       s223:observes P:property .
-      #dependencies:
-      #  - template: http://data.ashrae.org/standard223#Property
-      #    library: http://data.ashrae.org/standard223/1.0/model/all
-      #    args: {"name": "property"}
-      #  - template: http://data.ashrae.org/standard223#Connectable
-      #    library: http://data.ashrae.org/standard223/1.0/model/all
-      #    args: {"name": "where"}
-      #    #optional: ["where"]
+  optional: ["where", "property"]
 
 differential-sensor:
   body: >
@@ -403,9 +396,9 @@ evaporative-cooler:
       args: { "name": "in", "equipment": "name" }
     - template: air-outlet-cp
       args: { "name": "out", "equipment": "name" }
-    - template: water-outlet-cp
-      args: { "name": "water-in", "equipment": "name" }
     - template: water-inlet-cp
+      args: { "name": "water-in", "equipment": "name" }
+    - template: water-outlet-cp
       args: { "name": "water-out", "equipment": "name" }
     - template: air-temperature
       args: { "name": "entering-air-temp" }
@@ -442,13 +435,13 @@ heat-exchanger:
                        P:chw-supply-temperature,
                        P:chw-return-temperature, P:chw-flow .
   dependencies:
-    - template: water-outlet-cp
+    - template: water-inlet-cp
       args: { "name": "A-in", "equipment": "name" }
-    - template: water-inlet-cp
-      args: { "name": "A-out", "equipment": "name" }
     - template: water-outlet-cp
-      args: { "name": "B-in", "equipment": "name" }
+      args: { "name": "A-out", "equipment": "name" }
     - template: water-inlet-cp
+      args: { "name": "B-in", "equipment": "name" }
+    - template: water-outlet-cp
       args: { "name": "B-out", "equipment": "name" }
     - template: differential-pressure
       args: { "name": "A-chw-diff-press" }
