@@ -34,7 +34,7 @@ def test_adapter_initialization(mock_buildingmotif) -> None:
     adapter = BuildingMOTIFAdapter("test.db")
 
     # Verify BuildingMOTIF was initialized with correct parameters
-    mock_bm.assert_called_once_with("sqlite:///test.db", shacl_engine="topquadrant", log_level=20)
+    mock_bm.assert_called_once_with("sqlite:///test.db?check_same_thread=False", shacl_engine="topquadrant", log_level=20)
     assert adapter.get_nrel_library() == mock_library
 
 

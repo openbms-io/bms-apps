@@ -21,9 +21,9 @@ def test_get_templates_returns_200_with_mock_data(shared_adapter: BuildingMOTIFA
     assert isinstance(data["systems"], list)
     assert isinstance(data["spaceTypes"], list)
 
-    # If systems are loaded, verify we have 8 systems as per AC
+    # If systems are loaded, verify we have 2 active systems (VAV_REHEAT, LAB_VAV_REHEAT)
     if len(data["systems"]) > 0:
-        assert len(data["systems"]) == 8
+        assert len(data["systems"]) == 2
 
 
 def test_get_templates_endpoint_exists() -> None:
