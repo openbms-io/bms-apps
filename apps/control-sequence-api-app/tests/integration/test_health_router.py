@@ -21,13 +21,13 @@ def valid_step_request():
     return {
         "stepSize": 60.0,
         "inputs": {
-            "zoneTemperature": 22.0,
-            "coolingSetpoint": 24.0,
-            "heatingSetpoint": 20.0,
-            "dischargeAirTemperature": 16.0,
+            "zoneTemperature": 295.15,
+            "coolingSetpoint": 297.15,
+            "heatingSetpoint": 293.15,
+            "dischargeAirTemperature": 289.15,
             "primaryAirflow": 0.3,
-            "supplyAirTemperature": 13.0,
-            "supplyAirTemperatureSetpoint": 12.0,
+            "supplyAirTemperature": 286.15,
+            "supplyAirTemperatureSetpoint": 285.15,
             "fanStatus": True,
             "operationMode": "occupied",
         },
@@ -78,9 +78,7 @@ class TestHealthActiveInstancesIntegration:
         response = integration_client.get("/api/v1/health")
         assert response.json()["active_instances"] == 0
 
-        created = create_reheat_instance(
-            integration_client, parameters={"temperatureUnit": "C"}
-        )
+        created = create_reheat_instance(integration_client)
         instance_id = created["instanceId"]
 
         integration_client.post(
@@ -97,9 +95,7 @@ class TestHealthActiveInstancesIntegration:
         if not fmu_available:
             pytest.skip("Reheat FMU not available")
 
-        created = create_reheat_instance(
-            integration_client, parameters={"temperatureUnit": "C"}
-        )
+        created = create_reheat_instance(integration_client)
         instance_id = created["instanceId"]
 
         integration_client.post(
@@ -121,9 +117,7 @@ class TestHealthActiveInstancesIntegration:
             pytest.skip("Reheat FMU not available")
 
         for _ in range(3):
-            created = create_reheat_instance(
-                integration_client, parameters={"temperatureUnit": "C"}
-            )
+            created = create_reheat_instance(integration_client)
             instance_id = created["instanceId"]
             integration_client.post(
                 f"/api/v1/g36/vav-reheat/instances/{instance_id}/step",

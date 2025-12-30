@@ -252,12 +252,17 @@ def test_no_custom_urns_in_response(shared_adapter: BuildingMOTIFAdapter) -> Non
         "Response should not contain mock URNs from Epic 1"
 
     # NOTE: TestClient may create new adapter without templates loaded
-    # If systems are present, verify they use template name IDs
+    # If systems are present, verify IDs use template names (not URIs)
     data = response.json()
     if len(data.get("systems", [])) > 0:
-        # Verify response uses template names, not HTTP URIs
-        assert "http://data.ashrae.org/standard223#" not in response_text, \
-            "Response should use template names as IDs, not HTTP URIs"
+        # Verify IDs use template names, not HTTP URIs
+        # (classUri fields ARE supposed to contain HTTP URIs)
+        for system in data["systems"]:
+            assert "http://" not in system["id"], \
+                f"System ID should use template name, not URI: {system['id']}"
+            for device in system.get("devices", []):
+                assert "http://" not in device["id"], \
+                    f"Device ID should use template name, not URI: {device['id']}"
 
 
 def test_system_class_uri_present(shared_adapter: BuildingMOTIFAdapter) -> None:

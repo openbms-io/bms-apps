@@ -71,7 +71,7 @@ class BuildingMOTIFAdapter:
         db_file = Path(db_path)
         db_file.parent.mkdir(parents=True, exist_ok=True)
 
-        connection_string = f"sqlite:///{db_path}"
+        connection_string = f"sqlite:///{db_path}?check_same_thread=False"
         self._bm = BuildingMOTIF(connection_string, shacl_engine="topquadrant", log_level=20)
 
         self._configure_sqlite_for_concurrency()

@@ -69,5 +69,5 @@ select = ["E", "W", "F", "I", "B", "C4", "UP"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-ra -q --asyncio-mode=auto --forked"
+addopts = "-ra -q --asyncio-mode=auto -p no:xdist"
 asyncio_mode = "auto"
