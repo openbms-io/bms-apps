@@ -3,9 +3,11 @@ static-pressure:
     @prefix P: <urn:___param___#> .
     @prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
     @prefix qudt: <http://qudt.org/schema/qudt/> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix unit: <http://qudt.org/vocab/unit/> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:QuantifiableObservableProperty ;
+      rdfs:label "Static Pressure" ;
       qudt:hasQuantityKind quantitykind:Pressure ;
       qudt:hasUnit unit:IN_H2O .
 
@@ -25,9 +27,11 @@ damper-command:
     @prefix P: <urn:___param___#> .
     @prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
     @prefix qudt: <http://qudt.org/schema/qudt/> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix unit: <http://qudt.org/vocab/unit/> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:QuantifiableActuatableProperty ;
+        rdfs:label "Damper Command" ;
         qudt:hasQuantityKind quantitykind:DimensionlessRatio ;
         qudt:hasUnit unit:PERCENT .
 
@@ -48,9 +52,11 @@ damper-feedback:
     @prefix P: <urn:___param___#> .
     @prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
     @prefix qudt: <http://qudt.org/schema/qudt/> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix unit: <http://qudt.org/vocab/unit/> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:QuantifiableObservableProperty ;
+        rdfs:label "Damper Feedback" ;
         qudt:hasQuantityKind quantitykind:DimensionlessRatio ;
         qudt:hasUnit unit:PERCENT .
 
@@ -82,9 +88,11 @@ air-temperature:
     @prefix P: <urn:___param___#> .
     @prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
     @prefix qudt: <http://qudt.org/schema/qudt/> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix unit: <http://qudt.org/vocab/unit/> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:QuantifiableObservableProperty ;
+        rdfs:label "Air Temperature" ;
         s223:ofMedium s223:Fluid-Air ;
         qudt:hasQuantityKind quantitykind:Temperature;
         qudt:hasUnit unit:DEG_C .
@@ -94,9 +102,11 @@ air-flow:
     @prefix P: <urn:___param___#> .
     @prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
     @prefix qudt: <http://qudt.org/schema/qudt/> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix unit: <http://qudt.org/vocab/unit/> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:QuantifiableObservableProperty ;
+        rdfs:label "Air Flow" ;
         s223:ofMedium s223:Fluid-Air ;
         qudt:hasQuantityKind quantitykind:VolumeFlowRate;
         qudt:hasUnit unit:FT3-PER-MIN .
@@ -128,15 +138,19 @@ water-flow:
 start-command:
   body: >
     @prefix P: <urn:___param___#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:EnumeratedActuatableProperty ;
+      rdfs:label "Start Command" ;
       s223:hasEnumerationKind s223:Binary-OnOff .
 
 run-status:
   body: >
     @prefix P: <urn:___param___#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix s223: <http://data.ashrae.org/standard223#> .
     P:name a s223:EnumeratedObservableProperty ;
+      rdfs:label "Run Status" ;
       s223:hasEnumerationKind s223:Binary-OnOff .
 
 flow-status:
