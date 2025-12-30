@@ -213,7 +213,10 @@ class TestFmuDataMappingConsistency:
             fanStatus=True,
             operationMode=OperationMode.OCCUPIED,
         )
-        params = ReheatParameters(temperatureUnit=TemperatureUnit.CELSIUS)
+        params = ReheatParameters(
+            temperatureUnit=TemperatureUnit.CELSIUS,
+            dischargeAirTempMin=10.0,
+        )
         fmu_data = ReheatFMUData(inputs=inputs, parameters=params)
         input_vars = fmu_data.input_variables
 
@@ -236,7 +239,10 @@ class TestFmuDataMappingConsistency:
             fanStatus=True,
             operationMode=OperationMode.OCCUPIED,
         )
-        params = ReheatParameters(temperatureUnit=TemperatureUnit.CELSIUS)
+        params = ReheatParameters(
+            temperatureUnit=TemperatureUnit.CELSIUS,
+            dischargeAirTempMin=10.0,
+        )
         fmu_data = ReheatFMUData(inputs=inputs, parameters=params)
         config_vars = fmu_data.configuration_variables
 

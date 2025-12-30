@@ -566,7 +566,7 @@ class TestStepWithStoredUnitPreferences:
             "/api/v1/g36/vav-reheat/instances",
             json={
                 "instance_id": instance_id,
-                "parameters": {"temperatureUnit": "C"},
+                "parameters": {"temperatureUnit": "C", "dischargeAirTempMin": 10.0},
             },
         )
 
@@ -603,7 +603,7 @@ class TestStepWithStoredUnitPreferences:
             "/api/v1/g36/vav-reheat/instances",
             json={
                 "instance_id": instance_id,
-                "parameters": {"temperatureUnit": "F"},
+                "parameters": {"temperatureUnit": "F", "dischargeAirTempMin": 50.0},
             },
         )
 
@@ -739,7 +739,7 @@ class TestStepWithStoredUnitPreferences:
 
         integration_client.put(
             f"/api/v1/g36/vav-reheat/instances/{instance_id}",
-            json={"parameters": {"temperatureUnit": "F"}},
+            json={"parameters": {"temperatureUnit": "F", "dischargeAirTempMin": 50.0}},
         )
 
         fahrenheit_step = {
