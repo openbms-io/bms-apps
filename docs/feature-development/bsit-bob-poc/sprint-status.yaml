@@ -1,0 +1,43 @@
+# generated: 2026-01-06
+# project: bsit-bob-poc
+# project_key: bsit-bob-poc
+# tracking_system: file-system
+# story_location: docs/feature-development/bsit-bob-poc/stories
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic exists in epic file but not contexted
+#   - contexted: Epic tech context created (required before drafting stories)
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder
+#   - ready-for-dev: Draft approved and story context created
+#   - in-progress: Developer actively working on implementation
+#   - review: Under SM review (via code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics should be 'contexted' before stories can be 'drafted'
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically drafts next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', SM reviews, then Dev moves to 'done'
+
+generated: 2026-01-06
+project: bsit-bob-poc
+project_key: bsit-bob-poc
+tracking_system: file-system
+story_location: docs/feature-development/bsit-bob-poc/stories
+
+development_status:
+  # Epic 1: BSIT-BOB Library Evaluation
+  epic-1: backlog
+  1-1-bsit-bob-investigation: done
+  1-2-bsit-bob-adapter-implementation: ready-for-dev
+  epic-1-retrospective: optional

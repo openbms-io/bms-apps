@@ -2,11 +2,10 @@
 
 from datetime import datetime
 
-from buildingmotif.dataclasses import Model
 from loguru import logger
 from rdflib import Literal, URIRef
 
-from ..adapters.buildingmotif_adapter import BuildingMOTIFAdapter
+from ..adapters.semantics_adapter_protocol import SemanticsAdapterProtocol
 from ..adapters.template_types import SystemTemplate
 from ..constants.namespaces import BMS, DCTERMS, RDFS
 
@@ -22,12 +21,12 @@ class SystemsModel:
     - Single source of truth in RDF graph (no SQL tables)
     """
 
-    def __init__(self, adapter: BuildingMOTIFAdapter) -> None:
+    def __init__(self, adapter: SemanticsAdapterProtocol) -> None:
         """
         Initialize systems model.
 
         Args:
-            adapter: BuildingMOTIF adapter instance
+            adapter: Semantics adapter instance implementing SemanticsAdapterProtocol
         """
         self.adapter = adapter
 
@@ -126,13 +125,13 @@ class SystemsModel:
             }}
             """
 
-            results = self.adapter.query_model(model, query)
+            query_result = self.adapter.query_model(model, query)
 
-            if not results:
+            if not query_result.bindings:
                 logger.warning(f"System not found: {system_uri}")
                 return None
 
-            result = results[0]
+            result = query_result.bindings[0]
             label = result["label"]
             template_id = result["template_id"]
             created = result["created"]
@@ -181,10 +180,10 @@ class SystemsModel:
             ORDER BY ?created
             """
 
-            results = self.adapter.query_model(model, query)
+            query_result = self.adapter.query_model(model, query)
 
             systems = []
-            for result in results:
+            for result in query_result.bindings:
                 system_uri = result["system_uri"]
                 label = result["label"]
                 template_id = result["template_id"]

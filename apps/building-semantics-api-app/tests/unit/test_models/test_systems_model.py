@@ -6,6 +6,7 @@ from rdflib import Graph, Literal, Namespace, URIRef, RDFS, DCTERMS, RDF
 
 from src.models.systems_model import SystemsModel
 from src.adapters.template_types import SystemTemplate
+from src.adapters.semantics_adapter_protocol import ModelHandle, QueryResult
 
 
 @pytest.fixture
@@ -131,14 +132,14 @@ def test_get_system_constructs_sparql_query_correctly(mock_adapter):
     - Queries for label, template_id, created metadata
     - adapter.query_model() called with correct query string
     """
-    mock_model = Mock()
-    mock_adapter.get_or_create_model.return_value = mock_model
+    mock_model_handle = ModelHandle(namespace="urn:project:test-project", graph=Mock())
+    mock_adapter.get_or_create_model.return_value = mock_model_handle
 
-    mock_adapter.query_model.return_value = [{
+    mock_adapter.query_model.return_value = QueryResult(bindings=[{
         "label": "VAV Box 101",
         "template_id": SystemTemplate.VAV_REHEAT.value,
         "created": "2025-01-15T10:30:00"
-    }]
+    }])
 
     result = SystemsModel(mock_adapter).get_system(
         project_id="test-project",
@@ -165,9 +166,9 @@ def test_get_system_returns_none_when_system_not_found(mock_adapter):
     - Returns None when SPARQL query returns empty results
     - No exceptions raised
     """
-    mock_model = Mock()
-    mock_adapter.get_or_create_model.return_value = mock_model
-    mock_adapter.query_model.return_value = []
+    mock_model_handle = ModelHandle(namespace="urn:project:test-project", graph=Mock())
+    mock_adapter.get_or_create_model.return_value = mock_model_handle
+    mock_adapter.query_model.return_value = QueryResult(bindings=[])
 
     result = SystemsModel(mock_adapter).get_system(
         project_id="test-project",
@@ -185,10 +186,10 @@ def test_list_systems_orders_by_created_timestamp(mock_adapter):
     - SPARQL query includes ORDER BY ?created
     - Returns list sorted chronologically
     """
-    mock_model = Mock()
-    mock_adapter.get_or_create_model.return_value = mock_model
+    mock_model_handle = ModelHandle(namespace="urn:project:test-project", graph=Mock())
+    mock_adapter.get_or_create_model.return_value = mock_model_handle
 
-    mock_adapter.query_model.return_value = [
+    mock_adapter.query_model.return_value = QueryResult(bindings=[
         {
             "system_uri": "urn:sys1",
             "label": "System 1",
@@ -201,7 +202,7 @@ def test_list_systems_orders_by_created_timestamp(mock_adapter):
             "template_id": "template2",
             "created": "2025-01-15T10:00:00"
         },
-    ]
+    ])
 
     result = SystemsModel(mock_adapter).list_systems(project_id="test-project")
 
@@ -223,7 +224,7 @@ def test_list_systems_returns_empty_list_for_new_project(mock_adapter):
     """
     mock_model = Mock()
     mock_adapter.get_or_create_model.return_value = mock_model
-    mock_adapter.query_model.return_value = []
+    mock_adapter.query_model.return_value = QueryResult(bindings=[])
 
     result = SystemsModel(mock_adapter).list_systems(project_id="empty-project")
 

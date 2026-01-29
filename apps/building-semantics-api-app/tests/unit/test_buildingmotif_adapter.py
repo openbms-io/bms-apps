@@ -80,25 +80,29 @@ def test_list_templates(mock_buildingmotif) -> None:
 
 
 def test_create_model(mock_buildingmotif) -> None:
-    """Test creating RDF model."""
+    """Test creating RDF model returns ModelHandle."""
     mock_bm, mock_library = mock_buildingmotif
 
     with patch("src.adapters.buildingmotif_adapter.Model") as mock_model_class:
         mock_model = Mock()
+        mock_graph = Mock()
+        mock_model.graph = mock_graph
         mock_model_class.create.return_value = mock_model
 
         adapter = BuildingMOTIFAdapter("test.db")
-        model = adapter.create_model("urn:test:building/")
+        model_handle = adapter.create_model("urn:test:building/")
 
-        assert model == mock_model
+        assert model_handle.namespace == "urn:test:building/"
+        assert model_handle.graph == mock_graph
         mock_model_class.create.assert_called_once()
 
 
 def test_query_model(mock_buildingmotif) -> None:
-    """Test executing SPARQL query on model."""
+    """Test executing SPARQL query on ModelHandle returns QueryResult."""
     mock_bm, mock_library = mock_buildingmotif
 
-    mock_model = Mock()
+    from src.adapters.semantics_adapter_protocol import ModelHandle
+
     mock_graph = Mock()
     mock_results = Mock()
     mock_results.vars = ["var1", "var2"]
@@ -108,21 +112,22 @@ def test_query_model(mock_buildingmotif) -> None:
     mock_results.__iter__ = Mock(return_value=iter([mock_row1, mock_row2]))
 
     mock_graph.query.return_value = mock_results
-    mock_model.graph = mock_graph
+    model_handle = ModelHandle(namespace="urn:test:", graph=mock_graph)
 
     adapter = BuildingMOTIFAdapter("test.db")
-    results = adapter.query_model(mock_model, "SELECT * WHERE { ?s ?p ?o }")
+    query_result = adapter.query_model(model_handle, "SELECT * WHERE { ?s ?p ?o }")
 
-    assert len(results) == 2
-    assert results[0] == {"var1": "value1", "var2": "value2"}
-    assert results[1] == {"var1": "value3", "var2": "value4"}
+    assert len(query_result.bindings) == 2
+    assert query_result.bindings[0] == {"var1": "value1", "var2": "value2"}
+    assert query_result.bindings[1] == {"var1": "value3", "var2": "value4"}
 
 
 def test_query_model_with_optional_fields(mock_buildingmotif) -> None:
     """Test SPARQL query handling OPTIONAL fields (should return None, not 'None')."""
     mock_bm, mock_library = mock_buildingmotif
 
-    mock_model = Mock()
+    from src.adapters.semantics_adapter_protocol import ModelHandle
+
     mock_graph = Mock()
     mock_results = Mock()
     mock_results.vars = ["uri", "label", "optional_field"]
@@ -132,41 +137,49 @@ def test_query_model_with_optional_fields(mock_buildingmotif) -> None:
 
     mock_results.__iter__ = Mock(return_value=iter([mock_row1, mock_row2]))
     mock_graph.query.return_value = mock_results
-    mock_model.graph = mock_graph
+    model_handle = ModelHandle(namespace="urn:test:", graph=mock_graph)
 
     adapter = BuildingMOTIFAdapter("test.db")
-    results = adapter.query_model(mock_model, "SELECT * WHERE { ?s ?p ?o }")
+    query_result = adapter.query_model(model_handle, "SELECT * WHERE { ?s ?p ?o }")
 
-    assert len(results) == 2
+    assert len(query_result.bindings) == 2
 
-    assert results[0] == {
+    assert query_result.bindings[0] == {
         "uri": "urn:test:1",
         "label": "Device 1",
         "optional_field": "value"
     }
 
-    assert results[1] == {
+    assert query_result.bindings[1] == {
         "uri": "urn:test:2",
         "label": "Device 2",
         "optional_field": None
     }
 
-    assert results[1]["optional_field"] is None
-    assert results[1]["optional_field"] != "None"
+    assert query_result.bindings[1]["optional_field"] is None
+    assert query_result.bindings[1]["optional_field"] != "None"
 
 
 def test_add_graph(mock_buildingmotif) -> None:
-    """Test adding RDF graph to model."""
+    """Test adding RDF graph to ModelHandle."""
     mock_bm, mock_library = mock_buildingmotif
 
-    mock_model = Mock()
-    mock_graph = Mock()
-    mock_graph.__len__ = Mock(return_value=10)
+    from src.adapters.semantics_adapter_protocol import ModelHandle
+    from rdflib import URIRef, Literal
+
+    mock_model_graph = Mock()
+    mock_source_graph = Mock()
+
+    triple = (URIRef("urn:s"), URIRef("urn:p"), Literal("o"))
+    mock_source_graph.__iter__ = Mock(return_value=iter([triple]))
+    mock_source_graph.__len__ = Mock(return_value=1)
+
+    model_handle = ModelHandle(namespace="urn:test:", graph=mock_model_graph)
 
     adapter = BuildingMOTIFAdapter("test.db")
-    adapter.add_graph(mock_model, mock_graph)
+    adapter.add_graph(model_handle, mock_source_graph)
 
-    mock_model.add_graph.assert_called_once_with(mock_graph)
+    mock_model_graph.add.assert_called_once_with(triple)
 
 
 def test_get_buildingmotif_instance(mock_buildingmotif) -> None:
@@ -180,7 +193,7 @@ def test_get_buildingmotif_instance(mock_buildingmotif) -> None:
 
 
 def test_get_or_create_model_loads_existing(mock_buildingmotif) -> None:
-    """Test get_or_create_model loads existing model from database."""
+    """Test get_or_create_model loads existing model from database returns ModelHandle."""
     mock_bm_instance, mock_library = mock_buildingmotif
 
     mock_db_model = Mock()
@@ -192,20 +205,22 @@ def test_get_or_create_model_loads_existing(mock_buildingmotif) -> None:
 
     with patch("src.adapters.buildingmotif_adapter.Model") as mock_model_class:
         mock_model = Mock()
-        mock_model.graph = Mock()
-        mock_model.graph.__len__ = Mock(return_value=42)
+        mock_graph = Mock()
+        mock_graph.__len__ = Mock(return_value=42)
+        mock_model.graph = mock_graph
         mock_model_class.load.return_value = mock_model
 
         adapter = BuildingMOTIFAdapter("test.db")
-        model = adapter.get_or_create_model("urn:project:test")
+        model_handle = adapter.get_or_create_model("urn:project:test")
 
-        assert model == mock_model
+        assert model_handle.namespace == "urn:project:test"
+        assert model_handle.graph == mock_graph
         mock_table_connection.get_db_model_by_name.assert_called_once_with("urn:project:test")
         mock_model_class.load.assert_called_once_with(id=123)
 
 
 def test_get_or_create_model_creates_new(mock_buildingmotif) -> None:
-    """Test get_or_create_model creates new model when not found."""
+    """Test get_or_create_model creates new model when not found returns ModelHandle."""
     mock_bm_instance, mock_library = mock_buildingmotif
 
     mock_table_connection = Mock()
@@ -218,12 +233,15 @@ def test_get_or_create_model_creates_new(mock_buildingmotif) -> None:
     with patch("src.adapters.buildingmotif_adapter.Model") as mock_model_class:
         mock_model = Mock()
         mock_model.id = 456
+        mock_graph = Mock()
+        mock_model.graph = mock_graph
         mock_model_class.create.return_value = mock_model
 
         adapter = BuildingMOTIFAdapter("test.db")
-        model = adapter.get_or_create_model("urn:project:new")
+        model_handle = adapter.get_or_create_model("urn:project:new")
 
-        assert model == mock_model
+        assert model_handle.namespace == "urn:project:new"
+        assert model_handle.graph == mock_graph
         mock_model_class.create.assert_called_once()
         mock_session.commit.assert_called_once()
 

@@ -1,0 +1,232 @@
+<story-context id="spike-1-bsit-bob-investigation" v="1.0">
+  <metadata>
+    <epicId>spike</epicId>
+    <storyId>1</storyId>
+    <title>BSIT-BOB Library Investigation</title>
+    <status>drafted</status>
+    <generatedAt>2026-01-06</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/bsit-bob-poc/stories/spike-1-bsit-bob-investigation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>investigate the BSIT-BOB library patterns and capabilities</iWant>
+    <soThat>I can determine feasibility of replacing BuildingMOTIF adapter implementation</soThat>
+    <tasks>
+      <task id="1" ac="1,2">
+        <title>Study BSIT-BOB core patterns</title>
+        <subtasks>
+          <subtask>Read and understand bob/core.py (Node, NodeMetaclass, data_graph)</subtask>
+          <subtask>Understand namespace management and RDF triple creation</subtask>
+          <subtask>Document the dump() serialization flow</subtask>
+          <subtask>Study shorthand operators (>, >>, @, |) from tests</subtask>
+        </subtasks>
+      </task>
+      <task id="2" ac="2,4">
+        <title>Map current BuildingMOTIF operations to BSIT-BOB</title>
+        <subtasks>
+          <subtask>Map get_template_by_name() to BSIT-BOB class instantiation</subtask>
+          <subtask>Map create_model() to BSIT-BOB model namespace</subtask>
+          <subtask>Map add_graph() to data_graph operations</subtask>
+          <subtask>Map query_model() to rdflib SPARQL on BSIT-BOB graph</subtask>
+          <subtask>Identify unmapped operations (gap analysis)</subtask>
+        </subtasks>
+      </task>
+      <task id="3" ac="3">
+        <title>Create proof of concept</title>
+        <subtasks>
+          <subtask>Create simple equipment model using BSIT-BOB</subtask>
+          <subtask>Serialize to Turtle format</subtask>
+          <subtask>Compare output with BuildingMOTIF equivalent</subtask>
+          <subtask>Document API differences</subtask>
+        </subtasks>
+      </task>
+      <task id="4" ac="4">
+        <title>Investigate persistence options</title>
+        <subtasks>
+          <subtask>Evaluate rdflib store backends (SQLAlchemy, Berkeley DB)</subtask>
+          <subtask>Consider simple JSON-LD serialization approach</subtask>
+          <subtask>Assess SQLite integration feasibility</subtask>
+        </subtasks>
+      </task>
+      <task id="5" ac="4">
+        <title>Investigate SHACL validation</title>
+        <subtasks>
+          <subtask>Check if BSIT-BOB has validation support</subtask>
+          <subtask>Evaluate pyshacl integration for validation</subtask>
+          <subtask>Compare with BuildingMOTIF ShapeCollection approach</subtask>
+        </subtasks>
+      </task>
+      <task id="6" ac="1,5">
+        <title>Write findings document</title>
+        <subtasks>
+          <subtask>Document feasibility assessment</subtask>
+          <subtask>List pros/cons of migration</subtask>
+          <subtask>Provide GO/NO-GO recommendation</subtask>
+          <subtask>Outline implementation approach if GO</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Spike Goal Achieved: Produce findings document with feasibility assessment</criterion>
+    <criterion id="2">Pattern Documentation: Document BSIT-BOB usage patterns for our use cases</criterion>
+    <criterion id="3">Proof of Concept: Create minimal working example replacing one BuildingMOTIF operation</criterion>
+    <criterion id="4">Gap Analysis: Identify missing features that need custom implementation</criterion>
+    <criterion id="5">Decision Recorded: Clear GO/NO-GO recommendation with rationale</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/specs/2025-10-24-buildingmotif-integration-spec.md</path>
+        <title>BuildingMotif Integration Specification</title>
+        <section>Architecture Overview</section>
+        <snippet>Integrate BuildingMotif SDK to provide ASHRAE 223P semantic modeling and SHACL validation. Key principles: 223P independent, G36 depends on 223P, BuildingMotif is backend-only.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/ashrae-223p-ai-g36-integration/epic2/buildingmotif-research.md</path>
+        <title>BuildingMOTIF SDK Research</title>
+        <section>Executive Summary</section>
+        <snippet>BuildingMOTIF is a Python SDK (not REST API) for semantic building models using RDF graphs and ASHRAE 223P. Critical gap: requires REST API wrapper.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>BMS Supervisor Controller Architecture</title>
+        <section>Python API = Domain Owner</section>
+        <snippet>Python APIs own their domain. Libraries are implementation details that can be swapped. API contract stays stable even if underlying library changes.</snippet>
+      </doc>
+      <doc>
+        <path>docs/coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>Development Philosophy</section>
+        <snippet>TDD approach, avoid over-engineering, fail fast, SOLID principles, YAGNI.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <file>
+        <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>BuildingMOTIFAdapter</symbol>
+        <reason>Primary replacement target - singleton adapter wrapping BuildingMOTIF SDK</reason>
+      </file>
+      <file>
+        <path>apps/building-semantics-api-app/src/adapters/template_types.py</path>
+        <kind>enum</kind>
+        <symbol>TemplateType, DeviceTemplate, SystemTemplate, PropertyTemplate</symbol>
+        <reason>Template type definitions that may need mapping to BSIT-BOB classes</reason>
+      </file>
+      <file>
+        <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+        <kind>router</kind>
+        <symbol>templates_router</symbol>
+        <reason>REST endpoint using adapter - verify compatibility after replacement</reason>
+      </file>
+      <file>
+        <path>apps/building-semantics-api-app/src/routers/validation.py</path>
+        <kind>router</kind>
+        <symbol>validation_router</symbol>
+        <reason>SHACL validation endpoint - key feature to preserve</reason>
+      </file>
+      <file>
+        <path>apps/building-semantics-api-app/tests/unit/test_buildingmotif_adapter.py</path>
+        <kind>test</kind>
+        <symbol>TestBuildingMOTIFAdapter</symbol>
+        <reason>Adapter unit tests - reference for expected behavior</reason>
+      </file>
+      <file>
+        <path>apps/building-semantics-api-app/tests/integration/test_buildingmotif_integration.py</path>
+        <kind>test</kind>
+        <symbol>integration tests</symbol>
+        <reason>Integration tests - must pass after replacement</reason>
+      </file>
+    </code>
+    <externalReferences>
+      <ref>
+        <path>~/Documents/ai-projects/bsit-bob</path>
+        <kind>external-library</kind>
+        <description>BSIT-BOB local checkout - primary source for spike investigation</description>
+        <keyFiles>
+          <file>bob/core.py - Node base class, data_graph, dump()</file>
+          <file>bob/application.py - Application classes (AHU, Chiller, etc.)</file>
+          <file>bob/equipment/hvac/*.py - HVAC equipment classes</file>
+          <file>bob/properties/*.py - Property definitions</file>
+          <file>bob/sensor/*.py - Sensor definitions</file>
+        </keyFiles>
+      </ref>
+      <ref>
+        <path>https://bsit-bob.readthedocs.io/en/latest/</path>
+        <kind>documentation</kind>
+        <description>Official BSIT-BOB documentation</description>
+      </ref>
+    </externalReferences>
+    <dependencies>
+      <python>
+        <package name="buildingmotif" version=">=0.4.0">Current SDK being replaced</package>
+        <package name="fastapi" version=">=0.104.0">API framework</package>
+        <package name="rdflib" version="implicit">RDF graph library (used by both)</package>
+        <package name="pyshacl" version="potential">May be needed for SHACL validation</package>
+        <package name="bsit-bob" version="TBD">Target replacement library</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Libraries are implementation details - API contract must stay stable</constraint>
+    <constraint type="architecture">Python APIs own their domain, not just wrap libraries</constraint>
+    <constraint type="compatibility">Existing REST API endpoints must continue working</constraint>
+    <constraint type="compatibility">All existing tests must pass after replacement</constraint>
+    <constraint type="pattern">Singleton pattern for adapter (match existing BuildingMOTIFAdapter)</constraint>
+    <constraint type="pattern">Domain-first architecture - Building Semantics domain owns 223P modeling</constraint>
+    <constraint type="testing">TDD approach - tests drive design</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>BuildingMOTIFAdapter</name>
+      <kind>class-interface</kind>
+      <signature>
+        get_instance() -> BuildingMOTIFAdapter
+        list_templates() -> list[str]
+        get_template_by_name(name: TemplateType) -> Template
+        get_template_metadata(name: TemplateType) -> TemplateMetadata
+        create_model(namespace: str) -> Model
+        get_or_create_model(namespace: str) -> Model
+        query_model(model: Model, sparql: str) -> list[dict]
+        add_graph(model: Model, graph: Graph) -> None
+        get_223p_shapes() -> ShapeCollection
+        transaction() -> ContextManager
+      </signature>
+      <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+    </interface>
+    <interface>
+      <name>GET /api/v1/templates</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/v1/templates -> TemplateListResponse</signature>
+      <path>apps/building-semantics-api-app/src/routers/templates.py</path>
+    </interface>
+    <interface>
+      <name>POST /api/v1/validation/shacl</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/v1/validation/shacl -> ValidationResponse</signature>
+      <path>apps/building-semantics-api-app/src/routers/validation.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>TDD approach with pytest. Unit tests mock external dependencies. Integration tests use real BuildingMOTIF SDK with test database. Focus on behavior testing, not implementation details.</standards>
+    <locations>
+      <location>apps/building-semantics-api-app/tests/unit/</location>
+      <location>apps/building-semantics-api-app/tests/integration/</location>
+    </locations>
+    <ideas>
+      <idea ac="1,2">Test BSIT-BOB Equipment class instantiation creates valid RDF triples</idea>
+      <idea ac="3">Compare Turtle output from BSIT-BOB vs BuildingMOTIF for same equipment type</idea>
+      <idea ac="4">Verify BSIT-BOB data_graph can be persisted to SQLite via rdflib backend</idea>
+      <idea ac="4">Test pyshacl validation against 223P shapes with BSIT-BOB generated graph</idea>
+      <idea ac="5">Create decision matrix comparing feature parity between libraries</idea>
+    </ideas>
+  </tests>
+</story-context>

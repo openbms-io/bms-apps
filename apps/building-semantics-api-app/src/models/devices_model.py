@@ -1,11 +1,11 @@
 """Domain model for ASHRAE 223P device and property query operations."""
 
-import re
-
-from buildingmotif.dataclasses import Model
 from loguru import logger
 
-from ..adapters.buildingmotif_adapter import BuildingMOTIFAdapter
+from ..adapters.semantics_adapter_protocol import (
+    ModelHandle,
+    SemanticsAdapterProtocol,
+)
 from ..utils.label_utils import (
     extract_label_from_uri_or_none,
     get_label_or_extract,
@@ -24,23 +24,23 @@ class DevicesModel:
     - Traverse arbitrary depth hierarchies (no hardcoded assumptions)
     """
 
-    def __init__(self, adapter: BuildingMOTIFAdapter) -> None:
+    def __init__(self, adapter: SemanticsAdapterProtocol) -> None:
         """
         Initialize devices model.
 
         Args:
-            adapter: BuildingMOTIF adapter instance
+            adapter: Semantics adapter instance implementing SemanticsAdapterProtocol
         """
         self.adapter = adapter
 
     def _query_properties(
-        self, model: Model, device_uri: str, relationship: str
+        self, model: ModelHandle, device_uri: str, relationship: str
     ) -> list[dict[str, str | bool | None]]:
         """
         Query properties using specified ASHRAE 223P relationship.
 
         Args:
-            model: BuildingMOTIF model
+            model: ModelHandle for RDF operations
             device_uri: Device or sensor URI
             relationship: Either "s223:hasProperty" or "s223:observes"
 
@@ -70,10 +70,10 @@ class DevicesModel:
         ORDER BY ?property_uri
         """
 
-        results = self.adapter.query_model(model, query)
-        logger.debug(f"Found {len(results)} properties via {relationship}")
+        query_result = self.adapter.query_model(model, query)
+        logger.debug(f"Found {len(query_result.bindings)} properties via {relationship}")
 
-        return self._build_property_list(results)
+        return self._build_property_list(query_result.bindings)
 
     def _build_property_list(
         self, results: list[dict[str, str | None]]
@@ -151,10 +151,10 @@ class DevicesModel:
             ORDER BY ?device_uri
             """
 
-            results = self.adapter.query_model(model, query)
+            query_result = self.adapter.query_model(model, query)
 
             devices = []
-            for result in results:
+            for result in query_result.bindings:
                 device_uri = result["device_uri"]
                 label_value = result.get("label")
 
@@ -247,7 +247,7 @@ class DevicesModel:
         return filtered
 
     def _filter_devices_by_bacnet_type(
-        self, model: Model, devices: list[dict[str, str]], bacnet_object_type: str
+        self, model: ModelHandle, devices: list[dict[str, str]], bacnet_object_type: str
     ) -> list[dict[str, str]]:
         """Filter devices by checking if they have BACnet-compatible properties."""
         filtered_devices = []

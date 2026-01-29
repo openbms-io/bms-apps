@@ -6,17 +6,24 @@ from typing import Generator, TypedDict
 from buildingmotif import BuildingMOTIF, get_building_motif
 from buildingmotif.database.errors import TemplateNotFound
 from buildingmotif.dataclasses import Library, Model, Template
-from loguru import logger
-from rdflib import Graph, Namespace
-from sqlalchemy.exc import MultipleResultsFound, NoResultFound
-from src.config.settings import Settings, get_settings
 from buildingmotif.dataclasses import ShapeCollection
+from loguru import logger
+from rdflib import Graph, Namespace, URIRef, Literal
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
+from src.config.settings import Settings, get_settings
+
+from .semantics_adapter_protocol import (
+    ModelHandle,
+    QueryResult,
+    TemplateInfo,
+    ValidationResult,
+)
 from .template_types import TemplateType
 
 
 class TemplateMetadata(TypedDict):
-    """Template metadata structure."""
+    """Template metadata structure (legacy, prefer TemplateInfo)."""
 
     name: str
     dependencies: list[str]
@@ -349,7 +356,7 @@ class BuildingMOTIFAdapter:
         logger.debug(f"Found {len(template_names)} templates")
         return template_names
 
-    def create_model(self, namespace: str) -> Model:
+    def create_model(self, namespace: str) -> ModelHandle:
         """
         Create new RDF model with unique namespace.
 
@@ -357,14 +364,14 @@ class BuildingMOTIFAdapter:
             namespace: Unique namespace URI (e.g., "urn:building/project-123")
 
         Returns:
-            Model instance for RDF operations
+            ModelHandle for RDF operations
         """
         ns = Namespace(namespace)
         model = Model.create(ns)
         logger.info(f"Created model with namespace: {namespace}")
-        return model
+        return ModelHandle(namespace=namespace, graph=model.graph)
 
-    def get_or_create_model(self, namespace: str) -> Model:
+    def get_or_create_model(self, namespace: str) -> ModelHandle:
         """
         Get existing model or create new one with proper exception handling.
 
@@ -372,7 +379,7 @@ class BuildingMOTIFAdapter:
             namespace: Unique namespace URI (e.g., "urn:project:project-123")
 
         Returns:
-            Model instance for RDF operations
+            ModelHandle for RDF operations
 
         Raises:
             RuntimeError: If multiple models found with same name (database integrity issue)
@@ -383,47 +390,99 @@ class BuildingMOTIFAdapter:
             db_model = bm.table_connection.get_db_model_by_name(namespace)
             model = Model.load(id=db_model.id)
             logger.debug(f"Loaded model: {namespace} (ID: {db_model.id}, triples: {len(model.graph)})")
-            return model
+            return ModelHandle(namespace=namespace, graph=model.graph)
         except NoResultFound:
             ns = Namespace(namespace)
             model = Model.create(ns)
             bm.session.commit()
             logger.info(f"Created model: {namespace} (ID: {model.id})")
-            return model
+            return ModelHandle(namespace=namespace, graph=model.graph)
         except MultipleResultsFound as e:
             logger.error(f"Multiple models found for: {namespace}")
             raise RuntimeError(f"Database integrity error: multiple models with name '{namespace}'") from e
 
-    def query_model(self, model: Model, sparql_query: str) -> list[dict[str, str | None]]:
+    def query_model(self, model: ModelHandle, sparql_query: str) -> QueryResult:
         """
         Execute SPARQL query on RDF model.
 
         Args:
-            model: Model to query
+            model: ModelHandle to query
             sparql_query: SPARQL query string
 
         Returns:
-            Query results as list of dictionaries with string or None values.
+            QueryResult with bindings as list of dictionaries.
             SPARQL OPTIONAL fields return None when missing.
         """
         results = model.graph.query(sparql_query)
-        result_list = [
+        bindings = [
             {str(var): str(row[var]) if row[var] is not None else None for var in results.vars}
             for row in results
         ]
-        logger.debug(f"Query returned {len(result_list)} results")
-        return result_list
+        logger.debug(f"Query returned {len(bindings)} results")
+        return QueryResult(bindings=bindings)
 
-    def add_graph(self, model: Model, graph: Graph) -> None:
+    def add_graph(self, model: ModelHandle, graph: Graph) -> None:
         """
         Add RDF graph to model.
 
         Args:
-            model: Target model
+            model: Target ModelHandle
             graph: RDF graph to add
         """
-        model.add_graph(graph)
+        for triple in graph:
+            model.graph.add(triple)
         logger.debug(f"Added {len(graph)} triples to model")
+
+    def add_triples(
+        self, model: ModelHandle, triples: list[tuple[str, str, str]]
+    ) -> None:
+        """
+        Add triples to a model.
+
+        Args:
+            model: Target ModelHandle
+            triples: List of (subject, predicate, object) tuples as strings
+        """
+        for s, p, o in triples:
+            model.graph.add((URIRef(s), URIRef(p), Literal(o)))
+        logger.debug(f"Added {len(triples)} triples to model")
+
+    def serialize_model(self, model: ModelHandle, format: str = "turtle") -> str:
+        """
+        Serialize model to string.
+
+        Args:
+            model: ModelHandle to serialize
+            format: Output format (turtle, xml, json-ld, etc.)
+
+        Returns:
+            Serialized RDF as string
+        """
+        output = model.graph.serialize(format=format)
+        logger.debug(f"Serialized model to {format}: {len(output)} chars")
+        return output
+
+    def validate_model(self, model: ModelHandle) -> ValidationResult:
+        """
+        Validate model against 223P SHACL shapes.
+
+        Args:
+            model: ModelHandle to validate
+
+        Returns:
+            ValidationResult with conforms status and report
+        """
+        try:
+            shapes = self.get_223p_shapes()
+            from pyshacl import validate
+
+            conforms, _, results_text = validate(
+                data_graph=model.graph,
+                shacl_graph=shapes.graph,
+            )
+            return ValidationResult(conforms=conforms, report=results_text)
+        except RuntimeError as e:
+            return ValidationResult(conforms=False, report=str(e))
 
     def get_template_with_dependencies(self, template_name: TemplateType) -> Template:
         """
@@ -464,9 +523,42 @@ class BuildingMOTIFAdapter:
         logger.debug(f"Found {len(dependency_names)} dependencies for {template_name}")
         return dependency_names
 
+    def get_template_info(self, template_name: str) -> TemplateInfo:
+        """
+        Get template metadata by name (protocol method).
+
+        Args:
+            template_name: Template name as string
+
+        Returns:
+            TemplateInfo with name, dependencies, and triple_count
+
+        Raises:
+            KeyError: If template not found
+        """
+        library = self.get_nrel_library()
+        try:
+            template = library.get_template_by_name(template_name)
+        except (KeyError, TemplateNotFound) as e:
+            raise KeyError(f"Template not found: {template_name}") from e
+
+        dependencies = template.get_dependencies()
+        dependency_names = sorted([str(dep.dependency_template_name) for dep in dependencies])
+        dependency_names.append(template_name)
+        dependency_names = sorted(list(set(dependency_names)))
+
+        inlined_template = template.inline_dependencies()
+
+        logger.debug(f"Template info for {template_name}: {len(dependency_names)} deps, {len(inlined_template.body)} triples")
+        return TemplateInfo(
+            name=template_name,
+            dependencies=dependency_names,
+            triple_count=len(inlined_template.body),
+        )
+
     def get_template_metadata(self, template_name: TemplateType) -> TemplateMetadata:
         """
-        Get comprehensive template metadata including dependencies.
+        Get comprehensive template metadata including dependencies (legacy method).
 
         Args:
             template_name: Template from DeviceTemplate, SystemTemplate, or PropertyTemplate enum

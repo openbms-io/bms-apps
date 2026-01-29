@@ -7,6 +7,7 @@ from src.models.bacnet_references_model import BACnetReferencesModel
 from src.models.exceptions import ValidationException
 from src.dto.validation_dto import ValidationResultDTO
 from src.constants.namespaces import BMS, BMS_BACNET_INDEX
+from src.adapters.semantics_adapter_protocol import QueryResult
 
 
 @pytest.fixture
@@ -165,7 +166,7 @@ def test_get_reference_returns_enriched_metadata(mock_adapter):
     mock_model = Mock()
     mock_adapter.get_or_create_model.return_value = mock_model
 
-    mock_adapter.query_model.return_value = [{
+    mock_adapter.query_model.return_value = QueryResult(bindings=[{
         "property_uri": "urn:property:123",
         "property_label": "Zone Temp",
         "property_template": "air-temperature",
@@ -175,7 +176,7 @@ def test_get_reference_returns_enriched_metadata(mock_adapter):
         "system_uri": "urn:system:789",
         "system_label": "VAV System",
         "system_template": "vav-reheat",
-    }]
+    }])
 
     result = BACnetReferencesModel(mock_adapter).get_reference(
         project_id="test-project",
@@ -206,7 +207,7 @@ def test_get_reference_extracts_label_from_uri_when_missing(mock_adapter):
     mock_model = Mock()
     mock_adapter.get_or_create_model.return_value = mock_model
 
-    mock_adapter.query_model.return_value = [{
+    mock_adapter.query_model.return_value = QueryResult(bindings=[{
         "property_uri": "urn:bldgmotif:vav-101-zone-temp",
         "property_label": None,
         "property_template": None,
@@ -216,7 +217,7 @@ def test_get_reference_extracts_label_from_uri_when_missing(mock_adapter):
         "system_uri": "urn:system:vav-101",
         "system_label": "VAV 101",
         "system_template": "vav-reheat",
-    }]
+    }])
 
     with patch('src.models.bacnet_references_model.get_label_or_extract') as mock_extract:
         mock_extract.side_effect = lambda label, uri: uri.split(':')[-1]
@@ -242,7 +243,7 @@ def test_get_all_references_filters_by_project_id(mock_adapter):
     mock_model = Mock()
     mock_adapter.get_or_create_model.return_value = mock_model
 
-    mock_adapter.query_model.return_value = [
+    mock_adapter.query_model.return_value = QueryResult(bindings=[
         {
             "bacnet_point_uri": "urn:bms:bacnet:device_1.analog-input_1",
             "property_uri": "urn:property:1",
@@ -267,7 +268,7 @@ def test_get_all_references_filters_by_project_id(mock_adapter):
             "system_label": "VAV 2",
             "system_template": "vav-reheat",
         },
-    ]
+    ])
 
     result = BACnetReferencesModel(mock_adapter).get_all_references(
         project_id="test-project"
@@ -433,7 +434,7 @@ def test_get_reference_returns_none_when_not_found(mock_adapter):
     """Test get_reference returns None when reference doesn't exist."""
     mock_model = Mock()
     mock_adapter.get_or_create_model.return_value = mock_model
-    mock_adapter.query_model.return_value = []
+    mock_adapter.query_model.return_value = QueryResult(bindings=[])
 
     result = BACnetReferencesModel(mock_adapter).get_reference(
         project_id="test-project",

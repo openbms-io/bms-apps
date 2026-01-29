@@ -37,12 +37,12 @@ def test_create_system_persists_in_buildingmotif(shared_adapter: BuildingMOTIFAd
     """
 
     project_model = shared_adapter.get_or_create_model("urn:project:integration-test-systems")
-    sparql_results = shared_adapter.query_model(project_model, query)
+    query_result = shared_adapter.query_model(project_model, query)
 
-    assert len(sparql_results) == 1
-    assert sparql_results[0]["label"] == "Integration Test VAV"
-    assert sparql_results[0]["template_id"] == SystemTemplate.VAV_REHEAT.value
-    assert "created" in sparql_results[0]
+    assert len(query_result.bindings) == 1
+    assert query_result.bindings[0]["label"] == "Integration Test VAV"
+    assert query_result.bindings[0]["template_id"] == SystemTemplate.VAV_REHEAT.value
+    assert "created" in query_result.bindings[0]
 
 
 def test_query_devices_from_created_system(shared_adapter: BuildingMOTIFAdapter):

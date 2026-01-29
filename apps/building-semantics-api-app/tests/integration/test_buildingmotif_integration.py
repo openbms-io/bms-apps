@@ -96,11 +96,11 @@ def test_create_bacnet_point_with_semantic_relationship(shared_adapter: Building
             ?point s223:hasValue ?value .
         }
     """
-    results = shared_adapter.query_model(model, query)
+    query_result = shared_adapter.query_model(model, query)
 
-    assert len(results) == 1
-    assert "Zone Temperature Sensor" in results[0]["label"]
-    assert "72.5" in results[0]["value"]
+    assert len(query_result.bindings) == 1
+    assert "Zone Temperature Sensor" in query_result.bindings[0]["label"]
+    assert "72.5" in query_result.bindings[0]["value"]
 
 
 def test_create_multiple_bacnet_points_with_relationships(shared_adapter: BuildingMOTIFAdapter) -> None:
@@ -164,12 +164,12 @@ def test_create_multiple_bacnet_points_with_relationships(shared_adapter: Buildi
         }
         ORDER BY ?pointLabel
     """
-    results = shared_adapter.query_model(model, query)
+    query_result = shared_adapter.query_model(model, query)
 
-    assert len(results) == 4
-    assert all("VAV Box 101" in r["equipLabel"] for r in results)
+    assert len(query_result.bindings) == 4
+    assert all("VAV Box 101" in r["equipLabel"] for r in query_result.bindings)
 
-    point_labels = [r["pointLabel"] for r in results]
+    point_labels = [r["pointLabel"] for r in query_result.bindings]
     assert "Damper Position" in point_labels
     assert "Heating Valve Command" in point_labels
     assert "Zone Humidity" in point_labels
@@ -227,12 +227,12 @@ def test_template_instantiation_with_bacnet_points(shared_adapter: BuildingMOTIF
         }
         ORDER BY ?pointLabel
     """
-    results = shared_adapter.query_model(model, query)
+    query_result = shared_adapter.query_model(model, query)
 
-    assert len(results) == 2
-    assert all("Outside Air Damper" in r.get("damperLabel", "") for r in results)
+    assert len(query_result.bindings) == 2
+    assert all("Outside Air Damper" in r.get("damperLabel", "") for r in query_result.bindings)
 
-    point_labels = [r["pointLabel"] for r in results]
+    point_labels = [r["pointLabel"] for r in query_result.bindings]
     assert "Outside Air Damper Command" in point_labels
     assert "Outside Air Damper Position" in point_labels
 

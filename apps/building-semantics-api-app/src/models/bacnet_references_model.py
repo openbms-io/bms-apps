@@ -1,13 +1,11 @@
 """Domain model for BACnet reference operations (SPARQL-based)."""
 
-import uuid
 from loguru import logger
-from rdflib import BNode, Literal, URIRef
+from rdflib import Literal, URIRef
 
-from ..adapters.buildingmotif_adapter import BuildingMOTIFAdapter
+from ..adapters.semantics_adapter_protocol import SemanticsAdapterProtocol
 from ..constants.namespaces import (
     BACNET,
-    BMS,
     BMS_BACNET_INDEX,
     BMS_BACNET_INDEX_STRING,
     DCTERMS,
@@ -31,12 +29,12 @@ class BACnetReferencesModel:
     - All data stored in RDF graph (no SQL tables)
     """
 
-    def __init__(self, adapter: BuildingMOTIFAdapter) -> None:
+    def __init__(self, adapter: SemanticsAdapterProtocol) -> None:
         """
         Initialize BACnet references model.
 
         Args:
-            adapter: BuildingMOTIF adapter instance
+            adapter: Semantics adapter instance implementing SemanticsAdapterProtocol
         """
         self.adapter = adapter
 
@@ -176,13 +174,13 @@ class BACnetReferencesModel:
             }}
             """
 
-            results = self.adapter.query_model(model, query)
+            query_result = self.adapter.query_model(model, query)
 
-            if not results:
+            if not query_result.bindings:
                 logger.warning(f"BACnet reference not found: {bacnet_point_id}")
                 return None
 
-            result = results[0]
+            result = query_result.bindings[0]
 
             property_uri = result["property_uri"]
             device_uri = result["device_uri"]
@@ -258,10 +256,10 @@ class BACnetReferencesModel:
             ORDER BY ?bacnet_point_uri
             """
 
-            results = self.adapter.query_model(model, query)
+            query_result = self.adapter.query_model(model, query)
 
             references = []
-            for result in results:
+            for result in query_result.bindings:
                 bacnet_point_uri = str(result["bacnet_point_uri"])
                 bacnet_point_id = bacnet_point_uri.replace(BMS_BACNET_INDEX_STRING, "")
 

@@ -1,0 +1,182 @@
+<story-context id="1-2-bsit-bob-adapter-implementation" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>2</storyId>
+    <title>BSIT-BOB Adapter Implementation</title>
+    <status>drafted</status>
+    <generatedAt>2026-01-08</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/feature-development/bsit-bob-poc/stories/story-2-bsit-bob-adapter-implementation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>add BSIT-BOB as an alternative adapter alongside BuildingMOTIF</iWant>
+    <soThat>the building semantics API has a more Pythonic, maintainable library option with future Brick protocol support</soThat>
+    <tasks>
+      <task id="1">Define common interface (AC: #1, #3) - Create SemanticsAdapterProtocol with concrete return types</task>
+      <task id="2">Create BsitBobAdapter class (AC: #2) - Implement protocol with singleton pattern</task>
+      <task id="3">Implement template mapping (AC: #4) - Create TEMPLATE_CLASS_MAP dict</task>
+      <task id="4">Implement model operations (AC: #5, #6) - create_model, add_triples, query_model, SQLite persistence</task>
+      <task id="5">Implement serialization (AC: #7) - serialize_model using dump()</task>
+      <task id="6">Implement SHACL validation (AC: #8) - pyshacl integration</task>
+      <task id="7">Add configuration switch and factory (AC: #9) - use_bsit_bob setting + factory.py</task>
+      <task id="8">Integration testing (AC: #10) - Interface tests for both adapters with mock data</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="1">Common Interface Defined: SemanticsAdapterProtocol with concrete return types (compile-time type safety)</ac>
+    <ac id="2">BsitBobAdapter Created: New adapter class implementing SemanticsAdapterProtocol</ac>
+    <ac id="3">BuildingMOTIFAdapter Updated: Existing adapter updated to implement SemanticsAdapterProtocol</ac>
+    <ac id="4">Template Operations: List templates, get template by name works with BSIT-BOB equipment classes</ac>
+    <ac id="5">Model Creation: Create RDF models using bind_model_namespace() and data_graph</ac>
+    <ac id="6">SQLite Persistence: Models persist to SQLite database via rdflib-sqlalchemy store</ac>
+    <ac id="7">Graph Serialization: Export models to Turtle format using dump()</ac>
+    <ac id="8">SHACL Validation: Validate models against 223P shapes using pyshacl</ac>
+    <ac id="9">Configuration Switch: Settings flag + factory to choose between adapters</ac>
+    <ac id="10">Interface Tests Pass: Common test suite with mock data passes for both adapters</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/feature-development/bsit-bob-poc/specs/spike-findings.md</path>
+        <title>BSIT-BOB Spike Findings</title>
+        <section>Full Document</section>
+        <snippet>GO recommendation with implementation approach. Contains template class mapping, BSIT-BOB patterns, and 6-phase implementation plan.</snippet>
+      </doc>
+      <doc>
+        <path>docs/feature-development/bsit-bob-poc/specs/poc_bsit_bob_usage.py</path>
+        <title>POC Script</title>
+        <section>Working Examples</section>
+        <snippet>Demonstrates BSIT-BOB usage: equipment creation, system containment, SPARQL queries, and serialization patterns.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/adapters/buildingmotif_adapter.py</path>
+        <kind>adapter</kind>
+        <symbol>BuildingMOTIFAdapter</symbol>
+        <lines>1-537</lines>
+        <reason>Existing adapter to reference for interface design and to update with protocol implementation</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/adapters/template_types.py</path>
+        <kind>types</kind>
+        <symbol>DeviceTemplate, SystemTemplate, PropertyTemplate, TemplateType</symbol>
+        <lines>1-121</lines>
+        <reason>Template enums that map to BSIT-BOB equipment classes</reason>
+      </artifact>
+      <artifact>
+        <path>apps/building-semantics-api-app/src/config/settings.py</path>
+        <kind>config</kind>
+        <symbol>Settings</symbol>
+        <lines>1-53</lines>
+        <reason>Settings class to add use_bsit_bob flag</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="buildingmotif" version=">=0.4.0">Current semantic modeling library</package>
+        <package name="rdflib" version="via buildingmotif">RDF graph library - shared by both adapters</package>
+        <package name="pyshacl" version="via brick-tq-shacl">SHACL validation</package>
+        <package name="rdflib-sqlalchemy" version="to-add">SQLite persistence for BSIT-BOB adapter</package>
+        <package name="bsit-bob" version="local">BSIT-BOB library at ~/Documents/ai-projects/bsit-bob</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="type-safety">Protocol MUST use concrete return types (not Any) for compile-time checking</constraint>
+    <constraint type="testing">Use mock data to test adapter layer independently of external libraries</constraint>
+    <constraint type="interface">Both adapters MUST implement SemanticsAdapterProtocol</constraint>
+    <constraint type="compatibility">No breaking changes to REST API contract</constraint>
+    <constraint type="persistence">SQLite persistence required for BsitBobAdapter via rdflib-sqlalchemy</constraint>
+    <constraint type="coexistence">BuildingMOTIF must remain functional - adapters coexist</constraint>
+    <constraint type="pattern">Singleton pattern for adapter instances</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>SemanticsAdapterProtocol</name>
+      <kind>Python Protocol with concrete types</kind>
+      <signature>
+from typing import Protocol
+from dataclasses import dataclass
+from rdflib import Graph
+
+@dataclass
+class TemplateInfo:
+    name: str
+    dependencies: list[str]
+    triple_count: int
+
+@dataclass
+class ModelHandle:
+    namespace: str
+    graph: Graph
+
+@dataclass
+class QueryResult:
+    bindings: list[dict[str, str | None]]
+
+@dataclass
+class ValidationResult:
+    conforms: bool
+    report: str
+
+class SemanticsAdapterProtocol(Protocol):
+    @classmethod
+    def get_instance(cls, db_path: str | None = None) -> "SemanticsAdapterProtocol": ...
+    def list_templates(self) -> list[str]: ...
+    def get_template_by_name(self, template_name: str) -> TemplateInfo: ...
+    def create_model(self, namespace: str) -> ModelHandle: ...
+    def add_triples(self, model: ModelHandle, triples: list[tuple[str, str, str]]) -> None: ...
+    def query_model(self, model: ModelHandle, sparql: str) -> QueryResult: ...
+    def serialize_model(self, model: ModelHandle, format: str = "turtle") -> str: ...
+    def validate_model(self, model: ModelHandle) -> ValidationResult: ...
+      </signature>
+      <path>apps/building-semantics-api-app/src/adapters/semantics_adapter_protocol.py</path>
+    </interface>
+    <interface>
+      <name>get_semantics_adapter</name>
+      <kind>Factory function</kind>
+      <signature>def get_semantics_adapter(settings: Settings) -> SemanticsAdapterProtocol</signature>
+      <path>apps/building-semantics-api-app/src/adapters/factory.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      TDD with mock data approach:
+      1. Define concrete return types (TemplateInfo, ModelHandle, QueryResult, ValidationResult)
+      2. Create mock implementations for testing adapter layer
+      3. Test return type shapes at compile time with mypy
+      4. pytest with pytest-asyncio, run from project root
+    </standards>
+    <locations>
+      <location>apps/building-semantics-api-app/tests/unit/test_adapters/</location>
+      <location>apps/building-semantics-api-app/tests/integration/</location>
+    </locations>
+    <mockDataApproach>
+      <step>1. Create MockSemanticsAdapter implementing SemanticsAdapterProtocol</step>
+      <step>2. MockSemanticsAdapter returns predefined data matching concrete types</step>
+      <step>3. Test protocol compliance: mypy verifies return types</step>
+      <step>4. Test adapter behavior with mock data before real integration</step>
+      <step>5. Use mock data to test factory, settings, and adapter switching</step>
+    </mockDataApproach>
+    <ideas>
+      <idea ac="1">test_protocol_concrete_types: Verify TemplateInfo, ModelHandle, QueryResult, ValidationResult shapes</idea>
+      <idea ac="1">test_mock_adapter_protocol_compliance: MockSemanticsAdapter passes mypy type check</idea>
+      <idea ac="2,3">test_adapters_implement_protocol: Both adapters satisfy SemanticsAdapterProtocol</idea>
+      <idea ac="4">test_template_mapping_returns_template_info: get_template_by_name returns TemplateInfo</idea>
+      <idea ac="5">test_create_model_returns_model_handle: create_model returns ModelHandle with Graph</idea>
+      <idea ac="6">test_persistence_with_mock_graph: Mock Graph persistence roundtrip</idea>
+      <idea ac="7">test_serialize_returns_string: serialize_model returns valid Turtle string</idea>
+      <idea ac="8">test_validate_returns_validation_result: validate_model returns ValidationResult</idea>
+      <idea ac="9">test_factory_with_mock_settings: Factory returns correct adapter based on use_bsit_bob</idea>
+      <idea ac="10">test_adapter_parity_with_mock_data: Same mock inputs produce equivalent outputs</idea>
+    </ideas>
+  </tests>
+</story-context>
