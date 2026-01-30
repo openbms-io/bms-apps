@@ -3,7 +3,12 @@
 from loguru import logger
 from rdflib import Literal, URIRef
 
-from ..adapters.semantics_adapter_protocol import SemanticsAdapterProtocol
+from ..adapters.semantics_adapter_protocol import (
+    ModelHandle,
+    RDFTriple,
+    SemanticsAdapterProtocol,
+    TriplePattern,
+)
 from ..constants.namespaces import (
     BACNET,
     BMS_BACNET_INDEX,
@@ -37,6 +42,91 @@ class BACnetReferencesModel:
             adapter: Semantics adapter instance implementing SemanticsAdapterProtocol
         """
         self.adapter = adapter
+
+    def _collect_old_reference_patterns(
+        self,
+        model: ModelHandle,
+        bacnet_ref_uri: URIRef,
+        property_uri_ref: URIRef,
+    ) -> list[TriplePattern]:
+        """
+        Collect triple patterns to remove for updating an existing reference.
+
+        Args:
+            model: Model containing the graph
+            bacnet_ref_uri: URI of the BACnet reference entity
+            property_uri_ref: URI of the property being referenced
+
+        Returns:
+            List of triple patterns to remove (None = wildcard matching any value)
+        """
+        patterns: list[TriplePattern] = [
+            (bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, None),  # Remove old index
+            (bacnet_ref_uri, None, None),  # Delete old BACnetExternalReference entity
+            (property_uri_ref, S223.hasExternalReference, None),  # Remove forward link
+        ]
+
+        # Find and remove any other old entities linked via hasExternalReference
+        for ref_uri in list(model.graph.objects(property_uri_ref, S223.hasExternalReference)):
+            patterns.append((ref_uri, None, None))
+            logger.debug(f"Will remove existing BACnetExternalReference: {ref_uri}")
+
+        return patterns
+
+    def _build_reference_triples(
+        self,
+        bacnet_ref_uri: URIRef,
+        property_uri_ref: URIRef,
+        device_identifier: str,
+        object_identifier: str,
+        external_identifier: str,
+    ) -> list[RDFTriple]:
+        """
+        Build triples for a new BACnet reference.
+
+        Args:
+            bacnet_ref_uri: URI for the new BACnet reference entity
+            property_uri_ref: URI of the property being referenced
+            device_identifier: BACnet device identifier
+            object_identifier: BACnet object identifier
+            external_identifier: External identifier with IP
+
+        Returns:
+            List of RDF triples to add
+        """
+        return [
+            (bacnet_ref_uri, RDF.type, S223.BACnetExternalReference),
+            (bacnet_ref_uri, BACNET["device-identifier"], Literal(device_identifier)),
+            (bacnet_ref_uri, BACNET["object-identifier"], Literal(object_identifier)),
+            (bacnet_ref_uri, DCTERMS.identifier, Literal(external_identifier)),
+            (property_uri_ref, S223.hasExternalReference, bacnet_ref_uri),
+            (bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, property_uri_ref),
+        ]
+
+    def _create_validation_fn(self, bacnet_point_id: str):
+        """
+        Create a validation function for atomic_update.
+
+        Args:
+            bacnet_point_id: ID for error messages
+
+        Returns:
+            Validation function that raises ValidationException on failure
+        """
+        def validate(model: ModelHandle) -> None:
+            logger.debug("Validating BACnet reference against SHACL constraints")
+            validation_result = ValidationService.validate_model(model)
+
+            if not validation_result.isValid:
+                logger.warning(
+                    f"SHACL validation failed for reference {bacnet_point_id}: {validation_result.errors}"
+                )
+                raise ValidationException(
+                    errors=validation_result.errors,
+                    warnings=validation_result.warnings
+                )
+
+        return validate
 
     def create_or_update_reference(
         self,
@@ -76,47 +166,34 @@ class BACnetReferencesModel:
         try:
             model = self.adapter.get_or_create_model(f"urn:project:{project_id}")
 
-            # Generate URIs (reuse bacnet_point_id as URI for both 223P entity and index)
             property_uri_ref = URIRef(property_uri)
             bacnet_ref_uri = BMS_BACNET_INDEX[bacnet_point_id]
 
-            with self.adapter.transaction():
-                # Remove old structures (if updating)
-                model.graph.remove((bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, None))  # Remove old index
-                model.graph.remove((bacnet_ref_uri, None, None))  # Delete old BACnetExternalReference entity
-                for ref_uri in list(model.graph.objects(property_uri_ref, S223.hasExternalReference)):
-                    model.graph.remove((ref_uri, None, None))  # Delete any other old entities
-                    logger.debug(f"Removed existing BACnetExternalReference: {ref_uri}")
-                model.graph.remove((property_uri_ref, S223.hasExternalReference, None))
+            # Build triples (business logic)
+            patterns_to_remove = self._collect_old_reference_patterns(
+                model, bacnet_ref_uri, property_uri_ref
+            )
+            triples_to_add = self._build_reference_triples(
+                bacnet_ref_uri,
+                property_uri_ref,
+                device_identifier,
+                object_identifier,
+                external_identifier,
+            )
 
-                # Create 223P-compliant BACnetExternalReference
-                model.graph.add((bacnet_ref_uri, RDF.type, S223.BACnetExternalReference))
-                model.graph.add((bacnet_ref_uri, BACNET["device-identifier"], Literal(device_identifier)))
-                model.graph.add((bacnet_ref_uri, BACNET["object-identifier"], Literal(object_identifier)))
-                model.graph.add((bacnet_ref_uri, DCTERMS.identifier, Literal(external_identifier)))
-                model.graph.add((property_uri_ref, S223.hasExternalReference, bacnet_ref_uri))
+            logger.debug(f"Creating BACnetExternalReference: {bacnet_ref_uri}")
+            logger.debug(f"  device-identifier: {device_identifier}")
+            logger.debug(f"  object-identifier: {object_identifier}")
+            logger.debug(f"  external-identifier: {external_identifier}")
+            logger.debug(f"  internal-index: {bacnet_ref_uri} → {property_uri}")
 
-                # Create internal index triple for efficient reverse lookup
-                model.graph.add((bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, property_uri_ref))
-
-                logger.debug(f"Created BACnetExternalReference: {bacnet_ref_uri}")
-                logger.debug(f"  device-identifier: {device_identifier}")
-                logger.debug(f"  object-identifier: {object_identifier}")
-                logger.debug(f"  external-identifier: {external_identifier}")
-                logger.debug(f"  internal-index: {bacnet_ref_uri} → {property_uri}")
-
-                # SHACL validation BEFORE commit
-                logger.debug("Validating BACnet reference against SHACL constraints")
-                validation_result = ValidationService.validate_model(model)
-
-                if not validation_result.isValid:
-                    logger.warning(
-                        f"SHACL validation failed for reference {bacnet_point_id}: {validation_result.errors}"
-                    )
-                    raise ValidationException(
-                        errors=validation_result.errors,
-                        warnings=validation_result.warnings
-                    )
+            # Atomic update with validation (persistence)
+            self.adapter.atomic_update(
+                model,
+                add=triples_to_add,
+                remove=patterns_to_remove,
+                validate_fn=self._create_validation_fn(bacnet_point_id),
+            )
 
             logger.info(f"BACnet reference created/updated and validated: {bacnet_point_id}")
 
@@ -325,16 +402,14 @@ class BACnetReferencesModel:
                 logger.warning(f"BACnet reference not found for deletion: {bacnet_point_id}")
                 return False
 
-            with self.adapter.transaction():
-                # Delete internal index triple
-                model.graph.remove((bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, property_uri))
+            patterns_to_remove: list[TriplePattern] = [
+                (bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, property_uri),
+                (bacnet_ref_uri, None, None),  # Remove all triples with bacnet_ref_uri as subject
+                (property_uri, S223.hasExternalReference, bacnet_ref_uri),
+            ]
 
-                # Delete BACnetExternalReference entity (all its properties)
-                model.graph.remove((bacnet_ref_uri, None, None))
-                logger.debug(f"Deleted BACnetExternalReference entity: {bacnet_ref_uri}")
-
-                # Delete forward link from property
-                model.graph.remove((property_uri, S223.hasExternalReference, bacnet_ref_uri))
+            logger.debug(f"Deleting BACnetExternalReference entity: {bacnet_ref_uri}")
+            self.adapter.remove_triples(model, patterns_to_remove)
 
             logger.info(f"BACnet reference deleted: {bacnet_point_id}")
             return True

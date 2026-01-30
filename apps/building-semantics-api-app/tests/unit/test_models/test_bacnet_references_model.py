@@ -33,10 +33,9 @@ def test_create_reference_maps_bacnet_point_to_property_urn(mock_adapter):
     Test creating BACnet reference links BACnet point to property URN.
 
     Verifies:
-    - BACnetExternalReference entity created with 223P properties
-    - bms-bacnet:mapsToProperty index triple added
-    - ValidationService called
-    - session.commit() called
+    - atomic_update called with add triples for BACnetExternalReference
+    - bms-bacnet:mapsToProperty index triple included
+    - validate_fn provided to atomic_update
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
@@ -44,50 +43,42 @@ def test_create_reference_maps_bacnet_point_to_property_urn(mock_adapter):
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
 
-    with patch('src.models.bacnet_references_model.ValidationService') as mock_validation:
-        mock_validation.validate_model.return_value = ValidationResultDTO(
-            isValid=True,
-            errors=[],
-            warnings=[]
-        )
+    result = BACnetReferencesModel(mock_adapter).create_or_update_reference(
+        project_id="test-project",
+        bacnet_point_id="device_123.analog-input_1",
+        property_uri="urn:bldgmotif:vav-101-temp-sensor-1",
+        device_identifier="device,123",
+        object_identifier="analog-input,1",
+        external_identifier="192.168.1.100:device,123:analog-input,1",
+    )
 
-        result = BACnetReferencesModel(mock_adapter).create_or_update_reference(
-            project_id="test-project",
-            bacnet_point_id="device_123.analog-input_1",
-            property_uri="urn:bldgmotif:vav-101-temp-sensor-1",
-            device_identifier="device,123",
-            object_identifier="analog-input,1",
-            external_identifier="192.168.1.100:device,123:analog-input,1",
-        )
+    assert result["bacnet_point_id"] == "device_123.analog-input_1"
+    assert result["property_uri"] == "urn:bldgmotif:vav-101-temp-sensor-1"
 
-        assert result["bacnet_point_id"] == "device_123.analog-input_1"
-        assert result["property_uri"] == "urn:bldgmotif:vav-101-temp-sensor-1"
+    mock_adapter.atomic_update.assert_called_once()
+    call_kwargs = mock_adapter.atomic_update.call_args
 
-        # Verify graph.add was called 6 times (5 for 223P entity + 1 for index)
-        assert mock_graph.add.call_count == 6
+    add_triples = call_kwargs.kwargs.get("add") or call_kwargs[1].get("add")
+    assert len(add_triples) == 6
 
-        # Check that index triple was added
-        add_calls = [call[0][0] for call in mock_graph.add.call_args_list]
-        index_triple = (
-            BMS_BACNET_INDEX["device_123.analog-input_1"],
-            BMS_BACNET_INDEX.mapsToProperty,
-            URIRef("urn:bldgmotif:vav-101-temp-sensor-1")
-        )
-        assert index_triple in add_calls
+    index_triple = (
+        BMS_BACNET_INDEX["device_123.analog-input_1"],
+        BMS_BACNET_INDEX.mapsToProperty,
+        URIRef("urn:bldgmotif:vav-101-temp-sensor-1")
+    )
+    assert index_triple in add_triples
 
-        mock_validation.validate_model.assert_called_once()
-
-        # Verify transaction context manager was used
-        mock_adapter.transaction.assert_called_once()
+    validate_fn = call_kwargs.kwargs.get("validate_fn") or call_kwargs[1].get("validate_fn")
+    assert validate_fn is not None
 
 
 def test_create_reference_validates_property_exists_via_shacl(mock_adapter):
     """
-    Test create_or_update_reference validates via SHACL before commit.
+    Test create_or_update_reference provides validation function to atomic_update.
 
     Verifies:
-    - ValidationService.validate_model() called
-    - If validation passes → commit
+    - atomic_update called with validate_fn parameter
+    - validate_fn calls ValidationService.validate_model when invoked
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
@@ -95,35 +86,38 @@ def test_create_reference_validates_property_exists_via_shacl(mock_adapter):
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
 
+    BACnetReferencesModel(mock_adapter).create_or_update_reference(
+        project_id="test-project",
+        bacnet_point_id="device_42.analog-input_1",
+        property_uri="urn:property:valid",
+        device_identifier="device,42",
+        object_identifier="analog-input,1",
+        external_identifier="192.168.1.100:device,42:analog-input,1",
+    )
+
+    mock_adapter.atomic_update.assert_called_once()
+    call_kwargs = mock_adapter.atomic_update.call_args
+    validate_fn = call_kwargs.kwargs.get("validate_fn") or call_kwargs[1].get("validate_fn")
+
+    assert validate_fn is not None
+
     with patch('src.models.bacnet_references_model.ValidationService') as mock_validation:
         mock_validation.validate_model.return_value = ValidationResultDTO(
             isValid=True,
             errors=[],
             warnings=[]
         )
-
-        BACnetReferencesModel(mock_adapter).create_or_update_reference(
-            project_id="test-project",
-            bacnet_point_id="device_42.analog-input_1",
-            property_uri="urn:property:valid",
-            device_identifier="device,42",
-            object_identifier="analog-input,1",
-            external_identifier="192.168.1.100:device,42:analog-input,1",
-        )
-
+        validate_fn(mock_model)
         mock_validation.validate_model.assert_called_once_with(mock_model)
-
-        # Verify transaction context manager was used
-        mock_adapter.transaction.assert_called_once()
 
 
 def test_create_reference_rolls_back_on_validation_failure(mock_adapter):
     """
-    Test SHACL validation failure triggers rollback.
+    Test SHACL validation failure triggers rollback via atomic_update.
 
     Verifies:
-    - ValidationException raised
-    - model.graph changes reverted
+    - ValidationException raised when validate_fn fails
+    - atomic_update handles rollback internally
     - Error message includes validation errors
     """
     mock_model = Mock()
@@ -131,6 +125,12 @@ def test_create_reference_rolls_back_on_validation_failure(mock_adapter):
     mock_graph.objects.return_value = []
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
+
+    def atomic_update_side_effect(model, add=None, remove=None, validate_fn=None):
+        if validate_fn:
+            validate_fn(model)
+
+    mock_adapter.atomic_update.side_effect = atomic_update_side_effect
 
     with patch('src.models.bacnet_references_model.ValidationService') as mock_validation:
         mock_validation.validate_model.return_value = ValidationResultDTO(
@@ -151,8 +151,7 @@ def test_create_reference_rolls_back_on_validation_failure(mock_adapter):
 
         assert "Property does not exist in system" in exc_info.value.errors
 
-        # Verify transaction context manager was used (rollback handled automatically)
-        mock_adapter.transaction.assert_called_once()
+    mock_adapter.atomic_update.assert_called_once()
 
 
 def test_get_reference_returns_enriched_metadata(mock_adapter):
@@ -287,10 +286,8 @@ def test_delete_reference_removes_all_bacnet_metadata(mock_adapter):
 
     Verifies:
     - model.graph.value() called to find property via index
-    - model.graph.remove() called for index triple
-    - model.graph.remove() called for entire entity
-    - model.graph.remove() called for hasExternalReference link
-    - session.commit() called
+    - adapter.remove_triples() called with 3 patterns
+    - Patterns include: index triple, entity triples (wildcard), forward link
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
@@ -307,14 +304,17 @@ def test_delete_reference_removes_all_bacnet_metadata(mock_adapter):
 
     assert result is True
 
-    # Verify graph.value was called to look up property_uri
     mock_graph.value.assert_called_once()
 
-    # Verify graph.remove was called 3 times (index + entity + forward link)
-    assert mock_graph.remove.call_count == 3
+    mock_adapter.remove_triples.assert_called_once()
+    call_args = mock_adapter.remove_triples.call_args
+    patterns = call_args[0][1]
 
-    # Verify transaction context manager was used
-    mock_adapter.transaction.assert_called_once()
+    assert len(patterns) == 3
+
+    bacnet_ref_uri = BMS_BACNET_INDEX["device_123.analog-input_1"]
+    assert (bacnet_ref_uri, BMS_BACNET_INDEX.mapsToProperty, property_uri) in patterns
+    assert (bacnet_ref_uri, None, None) in patterns
 
 
 def test_delete_reference_returns_false_when_not_found(mock_adapter):
@@ -393,41 +393,36 @@ def test_create_or_update_updates_existing_reference(mock_adapter):
     Test create_or_update_reference updates existing BACnet point mapping.
 
     Verifies:
-    - Existing structures removed (index + entity)
-    - New structures added with new property_uri
+    - atomic_update called with remove patterns and add triples
+    - Remove patterns include old index and entity patterns
+    - Add triples include new property_uri
     """
     mock_model = Mock()
     mock_graph = Mock(spec=Graph)
 
-    # Mock existing external reference
-    old_ref_uri = URIRef("urn:bms:bacnet:device_123.analog-input_1")
     mock_graph.objects.return_value = []  # No old hasExternalReference links
     mock_model.graph = mock_graph
     mock_adapter.get_or_create_model.return_value = mock_model
 
-    with patch('src.models.bacnet_references_model.ValidationService') as mock_validation:
-        mock_validation.validate_model.return_value = ValidationResultDTO(
-            isValid=True,
-            errors=[],
-            warnings=[]
-        )
+    result = BACnetReferencesModel(mock_adapter).create_or_update_reference(
+        project_id="test-project",
+        bacnet_point_id="device_123.analog-input_1",
+        property_uri="urn:property:new",
+        device_identifier="device,123",
+        object_identifier="analog-input,1",
+        external_identifier="192.168.1.100:device,123:analog-input,1",
+    )
 
-        result = BACnetReferencesModel(mock_adapter).create_or_update_reference(
-            project_id="test-project",
-            bacnet_point_id="device_123.analog-input_1",
-            property_uri="urn:property:new",
-            device_identifier="device,123",
-            object_identifier="analog-input,1",
-            external_identifier="192.168.1.100:device,123:analog-input,1",
-        )
+    mock_adapter.atomic_update.assert_called_once()
+    call_kwargs = mock_adapter.atomic_update.call_args
 
-        # Verify removal was called (old index, old entity)
-        assert mock_graph.remove.call_count >= 2
+    remove_patterns = call_kwargs.kwargs.get("remove") or call_kwargs[1].get("remove")
+    add_triples = call_kwargs.kwargs.get("add") or call_kwargs[1].get("add")
 
-        # Verify new triples were added (6 total)
-        assert mock_graph.add.call_count == 6
+    assert len(remove_patterns) >= 2
+    assert len(add_triples) == 6
 
-        assert result["property_uri"] == "urn:property:new"
+    assert result["property_uri"] == "urn:property:new"
 
 
 def test_get_reference_returns_none_when_not_found(mock_adapter):

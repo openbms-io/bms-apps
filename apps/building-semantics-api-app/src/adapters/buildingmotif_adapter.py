@@ -1,7 +1,7 @@
 """BuildingMOTIF SDK adapter for ASHRAE 223P operations."""
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, TypedDict
+from typing import Callable, Generator, TypedDict
 
 from buildingmotif import BuildingMOTIF, get_building_motif
 from buildingmotif.database.errors import TemplateNotFound
@@ -16,7 +16,9 @@ from src.config.settings import Settings, get_settings
 from .semantics_adapter_protocol import (
     ModelHandle,
     QueryResult,
+    RDFTriple,
     TemplateInfo,
+    TriplePattern,
     ValidationResult,
 )
 from .template_types import TemplateType
@@ -423,29 +425,83 @@ class BuildingMOTIFAdapter:
 
     def add_graph(self, model: ModelHandle, graph: Graph) -> None:
         """
-        Add RDF graph to model.
+        Add RDF graph to model atomically.
 
         Args:
             model: Target ModelHandle
             graph: RDF graph to add
         """
-        for triple in graph:
-            model.graph.add(triple)
+        with self.atomic_context():
+            for triple in graph:
+                model.graph.add(triple)
         logger.debug(f"Added {len(graph)} triples to model")
 
     def add_triples(
-        self, model: ModelHandle, triples: list[tuple[str, str, str]]
+        self, model: ModelHandle, triples: list[RDFTriple]
     ) -> None:
         """
-        Add triples to a model.
+        Add triples to a model atomically.
 
         Args:
             model: Target ModelHandle
-            triples: List of (subject, predicate, object) tuples as strings
+            triples: List of RDF triples to add
         """
-        for s, p, o in triples:
-            model.graph.add((URIRef(s), URIRef(p), Literal(o)))
+        with self.atomic_context():
+            for triple in triples:
+                model.graph.add(triple)
         logger.debug(f"Added {len(triples)} triples to model")
+
+    def remove_triples(
+        self, model: ModelHandle, patterns: list[TriplePattern]
+    ) -> None:
+        """
+        Remove triples from a model atomically.
+
+        Args:
+            model: Target ModelHandle
+            patterns: List of triple patterns to remove. Use None as wildcard
+                      to match any value in that position.
+                      Example: (subject, None, None) removes ALL triples with that subject.
+        """
+        with self.atomic_context():
+            for pattern in patterns:
+                model.graph.remove(pattern)
+        logger.debug(f"Removed triples matching {len(patterns)} patterns from model")
+
+    def atomic_update(
+        self,
+        model: ModelHandle,
+        add: list[RDFTriple] | None = None,
+        remove: list[TriplePattern] | None = None,
+        validate_fn: Callable[[ModelHandle], None] | None = None,
+    ) -> None:
+        """
+        Apply graph changes atomically with optional validation.
+
+        Removes are applied before adds. If validate_fn is provided,
+        it's called after changes but before commit. If validate_fn
+        raises an exception, all changes are rolled back.
+
+        Args:
+            model: Target ModelHandle
+            add: Triples to add (no wildcards allowed)
+            remove: Triple patterns to remove (None = wildcard matching any value)
+            validate_fn: Optional validation function called before commit.
+                         Should raise exception if validation fails to trigger rollback.
+        """
+        with self.atomic_context():
+            if remove:
+                for pattern in remove:
+                    model.graph.remove(pattern)
+                logger.debug(f"Removed triples matching {len(remove)} patterns")
+
+            if add:
+                for triple in add:
+                    model.graph.add(triple)
+                logger.debug(f"Added {len(add)} triples")
+
+            if validate_fn:
+                validate_fn(model)
 
     def serialize_model(self, model: ModelHandle, format: str = "turtle") -> str:
         """
@@ -594,18 +650,22 @@ class BuildingMOTIFAdapter:
         return self._bm
 
     @contextmanager
-    def transaction(self) -> Generator[None, None, None]:
+    def atomic_context(self) -> Generator[None, None, None]:
         """
-        Context manager for atomic database operations.
+        Context manager for complex atomic operations.
 
-        Provides transaction semantics:
-        - All operations succeed together, or
-        - All operations rollback together
+        Use when you need fine-grained control over multiple graph changes.
+        All changes commit on success, rollback on exception.
 
-        Usage:
-            with adapter.transaction():
-                model.graph.add(triple)
-                # Commits on success, rolls back on exception
+        For simpler cases, prefer atomic_update() which handles
+        add/remove/validate in a single call.
+
+        Example:
+            with adapter.atomic_context():
+                model.graph.add(triple1)
+                model.graph.remove(pattern)
+                # Commits on successful exit
+                # Rolls back if exception raised
 
         Yields:
             None
@@ -613,16 +673,11 @@ class BuildingMOTIFAdapter:
         Raises:
             Exception: Re-raises any exception after rollback
         """
-        # Session auto-begins transaction on first operation
         try:
-            yield  # Execute operations inside 'with' block
-
-            # SUCCESS: Commit transaction to database
+            yield
             self._bm.session.commit()
             logger.debug("Transaction committed successfully")
-
         except Exception as e:
-            # ERROR: Rollback transaction
             self._bm.session.rollback()
             logger.error(f"Transaction rolled back: {e}")
             raise

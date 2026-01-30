@@ -238,8 +238,7 @@ def test_delete_system_removes_all_related_triples(mock_adapter):
 
     Verifies:
     - model.graph.triples() queries for all triples with system as subject
-    - model.graph.remove() called for each triple
-    - session.commit() called
+    - adapter.remove_triples() called with those triples
     """
     BMS = Namespace("urn:bms:")
     system_uri = URIRef("urn:bldgmotif:system-to-delete")
@@ -262,13 +261,15 @@ def test_delete_system_removes_all_related_triples(mock_adapter):
     )
 
     assert result is True
-    assert mock_graph.remove.call_count == 3
-    mock_graph.remove.assert_any_call(triple1)
-    mock_graph.remove.assert_any_call(triple2)
-    mock_graph.remove.assert_any_call(triple3)
 
-    # Verify transaction context manager was used
-    mock_adapter.transaction.assert_called_once()
+    mock_adapter.remove_triples.assert_called_once()
+    call_args = mock_adapter.remove_triples.call_args
+    triples_passed = call_args[0][1]
+
+    assert len(triples_passed) == 3
+    assert triple1 in triples_passed
+    assert triple2 in triples_passed
+    assert triple3 in triples_passed
 
 
 def test_delete_system_returns_false_when_system_not_found(mock_adapter):

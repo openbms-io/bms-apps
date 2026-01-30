@@ -75,8 +75,7 @@ class SystemsModel:
 
             model = self.adapter.get_or_create_model(f"urn:project:{project_id}")
 
-            with self.adapter.transaction():
-                model.graph += filled_graph
+            self.adapter.add_graph(model, filled_graph)
 
             logger.info(
                 f"System created: {system_uri} (label={label}, template={template_id})"
@@ -231,9 +230,7 @@ class SystemsModel:
                 logger.warning(f"System not found for deletion: {system_uri}")
                 return False
 
-            with self.adapter.transaction():
-                for triple in triples_to_remove:
-                    model.graph.remove(triple)
+            self.adapter.remove_triples(model, triples_to_remove)
 
             logger.info(f"System deleted: {system_uri} ({len(triples_to_remove)} triples removed)")
             return True
